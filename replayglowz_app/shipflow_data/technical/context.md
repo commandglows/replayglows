@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "replayglowz-app"
 created: "2026-04-26"
-updated: "2026-04-26"
+updated: "2026-05-23"
 status: "reviewed"
 source_skill: sf-docs
 scope: "file"
@@ -121,7 +121,7 @@ The repo also contains Vercel Node handlers for YouTube OAuth under `api/auth/`.
 
 ## Shared backend contract
 
-- This repo depends on Convex functions defined in `/home/claude/tubeflow_expo/packages/backend/convex/` by default.
+- This repo depends on Convex functions defined in the backend checkout selected by `REPLAYGLOWZ_BACKEND_ROOT`.
 - `tool/check_shared_backend_contract.dart` checks critical functions such as `users:ensureUser`, `users:getCurrentUser`, `settings:getSettings`, `subscriptions:getSubscription`, YouTube connection status, feedback admin, and notifications.
 - Set `REPLAYGLOWZ_BACKEND_ROOT` when the backend checkout is elsewhere.
 - Flutter and any other clients consuming the same backend must coordinate schema/function changes.

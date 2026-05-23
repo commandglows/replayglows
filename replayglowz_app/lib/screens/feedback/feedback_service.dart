@@ -10,7 +10,6 @@ import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/screens/feedback/feedback_audio_file.dart';
 
 const feedbackTextDraftKey = 'replayglowz_feedback_text_draft';
-const legacyFeedbackTextDraftKey = 'tubeflow_feedback_text_draft';
 
 class FeedbackSubmissionService {
   const FeedbackSubmissionService(this.ref);
@@ -22,12 +21,7 @@ class FeedbackSubmissionService {
     final current = prefs.getString(feedbackTextDraftKey);
     if (current != null) return current;
 
-    final legacy = prefs.getString(legacyFeedbackTextDraftKey);
-    if (legacy == null) return '';
-
-    await prefs.setString(feedbackTextDraftKey, legacy);
-    await prefs.remove(legacyFeedbackTextDraftKey);
-    return legacy;
+    return '';
   }
 
   Future<void> saveTextDraft(String value) async {
@@ -35,17 +29,14 @@ class FeedbackSubmissionService {
     final trimmed = value.trim();
     if (trimmed.isEmpty) {
       await prefs.remove(feedbackTextDraftKey);
-      await prefs.remove(legacyFeedbackTextDraftKey);
       return;
     }
     await prefs.setString(feedbackTextDraftKey, value);
-    await prefs.remove(legacyFeedbackTextDraftKey);
   }
 
   Future<void> clearTextDraft() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(feedbackTextDraftKey);
-    await prefs.remove(legacyFeedbackTextDraftKey);
   }
 
   Future<void> submitText({

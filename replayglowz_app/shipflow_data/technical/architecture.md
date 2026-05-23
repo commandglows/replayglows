@@ -1,10 +1,10 @@
 ---
 artifact: "architecture_context"
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "replayglowz-app"
 created: "2026-04-26"
-updated: "2026-04-26"
+updated: "2026-05-23"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "architecture"
@@ -40,7 +40,7 @@ linked_systems:
   - "lib/convex"
   - "api/auth"
   - "Vercel"
-  - "/home/claude/tubeflow_expo/packages/backend/convex"
+  - "Shared Convex backend selected by REPLAYGLOWZ_BACKEND_ROOT"
 external_dependencies:
   - "Clerk"
   - "Convex"

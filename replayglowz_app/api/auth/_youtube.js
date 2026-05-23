@@ -124,7 +124,7 @@ function buildReturnUrl(origin, returnTo, extraParams = {}) {
   const fragmentValue = safeReturn.slice(2); // '/#/playlists' -> '/playlists'
   const fragmentUrl = new URL(
     fragmentValue.startsWith('/') ? fragmentValue : `/${fragmentValue}`,
-    'https://tubeflow.local',
+    'https://replayglowz.local',
   );
 
   const params = new URLSearchParams(fragmentUrl.search);

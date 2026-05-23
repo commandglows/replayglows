@@ -54,7 +54,7 @@ Operational guide for agents working in `replayglowz-app`.
 
 `replayglowz-app` is a Flutter web client. It renders the ReplayGlowz UI, calls a shared Convex backend, and deploys as a Vercel static build with a small YouTube OAuth API under `api/auth/`. Flutter auth is handled by Firebase Auth.
 
-This repository is not the Convex backend source of truth. The shared backend is expected at `/home/claude/tubeflow_expo/packages/backend/convex/`, unless `REPLAYGLOWZ_BACKEND_ROOT` points elsewhere.
+This repository is not the Convex backend source of truth. Set `REPLAYGLOWZ_BACKEND_ROOT` to the shared Convex backend directory when validating backend contracts.
 
 ## Non-negotiable boundaries
 
@@ -127,7 +127,7 @@ Vercel serverless/OAuth values:
 - `GOOGLE_CLIENT_ID`: Google OAuth client ID for YouTube consent.
 - `GOOGLE_CLIENT_SECRET`: exchanged with Google authorization codes in the callback.
 
-Compatibility fallbacks currently exist for `NEXT_PUBLIC_CONVEX_URL`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `TUBEFLOW_APP_URL`, and `TUBEFLOW_WEB_URL`.
+Use ReplayGlowz environment names only for new configuration; do not add legacy brand-name fallbacks.
 
 ## Safe change patterns
 

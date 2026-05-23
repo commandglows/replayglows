@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "replayglowz-app"
 created: "2026-04-26"
-updated: "2026-04-26"
+updated: "2026-05-23"
 status: "reviewed"
 source_skill: sf-docs
 scope: "file"
@@ -245,7 +245,7 @@ FeedbackSubmissionService
 GET /api/auth/youtube
 ├── getRequestOrigin(req)
 ├── sanitizeReturnTo(return_to)
-├── require GOOGLE_CLIENT_ID and tubeflow_youtube_clerk_session_id cookie
+├── require GOOGLE_CLIENT_ID and replayglowz_youtube_clerk_session_id cookie
 ├── create state
 ├── set youtube_oauth_state and youtube_oauth_return_to cookies
 └── redirect to Google OAuth consent
@@ -266,7 +266,7 @@ GET /api/auth/youtube/callback
 ```text
 dart run tool/check_shared_backend_contract.dart
 ├── resolve REPLAYGLOWZ_BACKEND_ROOT
-├── default ../tubeflow_expo/packages/backend/convex
+├── fallback to replayglowz_backend/packages/backend/convex
 ├── verify module file exists for each required function
 └── verify `export const <function> =` exists
 ```

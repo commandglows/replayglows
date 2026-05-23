@@ -58,15 +58,10 @@ void main() {
 }
 
 Directory _resolveBackendRoot() {
-  final fromEnv =
-      Platform.environment['REPLAYGLOWZ_BACKEND_ROOT'] ??
-      Platform.environment['TUBEFLOW_BACKEND_ROOT'];
+  final fromEnv = Platform.environment['REPLAYGLOWZ_BACKEND_ROOT'];
   if (fromEnv != null && fromEnv.trim().isNotEmpty) {
     return Directory(fromEnv.trim());
   }
 
-  final cwd = Directory.current.uri;
-  return Directory.fromUri(
-    cwd.resolve('../tubeflow_expo/packages/backend/convex'),
-  );
+  return Directory('replayglowz_backend/packages/backend/convex');
 }

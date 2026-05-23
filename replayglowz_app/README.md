@@ -65,7 +65,7 @@ Convex deployment variables used by backend features:
 - **Material 3** — theming (light / dark / system)
 - **record + just_audio** — feedback audio capture and playback
 
-Convex backend lives in a **separate repository** at `/home/claude/tubeflow_expo/packages/backend/convex/` — not in this project. This Flutter app is a client of that shared backend. The code under `lib/convex/` is client transport/state only, not server code.
+Convex backend lives in a **separate repository** configured with `REPLAYGLOWZ_BACKEND_ROOT` — not in this project. This Flutter app is a client of that shared backend. The code under `lib/convex/` is client transport/state only, not server code.
 
 ## Project Structure
 
@@ -116,7 +116,7 @@ No shared secret is used; verification is through Firebase's public token issuer
 - **Security headers**: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`
 - **SPA routing**: all routes rewritten to `/index.html`
 
-If a Flutter change depends on a new Convex function or schema change, deploy the shared backend from `/home/claude/tubeflow_expo/packages/backend` before rolling out the Flutter build.
+If a Flutter change depends on a new Convex function or schema change, deploy the shared backend selected by `REPLAYGLOWZ_BACKEND_ROOT` before rolling out the Flutter build.
 
 ## Tests
 

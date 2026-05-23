@@ -52,7 +52,7 @@ Guidance for coding agents working in `replayglowz-app`, the Flutter web client 
 
 ReplayGlowz App is a Flutter web application for watching YouTube videos, taking timestamped notes, organizing playlists, tracking viewing history, managing preferences, and submitting feedback.
 
-This repository is the client plus Vercel OAuth helper endpoints. The shared Convex backend lives outside this repo at `/home/claude/tubeflow_expo/packages/backend/convex/` by default. Code under `lib/convex/` is client integration, not server code.
+This repository is the client plus Vercel OAuth helper endpoints. The shared Convex backend lives outside this repo and is selected with `REPLAYGLOWZ_BACKEND_ROOT`. Code under `lib/convex/` is client integration, not server code.
 
 ## Stack
 

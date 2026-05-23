@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "replayglowz-app"
 created: "2026-04-26"
-updated: "2026-04-26"
+updated: "2026-05-23"
 status: "reviewed"
 source_skill: "sf-init"
 scope: "guidelines"
@@ -95,7 +95,7 @@ next_step: "Update when auth ownership, provider boundaries, env names, or deplo
 - The Convex schema and server functions live in the shared backend repo, not here.
 - If Flutter starts calling a new Convex function, deploy or coordinate the backend change first.
 - Use `dart run tool/check_shared_backend_contract.dart` for critical function-name drift checks.
-- Set `REPLAYGLOWZ_BACKEND_ROOT` when the shared backend checkout is not at `../tubeflow_expo/packages/backend/convex`.
+- Set `REPLAYGLOWZ_BACKEND_ROOT` to the shared backend checkout before running backend contract checks.
 - Keep Clerk/Convex auth contract details aligned: Clerk JWT template `convex`, backend provider `applicationID: "convex"`, and trusted Clerk issuer domain.
 
 ## Deployment conventions
