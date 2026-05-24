@@ -205,10 +205,14 @@ Future<void> _launchYoutubeConnect(
       productAccessStatusProvider.future,
     );
     if (!accessStatus.hasAccess) {
+      final accessVerificationUnavailable =
+          accessStatus.loading || accessStatus.reasonCode == 'auth_not_ready';
       if (context.mounted) {
         showErrorSnackBar(
           context,
-          error: accessStatus.accountRecognized
+          error: accessVerificationUnavailable
+              ? 'ReplayGlowz is signed in, but secure backend access is not ready yet. Reload the app and try again.'
+              : accessStatus.accountRecognized
               ? 'Your account is recognized, but ReplayGlowz access is inactive.'
               : 'ReplayGlowz could not verify product access for this account.',
           prefix: 'YouTube connect unavailable',
