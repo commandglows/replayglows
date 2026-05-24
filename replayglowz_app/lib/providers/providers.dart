@@ -290,7 +290,7 @@ List<String> _legacyProductIds() {
 
 /// Arguments for [videosProvider].
 class VideosArgs {
-  const VideosArgs({this.sortOrder = 'newest', this.includeWatched = true});
+  const VideosArgs({this.sortOrder = 'desc', this.includeWatched = true});
 
   final String sortOrder;
   final bool includeWatched;

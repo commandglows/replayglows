@@ -569,7 +569,14 @@ export const getAllVideos = query({
   args: {
     includeHidden: v.optional(v.boolean()),
     includeWatched: v.optional(v.boolean()),
-    sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
+    sortOrder: v.optional(
+      v.union(
+        v.literal("asc"),
+        v.literal("desc"),
+        v.literal("oldest"),
+        v.literal("newest")
+      )
+    ),
     paginationOpts: v.optional(v.object({
       numItems: v.number(),
       cursor: v.union(v.string(), v.null()),
@@ -612,7 +619,9 @@ export const getAllVideos = query({
     filtered.sort((a, b) => {
       const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
       const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-      return args.sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+      return args.sortOrder === "asc" || args.sortOrder === "oldest"
+        ? dateA - dateB
+        : dateB - dateA;
     });
 
     // Enrich with playlist + channel data in a single map
