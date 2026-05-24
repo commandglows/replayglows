@@ -8,7 +8,7 @@ const {
   serializeCookie,
   buildReturnUrl,
   sendRedirect,
-  verifySuiteSessionAndEntitlement,
+  verifyReplayGlowzSessionAccessWithFallback,
 } = require('../_youtube');
 
 const REPLAYGLOWZ_SUITE_SESSION_TOKEN_COOKIE =
@@ -217,8 +217,9 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const verification = await verifySuiteSessionAndEntitlement({
+  const verification = await verifyReplayGlowzSessionAccessWithFallback({
     sessionToken: suiteSessionToken,
+    convexUrl,
     verifyUrl,
     verifySecret,
     productId,
@@ -248,7 +249,9 @@ module.exports = async function handler(req, res) {
       redirectUri,
     });
 
-    await ensureConvexUser(convexUrl, suiteSessionToken);
+    if (!verification.localConvexVerified) {
+      await ensureConvexUser(convexUrl, suiteSessionToken);
+    }
     await saveYoutubeTokens(convexUrl, suiteSessionToken, tokens);
 
     sendCallbackRedirect({ youtube_connected: 'true' });

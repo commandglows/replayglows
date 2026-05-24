@@ -164,6 +164,21 @@ function getBearerTokenFromAuthHeader(authHeader) {
   return header.slice('Bearer '.length).trim();
 }
 
+function decodeJwtPayload(jwt) {
+  try {
+    const [, payload] = String(jwt || '').split('.');
+    if (!payload) return {};
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(
+      normalized.length + ((4 - (normalized.length % 4)) % 4),
+      '=',
+    );
+    return JSON.parse(Buffer.from(padded, 'base64').toString('utf8'));
+  } catch (_) {
+    return {};
+  }
+}
+
 function parseLegacyProductIds(raw) {
   if (!raw || !raw.trim()) return DEFAULT_LEGACY_PRODUCT_IDS;
   const ids = raw
@@ -309,6 +324,156 @@ async function verifySuiteSessionAndEntitlement({
   };
 }
 
+async function runConvexHttpOperation({ convexUrl, sessionToken, type, path, args }) {
+  const endpoint = type === 'mutation' ? 'mutation' : 'query';
+  const response = await fetch(`${convexUrl.replace(/\/+$/, '')}/api/${endpoint}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${sessionToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      path,
+      args,
+      format: 'json',
+    }),
+  });
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: response.status,
+      error: `convex_${endpoint}_http_failed`,
+    };
+  }
+
+  let payload;
+  try {
+    payload = await response.json();
+  } catch (_) {
+    return { ok: false, status: 502, error: `convex_${endpoint}_invalid_json` };
+  }
+
+  if (payload?.status === 'error') {
+    return {
+      ok: false,
+      status: 502,
+      error: `convex_${endpoint}_operation_failed`,
+    };
+  }
+
+  return { ok: true, value: payload?.value };
+}
+
+async function verifyReplayGlowzSessionAndAccess({
+  sessionToken,
+  convexUrl,
+  productId,
+  legacyProductIds,
+}) {
+  if (!convexUrl) {
+    return { ok: false, status: 503, error: 'convex_url_not_configured' };
+  }
+  if (!sessionToken) {
+    return { ok: false, status: 401, error: 'missing_session_token' };
+  }
+
+  const claims = decodeJwtPayload(sessionToken);
+  const emailAddress =
+    claims.email ||
+    claims.email_address ||
+    claims?.primaryEmailAddress?.emailAddress;
+
+  if (typeof emailAddress === 'string' && emailAddress.trim()) {
+    const ensured = await runConvexHttpOperation({
+      convexUrl,
+      sessionToken,
+      type: 'mutation',
+      path: 'users:ensureUser',
+      args: {
+        email: emailAddress.trim(),
+        name: typeof claims.name === 'string' ? claims.name : undefined,
+        avatarUrl: typeof claims.picture === 'string' ? claims.picture : undefined,
+      },
+    });
+    if (!ensured.ok) {
+      return { ...ensured, localConvexVerified: true };
+    }
+  }
+
+  const access = await runConvexHttpOperation({
+    convexUrl,
+    sessionToken,
+    type: 'query',
+    path: 'users:getProductAccessStatus',
+    args: {
+      productId,
+      legacyProductIds,
+    },
+  });
+  if (!access.ok) {
+    return { ...access, localConvexVerified: true };
+  }
+
+  const status =
+    access.value && typeof access.value === 'object' ? access.value : {};
+  if (status.hasAccess !== true) {
+    return {
+      ok: false,
+      status: 403,
+      error:
+        typeof status.reasonCode === 'string'
+          ? status.reasonCode
+          : 'product_access_inactive',
+      globalUserId:
+        typeof status.globalUserId === 'string' ? status.globalUserId : '',
+      localConvexVerified: true,
+    };
+  }
+
+  return {
+    ok: true,
+    status: 200,
+    globalUserId: typeof status.globalUserId === 'string' ? status.globalUserId : '',
+    matchedProductId:
+      typeof status.matchedProductId === 'string'
+        ? status.matchedProductId
+        : productId,
+    localConvexVerified: true,
+  };
+}
+
+async function verifyReplayGlowzSessionAccessWithFallback({
+  sessionToken,
+  convexUrl,
+  verifyUrl,
+  verifySecret,
+  productId,
+  legacyProductIds,
+  requestId,
+}) {
+  if (convexUrl) {
+    const productVerification = await verifyReplayGlowzSessionAndAccess({
+      sessionToken,
+      convexUrl,
+      productId,
+      legacyProductIds,
+    });
+    if (productVerification.ok || productVerification.status !== 503) {
+      return productVerification;
+    }
+  }
+
+  return verifySuiteSessionAndEntitlement({
+    sessionToken,
+    verifyUrl,
+    verifySecret,
+    productId,
+    legacyProductIds,
+    requestId,
+  });
+}
+
 module.exports = {
   DEFAULT_PRODUCT_ID,
   DEFAULT_LEGACY_PRODUCT_IDS,
@@ -317,8 +482,11 @@ module.exports = {
   getRequestOrigin,
   isSecureOrigin,
   getBearerTokenFromAuthHeader,
+  decodeJwtPayload,
   parseLegacyProductIds,
   resolveEntitlementInputs,
+  verifyReplayGlowzSessionAndAccess,
+  verifyReplayGlowzSessionAccessWithFallback,
   verifySuiteSessionAndEntitlement,
   parseCookies,
   serializeCookie,

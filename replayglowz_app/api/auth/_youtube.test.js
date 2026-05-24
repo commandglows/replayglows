@@ -320,6 +320,89 @@ test(
 );
 
 test(
+  'youtube start verifies ReplayGlowz product access through Convex before suite fallback',
+  { concurrency: false },
+  async () => {
+  await withEnv(
+    {
+      GOOGLE_CLIENT_ID: 'client-id',
+      CONVEX_URL: 'https://product.convex.cloud',
+      SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
+      SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
+      REPLAYGLOWZ_PRODUCT_ID: 'replayglowz',
+      REPLAYGLOWZ_LEGACY_PRODUCT_IDS: 'tubeflow',
+      REPLAYGLOWZ_APP_URL: 'https://app.example.com',
+    },
+    async () => {
+      const calls = [];
+      global.fetch = async (url, options = {}) => {
+        calls.push({ url: String(url), options });
+        if (String(url) === 'https://product.convex.cloud/api/mutation') {
+          return {
+            ok: true,
+            status: 200,
+            async json() {
+              return { status: 'success', value: 'users-id' };
+            },
+          };
+        }
+        if (String(url) === 'https://product.convex.cloud/api/query') {
+          return {
+            ok: true,
+            status: 200,
+            async json() {
+              return {
+                status: 'success',
+                value: {
+                  hasAccess: true,
+                  matchedProductId: 'replayglowz',
+                  reasonCode: 'default_free_entitlement',
+                },
+              };
+            },
+          };
+        }
+        throw new Error(`Unexpected URL ${url}`);
+      };
+
+      const payload = Buffer.from(
+        JSON.stringify({ email: 'user@example.com', name: 'Test User' }),
+      )
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+      const sessionToken = `x.${payload}.y`;
+      const req = {
+        method: 'GET',
+        url: '/api/auth/youtube?return_to=%2F%23%2Fplaylists',
+        headers: {
+          authorization: `Bearer ${sessionToken}`,
+          host: 'app.example.com',
+          'x-forwarded-proto': 'https',
+          'x-forwarded-host': 'app.example.com',
+        },
+      };
+      const res = createMockRes();
+
+      await youtubeStartHandler(req, res);
+
+      assert.equal(res.statusCode, 200);
+      assert.equal(calls.length, 2);
+      assert.equal(calls[0].url, 'https://product.convex.cloud/api/mutation');
+      assert.equal(calls[1].url, 'https://product.convex.cloud/api/query');
+      assert.equal(
+        calls[1].options.headers.Authorization,
+        `Bearer ${sessionToken}`,
+      );
+      const payloadResponse = JSON.parse(res.body);
+      assert.ok(payloadResponse.authUrl.includes('accounts.google.com'));
+    },
+  );
+  },
+);
+
+test(
   'youtube callback fails closed when suite token cookie is missing',
   { concurrency: false },
   async () => {
@@ -378,12 +461,26 @@ test(
       const calls = [];
       global.fetch = async (url, options = {}) => {
         calls.push({ url: String(url), options });
-        if (String(url) === 'https://suite.example.com/verify') {
+        if (String(url) === 'https://product.convex.cloud/api/query') {
           return {
             ok: true,
             status: 200,
             async json() {
-              return { hasAccess: true, globalUserId: 'gu_123' };
+              return {
+                status: 'success',
+                value: { hasAccess: true, globalUserId: 'gu_123' },
+              };
+            },
+          };
+        }
+        if (
+          String(url) === 'https://product.convex.cloud/api/mutation' &&
+          JSON.parse(options.body).path === 'users:ensureUser'
+        ) {
+          return {
+            ok: true,
+            async json() {
+              return { status: 'success' };
             },
           };
         }
@@ -399,7 +496,10 @@ test(
             },
           };
         }
-        if (String(url) === 'https://product.convex.cloud/api/mutation') {
+        if (
+          String(url) === 'https://product.convex.cloud/api/mutation' &&
+          JSON.parse(options.body).path === 'youtube:saveYoutubeTokens'
+        ) {
           return {
             ok: true,
             async json() {

@@ -7,7 +7,7 @@ const {
   getBearerTokenFromAuthHeader,
   getEnv,
   resolveEntitlementInputs,
-  verifySuiteSessionAndEntitlement,
+  verifyReplayGlowzSessionAccessWithFallback,
   serializeCookie,
   sanitizeReturnTo,
 } = require('./_youtube');
@@ -38,6 +38,7 @@ module.exports = async function handler(req, res) {
   const sessionToken = getBearerTokenFromAuthHeader(req.headers.authorization);
   const requestId = req.headers['x-request-id'];
   const googleClientId = getEnv('GOOGLE_CLIENT_ID');
+  const convexUrl = getEnv('CONVEX_URL');
   const { productId, legacyProductIds, verifySecret, verifyUrl } =
     resolveEntitlementInputs();
 
@@ -55,8 +56,9 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const verification = await verifySuiteSessionAndEntitlement({
+  const verification = await verifyReplayGlowzSessionAccessWithFallback({
     sessionToken,
+    convexUrl,
     verifyUrl,
     verifySecret,
     productId,
