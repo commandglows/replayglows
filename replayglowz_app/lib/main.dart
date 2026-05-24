@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'package:replayglowz_app/app/build_info.dart';
@@ -17,6 +18,9 @@ import 'package:replayglowz_app/widgets/error_feedback.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb) {
+    usePathUrlStrategy();
+  }
 
   if (sentryDsn.isEmpty) {
     await _runApp();
@@ -163,7 +167,6 @@ class _AppBootstrap extends ConsumerStatefulWidget {
 }
 
 class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
-  bool _initialised = false;
   String? _bootstrapError;
 
   bool get _hasConvexConfig => convexUrl.isNotEmpty;
@@ -225,22 +228,13 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
     }
 
     if (mounted) {
-      setState(() => _initialised = true);
+      setState(() {});
+      AppLogger.instance.log('bootstrap() complete', source: 'bootstrap');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_initialised) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: ThemeMode.system,
-        home: const Scaffold(body: Center(child: CircularProgressIndicator())),
-      );
-    }
-
     if (_bootstrapError != null) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
