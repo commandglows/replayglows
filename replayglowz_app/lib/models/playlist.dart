@@ -66,22 +66,31 @@ class YouTubePlaylist {
   String? get effectiveThumbnailUrl => customThumbnailUrl ?? thumbnailUrl;
 
   factory YouTubePlaylist.fromJson(Map<String, dynamic> json) {
+    final youtubePlaylistId =
+        _optionalString(json['youtubePlaylistId']) ??
+        _optionalString(json['id']) ??
+        '';
+    final videoCount = _intValue(json['videoCount']);
+
     return YouTubePlaylist(
-      id: json['_id'] as String,
-      youtubePlaylistId: json['youtubePlaylistId'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String?,
-      thumbnailUrl: json['thumbnailUrl'] as String?,
-      customThumbnailUrl: json['customThumbnailUrl'] as String?,
-      videoCount: json['videoCount'] as int,
+      id:
+          _optionalString(json['_id']) ??
+          _optionalString(json['id']) ??
+          youtubePlaylistId,
+      youtubePlaylistId: youtubePlaylistId,
+      title: _optionalString(json['title']) ?? 'Untitled playlist',
+      description: _optionalString(json['description']),
+      thumbnailUrl: _optionalString(json['thumbnailUrl']),
+      customThumbnailUrl: _optionalString(json['customThumbnailUrl']),
+      videoCount: videoCount,
       originalVideoCount:
-          json['originalVideoCount'] as int? ?? json['videoCount'] as int,
-      privacyStatus: json['privacyStatus'] as String,
-      publishedAt: json['publishedAt'] as String?,
-      lastVideoAddedAt: json['lastVideoAddedAt'] as int?,
-      cachedAt: json['cachedAt'] as int,
+          _optionalInt(json['originalVideoCount']) ?? videoCount,
+      privacyStatus: _optionalString(json['privacyStatus']) ?? 'private',
+      publishedAt: _optionalString(json['publishedAt']),
+      lastVideoAddedAt: _optionalEpochMs(json['lastVideoAddedAt']),
+      cachedAt: _intValue(json['cachedAt']),
       isStale: json['isStale'] as bool? ?? false,
-      color: json['color'] as String?,
+      color: _optionalString(json['color']),
     );
   }
 
@@ -150,4 +159,29 @@ class YouTubePlaylist {
 
   @override
   String toString() => 'YouTubePlaylist(id: $id, title: $title)';
+}
+
+String? _optionalString(Object? value) {
+  if (value == null) return null;
+  final string = value.toString();
+  return string.isEmpty ? null : string;
+}
+
+int _intValue(Object? value) => _optionalInt(value) ?? 0;
+
+int? _optionalInt(Object? value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
+int? _optionalEpochMs(Object? value) {
+  final integer = _optionalInt(value);
+  if (integer != null) return integer;
+
+  final string = _optionalString(value);
+  if (string == null) return null;
+
+  return DateTime.tryParse(string)?.millisecondsSinceEpoch;
 }

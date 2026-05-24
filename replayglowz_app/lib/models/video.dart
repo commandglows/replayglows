@@ -63,21 +63,32 @@ class YouTubeVideo {
   });
 
   factory YouTubeVideo.fromJson(Map<String, dynamic> json) {
+    final youtubeVideoId =
+        _optionalString(json['youtubeVideoId']) ??
+        _optionalString(json['id']) ??
+        '';
+
     return YouTubeVideo(
-      id: json['_id'] as String,
-      youtubeVideoId: json['youtubeVideoId'] as String,
-      playlistId: json['youtubePlaylistId'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String?,
-      thumbnailUrl: json['thumbnailUrl'] as String?,
-      channelTitle: json['channelTitle'] as String,
-      channelThumbnailUrl: json['channelThumbnailUrl'] as String?,
-      youtubeChannelId: json['youtubeChannelId'] as String?,
-      duration: json['duration'] as String?,
-      publishedAt: json['publishedAt'] as String?,
-      cachedAt: json['cachedAt'] as int,
-      playlistColor: json['playlistColor'] as String?,
-      playlistTitle: json['playlistTitle'] as String?,
+      id:
+          _optionalString(json['_id']) ??
+          _optionalString(json['id']) ??
+          youtubeVideoId,
+      youtubeVideoId: youtubeVideoId,
+      playlistId:
+          _optionalString(json['youtubePlaylistId']) ??
+          _optionalString(json['playlistId']) ??
+          '',
+      title: _optionalString(json['title']) ?? 'Untitled video',
+      description: _optionalString(json['description']),
+      thumbnailUrl: _optionalString(json['thumbnailUrl']),
+      channelTitle: _optionalString(json['channelTitle']) ?? '',
+      channelThumbnailUrl: _optionalString(json['channelThumbnailUrl']),
+      youtubeChannelId: _optionalString(json['youtubeChannelId']),
+      duration: _optionalString(json['duration']),
+      publishedAt: _optionalString(json['publishedAt']),
+      cachedAt: _intValue(json['cachedAt']),
+      playlistColor: _optionalString(json['playlistColor']),
+      playlistTitle: _optionalString(json['playlistTitle']),
     );
   }
 
@@ -147,4 +158,17 @@ class YouTubeVideo {
 
   @override
   String toString() => 'YouTubeVideo(id: $id, title: $title)';
+}
+
+String? _optionalString(Object? value) {
+  if (value == null) return null;
+  final string = value.toString();
+  return string.isEmpty ? null : string;
+}
+
+int _intValue(Object? value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? 0;
+  return 0;
 }

@@ -33,9 +33,18 @@ List<Map<String, dynamic>> _decodeList(dynamic raw) {
   List<dynamic> list;
   if (raw is String) {
     if (raw == 'null' || raw.isEmpty) return [];
-    list = jsonDecode(raw) as List<dynamic>;
+    final decoded = jsonDecode(raw);
+    if (decoded is List) {
+      list = decoded;
+    } else if (decoded is Map<String, dynamic> && decoded['page'] is List) {
+      list = decoded['page'] as List<dynamic>;
+    } else {
+      return [];
+    }
   } else if (raw is List) {
     list = raw;
+  } else if (raw is Map<String, dynamic> && raw['page'] is List) {
+    list = raw['page'] as List<dynamic>;
   } else {
     return [];
   }

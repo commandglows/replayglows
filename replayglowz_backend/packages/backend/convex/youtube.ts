@@ -86,7 +86,9 @@ export const getYoutubePlaylists = query({
         const videoCount = cachedCount !== undefined ? cachedCount : p.videoCount;
 
         return {
+          _id: p._id,
           id: p.youtubePlaylistId,
+          youtubePlaylistId: p.youtubePlaylistId,
           title: p.title,
           description: p.description,
           thumbnailUrl: p.customThumbnailUrl || p.thumbnailUrl,
@@ -148,7 +150,10 @@ export const getPlaylistVideos = query({
       .filter((v) => args.includeHidden || !hiddenIds.has(v.youtubeVideoId))
       .sort((a, b) => a.position - b.position)
       .map((v) => ({
+        _id: v._id,
         id: v.youtubeVideoId,
+        youtubeVideoId: v.youtubeVideoId,
+        youtubePlaylistId: v.youtubePlaylistId,
         playlistItemId: v.playlistItemId,
         title: v.title,
         description: v.description,
@@ -185,7 +190,9 @@ export const getPlaylistById = query({
     if (!playlist) return null;
 
     return {
+      _id: playlist._id,
       id: playlist.youtubePlaylistId,
+      youtubePlaylistId: playlist.youtubePlaylistId,
       title: playlist.title,
       description: playlist.description,
       thumbnailUrl: playlist.customThumbnailUrl || playlist.thumbnailUrl,
@@ -388,7 +395,10 @@ export const getAllVideos = query({
     const finalVideos = filtered.map((v) => {
       const playlist = playlistMap.get(v.youtubePlaylistId);
       return {
+        _id: v._id,
         id: v.youtubeVideoId,
+        youtubeVideoId: v.youtubeVideoId,
+        youtubePlaylistId: v.youtubePlaylistId,
         playlistId: v.youtubePlaylistId,
         title: v.title,
         description: v.description,
