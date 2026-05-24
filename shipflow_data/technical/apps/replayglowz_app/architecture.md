@@ -48,7 +48,7 @@ external_dependencies:
   - "Google YouTube OAuth"
 invariants:
   - "The product Convex backend lives in the ReplayGlowz monorepo under replayglowz_backend/packages/backend."
-  - "Authenticated data access depends on Clerk sessions minting Convex JWTs with template convex."
+  - "Authenticated data access depends on Clerk session tokens carrying the Convex audience."
   - "Writes continue to route through provider and mutation layers rather than ad hoc screen logic."
   - "Backend function names are a deployment contract between replayglowz_app and replayglowz_backend."
 depends_on:
@@ -139,7 +139,7 @@ Core decisions:
 - Clerk state is service-owned, not widget-owned.
 - Router decisions depend on local auth state rather than raw SDK objects.
 - Web startup includes bridge/persistence work because Clerk web session recovery is project-managed in this stack.
-- Convex auth depends on the Clerk JWT template named `convex`.
+- Convex auth depends on the Clerk Convex integration adding the required audience to session tokens.
 
 Flow:
 
@@ -149,11 +149,11 @@ Flow:
 4. `ClerkService` restores persisted web sessions where possible.
 5. State changes are mirrored into `AuthNotifier`.
 6. `routerProvider` redirects unauthenticated protected routes to `/sign-in`, preserving `tf_redirect`.
-7. `ClerkService.getConvexToken()` requests a session token using template `convex` and returns `null` on unavailable/error cases.
+7. `ClerkService.getConvexToken()` requests the Clerk session token and returns `null` on unavailable/error cases.
 
 Critical coupling:
 
-- Clerk JWT template name: `convex`
+- Clerk Convex integration session audience: `convex`
 - Convex backend auth provider application ID: `convex`
 - Convex deployment must trust the Clerk issuer domain.
 

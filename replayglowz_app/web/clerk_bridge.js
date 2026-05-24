@@ -213,13 +213,12 @@
       }
     },
 
-    async getConvexToken(template) {
-      const name = typeof template === "string" && template ? template : "convex";
-      return getToken({ template: name, skipCache: false });
+    async getConvexToken(skipCache) {
+      return getToken({ skipCache: skipCache === true });
     },
 
-    async getSessionToken() {
-      return getToken({ skipCache: false });
+    async getSessionToken(skipCache) {
+      return getToken({ skipCache: skipCache === true });
     },
   };
 })();

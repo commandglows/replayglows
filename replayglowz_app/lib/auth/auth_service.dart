@@ -143,12 +143,12 @@ class AuthService {
 
   Future<String?> getConvexToken({bool forceRefresh = false}) async {
     await ready;
-    return _bridge.getConvexToken(template: 'convex', skipCache: !forceRefresh);
+    return _bridge.getConvexToken(skipCache: forceRefresh);
   }
 
   Future<String?> getSessionToken({bool forceRefresh = false}) async {
     await ready;
-    return _bridge.getSessionToken(skipCache: !forceRefresh);
+    return _bridge.getSessionToken(skipCache: forceRefresh);
   }
 
   Future<bool> waitForConvexTokenReady() async {

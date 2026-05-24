@@ -54,7 +54,7 @@ abstract class ClerkJsBridge {
 
   Future<void> signOut({String? redirectTo});
 
-  Future<String?> getConvexToken({String template, bool skipCache});
+  Future<String?> getConvexToken({bool skipCache});
 
   Future<String?> getSessionToken({bool skipCache});
 }

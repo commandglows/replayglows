@@ -121,7 +121,7 @@ clerkServiceProvider -> ClerkService
 │   ├── ClerkAuthState.create()
 │   ├── _restoreWebSessionOnStartup()
 │   └── _syncAuthNotifier()
-├── getConvexToken() -> sessionToken(templateName: 'convex')
+├── getConvexToken() -> Clerk session token with Convex audience
 ├── waitForConvexTokenReady()
 ├── signOut()
 └── convexAuthReadyProvider
@@ -254,7 +254,7 @@ GET /api/auth/youtube/callback
 ├── validate method, code, state, and cookies
 ├── require GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, CLERK_SECRET_KEY, CONVEX_URL
 ├── exchangeCodeForTokens()
-├── mintConvexJwt(sessionId, CLERK_SECRET_KEY) using Clerk template convex
+├── reuse Clerk session token configured by the Clerk Convex integration
 ├── ensureConvexUser() -> users:ensureUser
 ├── saveYoutubeTokens() -> youtube:saveYoutubeTokens
 ├── clear OAuth/session cookies

@@ -44,7 +44,7 @@ ReplayGlowz App is a Flutter web client using suite Clerk identity and a ReplayG
 1. Identity is not product access.
 2. Product access is deny-by-default and server-verified.
 3. Canonical product id is `replayglowz`; `tubeflow` is legacy alias only.
-4. Convex token for product backend comes from Clerk session (`template: convex`).
+4. Convex token for product backend comes from the Clerk session token configured by the Clerk Convex integration.
 5. OAuth handlers must fail closed when suite verification is unavailable.
 
 ## Auth + OAuth model

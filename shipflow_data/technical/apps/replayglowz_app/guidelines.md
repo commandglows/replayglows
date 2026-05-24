@@ -96,7 +96,7 @@ next_step: "Update when auth ownership, provider boundaries, env names, or deplo
 - If Flutter starts calling a new Convex function, update and deploy the monorepo backend change first.
 - Use `dart run tool/check_shared_backend_contract.dart` for critical function-name drift checks.
 - Set `REPLAYGLOWZ_BACKEND_ROOT` only when validating an alternate backend checkout.
-- Keep Clerk/Convex auth contract details aligned: Clerk JWT template `convex`, backend provider `applicationID: "convex"`, and trusted Clerk issuer domain.
+- Keep Clerk/Convex auth contract details aligned: Clerk Convex integration session claims, backend provider `applicationID: "convex"`, and trusted Clerk issuer domain.
 
 ## Deployment conventions
 

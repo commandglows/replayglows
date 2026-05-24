@@ -108,7 +108,7 @@ The repo also contains Vercel Node handlers for YouTube OAuth under `api/auth/`.
 - `ClerkService` owns the long-lived `ClerkAuthState`.
 - `AuthNotifier` exposes app-local states consumed by router/UI: loading, authenticated, unauthenticated.
 - On web, Clerk startup includes bridge initialization, OAuth callback handling, and persisted session restoration.
-- Convex tokens are minted from Clerk session tokens using template name `convex`.
+- Convex auth uses the Clerk session token configured by the Clerk Convex integration.
 - Authenticated bootstrap waits for a mintable Convex token before relying on auth-required backend work.
 
 ## Data access model

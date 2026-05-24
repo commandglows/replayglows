@@ -19,9 +19,9 @@ extension type _ReplayGlowzClerkBridge(JSObject _) implements JSObject {
 
   external JSPromise<JSAny?> signOut(JSString redirectTo);
 
-  external JSPromise<JSString> getConvexToken(JSString template);
+  external JSPromise<JSString> getConvexToken(JSBoolean skipCache);
 
-  external JSPromise<JSString> getSessionToken();
+  external JSPromise<JSString> getSessionToken(JSBoolean skipCache);
 }
 
 class _WebClerkJsBridge implements ClerkJsBridge {
@@ -68,18 +68,15 @@ class _WebClerkJsBridge implements ClerkJsBridge {
   }
 
   @override
-  Future<String?> getConvexToken({
-    String template = 'convex',
-    bool skipCache = false,
-  }) async {
-    final token = (await _bridge.getConvexToken(template.toJS).toDart).toDart;
+  Future<String?> getConvexToken({bool skipCache = false}) async {
+    final token = (await _bridge.getConvexToken(skipCache.toJS).toDart).toDart;
     if (token.isEmpty) return null;
     return token;
   }
 
   @override
   Future<String?> getSessionToken({bool skipCache = false}) async {
-    final token = (await _bridge.getSessionToken().toDart).toDart;
+    final token = (await _bridge.getSessionToken(skipCache.toJS).toDart).toDart;
     if (token.isEmpty) return null;
     return token;
   }

@@ -59,7 +59,7 @@ Operational guide for agents working in `replayglowz-app`.
 
 1. `main()` initializes logging/diagnostics and Convex transport.
 2. `AuthService` loads ClerkJS via `web/clerk_bridge.js`.
-3. Clerk session token mints Convex token (`template: convex`) for product backend calls.
+3. Clerk session token carries the Convex audience from the Clerk Convex integration for product backend calls.
 4. Protected routes require authentication and product-access status.
 5. YouTube OAuth start/callback verifies entitlement server-side before token persistence.
 

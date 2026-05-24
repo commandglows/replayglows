@@ -26,10 +26,7 @@ class _UnsupportedClerkJsBridge implements ClerkJsBridge {
   Future<void> signOut({String? redirectTo}) async {}
 
   @override
-  Future<String?> getConvexToken({
-    String template = 'convex',
-    bool skipCache = false,
-  }) async => null;
+  Future<String?> getConvexToken({bool skipCache = false}) async => null;
 
   @override
   Future<String?> getSessionToken({bool skipCache = false}) async => null;
