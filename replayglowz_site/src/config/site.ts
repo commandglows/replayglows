@@ -26,6 +26,11 @@ export function appUrl(path = '/'): string {
   return new URL(path, `${APP_URL}/`).toString()
 }
 
+export function appSignInRedirectUrl(redirectPath = '/videos'): string {
+  const target = redirectPath.startsWith('/') ? redirectPath : `/${redirectPath}`
+  return new URL(`/sign-in?tf_redirect=${target}`, `${APP_URL}/`).toString()
+}
+
 export function contactEmail(localPart: string): string {
   return `${localPart}@${EMAIL_DOMAIN}`
 }

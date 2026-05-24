@@ -6,6 +6,7 @@ import 'package:replayglowz_app/app/router.dart';
 import 'package:replayglowz_app/auth/auth_service.dart';
 import 'package:replayglowz_app/auth/auth_state.dart';
 import 'package:replayglowz_app/providers/providers.dart';
+import 'package:replayglowz_app/widgets/error_feedback.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
 /// Responsive app shell with bottom navigation (mobile) or side rail
@@ -244,7 +245,7 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                         Text(
                           status.accountRecognized
                               ? 'Account recognized, product access inactive'
-                              : 'Suite access check required',
+                              : 'WinFlowz Suite access check required',
                           style: theme.textTheme.titleMedium,
                         ),
                       ],
@@ -252,7 +253,7 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Text(
                       status.accountRecognized
-                          ? 'Your suite identity is valid, but this account has no active ReplayGlowz entitlement yet.'
+                          ? 'Your WinFlowz Suite account is valid, but this account has no active ReplayGlowz entitlement yet.'
                           : 'ReplayGlowz could not confirm your product access for this account.',
                     ),
                     if ((status.reasonCode ?? '').isNotEmpty) ...[
@@ -278,12 +279,19 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                         ),
                         OutlinedButton.icon(
                           onPressed: () async {
-                            await ref
+                            final launched = await ref
                                 .read(authServiceProvider)
-                                .openUserProfile();
+                                .openAccountCenter();
+                            if (!context.mounted || launched) return;
+                            showErrorSnackBar(
+                              context,
+                              error:
+                                  'Could not open the WinFlowz account center.',
+                              prefix: 'WinFlowz account center unavailable',
+                            );
                           },
                           icon: const Icon(Icons.manage_accounts),
-                          label: const Text('Open account center'),
+                          label: const Text('Open WinFlowz account center'),
                         ),
                       ],
                     ),

@@ -152,8 +152,8 @@ Future<void> _configureSentryScope() async {
 // Bootstrap widget
 // ---------------------------------------------------------------------------
 
-/// Eagerly initialises suite auth and wires the Convex auth token before building
-/// the main application widget.
+/// Eagerly initialises WinFlowz Suite auth and wires the Convex auth token
+/// before building the main application widget.
 ///
 /// This is a separate [ConsumerStatefulWidget] so that the auth service is
 /// created (and begins restoring a persisted session) on the very first frame,
@@ -192,7 +192,7 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
         final auth = ref.read(authServiceProvider);
         await auth.ready;
         AppLogger.instance.log(
-          'Suite auth ready (isInitialised=${auth.isInitialised})',
+          'WinFlowz Suite auth ready (isInitialised=${auth.isInitialised})',
           source: 'bootstrap',
         );
         final convex = ref.read(convexServiceProvider);
@@ -204,14 +204,14 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
             convexAuthReady
                 ? 'Convex auth ready for ${auth.currentUser?.id ?? 'signed-in user'}'
                 : 'Convex auth not fully ready yet; guarded providers will use '
-                      'local fallbacks until suite token minting catches up',
+                      'local fallbacks until WinFlowz Suite token minting catches up',
             source: 'bootstrap',
             level: convexAuthReady ? LogLevel.info : LogLevel.warning,
           );
         }
       } else {
         AppLogger.instance.log(
-          'Skipping suite auth/Convex wiring — missing env vars',
+          'Skipping WinFlowz Suite auth/Convex wiring — missing env vars',
           source: 'bootstrap',
           level: LogLevel.warning,
         );

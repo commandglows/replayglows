@@ -207,7 +207,7 @@ module.exports = async function handler(req, res) {
 
   if (!suiteSessionToken) {
     redirectWithError(
-      'ReplayGlowz lost the suite auth handoff before callback. Start YouTube connect again from the app.',
+      'ReplayGlowz lost the WinFlowz Suite auth handoff before callback. Start YouTube connect again from the app.',
     );
     return;
   }

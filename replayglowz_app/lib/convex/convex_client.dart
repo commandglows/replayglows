@@ -66,7 +66,7 @@ class ConvexService {
   /// Handle returned by [setAuthWithRefresh], disposed on [clearAuth]/[dispose].
   dynamic _authHandle;
 
-  /// Token provider wired from suite auth during bootstrap.
+  /// Token provider wired from WinFlowz Suite auth during bootstrap.
   Future<String?> Function()? _tokenProvider;
 
   /// Whether the service has been disposed.

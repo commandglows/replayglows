@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:replayglowz_app/app/build_info.dart';
 import 'package:replayglowz_app/auth/clerk_js_bridge.dart';
@@ -31,10 +32,10 @@ class AuthService {
     try {
       if (!hasClerkConfig) {
         authNotifier.setUnauthenticated(
-          error: 'Suite auth is not configured for this build.',
+          error: 'WinFlowz Suite auth is not configured for this build.',
         );
         AppLogger.instance.log(
-          'Suite auth skipped: missing CLERK_PUBLISHABLE_KEY dart-define',
+          'WinFlowz Suite auth skipped: missing CLERK_PUBLISHABLE_KEY dart-define',
           source: 'AuthService',
           level: LogLevel.warning,
         );
@@ -53,14 +54,16 @@ class AuthService {
       _syncBridgeUser(session.user, isSignedIn: session.isSignedIn);
       _isInitialised = true;
       AppLogger.instance.log(
-        'Suite auth initialised via ClerkJS bridge',
+        'WinFlowz Suite auth initialised via ClerkJS bridge',
         source: 'AuthService',
       );
       _ready.complete();
     } catch (e, st) {
-      authNotifier.setUnauthenticated(error: 'Suite auth unavailable.');
+      authNotifier.setUnauthenticated(
+        error: 'WinFlowz Suite auth unavailable.',
+      );
       AppLogger.instance.log(
-        'Suite auth initialisation failed',
+        'WinFlowz Suite auth initialisation failed',
         source: 'AuthService',
         level: LogLevel.error,
         error: e,
@@ -92,7 +95,7 @@ class AuthService {
   Future<void> signIn({String? redirectTo}) async {
     await ready;
     if (!hasClerkConfig) {
-      throw StateError('Suite auth is not configured for this build.');
+      throw StateError('WinFlowz Suite auth is not configured for this build.');
     }
 
     authNotifier.setLoading();
@@ -100,9 +103,9 @@ class AuthService {
       await _bridge.openSignIn(redirectTo: redirectTo);
       await refreshSession();
     } catch (e, st) {
-      authNotifier.setUnauthenticated(error: 'Suite sign-in failed.');
+      authNotifier.setUnauthenticated(error: 'WinFlowz Suite sign-in failed.');
       AppLogger.instance.log(
-        'Suite sign-in failed',
+        'WinFlowz Suite sign-in failed',
         source: 'AuthService',
         level: LogLevel.error,
         error: e,
@@ -161,6 +164,14 @@ class AuthService {
   Future<void> openUserProfile() async {
     await ready;
     await _bridge.openUserProfile();
+  }
+
+  Future<bool> openAccountCenter() async {
+    final url = Uri.tryParse(replayGlowzAccountCenterUrl);
+    if (url == null || !url.hasScheme || url.host.isEmpty) {
+      return false;
+    }
+    return launchUrl(url, webOnlyWindowName: '_self');
   }
 
   Future<void> signOut() async {

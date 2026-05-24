@@ -209,7 +209,7 @@ Future<void> _launchYoutubeConnect(
         showErrorSnackBar(
           context,
           error: accessStatus.accountRecognized
-              ? 'Your suite account is recognized, but ReplayGlowz access is inactive.'
+              ? 'Your WinFlowz Suite account is recognized, but ReplayGlowz access is inactive.'
               : 'ReplayGlowz could not verify product access for this account.',
           prefix: 'YouTube connect unavailable',
         );
@@ -223,7 +223,7 @@ Future<void> _launchYoutubeConnect(
       if (!context.mounted) return;
       final routeAfterSignIn = _currentRouterRoute(preferredRoute: returnTo);
       AppLogger.instance.log(
-        'Cannot start YouTube OAuth because suite auth has no active session token; routing to sign-in',
+        'Cannot start YouTube OAuth because WinFlowz Suite auth has no active session token; routing to sign-in',
         source: 'YoutubeConnect',
         level: LogLevel.warning,
       );

@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro'
 import Navbar from '../../components/Navbar.astro'
 import Footer from '../../components/Footer.astro'
 import { getCollection, render } from 'astro:content'
-import { appUrl, siteUrl } from '../../config/site'
+import { appSignInRedirectUrl, siteUrl } from '../../config/site'
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog')
@@ -87,7 +87,7 @@ const jsonLd = [
       <div class="mt-16 p-8 rounded-2xl bg-card border border-border text-center">
         <h3 class="text-xl font-bold text-foreground mb-3">Ready to transform how you learn from video?</h3>
         <p class="text-muted-foreground mb-6">Start taking smarter notes with ReplayGlowz — free forever.</p>
-        <a href={appUrl('/videos')} class="shimmer-btn inline-flex items-center gap-2 bg-white text-zinc-950 hover:bg-zinc-200 rounded-full px-6 py-3 text-sm font-medium transition-colors">
+        <a href={appSignInRedirectUrl('/videos')} class="shimmer-btn inline-flex items-center gap-2 bg-white text-zinc-950 hover:bg-zinc-200 rounded-full px-6 py-3 text-sm font-medium transition-colors">
           Get Started Free
           <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
