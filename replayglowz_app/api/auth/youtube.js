@@ -51,7 +51,7 @@ module.exports = async function handler(req, res) {
   }
 
   if (!sessionToken) {
-    sendJsonError(res, 401, 'Missing suite session token.');
+    sendJsonError(res, 401, 'Missing ReplayGlowz session token.');
     return;
   }
 
@@ -69,7 +69,7 @@ module.exports = async function handler(req, res) {
       verification.status,
       verification.status === 403
         ? 'Product access inactive for this account.'
-        : 'Suite session verification failed.',
+        : 'ReplayGlowz session verification failed.',
     );
     return;
   }

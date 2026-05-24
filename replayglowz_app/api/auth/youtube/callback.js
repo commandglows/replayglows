@@ -92,7 +92,7 @@ async function ensureConvexUser(convexUrl, convexJwt) {
     payload?.primaryEmailAddress?.emailAddress;
 
   if (!emailAddress) {
-    throw new Error('Suite token returned no email address.');
+    throw new Error('ReplayGlowz auth token returned no email address.');
   }
 
   await runConvexMutation(convexUrl, convexJwt, 'users:ensureUser', {
@@ -207,7 +207,7 @@ module.exports = async function handler(req, res) {
 
   if (!suiteSessionToken) {
     redirectWithError(
-      'ReplayGlowz lost the WinFlowz Suite auth handoff before callback. Start YouTube connect again from the app.',
+      'ReplayGlowz lost the auth handoff before callback. Start YouTube connect again from the app.',
     );
     return;
   }
@@ -229,7 +229,7 @@ module.exports = async function handler(req, res) {
     redirectWithError(
       verification.status === 403
         ? 'Product access inactive for this account.'
-        : 'Suite session verification failed.',
+        : 'ReplayGlowz session verification failed.',
     );
     return;
   }

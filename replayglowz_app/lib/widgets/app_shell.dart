@@ -245,7 +245,7 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                         Text(
                           status.accountRecognized
                               ? 'Account recognized, product access inactive'
-                              : 'WinFlowz Suite access check required',
+                              : 'ReplayGlowz access check required',
                           style: theme.textTheme.titleMedium,
                         ),
                       ],
@@ -253,7 +253,7 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                     const SizedBox(height: 12),
                     Text(
                       status.accountRecognized
-                          ? 'Your WinFlowz Suite account is valid, but this account has no active ReplayGlowz entitlement yet.'
+                          ? 'Your account is valid, but it does not have active ReplayGlowz access yet.'
                           : 'ReplayGlowz could not confirm your product access for this account.',
                     ),
                     if ((status.reasonCode ?? '').isNotEmpty) ...[
@@ -285,13 +285,12 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                             if (!context.mounted || launched) return;
                             showErrorSnackBar(
                               context,
-                              error:
-                                  'Could not open the WinFlowz account center.',
-                              prefix: 'WinFlowz account center unavailable',
+                              error: 'Could not open the account center.',
+                              prefix: 'Account center unavailable',
                             );
                           },
                           icon: const Icon(Icons.manage_accounts),
-                          label: const Text('Open WinFlowz account center'),
+                          label: const Text('Open account center'),
                         ),
                       ],
                     ),

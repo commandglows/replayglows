@@ -353,14 +353,14 @@ test(
       assert.equal(res.statusCode, 302);
       const location = res.getHeader('location');
       assert.ok(location.includes('youtube_error='));
-      assert.ok(location.includes('WinFlowz+Suite'));
+      assert.ok(location.includes('auth+handoff'));
     },
   );
   },
 );
 
 test(
-  'youtube callback success persists tokens with WinFlowz Suite auth',
+  'youtube callback success persists tokens with auth handoff',
   { concurrency: false },
   async () => {
   await withEnv(

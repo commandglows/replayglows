@@ -32,10 +32,10 @@ class AuthService {
     try {
       if (!hasClerkConfig) {
         authNotifier.setUnauthenticated(
-          error: 'WinFlowz Suite auth is not configured for this build.',
+          error: 'ReplayGlowz sign-in is not configured for this build.',
         );
         AppLogger.instance.log(
-          'WinFlowz Suite auth skipped: missing CLERK_PUBLISHABLE_KEY dart-define',
+          'Clerk auth skipped: missing CLERK_PUBLISHABLE_KEY dart-define',
           source: 'AuthService',
           level: LogLevel.warning,
         );
@@ -54,16 +54,16 @@ class AuthService {
       _syncBridgeUser(session.user, isSignedIn: session.isSignedIn);
       _isInitialised = true;
       AppLogger.instance.log(
-        'WinFlowz Suite auth initialised via ClerkJS bridge',
+        'Clerk auth initialised via ClerkJS bridge',
         source: 'AuthService',
       );
       _ready.complete();
     } catch (e, st) {
       authNotifier.setUnauthenticated(
-        error: 'WinFlowz Suite auth unavailable.',
+        error: 'ReplayGlowz sign-in is unavailable.',
       );
       AppLogger.instance.log(
-        'WinFlowz Suite auth initialisation failed',
+        'Clerk auth initialisation failed',
         source: 'AuthService',
         level: LogLevel.error,
         error: e,
@@ -95,7 +95,7 @@ class AuthService {
   Future<void> signIn({String? redirectTo}) async {
     await ready;
     if (!hasClerkConfig) {
-      throw StateError('WinFlowz Suite auth is not configured for this build.');
+      throw StateError('ReplayGlowz sign-in is not configured for this build.');
     }
 
     authNotifier.setLoading();
@@ -103,9 +103,9 @@ class AuthService {
       await _bridge.openSignIn(redirectTo: redirectTo);
       await refreshSession();
     } catch (e, st) {
-      authNotifier.setUnauthenticated(error: 'WinFlowz Suite sign-in failed.');
+      authNotifier.setUnauthenticated(error: 'ReplayGlowz sign-in failed.');
       AppLogger.instance.log(
-        'WinFlowz Suite sign-in failed',
+        'ReplayGlowz sign-in failed',
         source: 'AuthService',
         level: LogLevel.error,
         error: e,
@@ -128,9 +128,11 @@ class AuthService {
       _syncBridgeUser(bridgeUser, isSignedIn: true);
     } catch (e, st) {
       _currentUser = null;
-      authNotifier.setUnauthenticated(error: 'Suite session refresh failed.');
+      authNotifier.setUnauthenticated(
+        error: 'ReplayGlowz session refresh failed.',
+      );
       AppLogger.instance.log(
-        'Suite session refresh failed',
+        'ReplayGlowz session refresh failed',
         source: 'AuthService',
         level: LogLevel.warning,
         error: e,
@@ -152,7 +154,19 @@ class AuthService {
   Future<bool> waitForConvexTokenReady() async {
     await ready;
     for (var attempt = 0; attempt < 8; attempt++) {
-      final token = await getConvexToken(forceRefresh: attempt == 0);
+      final String? token;
+      try {
+        token = await getConvexToken(forceRefresh: attempt == 0);
+      } catch (e, st) {
+        AppLogger.instance.log(
+          'Convex auth token is unavailable',
+          source: 'AuthService',
+          level: LogLevel.warning,
+          error: e,
+          stackTrace: st,
+        );
+        return false;
+      }
       if (token != null && token.isNotEmpty) {
         return true;
       }

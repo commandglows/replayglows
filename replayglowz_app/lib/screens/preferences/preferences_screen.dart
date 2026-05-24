@@ -608,7 +608,7 @@ class _DiagnosticsCard extends ConsumerWidget {
       'REPLAYGLOWZ_APP_URL: ${replayGlowzAppUrl.isNotEmpty ? replayGlowzAppUrl : '(missing)'}',
       'REPLAYGLOWZ_APP_URL host match: ${hostMatchLabel(replayGlowzAppUrl)}',
       'SENTRY: ${sentryStatusLabel()}',
-      'WinFlowz Suite auth initialised: ${auth.isInitialised ? 'yes' : 'no'}',
+      'ReplayGlowz sign-in initialised: ${auth.isInitialised ? 'yes' : 'no'}',
       'Auth state: $authLabel',
       'Current user: ${auth.currentUser?.id ?? 'none'}',
       '',
@@ -678,7 +678,7 @@ class _DiagnosticsCard extends ConsumerWidget {
             hostMatchLabel(replayGlowzAppUrl) == 'not-web',
       ),
       (
-        key: 'WinFlowz Suite auth initialised',
+        key: 'ReplayGlowz sign-in initialised',
         value: auth.isInitialised ? 'yes' : 'no',
         ok: auth.isInitialised,
       ),

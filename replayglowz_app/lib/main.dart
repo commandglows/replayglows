@@ -152,8 +152,8 @@ Future<void> _configureSentryScope() async {
 // Bootstrap widget
 // ---------------------------------------------------------------------------
 
-/// Eagerly initialises WinFlowz Suite auth and wires the Convex auth token
-/// before building the main application widget.
+/// Eagerly initialises Clerk auth and wires the Convex auth token before
+/// building the main application widget.
 ///
 /// This is a separate [ConsumerStatefulWidget] so that the auth service is
 /// created (and begins restoring a persisted session) on the very first frame,
@@ -171,7 +171,7 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
 
   bool get _hasConvexConfig => convexUrl.isNotEmpty;
 
-  bool get _hasSuiteAuthConfig => hasClerkConfig;
+  bool get _hasAuthConfig => hasClerkConfig;
 
   @override
   void initState() {
@@ -184,15 +184,15 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
 
   Future<void> _bootstrap() async {
     AppLogger.instance.log(
-      'bootstrap() start — hasConvex=$_hasConvexConfig hasSuiteAuth=$_hasSuiteAuthConfig',
+      'bootstrap() start — hasConvex=$_hasConvexConfig hasAuth=$_hasAuthConfig',
       source: 'bootstrap',
     );
     try {
-      if (_hasConvexConfig && _hasSuiteAuthConfig) {
+      if (_hasConvexConfig && _hasAuthConfig) {
         final auth = ref.read(authServiceProvider);
         await auth.ready;
         AppLogger.instance.log(
-          'WinFlowz Suite auth ready (isInitialised=${auth.isInitialised})',
+          'Clerk auth ready (isInitialised=${auth.isInitialised})',
           source: 'bootstrap',
         );
         final convex = ref.read(convexServiceProvider);
@@ -204,14 +204,14 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
             convexAuthReady
                 ? 'Convex auth ready for ${auth.currentUser?.id ?? 'signed-in user'}'
                 : 'Convex auth not fully ready yet; guarded providers will use '
-                      'local fallbacks until WinFlowz Suite token minting catches up',
+                      'local fallbacks until auth token minting catches up',
             source: 'bootstrap',
             level: convexAuthReady ? LogLevel.info : LogLevel.warning,
           );
         }
       } else {
         AppLogger.instance.log(
-          'Skipping WinFlowz Suite auth/Convex wiring — missing env vars',
+          'Skipping auth/Convex wiring — missing env vars',
           source: 'bootstrap',
           level: LogLevel.warning,
         );
@@ -243,7 +243,7 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
         themeMode: ThemeMode.system,
         home: _ConfigFallbackScreen(
           hasConvexConfig: _hasConvexConfig,
-          hasSuiteAuthConfig: _hasSuiteAuthConfig,
+          hasAuthConfig: _hasAuthConfig,
           bootstrapError: _bootstrapError,
         ),
       );
@@ -256,12 +256,12 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
 class _ConfigFallbackScreen extends StatelessWidget {
   const _ConfigFallbackScreen({
     required this.hasConvexConfig,
-    required this.hasSuiteAuthConfig,
+    required this.hasAuthConfig,
     this.bootstrapError,
   });
 
   final bool hasConvexConfig;
-  final bool hasSuiteAuthConfig;
+  final bool hasAuthConfig;
   final String? bootstrapError;
 
   Future<void> _copyDiagnostics(BuildContext context) async {
@@ -300,7 +300,7 @@ class _ConfigFallbackScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final missing = <String>[
       if (!hasConvexConfig) 'CONVEX_URL',
-      if (!hasSuiteAuthConfig) 'CLERK_PUBLISHABLE_KEY',
+      if (!hasAuthConfig) 'CLERK_PUBLISHABLE_KEY',
     ];
 
     return Scaffold(

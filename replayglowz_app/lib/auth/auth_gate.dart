@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:replayglowz_app/app/build_info.dart';
 import 'package:replayglowz_app/app/router.dart';
@@ -20,8 +19,6 @@ class AuthSignInPage extends ConsumerStatefulWidget {
 
 class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
   bool _submitting = false;
-
-  static final Uri _winFlowzUrl = Uri.parse('https://winflows.com');
 
   String _redirectTarget() {
     final target = GoRouterState.of(context).uri.queryParameters['tf_redirect'];
@@ -42,26 +39,6 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
         setState(() => _submitting = false);
       }
     }
-  }
-
-  Future<void> _openWinFlowzSite() async {
-    final launched = await launchUrl(_winFlowzUrl, webOnlyWindowName: '_blank');
-    if (!mounted || launched) return;
-    showErrorSnackBar(
-      context,
-      error: 'Could not open ${_winFlowzUrl.toString()}.',
-      prefix: 'WinFlowz link unavailable',
-    );
-  }
-
-  Future<void> _openAccountCenter(AuthService service) async {
-    final launched = await service.openAccountCenter();
-    if (!mounted || launched) return;
-    showErrorSnackBar(
-      context,
-      error: 'Could not open $replayGlowzAccountCenterUrl.',
-      prefix: 'WinFlowz account center unavailable',
-    );
   }
 
   @override
@@ -96,16 +73,9 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
                 Text('ReplayGlowz', style: theme.textTheme.headlineMedium),
                 const SizedBox(height: 12),
                 Text(
-                  'Sign in with your WinFlowz Suite account to sync videos, '
-                  'playlists, notes, and YouTube connection state through '
-                  'Convex. WinFlowz is the company behind ReplayGlowz.',
+                  'Create or sign in to your ReplayGlowz account to sync '
+                  'videos, playlists, notes, and YouTube connection state.',
                   style: theme.textTheme.bodyLarge,
-                ),
-                const SizedBox(height: 8),
-                TextButton.icon(
-                  onPressed: _openWinFlowzSite,
-                  icon: const Icon(Icons.open_in_new),
-                  label: const Text('What is WinFlowz?'),
                 ),
                 if (authState case AuthUnauthenticated(
                   :final error,
@@ -128,15 +98,9 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
                       : const Icon(Icons.login),
                   label: Text(
                     hasClerkConfig
-                        ? 'Continue with WinFlowz Suite account'
-                        : 'WinFlowz Suite auth not configured',
+                        ? 'Continue to ReplayGlowz'
+                        : 'ReplayGlowz sign-in not configured',
                   ),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: () => _openAccountCenter(service),
-                  icon: const Icon(Icons.manage_accounts),
-                  label: const Text('Open WinFlowz account center'),
                 ),
               ],
             ),
