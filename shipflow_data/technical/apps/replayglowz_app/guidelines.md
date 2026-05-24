@@ -87,7 +87,7 @@ next_step: "Update when auth ownership, provider boundaries, env names, or deplo
 - Use reserved placeholders such as `example.com`, `pk_test_your_clerk_publishable_key`, and `sk_test_your_clerk_secret_key`.
 - Distinguish Flutter build-time config from Vercel serverless secrets and Convex backend env.
 - Keep `CONVEX_URL`, `CLERK_PUBLISHABLE_KEY`, and `REPLAYGLOWZ_APP_URL` documented as build-time values.
-- Keep `CLERK_SECRET_KEY`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` documented as serverless OAuth values.
+- Keep `CLERK_SECRET_KEY`, `YOUTUBE_OAUTH_CLIENT_ID`, and `YOUTUBE_OAUTH_CLIENT_SECRET` documented as serverless OAuth values.
 - Keep backend-only variables, including `FEEDBACK_ADMIN_EMAILS`, out of Flutter build config.
 
 ## Backend contract rules

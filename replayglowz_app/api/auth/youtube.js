@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
   const returnTo = sanitizeReturnTo(requestUrl.searchParams.get('return_to'));
   const sessionToken = getBearerTokenFromAuthHeader(req.headers.authorization);
   const requestId = req.headers['x-request-id'];
-  const googleClientId = getEnv('GOOGLE_CLIENT_ID');
+  const googleClientId = getEnv('YOUTUBE_OAUTH_CLIENT_ID');
   const convexUrl = getEnv('CONVEX_URL');
   const { productId, legacyProductIds, verifySecret, verifyUrl } =
     resolveEntitlementInputs();

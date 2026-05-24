@@ -201,7 +201,7 @@ test(
   async () => {
   await withEnv(
     {
-      GOOGLE_CLIENT_ID: 'client-id',
+      YOUTUBE_OAUTH_CLIENT_ID: 'client-id',
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
       REPLAYGLOWZ_PRODUCT_ID: 'replayglowz',
@@ -247,7 +247,7 @@ test(
   async () => {
   await withEnv(
     {
-      GOOGLE_CLIENT_ID: 'client-id',
+      YOUTUBE_OAUTH_CLIENT_ID: 'client-id',
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
       REPLAYGLOWZ_PRODUCT_ID: 'replayglowz',
@@ -325,7 +325,7 @@ test(
   async () => {
   await withEnv(
     {
-      GOOGLE_CLIENT_ID: 'client-id',
+      YOUTUBE_OAUTH_CLIENT_ID: 'client-id',
       CONVEX_URL: 'https://product.convex.cloud',
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
@@ -408,8 +408,8 @@ test(
   async () => {
   await withEnv(
     {
-      GOOGLE_CLIENT_ID: 'client-id',
-      GOOGLE_CLIENT_SECRET: 'client-secret',
+      YOUTUBE_OAUTH_CLIENT_ID: 'client-id',
+      YOUTUBE_OAUTH_CLIENT_SECRET: 'client-secret',
       CONVEX_URL: 'https://product.convex.cloud',
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
@@ -448,8 +448,8 @@ test(
   async () => {
   await withEnv(
     {
-      GOOGLE_CLIENT_ID: 'client-id',
-      GOOGLE_CLIENT_SECRET: 'client-secret',
+      YOUTUBE_OAUTH_CLIENT_ID: 'client-id',
+      YOUTUBE_OAUTH_CLIENT_SECRET: 'client-secret',
       CONVEX_URL: 'https://product.convex.cloud',
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',

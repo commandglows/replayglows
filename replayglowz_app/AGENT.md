@@ -88,8 +88,8 @@ Flutter build-time values:
 
 Vercel server/runtime values:
 
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
+- `YOUTUBE_OAUTH_CLIENT_ID`
+- `YOUTUBE_OAUTH_CLIENT_SECRET`
 - `CLERK_SECRET_KEY`
 - `SUITE_ENTITLEMENT_VERIFY_URL` (`https://www.winflowz.com/api/bridge/entitlement`)
 - `SUITE_ENTITLEMENT_VERIFY_SECRET` (sent as `x-suite-entitlement-secret`)

@@ -245,14 +245,14 @@ FeedbackSubmissionService
 GET /api/auth/youtube
 ├── getRequestOrigin(req)
 ├── sanitizeReturnTo(return_to)
-├── require GOOGLE_CLIENT_ID and replayglowz_youtube_clerk_session_id cookie
+├── require YOUTUBE_OAUTH_CLIENT_ID and replayglowz_youtube_clerk_session_id cookie
 ├── create state
 ├── set youtube_oauth_state and youtube_oauth_return_to cookies
 └── redirect to Google OAuth consent
 
 GET /api/auth/youtube/callback
 ├── validate method, code, state, and cookies
-├── require GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, CLERK_SECRET_KEY, CONVEX_URL
+├── require YOUTUBE_OAUTH_CLIENT_ID, YOUTUBE_OAUTH_CLIENT_SECRET, CLERK_SECRET_KEY, CONVEX_URL
 ├── exchangeCodeForTokens()
 ├── reuse Clerk session token configured by the Clerk Convex integration
 ├── ensureConvexUser() -> users:ensureUser

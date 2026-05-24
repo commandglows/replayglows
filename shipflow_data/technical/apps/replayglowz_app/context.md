@@ -150,8 +150,8 @@ Flutter build-time:
 Vercel OAuth/serverless:
 
 - `CLERK_SECRET_KEY`
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
+- `YOUTUBE_OAUTH_CLIENT_ID`
+- `YOUTUBE_OAUTH_CLIENT_SECRET`
 
 Compatibility fallbacks still exist for selected legacy Vercel-style names in `build.sh` and `api/auth/**`.
 

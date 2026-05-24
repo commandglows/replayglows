@@ -136,8 +136,8 @@ module.exports = async function handler(req, res) {
   const { productId, legacyProductIds, verifySecret, verifyUrl } =
     resolveEntitlementInputs();
 
-  const googleClientId = getEnv('GOOGLE_CLIENT_ID');
-  const googleClientSecret = getEnv('GOOGLE_CLIENT_SECRET');
+  const googleClientId = getEnv('YOUTUBE_OAUTH_CLIENT_ID');
+  const googleClientSecret = getEnv('YOUTUBE_OAUTH_CLIENT_SECRET');
   const convexUrl = getEnv('CONVEX_URL');
 
   const cleanupCookies = [
