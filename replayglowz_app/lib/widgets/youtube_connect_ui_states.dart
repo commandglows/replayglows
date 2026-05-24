@@ -254,6 +254,8 @@ class _YoutubeConnectionSettingsCardState
     final title = connected ? 'YouTube connected' : 'Connect your YouTube';
     final description = connected
         ? 'ReplayGlowz can now refresh your playlists and imported videos. Use this card to sync again or disconnect cleanly.'
+        : hasTokens
+        ? 'ReplayGlowz found a partial YouTube authorisation. Connect YouTube again to refresh Google access cleanly.'
         : 'Authorise Google once to import your playlists, watch queue, and future video syncs directly in ReplayGlowz.';
 
     return Padding(
@@ -375,7 +377,7 @@ class _YoutubeConnectionSettingsCardState
                   child: Text(
                     connected
                         ? 'Google authorisation is active for this account.'
-                        : 'ReplayGlowz can see saved YouTube tokens, but the account is not marked connected yet.',
+                        : 'ReplayGlowz found a partial YouTube authorisation. Reconnect YouTube to refresh access.',
                     style: theme.textTheme.bodySmall,
                   ),
                 ),

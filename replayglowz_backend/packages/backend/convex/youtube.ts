@@ -27,9 +27,12 @@ export const getYoutubeConnectionStatus = query({
 
     if (!user) return { connected: false };
 
+    const hasTokens = !!(user.youtubeAccessToken && user.youtubeRefreshToken);
+
     return {
-      connected: user.youtubeConnected ?? false,
-      hasTokens: !!(user.youtubeAccessToken && user.youtubeRefreshToken),
+      connected: (user.youtubeConnected ?? false) && hasTokens,
+      hasTokens,
+      needsReconnect: !hasTokens,
     };
   },
 });

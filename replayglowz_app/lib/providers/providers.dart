@@ -451,12 +451,13 @@ final youtubeConnectionProvider = FutureProvider<Map<String, dynamic>?>((
   if (status == null) return null;
 
   final hasTokens = status['hasTokens'] == true;
-  final connected = status['connected'] == true || hasTokens;
+  final connected = status['connected'] == true && hasTokens;
 
   return <String, dynamic>{
     ...status,
     'hasTokens': hasTokens,
     'connected': connected,
+    'needsReconnect': !connected,
   };
 });
 
