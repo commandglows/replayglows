@@ -79,6 +79,10 @@ class AppLogger extends ChangeNotifier {
           ? 1000
           : (level == LogLevel.warning ? 900 : 800),
     );
+    // Browser consoles are often the only practical signal for production web
+    // boot failures before the in-app diagnostics UI can render.
+    // ignore: avoid_print
+    print(entry.format());
     _sendToSentry(entry, reportException: reportToSentry);
     notifyListeners();
   }
