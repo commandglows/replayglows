@@ -587,12 +587,15 @@ export const getAllVideos = query({
     if (!userId) return { page: [], isDone: true, continueCursor: null };
 
     // Fetch all data sources in parallel instead of sequentially
-    const [allVideos, playlists, channels, hiddenVideos, watchedVideos] = await Promise.all([
+    const [allVideos, playlists, channels, hiddenVideos, hiddenPlaylists, watchedVideos] = await Promise.all([
       ctx.db.query("youtubeVideosCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
       ctx.db.query("youtubePlaylistsCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
       ctx.db.query("youtubeChannelsCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
       !args.includeHidden
         ? ctx.db.query("hiddenItems").withIndex("by_user_type_and_id", (q) => q.eq("userId", userId).eq("itemType", "video")).collect()
+        : Promise.resolve([]),
+      !args.includeHidden
+        ? ctx.db.query("hiddenItems").withIndex("by_user_type_and_id", (q) => q.eq("userId", userId).eq("itemType", "playlist")).collect()
         : Promise.resolve([]),
       !args.includeWatched
         ? ctx.db.query("watchedVideos").withIndex("by_user", (q) => q.eq("userId", userId)).collect()
@@ -603,6 +606,7 @@ export const getAllVideos = query({
     const playlistMap = new Map(playlists.map(p => [p.youtubePlaylistId, p]));
     const channelThumbnails = new Map(channels.map(c => [c.youtubeChannelId, c.thumbnailUrl]));
     const hiddenIds = new Set(hiddenVideos.map(h => h.youtubeId));
+    const hiddenPlaylistIds = new Set(hiddenPlaylists.map(h => h.youtubeId));
     const watchedIds = new Set(watchedVideos.map(w => w.youtubeVideoId));
 
     // Single pass: deduplicate + filter
@@ -611,6 +615,7 @@ export const getAllVideos = query({
       if (seen.has(v.youtubeVideoId)) return false;
       seen.add(v.youtubeVideoId);
       if (!args.includeHidden && hiddenIds.has(v.youtubeVideoId)) return false;
+      if (!args.includeHidden && hiddenPlaylistIds.has(v.youtubePlaylistId)) return false;
       if (!args.includeWatched && watchedIds.has(v.youtubeVideoId)) return false;
       return true;
     });
