@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: "replayglowz-app"
 created: "2026-04-26"
-updated: "2026-05-23"
+updated: "2026-05-24"
 status: "reviewed"
 source_skill: sf-docs
 scope: "file"
@@ -35,6 +35,7 @@ evidence:
   - "lib/auth/clerk_js_bridge.dart"
   - "api/auth/youtube.js"
   - "api/auth/youtube/callback.js"
+  - "lib/providers/mutations.dart"
   - "tool/check_shared_backend_contract.dart"
 next_step: "Run hosted auth verification after ship (`sf-ship -> sf-prod`) because this project uses vercel-preview-push mode."
 ---
@@ -62,6 +63,7 @@ Operational guide for agents working in `replayglowz-app`.
 3. Clerk session token carries the Convex audience from the Clerk Convex integration for product backend calls.
 4. Protected routes require authentication and server product-access status; ReplayGlowz defaults recognized accounts to product-scoped free access unless explicitly revoked.
 5. YouTube OAuth start/callback verifies entitlement server-side before token persistence.
+6. YouTube library refresh is backend-orchestrated through `youtube:startQuotaSafeSync`; the Flutter app must not loop over every playlist with direct `fetchPlaylistItems` calls.
 
 ## Source-of-truth files
 
@@ -69,6 +71,7 @@ Operational guide for agents working in `replayglowz-app`.
 - `lib/auth/clerk_js_bridge.dart`
 - `web/clerk_bridge.js`
 - `lib/providers/providers.dart` (`productAccessStatusProvider`)
+- `lib/providers/mutations.dart` (`syncAllPlaylists`)
 - `api/auth/youtube.js`
 - `api/auth/youtube/callback.js`
 - `tool/check_shared_backend_contract.dart`

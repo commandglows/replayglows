@@ -121,6 +121,7 @@ class AppShell extends ConsumerWidget {
       body: Column(
         children: [
           if (showYoutubeStatusChrome) const YoutubeConnectBanner(),
+          if (showYoutubeStatusChrome) const _YoutubeQuotaSyncStrip(),
           const YoutubeOAuthFeedbackBanner(),
           Expanded(child: routedChild),
         ],
@@ -185,6 +186,7 @@ class AppShell extends ConsumerWidget {
             child: Column(
               children: [
                 if (showYoutubeStatusChrome) const YoutubeConnectBanner(),
+                if (showYoutubeStatusChrome) const _YoutubeQuotaSyncStrip(),
                 const YoutubeOAuthFeedbackBanner(),
                 Expanded(child: routedChild),
               ],
@@ -212,6 +214,91 @@ class _NavDestination {
   final IconData icon;
   final IconData selectedIcon;
   final String path;
+}
+
+class _YoutubeQuotaSyncStrip extends ConsumerWidget {
+  const _YoutubeQuotaSyncStrip();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quotaAsync = ref.watch(quotaUsageProvider);
+    final syncJobAsync = ref.watch(youtubeSyncJobProvider);
+    final quota = quotaAsync.asData?.value;
+    final job = syncJobAsync.asData?.value;
+    final used = (quota?['used'] as num?)?.toInt();
+    final limit = (quota?['limit'] as num?)?.toInt();
+    final percentage = (quota?['percentage'] as num?)?.toInt();
+    final status = job?['status']?.toString();
+    final phase = job?['phase']?.toString();
+    final current = (job?['current'] as num?)?.toInt() ?? 0;
+    final total = (job?['total'] as num?)?.toInt() ?? 0;
+    final isRunning = status == 'running';
+
+    if (quota == null && !isRunning) return const SizedBox.shrink();
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isThrottled = (percentage ?? 0) >= 90;
+    final progress = limit != null && limit > 0 && used != null
+        ? (used / limit).clamp(0.0, 1.0)
+        : null;
+    final syncLabel = isRunning
+        ? 'Sync $current/$total${phase != null ? ' · $phase' : ''}'
+        : status == 'partial'
+        ? 'Last sync paused'
+        : status == 'failed'
+        ? 'Last sync failed'
+        : null;
+
+    return Material(
+      color: isThrottled
+          ? colorScheme.errorContainer
+          : colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            Icon(
+              isThrottled ? Icons.warning_amber_rounded : Icons.speed_rounded,
+              size: 18,
+              color: isThrottled
+                  ? colorScheme.onErrorContainer
+                  : colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                [
+                  if (used != null && limit != null)
+                    'YouTube quota $used / $limit'
+                  else
+                    'YouTube quota loading',
+                  ?syncLabel,
+                ].join(' · '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: isThrottled
+                      ? colorScheme.onErrorContainer
+                      : colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            if (isRunning)
+              const SizedBox.square(
+                dimension: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else if (progress != null)
+              SizedBox(
+                width: 72,
+                child: LinearProgressIndicator(value: progress),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _ProductAccessInactiveView extends ConsumerWidget {

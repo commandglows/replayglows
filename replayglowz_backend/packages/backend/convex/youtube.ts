@@ -6,6 +6,48 @@ import { YOUTUBE_QUOTA_COSTS } from "./metrics";
 
 // Cache TTL in milliseconds (1 hour - extended from 10 minutes to reduce API calls)
 const CACHE_TTL = 60 * 60 * 1000;
+const YOUTUBE_SYNC_LOCK_TTL_MS = 10 * 60 * 1000;
+const YOUTUBE_SYNC_HARD_STOP_PERCENTAGE = 90;
+const YOUTUBE_SYNC_WARN_PERCENTAGE = 70;
+
+// Self-referencing generated API types are updated by Convex codegen after new
+// functions exist. Keep these local aliases isolated to this module.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const youtubeApi: any = (api as any).youtube;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const youtubeInternal: any = (internal as any).youtube;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const metricsInternal: any = (internal as any).metrics;
+
+function getProjectDailyQuotaLimit(): number {
+  const raw = process.env.YOUTUBE_PROJECT_DAILY_QUOTA;
+  const parsed = raw ? Number.parseInt(raw, 10) : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 10000;
+}
+
+function getEffectiveQuotaLimit(productLimit: number): number {
+  return Math.min(productLimit, getProjectDailyQuotaLimit());
+}
+
+function getQuotaPercentage(used: number, limit: number): number {
+  if (limit <= 0) return 100;
+  return Math.min(Math.round((used / limit) * 100), 100);
+}
+
+function shouldStopForQuota(used: number, limit: number): boolean {
+  return getQuotaPercentage(used, limit) >= YOUTUBE_SYNC_HARD_STOP_PERCENTAGE;
+}
+
+function estimateFullSyncQuotaUnits(playlistCount: number): number {
+  return YOUTUBE_QUOTA_COSTS["playlists.list"] +
+    playlistCount *
+      (YOUTUBE_QUOTA_COSTS["playlistItems.list"] + YOUTUBE_QUOTA_COSTS["videos.list"]);
+}
+
+function formatSyncError(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
 
 // =============================================================================
 // QUERIES
@@ -34,6 +76,188 @@ export const getYoutubeConnectionStatus = query({
       hasTokens,
       needsReconnect: !hasTokens,
     };
+  },
+});
+
+/**
+ * Get the latest YouTube sync job for the current user.
+ */
+export const getLatestYoutubeSyncJob = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    return ctx.db
+      .query("youtubeSyncJobs")
+      .withIndex("by_user_and_updated", (q) => q.eq("userId", userId))
+      .order("desc")
+      .first();
+  },
+});
+
+/**
+ * Internal query to find an active, non-expired YouTube sync job.
+ */
+export const getActiveYoutubeSyncJob = internalQuery({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const activeJobs = await ctx.db
+      .query("youtubeSyncJobs")
+      .withIndex("by_user_and_status", (q) =>
+        q.eq("userId", args.userId).eq("status", "running")
+      )
+      .collect();
+
+    return activeJobs.find((job) => job.lockExpiresAt > now) ?? null;
+  },
+});
+
+/**
+ * Internal query for cached playlist sync planning.
+ */
+export const getCachedPlaylistSyncPlan = internalQuery({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const playlists = await ctx.db
+      .query("youtubePlaylistsCache")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+
+    return playlists.map((playlist) => ({
+      youtubePlaylistId: playlist.youtubePlaylistId,
+      title: playlist.title,
+      videoCount: playlist.videoCount,
+      cachedAt: playlist.cachedAt,
+    }));
+  },
+});
+
+/**
+ * Internal query for cached video details that can avoid a videos.list call.
+ */
+export const getCachedVideoDetailsByIds = internalQuery({
+  args: {
+    userId: v.string(),
+    videoIds: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    if (args.videoIds.length === 0) return [];
+
+    const requested = new Set(args.videoIds);
+    const entries = await ctx.db
+      .query("youtubeVideosCache")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+
+    const byVideoId = new Map<string, (typeof entries)[number]>();
+    for (const entry of entries) {
+      if (!requested.has(entry.youtubeVideoId)) continue;
+      const existing = byVideoId.get(entry.youtubeVideoId);
+      if (!existing || entry.cachedAt > existing.cachedAt) {
+        byVideoId.set(entry.youtubeVideoId, entry);
+      }
+    }
+
+    return Array.from(byVideoId.values()).map((entry) => ({
+      youtubeVideoId: entry.youtubeVideoId,
+      duration: entry.duration,
+      publishedAt: entry.publishedAt,
+      title: entry.title,
+      channelTitle: entry.channelTitle,
+      youtubeChannelId: entry.youtubeChannelId,
+      thumbnailUrl: entry.thumbnailUrl,
+      description: entry.description,
+      cachedAt: entry.cachedAt,
+    }));
+  },
+});
+
+export const createYoutubeSyncJob = internalMutation({
+  args: {
+    userId: v.string(),
+    total: v.number(),
+    estimatedQuotaUnits: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    return ctx.db.insert("youtubeSyncJobs", {
+      userId: args.userId,
+      status: "running",
+      phase: "planning",
+      current: 0,
+      total: args.total,
+      estimatedQuotaUnits: args.estimatedQuotaUnits,
+      usedQuotaUnits: 0,
+      errors: [],
+      startedAt: now,
+      updatedAt: now,
+      lockExpiresAt: now + YOUTUBE_SYNC_LOCK_TTL_MS,
+    });
+  },
+});
+
+export const updateYoutubeSyncJob = internalMutation({
+  args: {
+    jobId: v.id("youtubeSyncJobs"),
+    status: v.optional(
+      v.union(
+        v.literal("running"),
+        v.literal("completed"),
+        v.literal("partial"),
+        v.literal("failed")
+      )
+    ),
+    phase: v.optional(
+      v.union(
+        v.literal("planning"),
+        v.literal("playlists"),
+        v.literal("videos"),
+        v.literal("completed"),
+        v.literal("failed")
+      )
+    ),
+    current: v.optional(v.number()),
+    total: v.optional(v.number()),
+    estimatedQuotaUnits: v.optional(v.number()),
+    usedQuotaUnits: v.optional(v.number()),
+    currentPlaylistId: v.optional(v.string()),
+    currentPlaylistTitle: v.optional(v.string()),
+    error: v.optional(v.string()),
+    completed: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const job = await ctx.db.get(args.jobId);
+    if (!job) return null;
+
+    const now = Date.now();
+    const nextErrors = args.error ? [...job.errors, args.error] : job.errors;
+    const patch: Record<string, unknown> = {
+      updatedAt: now,
+      lockExpiresAt: now + YOUTUBE_SYNC_LOCK_TTL_MS,
+      errors: nextErrors,
+    };
+
+    if (args.status !== undefined) patch.status = args.status;
+    if (args.phase !== undefined) patch.phase = args.phase;
+    if (args.current !== undefined) patch.current = args.current;
+    if (args.total !== undefined) patch.total = args.total;
+    if (args.estimatedQuotaUnits !== undefined) {
+      patch.estimatedQuotaUnits = args.estimatedQuotaUnits;
+    }
+    if (args.usedQuotaUnits !== undefined) patch.usedQuotaUnits = args.usedQuotaUnits;
+    if (args.currentPlaylistId !== undefined) patch.currentPlaylistId = args.currentPlaylistId;
+    if (args.currentPlaylistTitle !== undefined) {
+      patch.currentPlaylistTitle = args.currentPlaylistTitle;
+    }
+    if (args.completed) {
+      patch.completedAt = now;
+      patch.lockExpiresAt = now;
+    }
+
+    await ctx.db.patch(args.jobId, patch);
+    return ctx.db.get(args.jobId);
   },
 });
 
@@ -1453,21 +1677,38 @@ export const fetchPlaylistItems = action({
     const data = await response.json();
 
     // Get video IDs for duration lookup
-    const videoIds = (data.items || [])
+    const videoIdList: string[] = (data.items || [])
       .map((item: any) => item.contentDetails?.videoId)
-      .filter(Boolean)
-      .join(",");
+      .filter(Boolean);
+    const uniqueVideoIds: string[] = Array.from(new Set(videoIdList));
+
+    const cachedDetails = await ctx.runQuery(youtubeInternal.getCachedVideoDetailsByIds, {
+      userId,
+      videoIds: uniqueVideoIds,
+    });
+    const cachedDetailsById = new Map<string, any>(
+      cachedDetails.map((video: any) => [video.youtubeVideoId, video])
+    );
+    const missingVideoIds = uniqueVideoIds.filter((videoId) => {
+      const cached = cachedDetailsById.get(videoId);
+      return !cached?.duration || !cached?.publishedAt;
+    });
 
     // Fetch video details for duration and actual upload date
     let durations: Record<string, string> = {};
     let videoPublishDates: Record<string, string> = {};
-    if (videoIds) {
+    for (const video of cachedDetails) {
+      if (video.duration) durations[video.youtubeVideoId] = video.duration;
+      if (video.publishedAt) videoPublishDates[video.youtubeVideoId] = video.publishedAt;
+    }
+
+    if (missingVideoIds.length > 0) {
       const startTime2 = Date.now();
       const videosResponse = await fetch(
         "https://www.googleapis.com/youtube/v3/videos?" +
           new URLSearchParams({
             part: "contentDetails,snippet",
-            id: videoIds,
+            id: missingVideoIds.join(","),
           }),
         {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -1528,6 +1769,155 @@ export const fetchPlaylistItems = action({
     });
 
     return videos;
+  },
+});
+
+/**
+ * Quota-aware full sync orchestration.
+ *
+ * This replaces the Flutter-side loop over every playlist with one backend
+ * action that can enforce quota, expose progress, and reuse an active job.
+ */
+export const startQuotaSafeSync = action({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const userId = identity.subject;
+    const activeJob = await ctx.runQuery(youtubeInternal.getActiveYoutubeSyncJob, {
+      userId,
+    });
+    if (activeJob) {
+      return { reused: true, job: activeJob };
+    }
+
+    const cachedPlan = await ctx.runQuery(youtubeInternal.getCachedPlaylistSyncPlan, {
+      userId,
+    });
+    const quotaBefore = await ctx.runQuery(metricsInternal.getQuotaUsageForUserInternal, {
+      userId,
+    });
+    const effectiveLimit = getEffectiveQuotaLimit(quotaBefore.limit);
+    const usedBefore = quotaBefore.used;
+    const percentageBefore = getQuotaPercentage(usedBefore, effectiveLimit);
+
+    if (percentageBefore >= YOUTUBE_SYNC_HARD_STOP_PERCENTAGE) {
+      throw new Error(
+        `YouTube sync disabled: quota usage is ${percentageBefore}% of the daily limit.`
+      );
+    }
+
+    const initialEstimate = estimateFullSyncQuotaUnits(cachedPlan.length);
+    const jobId = await ctx.runMutation(youtubeInternal.createYoutubeSyncJob, {
+      userId,
+      total: cachedPlan.length,
+      estimatedQuotaUnits: initialEstimate,
+    });
+
+    try {
+      await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
+        jobId,
+        phase: "playlists",
+        current: 0,
+        usedQuotaUnits: 0,
+      });
+
+      const playlists = await ctx.runAction(youtubeApi.fetchYoutubePlaylists, {});
+      const playlistSummaries = (Array.isArray(playlists) ? playlists : [])
+        .map((playlist: any) => ({
+          youtubePlaylistId: playlist.youtubePlaylistId?.toString() ?? "",
+          title: playlist.title?.toString() ?? "",
+          videoCount: Number(playlist.videoCount ?? 0),
+        }))
+        .filter((playlist: any) => playlist.youtubePlaylistId.length > 0);
+
+      await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
+        jobId,
+        phase: "videos",
+        total: playlistSummaries.length,
+        estimatedQuotaUnits: estimateFullSyncQuotaUnits(playlistSummaries.length),
+        usedQuotaUnits: YOUTUBE_QUOTA_COSTS["playlists.list"],
+      });
+
+      let completedPlaylists = 0;
+      let stoppedForQuota = false;
+      let terminalJob: unknown = null;
+
+      for (const playlist of playlistSummaries) {
+        const quotaNow = await ctx.runQuery(metricsInternal.getQuotaUsageForUserInternal, {
+          userId,
+        });
+        const currentEffectiveLimit = getEffectiveQuotaLimit(quotaNow.limit);
+        if (shouldStopForQuota(quotaNow.used, currentEffectiveLimit)) {
+          stoppedForQuota = true;
+          terminalJob = await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
+            jobId,
+            status: "partial",
+            phase: "videos",
+            current: completedPlaylists,
+            usedQuotaUnits: quotaNow.used - usedBefore,
+            error: "Stopped before the next playlist because YouTube quota usage reached the safety threshold.",
+            completed: true,
+          });
+          break;
+        }
+
+        await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
+          jobId,
+          phase: "videos",
+          current: completedPlaylists,
+          currentPlaylistId: playlist.youtubePlaylistId,
+          currentPlaylistTitle: playlist.title,
+          usedQuotaUnits: quotaNow.used - usedBefore,
+        });
+
+        try {
+          await ctx.runAction(youtubeApi.fetchPlaylistItems, {
+            playlistId: playlist.youtubePlaylistId,
+          });
+        } catch (error) {
+          await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
+            jobId,
+            error: `Playlist ${playlist.title || playlist.youtubePlaylistId}: ${formatSyncError(error)}`,
+          });
+        }
+
+        completedPlaylists += 1;
+      }
+
+      if (!stoppedForQuota) {
+        const quotaAfter = await ctx.runQuery(metricsInternal.getQuotaUsageForUserInternal, {
+          userId,
+        });
+        const latestJob = await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
+          jobId,
+          status: "completed",
+          phase: "completed",
+          current: playlistSummaries.length,
+          total: playlistSummaries.length,
+          usedQuotaUnits: quotaAfter.used - usedBefore,
+          completed: true,
+        });
+
+        return { reused: false, job: latestJob };
+      }
+
+      return { reused: false, job: terminalJob };
+    } catch (error) {
+      const quotaAfter = await ctx.runQuery(metricsInternal.getQuotaUsageForUserInternal, {
+        userId,
+      });
+      await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
+        jobId,
+        status: "failed",
+        phase: "failed",
+        usedQuotaUnits: quotaAfter.used - usedBefore,
+        error: formatSyncError(error),
+        completed: true,
+      });
+      throw error;
+    }
   },
 });
 

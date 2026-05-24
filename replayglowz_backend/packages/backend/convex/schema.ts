@@ -246,6 +246,37 @@ export default defineSchema({
     .index("by_user_and_playlist", ["userId", "youtubePlaylistId"])
     .index("by_user_and_video", ["userId", "youtubeVideoId"]),
 
+  youtubeSyncJobs: defineTable({
+    userId: v.string(),
+    status: v.union(
+      v.literal("running"),
+      v.literal("completed"),
+      v.literal("partial"),
+      v.literal("failed")
+    ),
+    phase: v.union(
+      v.literal("planning"),
+      v.literal("playlists"),
+      v.literal("videos"),
+      v.literal("completed"),
+      v.literal("failed")
+    ),
+    current: v.number(),
+    total: v.number(),
+    estimatedQuotaUnits: v.number(),
+    usedQuotaUnits: v.number(),
+    currentPlaylistId: v.optional(v.string()),
+    currentPlaylistTitle: v.optional(v.string()),
+    errors: v.array(v.string()),
+    startedAt: v.number(),
+    updatedAt: v.number(),
+    completedAt: v.optional(v.number()),
+    lockExpiresAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_status", ["userId", "status"])
+    .index("by_user_and_updated", ["userId", "updatedAt"]),
+
   // =============================================================================
   // YOUTUBE VIDEO INTERACTIONS (likes/comments on YouTube videos by string ID)
   // =============================================================================

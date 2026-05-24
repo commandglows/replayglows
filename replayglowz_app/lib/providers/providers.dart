@@ -951,6 +951,14 @@ final quotaUsageProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   return _decodeMap(raw);
 });
 
+/// Subscribes to the latest backend-orchestrated YouTube sync job.
+final youtubeSyncJobProvider = StreamProvider<Map<String, dynamic>?>((ref) {
+  final service = ref.watch(convexServiceProvider);
+  return service
+      .subscribe<dynamic>('youtube:getLatestYoutubeSyncJob', {})
+      .map(_decodeMap);
+});
+
 // ---------------------------------------------------------------------------
 // 12. playlistVideosProvider(playlistId)
 // ---------------------------------------------------------------------------

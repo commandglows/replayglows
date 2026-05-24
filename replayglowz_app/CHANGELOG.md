@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2026-05-24]
+
+### Changed
+- Replaced the Flutter-driven full YouTube playlist refresh loop with the backend-orchestrated `youtube:startQuotaSafeSync` action.
+- Added app chrome quota/sync progress visibility backed by Convex quota usage and YouTube sync job state.
+
+### Added
+- Added cache-first quota-safe sync support for ReplayGlowz YouTube imports, including backend job progress, quota threshold enforcement, and cached video-detail reuse to avoid unnecessary `videos.list` calls.
+
 ## [2026-05-23]
 
 ### Changed

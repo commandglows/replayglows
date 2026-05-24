@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import { getUserId } from "./utils";
 
 // =============================================================================
@@ -62,6 +62,12 @@ function getTodayStartPacific(): number {
 function getDateStringPacific(timestamp: number): string {
   const date = new Date(timestamp);
   return date.toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
+}
+
+function getProjectDailyQuotaLimit(): number {
+  const raw = process.env.YOUTUBE_PROJECT_DAILY_QUOTA;
+  const parsed = raw ? Number.parseInt(raw, 10) : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DAILY_QUOTA_LIMIT;
 }
 
 // =============================================================================
@@ -158,6 +164,39 @@ const PLAN_QUOTA_LIMITS = {
   team: 50000,
 } as const;
 
+async function getQuotaUsageForUser(ctx: any, userId: string) {
+  const subscription = await ctx.db
+    .query("subscriptions")
+    .withIndex("by_user_id", (q: any) => q.eq("userId", userId))
+    .first();
+
+  const plan = subscription?.plan ?? "free";
+  const productLimit = PLAN_QUOTA_LIMITS[plan as keyof typeof PLAN_QUOTA_LIMITS];
+  const projectLimit = getProjectDailyQuotaLimit();
+  const limit = Math.min(productLimit, projectLimit);
+  const todayStart = getTodayStartPacific();
+
+  const todayMetrics = await ctx.db
+    .query("apiMetrics")
+    .withIndex("by_user_and_timestamp", (q: any) =>
+      q.eq("userId", userId).gte("timestamp", todayStart)
+    )
+    .collect();
+
+  const used = todayMetrics.reduce((sum: number, m: any) => sum + m.quotaUnits, 0);
+  const percentage = Math.round((used / limit) * 100);
+
+  return {
+    used,
+    limit,
+    remaining: Math.max(limit - used, 0),
+    percentage: Math.min(percentage, 100),
+    plan,
+    productLimit,
+    projectLimit,
+  };
+}
+
 /**
  * Get today's quota usage for the current user
  */
@@ -169,32 +208,17 @@ export const getTodayQuotaUsage = query({
       return { used: 0, limit: PLAN_QUOTA_LIMITS.free, percentage: 0 };
     }
 
-    // Get user's subscription to determine quota limit
-    const subscription = await ctx.db
-      .query("subscriptions")
-      .withIndex("by_user_id", (q) => q.eq("userId", userId))
-      .first();
+    return getQuotaUsageForUser(ctx, userId);
+  },
+});
 
-    const plan = subscription?.plan ?? "free";
-    const limit = PLAN_QUOTA_LIMITS[plan];
-
-    const todayStart = getTodayStartPacific();
-
-    const todayMetrics = await ctx.db
-      .query("apiMetrics")
-      .withIndex("by_user_and_timestamp", (q) =>
-        q.eq("userId", userId).gte("timestamp", todayStart)
-      )
-      .collect();
-
-    const used = todayMetrics.reduce((sum, m) => sum + m.quotaUnits, 0);
-    const percentage = Math.round((used / limit) * 100);
-
-    return {
-      used,
-      limit,
-      percentage: Math.min(percentage, 100),
-    };
+/**
+ * Internal quota usage read for quota-aware actions.
+ */
+export const getQuotaUsageForUserInternal = internalQuery({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    return getQuotaUsageForUser(ctx, args.userId);
   },
 });
 
