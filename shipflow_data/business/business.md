@@ -19,9 +19,9 @@ docs_impact: "yes"
 security_impact: "unknown"
 evidence:
   - "README.md"
-  - "replayglowz_app/shipflow_data/business/business.md"
-  - "replayglowz_site/shipflow_data/business/business.md"
-  - "replayglowz_lab/shipflow_data/business/business.md"
+  - "shipflow_data/business/apps/replayglowz_app/business.md"
+  - "shipflow_data/business/apps/replayglowz_site/business.md"
+  - "shipflow_data/business/apps/replayglowz_lab/business.md"
 depends_on:
   - "shipflow_data/business/product.md"
 supersedes: []

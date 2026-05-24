@@ -16,8 +16,8 @@ trust_posture: "Conservative claims; sensitive security, pricing, AI, automation
 docs_impact: "yes"
 security_impact: "none"
 evidence:
-  - "replayglowz_app/shipflow_data/business/branding.md"
-  - "replayglowz_site/shipflow_data/business/branding.md"
+  - "shipflow_data/business/apps/replayglowz_app/branding.md"
+  - "shipflow_data/business/apps/replayglowz_site/branding.md"
 depends_on:
   - "shipflow_data/business/business.md"
 supersedes: []

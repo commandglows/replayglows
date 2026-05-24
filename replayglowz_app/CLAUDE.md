@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.1.0"
 project: "replayglowz-app"
 created: "2026-04-26"
-updated: "2026-05-23"
+updated: "2026-05-24"
 status: "reviewed"
 source_skill: "sf-init"
 scope: "agent-guidance"
@@ -23,8 +23,12 @@ linked_systems:
 depends_on: []
 supersedes:
   - artifact_version: "1.0.0"
+evidence:
+  - "AGENT.md"
+  - "README.md"
+  - "shipflow_data/technical/apps/replayglowz_app/architecture.md"
 next_review: "2026-07-25"
-next_step: "Keep this file aligned with AGENT.md and shipflow_data/technical/architecture.md when auth, entitlement, routing, or deployment contracts change."
+next_step: "Keep this file aligned with AGENT.md and shipflow_data/technical/apps/replayglowz_app/architecture.md when auth, entitlement, routing, or deployment contracts change."
 ---
 
 # CLAUDE.md

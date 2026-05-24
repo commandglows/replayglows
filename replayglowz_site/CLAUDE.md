@@ -49,9 +49,9 @@ Use safe placeholders in `.env.example`. Do not commit production-only secrets o
 
 ## Content and Brand References
 
-- Business context lives in `shipflow_data/business/business.md`.
-- Brand direction lives in `shipflow_data/business/branding.md`.
-- Implementation and editing guardrails live in `shipflow_data/technical/guidelines.md`.
+- Business context lives in `shipflow_data/business/apps/replayglowz_site/business.md`.
+- Brand direction lives in `shipflow_data/business/apps/replayglowz_site/branding.md`.
+- Implementation and editing guardrails live in `shipflow_data/technical/apps/replayglowz_site/guidelines.md`.
 
 ## Agent Notes
 

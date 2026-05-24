@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: "replayglowz_lab"
 created: "2026-04-26"
-updated: "2026-04-26"
+updated: "2026-05-24"
 status: "reviewed"
 source_skill: sf-docs
 scope: "repository_guidance"
@@ -18,7 +18,7 @@ linked_systems:
   - "Convex"
   - "YouTube"
 depends_on:
-  - "shipflow_data/technical/guidelines.md@0.1.0"
+  - "shipflow_data/technical/apps/replayglowz_lab/guidelines.md@1.0.0"
 supersedes: []
 evidence:
   - "README.md"

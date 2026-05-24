@@ -27,9 +27,9 @@ depends_on:
   - "shipflow_data/business/gtm.md"
 supersedes: []
 evidence:
-  - "replayglowz_app/shipflow_data/business/product.md"
-  - "replayglowz_site/shipflow_data/business/product.md"
-  - "replayglowz_lab/shipflow_data/business/product.md"
+  - "shipflow_data/business/apps/replayglowz_app/product.md"
+  - "shipflow_data/business/apps/replayglowz_site/product.md"
+  - "shipflow_data/business/apps/replayglowz_lab/product.md"
 next_review: "2026-06-10"
 next_step: "/sf-docs editorial audit"
 ---

@@ -15,9 +15,9 @@ docs_impact: "yes"
 security_impact: "yes"
 evidence:
   - "README.md"
-  - "replayglowz_app/shipflow_data/technical/architecture.md"
-  - "replayglowz_site/shipflow_data/technical/architecture.md"
-  - "replayglowz_lab/shipflow_data/technical/architecture.md"
+  - "shipflow_data/technical/apps/replayglowz_app/architecture.md"
+  - "shipflow_data/technical/apps/replayglowz_site/architecture.md"
+  - "shipflow_data/technical/apps/replayglowz_lab/architecture.md"
 linked_systems:
   - "Flutter Web"
   - "Vercel"

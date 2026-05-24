@@ -14,9 +14,9 @@ risk_level: "medium"
 docs_impact: "yes"
 security_impact: "yes"
 evidence:
-  - "replayglowz_app/shipflow_data/technical/guidelines.md"
-  - "replayglowz_site/shipflow_data/technical/guidelines.md"
-  - "replayglowz_lab/shipflow_data/technical/guidelines.md"
+  - "shipflow_data/technical/apps/replayglowz_app/guidelines.md"
+  - "shipflow_data/technical/apps/replayglowz_site/guidelines.md"
+  - "shipflow_data/technical/apps/replayglowz_lab/guidelines.md"
   - "replayglowz_app/pubspec.yaml"
   - "replayglowz_site/package.json"
   - "replayglowz_lab/requirements.txt"
@@ -48,7 +48,7 @@ next_step: "/sf-docs technical audit"
 ## Flutter App
 
 - Use build-time `--dart-define` values for Flutter web configuration.
-- Keep Clerk session handling and Convex JWT minting aligned with `replayglowz_app/README.md` and `replayglowz_app/shipflow_data/technical/architecture.md`.
+- Keep Clerk session handling and Convex JWT minting aligned with `replayglowz_app/README.md` and `shipflow_data/technical/apps/replayglowz_app/architecture.md`.
 - Treat the shared Convex backend as external unless `REPLAYGLOWZ_BACKEND_ROOT` points to a local checkout.
 
 ## Astro Site

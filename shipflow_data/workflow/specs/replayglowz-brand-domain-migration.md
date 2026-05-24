@@ -238,7 +238,7 @@ Perform the global rename on `main` in ordered passes: establish naming/domain c
   - Notes: Preserve Astro content frontmatter schema.
 
 - [x] Task 8: Update Astro site docs and package metadata.
-  - File: `replayglowz_site/package.json`, `replayglowz_site/README.md`, `replayglowz_site/AGENT.md`, `replayglowz_site/CLAUDE.md`, `replayglowz_site/shipflow_data/**`
+  - File: `replayglowz_site/package.json`, `replayglowz_site/README.md`, `replayglowz_site/AGENT.md`, `replayglowz_site/CLAUDE.md`, `shipflow_data/business/apps/replayglowz_site/**`, `shipflow_data/technical/apps/replayglowz_site/**`, `shipflow_data/editorial/apps/replayglowz_site/**`
   - Action: Rename package/docs/project copy to ReplayGlowz where safe, document `PUBLIC_SITE_URL=https://replayglowz.com` and `PUBLIC_APP_URL=https://app.replayglowz.com`.
   - User story link: Operators configure the site with the correct domains.
   - Depends on: Task 7.
@@ -246,7 +246,7 @@ Perform the global rename on `main` in ordered passes: establish naming/domain c
   - Notes: Keep directory names unchanged.
 
 - [x] Task 9: Update transcript worker labels and docs.
-  - File: `replayglowz_lab/server.py`, `replayglowz_lab/ecosystem.config.cjs`, `replayglowz_lab/README.md`, `replayglowz_lab/AGENT.md`, `replayglowz_lab/CLAUDE.md`, `replayglowz_lab/shipflow_data/**`
+  - File: `replayglowz_lab/server.py`, `replayglowz_lab/ecosystem.config.cjs`, `replayglowz_lab/README.md`, `replayglowz_lab/AGENT.md`, `replayglowz_lab/CLAUDE.md`, `shipflow_data/business/apps/replayglowz_lab/**`, `shipflow_data/technical/apps/replayglowz_lab/**`, `shipflow_data/editorial/apps/replayglowz_lab/**`
   - Action: Rename app name, logger/temp prefixes where safe, Docker image examples, PM2 labels, and docs from TubeFlow to ReplayGlowz.
   - User story link: Backend worker operations match the active product.
   - Depends on: Task 1.

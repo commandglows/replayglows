@@ -18,9 +18,9 @@ non_goals: "Entertainment discovery, creator publishing infrastructure, a generi
 docs_impact: "yes"
 security_impact: "unknown"
 evidence:
-  - "replayglowz_app/shipflow_data/business/product.md"
-  - "replayglowz_site/shipflow_data/business/product.md"
-  - "replayglowz_lab/shipflow_data/business/product.md"
+  - "shipflow_data/business/apps/replayglowz_app/product.md"
+  - "shipflow_data/business/apps/replayglowz_site/product.md"
+  - "shipflow_data/business/apps/replayglowz_lab/product.md"
 depends_on: []
 supersedes: []
 next_review: "2026-06-10"

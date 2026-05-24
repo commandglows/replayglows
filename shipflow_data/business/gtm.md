@@ -25,8 +25,8 @@ proof_points:
 docs_impact: "yes"
 security_impact: "unknown"
 evidence:
-  - "replayglowz_site/shipflow_data/business/gtm.md"
-  - "replayglowz_app/shipflow_data/business/gtm.md"
+  - "shipflow_data/business/apps/replayglowz_site/gtm.md"
+  - "shipflow_data/business/apps/replayglowz_app/gtm.md"
   - "replayglowz_site/src/pages/pricing.astro"
   - "replayglowz_site/src/pages/compare.astro"
 depends_on:

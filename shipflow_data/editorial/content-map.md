@@ -55,10 +55,10 @@ This file maps ReplayGlowz content surfaces at monorepo level and routes public-
 | Surface | Canonical path | Purpose | Source of truth | Update when |
 | --- | --- | --- | --- | --- |
 | Root README | `README.md` | Monorepo orientation and deployment model | Repository layout and deployment state | Subproject layout or deployment ownership changes. |
-| App docs | `replayglowz_app/README.md` and app contracts | Product and implementation truth for the Flutter app | `replayglowz_app/shipflow_data/business/product.md`, `replayglowz_app/shipflow_data/technical/architecture.md` | App behavior, auth, OAuth, Convex, deployment, or env changes. |
+| App docs | `replayglowz_app/README.md` and app contracts | Product and implementation truth for the Flutter app | `shipflow_data/business/apps/replayglowz_app/product.md`, `shipflow_data/technical/apps/replayglowz_app/architecture.md` | App behavior, auth, OAuth, Convex, deployment, or env changes. |
 | Public site pages | `replayglowz_site/src/pages/**` | Acquisition, product education, pricing, comparison, legal/trust | Business, product, brand, GTM contracts | Public claims, CTA, route intent, pricing, or legal/trust changes. |
 | Blog | `replayglowz_site/src/content/blog/**` | Editorial education and SEO content | Astro schema, page intent, claim register | Blog content, collection schema, topic strategy, or claims change. |
-| Worker docs | `replayglowz_lab/README.md` and worker contracts | Transcript worker setup, deployment, API, operations | `replayglowz_lab/shipflow_data/business/product.md`, `replayglowz_lab/shipflow_data/technical/architecture.md` | Worker API, env, provider, queue, health, or deployment changes. |
+| Worker docs | `replayglowz_lab/README.md` and worker contracts | Transcript worker setup, deployment, API, operations | `shipflow_data/business/apps/replayglowz_lab/product.md`, `shipflow_data/technical/apps/replayglowz_lab/architecture.md` | Worker API, env, provider, queue, health, or deployment changes. |
 | Editorial governance | `shipflow_data/editorial/**` | Public surface map, claim register, page intent, update gate, runtime schema policy | This content map and contracts | Public surfaces, claims, routes, or content schemas change. |
 
 ## Semantic Architecture

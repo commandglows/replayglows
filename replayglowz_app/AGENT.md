@@ -23,7 +23,7 @@ linked_systems:
 depends_on:
   - "README.md"
   - "CLAUDE.md"
-  - "shipflow_data/technical/architecture.md"
+  - "shipflow_data/technical/apps/replayglowz_app/architecture.md"
 supersedes:
   - artifact_version: "1.0.0"
 evidence:
