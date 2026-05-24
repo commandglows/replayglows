@@ -5,6 +5,7 @@ import { defaultTranscriptSettings } from "./settings";
 
 const REPLAYGLOWZ_PRODUCT_ID = "replayglowz";
 const REPLAYGLOWZ_LEGACY_PRODUCT_IDS = ["tubeflow"];
+const DEFAULT_FREE_ACCESS_REASON = "default_free_entitlement";
 
 function isActiveAccessStatus(status: string) {
   return status === "active" || status === "trialing";
@@ -56,6 +57,14 @@ export const getProductAccessStatus = query({
       .withIndex("by_clerk_id", (q) => q.eq("clerkId", userId))
       .first();
 
+    let revokedSnapshot:
+      | {
+          productId: string;
+          reasonCode?: string;
+          globalUserId?: string;
+        }
+      | null = null;
+
     for (const acceptedProductId of acceptedProductIds) {
       const snapshot = await ctx.db
         .query("productAccessSnapshots")
@@ -66,16 +75,46 @@ export const getProductAccessStatus = query({
 
       if (!snapshot || snapshot.expiresAt <= now) continue;
 
+      if (isActiveAccessStatus(snapshot.status)) {
+        return {
+          loading: false,
+          hasAccess: true,
+          accountRecognized: true,
+          productId,
+          matchedProductId: acceptedProductId,
+          globalUserId: snapshot.globalUserId,
+        };
+      }
+
+      if (snapshot.status === "revoked") {
+        revokedSnapshot = {
+          productId: acceptedProductId,
+          reasonCode: snapshot.reasonCode,
+          globalUserId: snapshot.globalUserId,
+        };
+      }
+    }
+
+    if (revokedSnapshot) {
       return {
         loading: false,
-        hasAccess: isActiveAccessStatus(snapshot.status),
+        hasAccess: false,
         accountRecognized: true,
         productId,
-        matchedProductId: acceptedProductId,
-        globalUserId: snapshot.globalUserId,
-        reasonCode: isActiveAccessStatus(snapshot.status)
-          ? undefined
-          : snapshot.reasonCode ?? "product_access_inactive",
+        matchedProductId: revokedSnapshot.productId,
+        globalUserId: revokedSnapshot.globalUserId,
+        reasonCode: revokedSnapshot.reasonCode ?? "product_access_revoked",
+      };
+    }
+
+    if (user !== null && productId === REPLAYGLOWZ_PRODUCT_ID) {
+      return {
+        loading: false,
+        hasAccess: true,
+        accountRecognized: true,
+        productId,
+        matchedProductId: REPLAYGLOWZ_PRODUCT_ID,
+        reasonCode: DEFAULT_FREE_ACCESS_REASON,
       };
     }
 

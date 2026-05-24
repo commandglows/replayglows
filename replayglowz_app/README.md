@@ -2,7 +2,7 @@
 
 Flutter web app for ReplayGlowz, deployed on Vercel.
 
-ReplayGlowz now uses suite Clerk web identity and deny-by-default product entitlement checks. Product data (videos, notes, playlists, transcripts, preferences, YouTube tokens) stays in the ReplayGlowz product Convex backend.
+ReplayGlowz uses suite Clerk web identity plus server-verified product access. Recognized accounts receive product-scoped `replayglowz/free` access by default; paid or legacy entitlements still come from the WinFlowz suite verifier. Product data (videos, notes, playlists, transcripts, preferences, YouTube tokens) stays in the ReplayGlowz product Convex backend.
 
 ## Auth and Data Boundaries
 
@@ -69,7 +69,7 @@ See `.env.example` for placeholders.
 - Handler verifies suite entitlement server-side before redirecting to Google.
 - The suite verifier receives the bearer token and returns a redacted entitlement snapshot.
 - Callback re-verifies entitlement and only then writes YouTube tokens to product Convex.
-- Flow is fail-closed (401/403/503) when session or entitlement cannot be verified.
+- Flow is fail-closed (401/403/503) when session or product access cannot be verified. Recognized accounts without a paid entitlement are expected to pass as `replayglowz/free`.
 
 ## Product Convex Backend Contract
 

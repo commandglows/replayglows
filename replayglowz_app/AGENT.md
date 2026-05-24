@@ -50,8 +50,8 @@ Operational guide for agents working in `replayglowz-app`.
 ## Non-negotiable boundaries
 
 - Do not move product data into WinFlowz suite Convex.
-- Do not treat client identity as product access.
-- Do not allow product access without server entitlement verification.
+- Do not treat client-only identity as product access.
+- Do not allow product access without server verification; recognized ReplayGlowz accounts may receive product-scoped `replayglowz/free` access by default.
 - Do not log secrets, bearer tokens, OAuth codes, or refresh tokens.
 - Do not create new grants for `tubeflow`; use `replayglowz` as canonical product id.
 
@@ -60,7 +60,7 @@ Operational guide for agents working in `replayglowz-app`.
 1. `main()` initializes logging/diagnostics and Convex transport.
 2. `AuthService` loads ClerkJS via `web/clerk_bridge.js`.
 3. Clerk session token carries the Convex audience from the Clerk Convex integration for product backend calls.
-4. Protected routes require authentication and product-access status.
+4. Protected routes require authentication and server product-access status; ReplayGlowz defaults recognized accounts to product-scoped free access unless explicitly revoked.
 5. YouTube OAuth start/callback verifies entitlement server-side before token persistence.
 
 ## Source-of-truth files
