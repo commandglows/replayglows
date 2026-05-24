@@ -181,12 +181,8 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                 await _copyPlaylistLink(context);
                 break;
               case 'edit':
-                if (context.mounted) {
-                  showErrorSnackBar(
-                    context,
-                    error: 'Playlist editing is not implemented yet.',
-                    prefix: 'Edit disabled',
-                  );
+                if (playlist != null) {
+                  await _showEditPlaylistDialog(context, playlist);
                 }
                 break;
             }
@@ -435,6 +431,153 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     ).showSnackBar(const SnackBar(content: Text('Playlist link copied.')));
   }
 
+  Future<void> _showEditPlaylistDialog(
+    BuildContext context,
+    YouTubePlaylist playlist,
+  ) async {
+    final titleController = TextEditingController(text: playlist.title);
+    final descriptionController = TextEditingController(
+      text: playlist.description ?? '',
+    );
+    Color selectedColor = playlist.color != null
+        ? parseHexColor(playlist.color!)
+        : Theme.of(context).colorScheme.primary;
+    var saving = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Edit playlist'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: titleController,
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: descriptionController,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                        border: OutlineInputBorder(),
+                      ),
+                      minLines: 2,
+                      maxLines: 4,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Color',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        for (final color in _colorOptions)
+                          _ColorSwatch(
+                            color: color,
+                            selected:
+                                color.toARGB32() == selectedColor.toARGB32(),
+                            onTap: saving
+                                ? null
+                                : () => setDialogState(() {
+                                    selectedColor = color;
+                                  }),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: saving
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton.icon(
+                  onPressed: saving
+                      ? null
+                      : () async {
+                          final title = titleController.text.trim();
+                          if (title.isEmpty) return;
+                          setDialogState(() => saving = true);
+                          try {
+                            await updateYoutubePlaylistDetails(
+                              ref,
+                              playlistId: playlist.youtubePlaylistId,
+                              title: title,
+                              description:
+                                  descriptionController.text.trim().isEmpty
+                                  ? null
+                                  : descriptionController.text.trim(),
+                              color: _colorToHex(selectedColor),
+                            );
+                            if (!dialogContext.mounted) return;
+                            Navigator.of(dialogContext).pop();
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Playlist updated.'),
+                              ),
+                            );
+                          } catch (e) {
+                            if (dialogContext.mounted) {
+                              showErrorSnackBar(
+                                dialogContext,
+                                error: e,
+                                prefix: 'Update failed',
+                              );
+                            }
+                            setDialogState(() => saving = false);
+                          }
+                        },
+                  icon: saving
+                      ? const SizedBox.square(
+                          dimension: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.check),
+                  label: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    titleController.dispose();
+    descriptionController.dispose();
+  }
+
+  static const _colorOptions = [
+    Colors.purple,
+    Colors.blue,
+    Colors.teal,
+    Colors.green,
+    Colors.orange,
+    Colors.red,
+    Colors.pink,
+    Colors.indigo,
+  ];
+
+  String _colorToHex(Color color) {
+    return '#${color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}';
+  }
+
   Widget _buildReorderableList() {
     return SliverToBoxAdapter(
       child: ReorderableListView.builder(
@@ -464,6 +607,43 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _ColorSwatch extends StatelessWidget {
+  const _ColorSwatch({
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final Color color;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      customBorder: const CircleBorder(),
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: selected
+              ? Border.all(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  width: 3,
+                )
+              : null,
+        ),
+        child: selected
+            ? const Icon(Icons.check, size: 18, color: Colors.white)
+            : null,
       ),
     );
   }

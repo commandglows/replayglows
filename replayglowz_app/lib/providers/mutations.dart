@@ -89,10 +89,14 @@ Future<dynamic> hideVideo(WidgetRef ref, String videoId) async {
 /// Hides a playlist from the user's feed.
 Future<dynamic> hidePlaylist(WidgetRef ref, String playlistId) async {
   final service = ref.read(convexServiceProvider);
-  return service.mutate<dynamic>('hidden:hideItem', {
+  final result = await service.mutate<dynamic>('hidden:hideItem', {
     'youtubeId': playlistId,
     'itemType': 'playlist',
   });
+  ref
+    ..invalidate(playlistsProvider)
+    ..invalidate(videosProvider(const VideosArgs()));
+  return result;
 }
 
 /// Un-hides a previously hidden video, restoring it to the feed.
@@ -228,9 +232,15 @@ Future<dynamic> syncAllPlaylistsWithContainer(
 /// Refreshes a single YouTube playlist and updates its cached videos.
 Future<dynamic> syncPlaylist(WidgetRef ref, String playlistId) async {
   final service = ref.read(convexServiceProvider);
-  return service.action<dynamic>('youtube:fetchPlaylistItems', {
+  final result = await service.action<dynamic>('youtube:fetchPlaylistItems', {
     'playlistId': playlistId,
   });
+  ref
+    ..invalidate(playlistVideosProvider(playlistId))
+    ..invalidate(playlistsProvider)
+    ..invalidate(videosProvider(const VideosArgs()))
+    ..invalidate(quotaUsageProvider);
+  return result;
 }
 
 /// Persists the custom video ordering for a playlist.
@@ -285,12 +295,68 @@ Future<dynamic> createPlaylist(
   String? color,
 }) async {
   final service = ref.read(convexServiceProvider);
-  return service.mutate<dynamic>('playlists:createPlaylist', {
-    'title': title,
-    'description': ?description,
-    'privacyStatus': privacyStatus,
-    'color': ?color,
-  });
+  final result = await service.action<dynamic>(
+    'youtube:createYoutubePlaylist',
+    {
+      'title': title,
+      'description': ?description,
+      'privacyStatus': privacyStatus,
+    },
+  );
+  await service.action<dynamic>('youtube:fetchYoutubePlaylists', {});
+  final playlistId = result is Map ? result['id']?.toString() : null;
+  if (playlistId != null && playlistId.isNotEmpty && color != null) {
+    await service.mutate<dynamic>('youtube:updatePlaylistDetails', {
+      'playlistId': playlistId,
+      'color': color,
+    });
+  }
+  ref
+    ..invalidate(playlistsProvider)
+    ..invalidate(quotaUsageProvider);
+  return result;
+}
+
+/// Updates a YouTube playlist title, description, and local display color.
+Future<dynamic> updateYoutubePlaylistDetails(
+  WidgetRef ref, {
+  required String playlistId,
+  required String title,
+  String? description,
+  String? color,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.action<dynamic>(
+    'youtube:updateYoutubePlaylist',
+    {'playlistId': playlistId, 'title': title, 'description': ?description},
+  );
+  if (color != null) {
+    await service.mutate<dynamic>('youtube:updatePlaylistDetails', {
+      'playlistId': playlistId,
+      'color': color,
+    });
+  }
+  ref
+    ..invalidate(playlistsProvider)
+    ..invalidate(playlistVideosProvider(playlistId))
+    ..invalidate(videosProvider(const VideosArgs()))
+    ..invalidate(quotaUsageProvider);
+  return result;
+}
+
+/// Deletes a YouTube playlist and refreshes cached playlist data.
+Future<dynamic> deleteYoutubePlaylist(WidgetRef ref, String playlistId) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.action<dynamic>(
+    'youtube:deleteYoutubePlaylist',
+    {'playlistId': playlistId},
+  );
+  ref
+    ..invalidate(playlistsProvider)
+    ..invalidate(playlistVideosProvider(playlistId))
+    ..invalidate(videosProvider(const VideosArgs()))
+    ..invalidate(quotaUsageProvider);
+  return result;
 }
 
 // ---------------------------------------------------------------------------

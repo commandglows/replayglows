@@ -1088,6 +1088,15 @@ export const updatePlaylistsCache = mutation({
 
     // Delete playlists that no longer exist on YouTube
     for (const playlist of Array.from(existingMap.values())) {
+      const staleVideos = await ctx.db
+        .query("youtubeVideosCache")
+        .withIndex("by_user_and_playlist", (q) =>
+          q.eq("userId", userId).eq("youtubePlaylistId", playlist.youtubePlaylistId)
+        )
+        .collect();
+      for (const video of staleVideos) {
+        await ctx.db.delete(video._id);
+      }
       await ctx.db.delete(playlist._id);
     }
   },
@@ -1948,7 +1957,7 @@ export const createYoutubePlaylist = action({
 
     const startTime = Date.now();
     const response = await fetch(
-      "https://www.googleapis.com/youtube/v3/playlists?part=snippet,status",
+      "https://www.googleapis.com/youtube/v3/playlists?part=snippet",
       {
         method: "POST",
         headers: {

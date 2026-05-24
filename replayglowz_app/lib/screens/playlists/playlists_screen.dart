@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import 'package:replayglowz_app/app/router.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
+import 'package:replayglowz_app/utils/color_utils.dart';
 import 'package:replayglowz_app/widgets/app_states.dart';
 import 'package:replayglowz_app/widgets/common_app_bar_actions.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
@@ -18,11 +21,48 @@ import 'package:replayglowz_app/widgets/youtube_connect.dart';
 /// - `playlists.getPlaylists` — fetch all playlists for the current user
 /// - `playlistOrder.getOrder` — fetch custom sort order
 /// - `playlistOrder.updateOrder` — persist reorder changes
-class PlaylistsScreen extends ConsumerWidget {
+class PlaylistsScreen extends ConsumerStatefulWidget {
   const PlaylistsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PlaylistsScreen> createState() => _PlaylistsScreenState();
+}
+
+class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
+  final _scrollController = ScrollController();
+  Timer? _fadeTimer;
+  double _fabOpacity = 0.22;
+
+  static const _colorOptions = [
+    Colors.purple,
+    Colors.blue,
+    Colors.teal,
+    Colors.green,
+    Colors.orange,
+    Colors.red,
+    Colors.pink,
+    Colors.indigo,
+  ];
+
+  @override
+  void dispose() {
+    _fadeTimer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _showFabForScroll() {
+    _fadeTimer?.cancel();
+    if (_fabOpacity != 0.78) {
+      setState(() => _fabOpacity = 0.78);
+    }
+    _fadeTimer = Timer(const Duration(milliseconds: 850), () {
+      if (mounted) setState(() => _fabOpacity = 0.22);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final youtubeConnectionAsync = ref.watch(youtubeConnectionProvider);
     final youtubeConnected =
         youtubeConnectionAsync.asData?.value?['connected'] == true;
@@ -90,12 +130,21 @@ class PlaylistsScreen extends ConsumerWidget {
                   onRefresh: () => syncAllPlaylists(ref),
                 );
               }
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: playlists.length,
-                itemBuilder: (context, index) {
-                  return _buildPlaylistCard(context, ref, playlists[index]);
+              return NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  if (notification.metrics.axis == Axis.vertical) {
+                    _showFabForScroll();
+                  }
+                  return false;
                 },
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                  itemCount: playlists.length,
+                  itemBuilder: (context, index) {
+                    return _buildPlaylistCard(context, ref, playlists[index]);
+                  },
+                ),
               );
             },
             loading: () => AppLoadingListSkeleton(
@@ -152,14 +201,19 @@ class PlaylistsScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(youtubeConnectionProvider),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: youtubeConnected
-            ? () {
-                context.go(Routes.playlistCreate);
-              }
-            : null,
-        icon: const Icon(Icons.add),
-        label: const Text('New Playlist'),
+      floatingActionButton: AnimatedOpacity(
+        duration: const Duration(milliseconds: 180),
+        opacity: youtubeConnected ? _fabOpacity : 0.12,
+        child: FloatingActionButton.small(
+          onPressed: youtubeConnected
+              ? () {
+                  _showFabForScroll();
+                  context.go(Routes.playlistCreate);
+                }
+              : null,
+          tooltip: 'Create playlist',
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
@@ -175,9 +229,17 @@ class PlaylistsScreen extends ConsumerWidget {
       trailing: PopupMenuButton<String>(
         onSelected: (value) async {
           switch (value) {
+            case 'edit':
+              await _showEditPlaylistDialog(context, ref, playlist);
+              break;
             case 'hide':
               try {
                 await hidePlaylist(ref, playlist.youtubePlaylistId);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Playlist hidden.')),
+                  );
+                }
               } catch (e) {
                 if (context.mounted) {
                   showErrorSnackBar(context, error: e, prefix: 'Error');
@@ -185,7 +247,7 @@ class PlaylistsScreen extends ConsumerWidget {
               }
               break;
             case 'delete':
-              // TODO: confirm and delete playlist
+              await _confirmDeletePlaylist(context, ref, playlist);
               break;
           }
         },
@@ -194,6 +256,220 @@ class PlaylistsScreen extends ConsumerWidget {
           const PopupMenuItem(value: 'hide', child: Text('Hide')),
           const PopupMenuItem(value: 'delete', child: Text('Delete')),
         ],
+      ),
+    );
+  }
+
+  Future<void> _showEditPlaylistDialog(
+    BuildContext context,
+    WidgetRef ref,
+    YouTubePlaylist playlist,
+  ) async {
+    final titleController = TextEditingController(text: playlist.title);
+    final descriptionController = TextEditingController(
+      text: playlist.description ?? '',
+    );
+    Color selectedColor = playlist.color != null
+        ? parseHexColor(playlist.color!)
+        : Theme.of(context).colorScheme.primary;
+    var saving = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Edit playlist'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: titleController,
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: descriptionController,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                        border: OutlineInputBorder(),
+                      ),
+                      minLines: 2,
+                      maxLines: 4,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Color',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        for (final color in _colorOptions)
+                          _ColorSwatch(
+                            color: color,
+                            selected:
+                                color.toARGB32() == selectedColor.toARGB32(),
+                            onTap: saving
+                                ? null
+                                : () => setDialogState(() {
+                                    selectedColor = color;
+                                  }),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: saving
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton.icon(
+                  onPressed: saving
+                      ? null
+                      : () async {
+                          final title = titleController.text.trim();
+                          if (title.isEmpty) return;
+                          setDialogState(() => saving = true);
+                          try {
+                            await updateYoutubePlaylistDetails(
+                              ref,
+                              playlistId: playlist.youtubePlaylistId,
+                              title: title,
+                              description:
+                                  descriptionController.text.trim().isEmpty
+                                  ? null
+                                  : descriptionController.text.trim(),
+                              color: _colorToHex(selectedColor),
+                            );
+                            if (!dialogContext.mounted) return;
+                            Navigator.of(dialogContext).pop();
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Playlist updated.'),
+                              ),
+                            );
+                          } catch (e) {
+                            if (dialogContext.mounted) {
+                              showErrorSnackBar(
+                                dialogContext,
+                                error: e,
+                                prefix: 'Update failed',
+                              );
+                            }
+                            setDialogState(() => saving = false);
+                          }
+                        },
+                  icon: saving
+                      ? const SizedBox.square(
+                          dimension: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.check),
+                  label: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    titleController.dispose();
+    descriptionController.dispose();
+  }
+
+  Future<void> _confirmDeletePlaylist(
+    BuildContext context,
+    WidgetRef ref,
+    YouTubePlaylist playlist,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete playlist?'),
+        content: Text(
+          'This deletes "${playlist.title}" from YouTube and refreshes ReplayGlowz.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await deleteYoutubePlaylist(ref, playlist.youtubePlaylistId);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Playlist deleted.')));
+    } catch (e) {
+      if (context.mounted) {
+        showErrorSnackBar(context, error: e, prefix: 'Delete failed');
+      }
+    }
+  }
+
+  String _colorToHex(Color color) {
+    return '#${color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}';
+  }
+}
+
+class _ColorSwatch extends StatelessWidget {
+  const _ColorSwatch({
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final Color color;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      customBorder: const CircleBorder(),
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: selected
+              ? Border.all(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  width: 3,
+                )
+              : null,
+        ),
+        child: selected
+            ? const Icon(Icons.check, size: 18, color: Colors.white)
+            : null,
       ),
     );
   }
