@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:replayglowz_app/app/router.dart';
+import 'package:replayglowz_app/auth/auth_service.dart';
+import 'package:replayglowz_app/auth/auth_state.dart';
+import 'package:replayglowz_app/providers/providers.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
 /// Responsive app shell with bottom navigation (mobile) or side rail
@@ -84,11 +87,22 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final width = MediaQuery.sizeOf(context).width;
     final selected = _selectedIndex(context);
+    final authState = ref.watch(authStateProvider);
+    final accessAsync = ref.watch(productAccessStatusProvider);
+    final shouldGate =
+        authState is AuthAuthenticated &&
+        accessAsync.maybeWhen(
+          data: (status) => !status.loading && !status.hasAccess,
+          orElse: () => false,
+        );
+    final routedChild = shouldGate
+        ? _ProductAccessInactiveView(statusAsync: accessAsync)
+        : child;
 
     if (width >= _railBreakpoint) {
-      return _buildWithRail(context, ref, selected);
+      return _buildWithRail(context, ref, selected, routedChild);
     }
-    return _buildWithBottomNav(context, ref, selected);
+    return _buildWithBottomNav(context, ref, selected, routedChild);
   }
 
   // ---------------------------------------------------------------------------
@@ -99,6 +113,7 @@ class AppShell extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     int selected,
+    Widget routedChild,
   ) {
     final showYoutubeStatusChrome = _showYoutubeStatusChrome(context);
     return Scaffold(
@@ -106,7 +121,7 @@ class AppShell extends ConsumerWidget {
         children: [
           if (showYoutubeStatusChrome) const YoutubeConnectBanner(),
           const YoutubeOAuthFeedbackBanner(),
-          Expanded(child: child),
+          Expanded(child: routedChild),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -128,7 +143,12 @@ class AppShell extends ConsumerWidget {
   // Side rail (tablet / web)
   // ---------------------------------------------------------------------------
 
-  Widget _buildWithRail(BuildContext context, WidgetRef ref, int selected) {
+  Widget _buildWithRail(
+    BuildContext context,
+    WidgetRef ref,
+    int selected,
+    Widget routedChild,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     final showYoutubeStatusChrome = _showYoutubeStatusChrome(context);
 
@@ -165,7 +185,7 @@ class AppShell extends ConsumerWidget {
               children: [
                 if (showYoutubeStatusChrome) const YoutubeConnectBanner(),
                 const YoutubeOAuthFeedbackBanner(),
-                Expanded(child: child),
+                Expanded(child: routedChild),
               ],
             ),
           ),
@@ -191,4 +211,125 @@ class _NavDestination {
   final IconData icon;
   final IconData selectedIcon;
   final String path;
+}
+
+class _ProductAccessInactiveView extends ConsumerWidget {
+  const _ProductAccessInactiveView({required this.statusAsync});
+
+  final AsyncValue<ProductAccessStatus> statusAsync;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 620),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: statusAsync.when(
+                data: (status) => Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.lock_outline,
+                          color: theme.colorScheme.primary,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          status.accountRecognized
+                              ? 'Account recognized, product access inactive'
+                              : 'Suite access check required',
+                          style: theme.textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      status.accountRecognized
+                          ? 'Your suite identity is valid, but this account has no active ReplayGlowz entitlement yet.'
+                          : 'ReplayGlowz could not confirm your product access for this account.',
+                    ),
+                    if ((status.reasonCode ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      SelectableText(
+                        'Reason: ${status.reasonCode}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        FilledButton.icon(
+                          onPressed: () {
+                            ref.invalidate(productAccessStatusProvider);
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Retry access check'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () async {
+                            await ref
+                                .read(authServiceProvider)
+                                .openUserProfile();
+                          },
+                          icon: const Icon(Icons.manage_accounts),
+                          label: const Text('Open account center'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                loading: () => const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    SizedBox(width: 12),
+                    Text('Checking product access…'),
+                  ],
+                ),
+                error: (error, stackTrace) => Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ReplayGlowz cannot verify product access right now.',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    SelectableText(
+                      '$error',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      onPressed: () {
+                        ref.invalidate(productAccessStatusProvider);
+                      },
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry access check'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:replayglowz_app/app/build_info.dart';
 import 'package:replayglowz_app/app/router.dart';
 import 'package:replayglowz_app/auth/auth_state.dart';
 import 'package:replayglowz_app/auth/auth_service.dart';
@@ -29,9 +30,7 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
     setState(() => _submitting = true);
     try {
       final service = ref.read(authServiceProvider);
-      await service.signInWithGoogle();
-      if (!mounted) return;
-      context.go(_redirectTarget());
+      await service.signIn(redirectTo: _redirectTarget());
     } catch (e) {
       if (!mounted) return;
       showErrorSnackBar(context, error: e, prefix: 'Sign-in failed');
@@ -74,8 +73,8 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
                 Text('ReplayGlowz', style: theme.textTheme.headlineMedium),
                 const SizedBox(height: 12),
                 Text(
-                  'Sign in with Google to sync videos, playlists, notes, and '
-                  'YouTube connection state through Convex.',
+                  'Sign in with your suite account to sync videos, playlists, '
+                  'notes, and YouTube connection state through Convex.',
                   style: theme.textTheme.bodyLarge,
                 ),
                 if (authState case AuthUnauthenticated(
@@ -98,10 +97,18 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
                         )
                       : const Icon(Icons.login),
                   label: Text(
-                    service.isInitialised
-                        ? 'Continue with Google'
-                        : 'Firebase Auth not configured',
+                    hasClerkConfig
+                        ? 'Continue with Suite account'
+                        : 'Suite auth not configured',
                   ),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: service.isInitialised
+                      ? () => service.openUserProfile()
+                      : null,
+                  icon: const Icon(Icons.manage_accounts),
+                  label: const Text('Open account center'),
                 ),
               ],
             ),
@@ -187,7 +194,10 @@ class _AuthDebugPanelState extends State<_AuthDebugPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Auth diagnostics', style: Theme.of(context).textTheme.titleSmall),
+          Text(
+            'Auth diagnostics',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
           const SizedBox(height: 8),
           SelectableText(
             logs,

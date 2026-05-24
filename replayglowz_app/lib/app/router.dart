@@ -77,7 +77,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           !goingToSignIn && !goingToSsoCallback && !goingToPublicFeedback;
 
       if (isLoading) {
-        // On web the app can cold-start on a protected route before Firebase
+        // On web the app can cold-start on a protected route before suite auth
         // has restored its session. Keep that bootstrap on /sign-in so users do
         // not interact with a "dead" dashboard while auth is still unknown.
         if (goingToProtectedRoute) {

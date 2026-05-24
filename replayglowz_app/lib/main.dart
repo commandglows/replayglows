@@ -10,7 +10,6 @@ import 'package:replayglowz_app/app/build_info.dart';
 import 'package:replayglowz_app/app/router.dart';
 import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/auth/auth_service.dart';
-import 'package:replayglowz_app/auth/firebase_config.dart';
 import 'package:replayglowz_app/convex/convex_client.dart';
 import 'package:replayglowz_app/convex/convex_provider.dart';
 import 'package:replayglowz_app/utils/app_logger.dart';
@@ -55,7 +54,7 @@ Future<void> _runApp() async {
 
   AppLogger.instance.log(
     'main() start — CONVEX_URL=${const bool.hasEnvironment('CONVEX_URL')} '
-    'FIREBASE_PROJECT_ID=${firebaseProjectId.isNotEmpty} '
+    'CLERK_PUBLISHABLE_KEY=${clerkPublishableKey.isNotEmpty} '
     'BUILD_COMMIT_SHA=$buildCommitSha '
     'BUILD_ENVIRONMENT=$buildEnvironment',
     source: 'main',
@@ -130,7 +129,8 @@ Future<void> _configureSentryScope() async {
       'timestamp': buildTimestamp,
       'mode': buildModeLabel(),
       'app_url_host': hostForUrl(replayGlowzAppUrl),
-      'firebase_project_id': firebaseProjectId,
+      'clerk_configured': hasClerkConfig,
+      'product_id': replayGlowzProductId,
       'sentry_traces_sample_rate': sentryTracesSampleRate,
     });
     if (kIsWeb) {
@@ -148,7 +148,7 @@ Future<void> _configureSentryScope() async {
 // Bootstrap widget
 // ---------------------------------------------------------------------------
 
-/// Eagerly initialises Firebase Auth and wires the Convex auth token before building
+/// Eagerly initialises suite auth and wires the Convex auth token before building
 /// the main application widget.
 ///
 /// This is a separate [ConsumerStatefulWidget] so that the auth service is
@@ -168,7 +168,7 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
 
   bool get _hasConvexConfig => convexUrl.isNotEmpty;
 
-  bool get _hasFirebaseConfig => hasFirebaseConfig;
+  bool get _hasSuiteAuthConfig => hasClerkConfig;
 
   @override
   void initState() {
@@ -181,15 +181,15 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
 
   Future<void> _bootstrap() async {
     AppLogger.instance.log(
-      'bootstrap() start — hasConvex=$_hasConvexConfig hasFirebase=$_hasFirebaseConfig',
+      'bootstrap() start — hasConvex=$_hasConvexConfig hasSuiteAuth=$_hasSuiteAuthConfig',
       source: 'bootstrap',
     );
     try {
-      if (_hasConvexConfig && _hasFirebaseConfig) {
+      if (_hasConvexConfig && _hasSuiteAuthConfig) {
         final auth = ref.read(authServiceProvider);
         await auth.ready;
         AppLogger.instance.log(
-          'Firebase Auth ready (isInitialised=${auth.isInitialised})',
+          'Suite auth ready (isInitialised=${auth.isInitialised})',
           source: 'bootstrap',
         );
         final convex = ref.read(convexServiceProvider);
@@ -199,16 +199,16 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
           final convexAuthReady = await auth.waitForConvexTokenReady();
           AppLogger.instance.log(
             convexAuthReady
-                ? 'Convex auth ready for ${auth.currentUser?.uid ?? 'signed-in user'}'
+                ? 'Convex auth ready for ${auth.currentUser?.id ?? 'signed-in user'}'
                 : 'Convex auth not fully ready yet; guarded providers will use '
-                      'local fallbacks until Firebase token minting catches up',
+                      'local fallbacks until suite token minting catches up',
             source: 'bootstrap',
             level: convexAuthReady ? LogLevel.info : LogLevel.warning,
           );
         }
       } else {
         AppLogger.instance.log(
-          'Skipping Firebase/Convex wiring — missing env vars',
+          'Skipping suite auth/Convex wiring — missing env vars',
           source: 'bootstrap',
           level: LogLevel.warning,
         );
@@ -249,7 +249,7 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
         themeMode: ThemeMode.system,
         home: _ConfigFallbackScreen(
           hasConvexConfig: _hasConvexConfig,
-          hasFirebaseConfig: _hasFirebaseConfig,
+          hasSuiteAuthConfig: _hasSuiteAuthConfig,
           bootstrapError: _bootstrapError,
         ),
       );
@@ -262,12 +262,12 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
 class _ConfigFallbackScreen extends StatelessWidget {
   const _ConfigFallbackScreen({
     required this.hasConvexConfig,
-    required this.hasFirebaseConfig,
+    required this.hasSuiteAuthConfig,
     this.bootstrapError,
   });
 
   final bool hasConvexConfig;
-  final bool hasFirebaseConfig;
+  final bool hasSuiteAuthConfig;
   final String? bootstrapError;
 
   Future<void> _copyDiagnostics(BuildContext context) async {
@@ -280,8 +280,12 @@ class _ConfigFallbackScreen extends StatelessWidget {
       'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}',
       'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
       'CONVEX_URL: ${convexUrl.isNotEmpty ? convexUrl : '(missing)'}',
-      'FIREBASE_PROJECT_ID: ${firebaseProjectId.isNotEmpty ? firebaseProjectId : '(missing)'}',
-      'FIREBASE_APP_ID: ${firebaseAppId.isNotEmpty ? maskValue(firebaseAppId) : '(missing)'}',
+      'CLERK_PUBLISHABLE_KEY: ${clerkPublishableKey.isNotEmpty ? maskValue(clerkPublishableKey) : '(missing)'}',
+      'CLERK_SIGN_IN_URL: $clerkSignInUrl',
+      'CLERK_SIGN_UP_URL: $clerkSignUpUrl',
+      'REPLAYGLOWZ_PRODUCT_ID: $replayGlowzProductId',
+      'REPLAYGLOWZ_LEGACY_PRODUCT_IDS: $replayGlowzLegacyProductIds',
+      'REPLAYGLOWZ_ACCOUNT_CENTER_URL: $replayGlowzAccountCenterUrl',
       'REPLAYGLOWZ_APP_URL: ${replayGlowzAppUrl.isNotEmpty ? replayGlowzAppUrl : '(missing)'}',
       'REPLAYGLOWZ_APP_URL host match: ${hostMatchLabel(replayGlowzAppUrl)}',
       'SENTRY: ${sentryStatusLabel()}',
@@ -302,7 +306,7 @@ class _ConfigFallbackScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final missing = <String>[
       if (!hasConvexConfig) 'CONVEX_URL',
-      if (!hasFirebaseConfig) 'FIREBASE_*',
+      if (!hasSuiteAuthConfig) 'CLERK_PUBLISHABLE_KEY',
     ];
 
     return Scaffold(
@@ -359,8 +363,12 @@ class _ConfigFallbackScreen extends StatelessWidget {
                       'Build mode: ${buildModeLabel()}\n'
                       'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}\n'
                       'CONVEX_URL: ${convexUrl.isNotEmpty ? convexUrl : '(missing)'}\n'
-                      'FIREBASE_PROJECT_ID: ${firebaseProjectId.isNotEmpty ? firebaseProjectId : '(missing)'}\n'
-                      'FIREBASE_APP_ID: ${firebaseAppId.isNotEmpty ? maskValue(firebaseAppId) : '(missing)'}\n'
+                      'CLERK_PUBLISHABLE_KEY: ${clerkPublishableKey.isNotEmpty ? maskValue(clerkPublishableKey) : '(missing)'}\n'
+                      'CLERK_SIGN_IN_URL: $clerkSignInUrl\n'
+                      'CLERK_SIGN_UP_URL: $clerkSignUpUrl\n'
+                      'REPLAYGLOWZ_PRODUCT_ID: $replayGlowzProductId\n'
+                      'REPLAYGLOWZ_LEGACY_PRODUCT_IDS: $replayGlowzLegacyProductIds\n'
+                      'REPLAYGLOWZ_ACCOUNT_CENTER_URL: $replayGlowzAccountCenterUrl\n'
                       'REPLAYGLOWZ_APP_URL: ${replayGlowzAppUrl.isNotEmpty ? replayGlowzAppUrl : '(missing)'}\n'
                       'REPLAYGLOWZ_APP_URL host match: ${hostMatchLabel(replayGlowzAppUrl)}\n'
                       'SENTRY: ${sentryStatusLabel()}',

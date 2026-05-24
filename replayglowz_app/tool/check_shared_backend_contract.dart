@@ -3,6 +3,7 @@ import 'dart:io';
 const _requiredFunctions = <String>[
   'users:ensureUser',
   'users:getCurrentUser',
+  'users:getProductAccessStatus',
   'settings:getSettings',
   'subscriptions:getSubscription',
   'youtube:getYoutubeConnectionStatus',
@@ -16,8 +17,8 @@ void main() {
   final backendRoot = _resolveBackendRoot();
   if (!backendRoot.existsSync()) {
     stderr.writeln(
-      'Shared backend not found at ${backendRoot.path}.\n'
-      'Set REPLAYGLOWZ_BACKEND_ROOT to the Convex backend directory if needed.',
+      'ReplayGlowz product backend not found at ${backendRoot.path}.\n'
+      'Set REPLAYGLOWZ_BACKEND_ROOT to the ReplayGlowz product Convex backend directory if needed.',
     );
     exitCode = 1;
     return;
@@ -44,13 +45,13 @@ void main() {
 
   if (missing.isEmpty) {
     stdout.writeln(
-      'Shared backend contract OK: ${_requiredFunctions.length} critical '
-      'Flutter functions found in ${backendRoot.path}',
+      'ReplayGlowz product backend contract OK: ${_requiredFunctions.length} critical '
+      'ReplayGlowz product backend functions found in ${backendRoot.path}',
     );
     return;
   }
 
-  stderr.writeln('Shared backend contract check failed:');
+  stderr.writeln('ReplayGlowz product backend contract check failed:');
   for (final item in missing) {
     stderr.writeln('- $item');
   }
@@ -63,5 +64,16 @@ Directory _resolveBackendRoot() {
     return Directory(fromEnv.trim());
   }
 
-  return Directory('replayglowz_backend/packages/backend/convex');
+  final candidates = <String>[
+    'replayglowz_backend/packages/backend/convex',
+    '../replayglowz_backend/packages/backend/convex',
+  ];
+  for (final candidate in candidates) {
+    final directory = Directory(candidate);
+    if (directory.existsSync()) {
+      return directory;
+    }
+  }
+
+  return Directory(candidates.first);
 }

@@ -119,12 +119,12 @@ The repo also contains Vercel Node handlers for YouTube OAuth under `api/auth/`.
 - Mutation helpers in `lib/providers/mutations.dart` are the expected write boundary for screens.
 - Several providers provide local defaults or empty fallbacks when auth is not ready or optional backend functions are missing.
 
-## Shared backend contract
+## Product backend contract
 
-- This repo depends on Convex functions defined in the backend checkout selected by `REPLAYGLOWZ_BACKEND_ROOT`.
+- This repo depends on Convex functions defined in `replayglowz_backend/packages/backend/convex`.
 - `tool/check_shared_backend_contract.dart` checks critical functions such as `users:ensureUser`, `users:getCurrentUser`, `settings:getSettings`, `subscriptions:getSubscription`, YouTube connection status, feedback admin, and notifications.
-- Set `REPLAYGLOWZ_BACKEND_ROOT` when the backend checkout is elsewhere.
-- Flutter and any other clients consuming the same backend must coordinate schema/function changes.
+- Set `REPLAYGLOWZ_BACKEND_ROOT` only when the backend checkout is elsewhere.
+- Flutter and any other clients consuming the same backend must coordinate schema/function changes inside the ReplayGlowz monorepo.
 
 ## Deployment model
 

@@ -2,15 +2,42 @@ import 'package:flutter/foundation.dart';
 
 const convexUrl = String.fromEnvironment('CONVEX_URL', defaultValue: '');
 
+const clerkPublishableKey = String.fromEnvironment(
+  'CLERK_PUBLISHABLE_KEY',
+  defaultValue: '',
+);
+
+const clerkSignInUrl = String.fromEnvironment(
+  'CLERK_SIGN_IN_URL',
+  defaultValue: '/sign-in',
+);
+
+const clerkSignUpUrl = String.fromEnvironment(
+  'CLERK_SIGN_UP_URL',
+  defaultValue: '/sign-up',
+);
+
+const replayGlowzProductId = String.fromEnvironment(
+  'REPLAYGLOWZ_PRODUCT_ID',
+  defaultValue: 'replayglowz',
+);
+
+const replayGlowzLegacyProductIds = String.fromEnvironment(
+  'REPLAYGLOWZ_LEGACY_PRODUCT_IDS',
+  defaultValue: 'tubeflow',
+);
+
+const replayGlowzAccountCenterUrl = String.fromEnvironment(
+  'REPLAYGLOWZ_ACCOUNT_CENTER_URL',
+  defaultValue: 'https://winflows.com/account',
+);
+
 const replayGlowzAppUrl = String.fromEnvironment(
   'REPLAYGLOWZ_APP_URL',
   defaultValue: '',
 );
 
-const sentryDsn = String.fromEnvironment(
-  'SENTRY_DSN',
-  defaultValue: '',
-);
+const sentryDsn = String.fromEnvironment('SENTRY_DSN', defaultValue: '');
 
 const sentryEnvironment = String.fromEnvironment(
   'SENTRY_ENVIRONMENT',
@@ -73,6 +100,8 @@ String sentryStatusLabel() {
       : 'off';
   return 'enabled (environment=${sentryEnvironmentLabel()}, release=${sentryReleaseLabel()}, traces=$traces)';
 }
+
+bool get hasClerkConfig => clerkPublishableKey.isNotEmpty;
 
 String maskValue(String value, {int head = 10, int tail = 5}) {
   if (value.isEmpty) return '(missing)';

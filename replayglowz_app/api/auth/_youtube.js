@@ -1,6 +1,8 @@
 const DEFAULT_RETURN_TO = '/#/playlists';
 const YOUTUBE_SCOPE = 'https://www.googleapis.com/auth/youtube';
 const _HOST_PATTERN = /^[A-Za-z0-9.-]+(?::\d+)?$/;
+const DEFAULT_PRODUCT_ID = 'replayglowz';
+const DEFAULT_LEGACY_PRODUCT_IDS = ['tubeflow'];
 
 function getEnv(...names) {
   for (const name of names) {
@@ -156,11 +158,168 @@ function sendRedirect(res, location, cookies = []) {
   res.end();
 }
 
+function getBearerTokenFromAuthHeader(authHeader) {
+  const header = typeof authHeader === 'string' ? authHeader.trim() : '';
+  if (!header.startsWith('Bearer ')) return '';
+  return header.slice('Bearer '.length).trim();
+}
+
+function parseLegacyProductIds(raw) {
+  if (!raw || !raw.trim()) return DEFAULT_LEGACY_PRODUCT_IDS;
+  const ids = raw
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return ids.length > 0 ? ids : DEFAULT_LEGACY_PRODUCT_IDS;
+}
+
+function resolveEntitlementInputs() {
+  return {
+    productId: getEnv('REPLAYGLOWZ_PRODUCT_ID') || DEFAULT_PRODUCT_ID,
+    legacyProductIds: parseLegacyProductIds(
+      getEnv('REPLAYGLOWZ_LEGACY_PRODUCT_IDS'),
+    ),
+    verifyUrl: getEnv('SUITE_ENTITLEMENT_VERIFY_URL'),
+    verifySecret: getEnv('SUITE_ENTITLEMENT_VERIFY_SECRET'),
+  };
+}
+
+function resolveEntitlementResult(payload, productId, legacyProductIds) {
+  if (!payload || typeof payload !== 'object') {
+    return { hasAccess: false, reasonCode: 'invalid_entitlement_payload' };
+  }
+
+  if (payload.hasAccess === true) {
+    return {
+      hasAccess: true,
+      matchedProductId:
+        typeof payload.matchedProductId === 'string'
+          ? payload.matchedProductId
+          : productId,
+      globalUserId:
+        typeof payload.globalUserId === 'string' ? payload.globalUserId : '',
+    };
+  }
+
+  const entitlements = Array.isArray(payload.entitlements) ? payload.entitlements : [];
+  const accepted = new Set([productId, ...legacyProductIds]);
+  const hasAccess = entitlements.some((entitlement) => {
+    if (!entitlement || typeof entitlement !== 'object') return false;
+    const entitlementProductId = entitlement.productId;
+    const status = entitlement.status;
+    return (
+      typeof entitlementProductId === 'string' &&
+      accepted.has(entitlementProductId) &&
+      (status === 'active' || status === 'trialing')
+    );
+  });
+
+  return {
+    hasAccess,
+    matchedProductId: hasAccess ? productId : undefined,
+    globalUserId:
+      typeof payload.globalUserId === 'string' ? payload.globalUserId : '',
+    reasonCode:
+      typeof payload.reasonCode === 'string'
+        ? payload.reasonCode
+        : hasAccess
+          ? undefined
+          : 'missing_product_entitlement',
+  };
+}
+
+async function verifySuiteSessionAndEntitlement({
+  sessionToken,
+  verifyUrl,
+  verifySecret,
+  productId,
+  legacyProductIds,
+  requestId,
+}) {
+  if (!verifyUrl) {
+    return { ok: false, status: 503, error: 'suite_verify_url_not_configured' };
+  }
+  if (!verifySecret) {
+    return {
+      ok: false,
+      status: 503,
+      error: 'suite_verify_secret_not_configured',
+    };
+  }
+  if (!sessionToken) {
+    return { ok: false, status: 401, error: 'missing_suite_session_token' };
+  }
+
+  let response;
+  try {
+    response = await fetch(verifyUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${sessionToken}`,
+        'Content-Type': 'application/json',
+        'x-suite-entitlement-secret': verifySecret,
+        ...(requestId ? { 'X-Request-ID': requestId } : {}),
+      },
+      body: JSON.stringify({
+        productId,
+        legacyProductIds,
+      }),
+    });
+  } catch (_) {
+    return { ok: false, status: 503, error: 'suite_verify_network_error' };
+  }
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch (_) {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: response.status,
+      error:
+        typeof payload?.error === 'string'
+          ? payload.error
+          : 'suite_verify_failed',
+    };
+  }
+
+  const entitlement = resolveEntitlementResult(
+    payload,
+    productId,
+    legacyProductIds,
+  );
+  if (!entitlement.hasAccess) {
+    return {
+      ok: false,
+      status: 403,
+      error: entitlement.reasonCode || 'product_access_inactive',
+      globalUserId: entitlement.globalUserId,
+    };
+  }
+
+  return {
+    ok: true,
+    status: 200,
+    globalUserId: entitlement.globalUserId,
+    matchedProductId: entitlement.matchedProductId || productId,
+  };
+}
+
 module.exports = {
+  DEFAULT_PRODUCT_ID,
+  DEFAULT_LEGACY_PRODUCT_IDS,
   YOUTUBE_SCOPE,
   getEnv,
   getRequestOrigin,
   isSecureOrigin,
+  getBearerTokenFromAuthHeader,
+  parseLegacyProductIds,
+  resolveEntitlementInputs,
+  verifySuiteSessionAndEntitlement,
   parseCookies,
   serializeCookie,
   appendCookies,

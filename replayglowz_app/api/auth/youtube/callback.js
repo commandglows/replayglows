@@ -1,15 +1,20 @@
 const {
+  getBearerTokenFromAuthHeader,
   getEnv,
   getRequestOrigin,
   isSecureOrigin,
   parseCookies,
+  resolveEntitlementInputs,
   serializeCookie,
   buildReturnUrl,
   sendRedirect,
+  verifySuiteSessionAndEntitlement,
 } = require('../_youtube');
 
-const REPLAYGLOWZ_FIREBASE_TOKEN_COOKIE =
-  'replayglowz_youtube_firebase_id_token';
+const REPLAYGLOWZ_SUITE_SESSION_TOKEN_COOKIE =
+  'replayglowz_youtube_suite_session_token';
+const REPLAYGLOWZ_OAUTH_GLOBAL_USER_COOKIE =
+  'replayglowz_youtube_global_user_id';
 
 async function exchangeCodeForTokens({
   code,
@@ -81,10 +86,13 @@ function decodeJwtPayload(jwt) {
 
 async function ensureConvexUser(convexUrl, convexJwt) {
   const payload = decodeJwtPayload(convexJwt);
-  const emailAddress = payload.email;
+  const emailAddress =
+    payload.email ||
+    payload.email_address ||
+    payload?.primaryEmailAddress?.emailAddress;
 
   if (!emailAddress) {
-    throw new Error('Firebase ID token returned no email address.');
+    throw new Error('Suite token returned no email address.');
   }
 
   await runConvexMutation(convexUrl, convexJwt, 'users:ensureUser', {
@@ -120,7 +128,13 @@ module.exports = async function handler(req, res) {
   const cookies = parseCookies(req.headers.cookie);
   const storedState = cookies.youtube_oauth_state;
   const returnTo = cookies.youtube_oauth_return_to;
-  const firebaseIdToken = cookies[REPLAYGLOWZ_FIREBASE_TOKEN_COOKIE];
+  const suiteSessionTokenFromCookie = cookies[REPLAYGLOWZ_SUITE_SESSION_TOKEN_COOKIE];
+  const suiteSessionToken =
+    suiteSessionTokenFromCookie ||
+    getBearerTokenFromAuthHeader(req.headers.authorization);
+  const requestId = req.headers['x-request-id'];
+  const { productId, legacyProductIds, verifySecret, verifyUrl } =
+    resolveEntitlementInputs();
 
   const googleClientId = getEnv('GOOGLE_CLIENT_ID');
   const googleClientSecret = getEnv('GOOGLE_CLIENT_SECRET');
@@ -141,7 +155,21 @@ module.exports = async function handler(req, res) {
       secure,
       maxAge: 0,
     }),
-    serializeCookie(REPLAYGLOWZ_FIREBASE_TOKEN_COOKIE, '', {
+    serializeCookie(REPLAYGLOWZ_SUITE_SESSION_TOKEN_COOKIE, '', {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax',
+      secure,
+      maxAge: 0,
+    }),
+    serializeCookie(REPLAYGLOWZ_OAUTH_GLOBAL_USER_COOKIE, '', {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax',
+      secure,
+      maxAge: 0,
+    }),
+    serializeCookie('replayglowz_oauth_product_id', '', {
       path: '/',
       httpOnly: true,
       sameSite: 'Lax',
@@ -177,15 +205,32 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (!firebaseIdToken) {
+  if (!suiteSessionToken) {
     redirectWithError(
-      'ReplayGlowz lost the Firebase auth handoff before callback. Start YouTube connect again from the app.',
+      'ReplayGlowz lost the suite auth handoff before callback. Start YouTube connect again from the app.',
     );
     return;
   }
 
   if (!googleClientId || !googleClientSecret) {
     redirectWithError('Google OAuth credentials are missing on this deployment.');
+    return;
+  }
+
+  const verification = await verifySuiteSessionAndEntitlement({
+    sessionToken: suiteSessionToken,
+    verifyUrl,
+    verifySecret,
+    productId,
+    legacyProductIds,
+    requestId: Array.isArray(requestId) ? requestId[0] : requestId,
+  });
+  if (!verification.ok) {
+    redirectWithError(
+      verification.status === 403
+        ? 'Product access inactive for this account.'
+        : 'Suite session verification failed.',
+    );
     return;
   }
 
@@ -203,8 +248,8 @@ module.exports = async function handler(req, res) {
       redirectUri,
     });
 
-    await ensureConvexUser(convexUrl, firebaseIdToken);
-    await saveYoutubeTokens(convexUrl, firebaseIdToken, tokens);
+    await ensureConvexUser(convexUrl, suiteSessionToken);
+    await saveYoutubeTokens(convexUrl, suiteSessionToken, tokens);
 
     sendCallbackRedirect({ youtube_connected: 'true' });
   } catch (error) {

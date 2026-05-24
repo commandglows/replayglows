@@ -15,6 +15,7 @@ security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
   - "replayglowz_app"
+  - "replayglowz_backend"
   - "replayglowz_site"
   - "replayglowz_lab"
 depends_on:
@@ -33,11 +34,12 @@ next_step: "/sf-docs audit"
 
 ## Purpose
 
-This repository is the canonical ReplayGlowz monorepo for the Flutter app, Astro marketing site, and transcript worker.
+This repository is the canonical ReplayGlowz monorepo for the Flutter app, product Convex backend, Astro marketing site, and transcript worker.
 
 ## Repository Layout
 
 - `replayglowz_app/`: Flutter web app, Vercel API handlers for YouTube OAuth, and app-level product contracts.
+- `replayglowz_backend/`: ReplayGlowz product Convex backend for product data, YouTube tokens, preferences, playlists, transcripts, and product access snapshots.
 - `replayglowz_site/`: Astro public marketing site, blog, pricing, comparison, privacy, and terms pages.
 - `replayglowz_lab/`: FastAPI transcript worker and operational tooling.
 - `shipflow_data/`: monorepo-level governance contracts and documentation maps.
@@ -55,6 +57,7 @@ Use focused checks from the changed subproject:
 
 ```bash
 (cd replayglowz_app && flutter analyze)
+(cd replayglowz_backend/packages/backend && npm run typecheck)
 (cd replayglowz_site && npm run build)
 (cd replayglowz_lab && python -m py_compile main.py server.py)
 ```

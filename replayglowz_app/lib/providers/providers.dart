@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:replayglowz_app/app/build_info.dart';
 import 'package:replayglowz_app/auth/auth_state.dart';
 import 'package:replayglowz_app/auth/auth_service.dart';
 import 'package:replayglowz_app/convex/convex_client.dart';
@@ -157,6 +158,22 @@ class PreferencesData {
   final ReplayGlowzUser? user;
 }
 
+class ProductAccessStatus {
+  const ProductAccessStatus({
+    required this.loading,
+    required this.hasAccess,
+    required this.accountRecognized,
+    this.reasonCode,
+    this.raw,
+  });
+
+  final bool loading;
+  final bool hasAccess;
+  final bool accountRecognized;
+  final String? reasonCode;
+  final Map<String, dynamic>? raw;
+}
+
 ReplayGlowzUser _fallbackUserFromAuth(AuthUser user) {
   return ReplayGlowzUser(
     id: 'user:${user.id}',
@@ -248,6 +265,14 @@ void _logUnauthorizedFallback(
     error: error,
     stackTrace: stackTrace,
   );
+}
+
+List<String> _legacyProductIds() {
+  return replayGlowzLegacyProductIds
+      .split(',')
+      .map((value) => value.trim())
+      .where((value) => value.isNotEmpty)
+      .toList(growable: false);
 }
 
 // ---------------------------------------------------------------------------
@@ -433,6 +458,104 @@ final youtubeConnectionProvider = FutureProvider<Map<String, dynamic>?>((
     'hasTokens': hasTokens,
     'connected': connected,
   };
+});
+
+/// One-shot query for product access status enforced by the backend.
+///
+/// This is intentionally fail-closed: if the backend status function is not
+/// available, the UI treats access as inactive.
+final productAccessStatusProvider = FutureProvider<ProductAccessStatus>((
+  ref,
+) async {
+  final authState = ref.watch(authStateProvider);
+  if (authState is! AuthAuthenticated) {
+    return const ProductAccessStatus(
+      loading: false,
+      hasAccess: false,
+      accountRecognized: false,
+      reasonCode: 'unauthenticated',
+    );
+  }
+
+  if (!await _waitForConvexAuthReady(
+    ref,
+    consumer: 'productAccessStatusProvider',
+  )) {
+    return const ProductAccessStatus(
+      loading: true,
+      hasAccess: false,
+      accountRecognized: true,
+      reasonCode: 'auth_not_ready',
+    );
+  }
+
+  final service = ref.watch(convexServiceProvider);
+  try {
+    final raw = await service.query<dynamic>('users:getProductAccessStatus', {
+      'productId': replayGlowzProductId,
+      'legacyProductIds': _legacyProductIds(),
+    });
+    final status = _decodeMap(raw) ?? const <String, dynamic>{};
+    final hasAccess =
+        status['hasAccess'] == true ||
+        status['access'] == 'active' ||
+        status['entitlementActive'] == true;
+    final recognized =
+        status['accountRecognized'] == true ||
+        status['recognized'] == true ||
+        status['userKnown'] == true;
+    return ProductAccessStatus(
+      loading: false,
+      hasAccess: hasAccess,
+      accountRecognized: recognized,
+      reasonCode: status['reasonCode']?.toString(),
+      raw: status,
+    );
+  } catch (e, st) {
+    if (isMissingPublicConvexFunctionError(
+      e,
+      path: 'users:getProductAccessStatus',
+    )) {
+      _logFunctionMissing(
+        'users:getProductAccessStatus',
+        consumer: 'productAccessStatusProvider',
+        fallback: 'denying access by default',
+      );
+      return const ProductAccessStatus(
+        loading: false,
+        hasAccess: false,
+        accountRecognized: true,
+        reasonCode: 'missing_access_status_function',
+      );
+    }
+    if (isConvexUnauthorizedError(e)) {
+      _logUnauthorizedFallback(
+        'productAccessStatusProvider',
+        error: e,
+        stackTrace: st,
+        fallback: 'denying access by default',
+      );
+      return const ProductAccessStatus(
+        loading: false,
+        hasAccess: false,
+        accountRecognized: false,
+        reasonCode: 'unauthorized',
+      );
+    }
+    AppLogger.instance.log(
+      'productAccessStatusProvider failed; denying access by default',
+      source: 'ConvexAuth',
+      level: LogLevel.warning,
+      error: e,
+      stackTrace: st,
+    );
+    return const ProductAccessStatus(
+      loading: false,
+      hasAccess: false,
+      accountRecognized: true,
+      reasonCode: 'status_query_failed',
+    );
+  }
 });
 
 // ---------------------------------------------------------------------------

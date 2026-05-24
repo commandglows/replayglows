@@ -51,12 +51,13 @@ next_step: "/sf-docs technical audit"
 ## System Map
 
 - `replayglowz_app`: Flutter web client with Riverpod, go_router, Clerk auth, Convex client state, Vercel static deployment, and Vercel API handlers for YouTube OAuth.
+- `replayglowz_backend`: Convex product backend for ReplayGlowz product data, YouTube tokens, preferences, playlists, transcripts, and product access snapshots.
 - `replayglowz_site`: Astro static marketing site with English/French routes, blog content collection, public pricing/comparison/trust pages, and app CTA routing through `src/config/site.ts`.
 - `replayglowz_lab`: FastAPI transcript worker for media download, normalization, provider transcription, health checks, and operational deployment.
 
 ## Integration Boundaries
 
-- The shared Convex backend is external to this monorepo and remains a separate source of truth.
+- The ReplayGlowz product Convex backend lives inside this monorepo under `replayglowz_backend`.
 - Flutter app code under `lib/convex/` is client transport/state, not backend schema or functions.
 - Public site content must use app/product contracts as claim boundaries.
 - Worker secrets, provider keys, cookies, and raw logs must not be copied into docs.

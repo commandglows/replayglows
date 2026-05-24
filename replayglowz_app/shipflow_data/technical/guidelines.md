@@ -90,12 +90,12 @@ next_step: "Update when auth ownership, provider boundaries, env names, or deplo
 - Keep `CLERK_SECRET_KEY`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` documented as serverless OAuth values.
 - Keep backend-only variables, including `FEEDBACK_ADMIN_EMAILS`, out of Flutter build config.
 
-## Cross-repository rules
+## Backend contract rules
 
-- The Convex schema and server functions live in the shared backend repo, not here.
-- If Flutter starts calling a new Convex function, deploy or coordinate the backend change first.
+- The Convex schema and server functions live in `replayglowz_backend/packages/backend/convex`.
+- If Flutter starts calling a new Convex function, update and deploy the monorepo backend change first.
 - Use `dart run tool/check_shared_backend_contract.dart` for critical function-name drift checks.
-- Set `REPLAYGLOWZ_BACKEND_ROOT` to the shared backend checkout before running backend contract checks.
+- Set `REPLAYGLOWZ_BACKEND_ROOT` only when validating an alternate backend checkout.
 - Keep Clerk/Convex auth contract details aligned: Clerk JWT template `convex`, backend provider `applicationID: "convex"`, and trusted Clerk issuer domain.
 
 ## Deployment conventions

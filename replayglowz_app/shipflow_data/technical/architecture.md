@@ -40,17 +40,17 @@ linked_systems:
   - "lib/convex"
   - "api/auth"
   - "Vercel"
-  - "Shared Convex backend selected by REPLAYGLOWZ_BACKEND_ROOT"
+  - "ReplayGlowz product Convex backend"
 external_dependencies:
   - "Clerk"
   - "Convex"
   - "Vercel"
   - "Google YouTube OAuth"
 invariants:
-  - "This repo remains a Flutter web client plus Vercel OAuth helpers, not the Convex backend source of truth."
+  - "The product Convex backend lives in the ReplayGlowz monorepo under replayglowz_backend/packages/backend."
   - "Authenticated data access depends on Clerk sessions minting Convex JWTs with template convex."
   - "Writes continue to route through provider and mutation layers rather than ad hoc screen logic."
-  - "Backend function names are a cross-repository deployment contract."
+  - "Backend function names are a deployment contract between replayglowz_app and replayglowz_backend."
 depends_on:
   - "CLAUDE.md"
   - "README.md"

@@ -201,13 +201,29 @@ Future<void> _launchYoutubeConnect(
 
   try {
     final container = _providerContainer(context);
+    final accessStatus = await container.read(
+      productAccessStatusProvider.future,
+    );
+    if (!accessStatus.hasAccess) {
+      if (context.mounted) {
+        showErrorSnackBar(
+          context,
+          error: accessStatus.accountRecognized
+              ? 'Your suite account is recognized, but ReplayGlowz access is inactive.'
+              : 'ReplayGlowz could not verify product access for this account.',
+          prefix: 'YouTube connect unavailable',
+        );
+      }
+      return;
+    }
+
     final auth = container.read(authServiceProvider);
-    final firebaseIdToken = await auth.getConvexToken(forceRefresh: true);
-    if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
+    final sessionToken = await auth.getSessionToken(forceRefresh: true);
+    if (sessionToken == null || sessionToken.isEmpty) {
       if (!context.mounted) return;
       final routeAfterSignIn = _currentRouterRoute(preferredRoute: returnTo);
       AppLogger.instance.log(
-        'Cannot start YouTube OAuth because Firebase Auth has no active token; routing to sign-in',
+        'Cannot start YouTube OAuth because suite auth has no active session token; routing to sign-in',
         source: 'YoutubeConnect',
         level: LogLevel.warning,
       );
@@ -230,7 +246,7 @@ Future<void> _launchYoutubeConnect(
 
     final response = await http.get(
       target,
-      headers: {'Authorization': 'Bearer $firebaseIdToken'},
+      headers: {'Authorization': 'Bearer $sessionToken'},
     );
     if (response.statusCode != 200) {
       throw StateError(

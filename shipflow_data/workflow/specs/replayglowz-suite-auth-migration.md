@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.4"
+artifact_version: "1.0.8"
 project: "replayglowz"
 created: "2026-05-23"
 created_at: "2026-05-23 13:11:10 UTC"
-updated: "2026-05-23"
-updated_at: "2026-05-23 19:30:27 UTC"
+updated: "2026-05-24"
+updated_at: "2026-05-24 08:26:24 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -30,13 +30,13 @@ linked_systems:
   - "Vercel"
 depends_on:
   - artifact: "/home/claude/shipflow_data/projects/winflowz/docs/technical/suite-authentication.md"
-    artifact_version: "1.0.9"
+    artifact_version: "1.0.10"
     required_status: "reviewed"
   - artifact: "/home/claude/shipflow_data/projects/winflowz/docs/technical/suite-authentication-support-runbook.md"
     artifact_version: "1.0.1"
     required_status: "reviewed"
   - artifact: "/home/claude/winflowz_app/shipflow_data/workflow/specs/unified-suite-authentication.md"
-    artifact_version: "1.0.24"
+    artifact_version: "1.0.25"
     required_status: "active"
   - artifact: "/home/claude/shipflow_data/specs/master-auth-playbook.md"
     artifact_version: "0.1.0"
@@ -55,8 +55,11 @@ evidence:
   - "Clerk official docs state satellite domains can share auth state with a primary domain, but this is an advanced workflow."
   - "User clarification 2026-05-23: ReplayGlowz must keep a product-specific Convex backend for YouTube videos, notes, playlists, transcripts, preferences and OAuth product data; only identity and entitlements are centralized through Clerk and the WinFlowz suite ledger."
   - "User correction 2026-05-23: TubeFlow is no longer the active product name; `replayglowz` is the canonical product id for new entitlements, and `tubeflow` may only appear as a legacy alias/migration input."
-  - "Local evidence: `/home/claude/winflowz/convex` contains the active suite identity and entitlement ledger; ReplayGlowz app docs already treat its product Convex backend as a separate repository selected through `REPLAYGLOWZ_BACKEND_ROOT`."
-next_step: "/sf-start replayglowz-suite-auth-migration"
+  - "Local evidence: `/home/claude/winflowz/convex` contains the active suite identity and entitlement ledger; the ReplayGlowz product Convex backend has been migrated into `replayglowz_backend/packages/backend/convex`."
+  - "Local evidence 2026-05-23: `/home/claude/winflowz/src/pages/api/bridge/entitlement.ts` exposes the suite verifier for Clerk session tokens and `product_id=replayglowz` with `tubeflow` as legacy alias only."
+  - "Local evidence 2026-05-23: ReplayGlowz Vercel OAuth handlers call `SUITE_ENTITLEMENT_VERIFY_URL` with `Authorization: Bearer <Clerk session token>` and `x-suite-entitlement-secret`."
+  - "Production evidence 2026-05-24: Vercel Production env names exist for the suite entitlement verifier, but the live WinFlowz endpoint returns 404 and ReplayGlowz production still serves the pre-suite-auth Firebase CSP/build."
+next_step: "/sf-prod replayglowz-suite-auth-migration"
 ---
 
 # Title
@@ -160,7 +163,7 @@ Migrer ReplayGlowz vers l'auth suite Clerk sur `app.replayglowz.com`, avec WinFl
 - `product_id=replayglowz` est le canon pour ce chantier; `tubeflow` est un alias legacy a migrer ou a accepter temporairement en lecture conservatrice.
 - WinFlowz Convex possede `global_user_id`, `identityAccounts`, `productEntitlements` et les evenements d'acces.
 - ReplayGlowz product Convex possede les donnees metier produit et doit appliquer l'autorisation serveur avant private reads/mutations.
-- Si le checkout backend produit n'est pas present localement, `sf-build` doit d'abord le localiser, le cloner ou definir `REPLAYGLOWZ_BACKEND_ROOT`; ce n'est pas une decision produit ouverte.
+- Le backend produit ReplayGlowz doit vivre dans ce monorepo sous `replayglowz_backend/packages/backend/convex`; `REPLAYGLOWZ_BACKEND_ROOT` sert seulement a valider un checkout alternatif.
 - Les tokens Clerk/suite, cookies, OAuth codes, refresh tokens, secrets et payloads prives ne doivent jamais etre loggues.
 - Local, preview et production restent des environnements auth separes.
 - Les callbacks Clerk et YouTube doivent correspondre exactement aux domaines deployes.
@@ -177,7 +180,8 @@ Migrer ReplayGlowz vers l'auth suite Clerk sur `app.replayglowz.com`, avec WinFl
 - `/home/claude/shipflow_data/specs/master-auth-playbook.md`: invariants auth transverses.
 - `/home/claude/winflowz/convex/schema.ts`, `/home/claude/winflowz/convex/users.ts`, `/home/claude/winflowz/convex/bridge.ts`: ledger suite, mapping identities, snapshots d'entitlements.
 - `/home/claude/winflowz/src/pages/api/bridge/*`: bridge serveur WinFlowz existant, a etendre pour un snapshot Clerk si necessaire.
-- `REPLAYGLOWZ_BACKEND_ROOT`: chemin du backend Convex produit ReplayGlowz. Par defaut historique documente: `/home/claude/tubeflow_expo/packages/backend/convex`, actuellement absent localement; l'implementation doit fournir ce checkout ou un chemin equivalent avant toute modification backend.
+- `replayglowz_backend/packages/backend/convex`: backend Convex produit ReplayGlowz integre au monorepo.
+- `REPLAYGLOWZ_BACKEND_ROOT`: override optionnel vers un checkout backend alternatif pour les checks de contrat.
 - `replayglowz_app/lib/auth/auth_service.dart`: Firebase session owner actuel.
 - `replayglowz_app/lib/auth/auth_state.dart`: etat auth SDK-neutral a conserver.
 - `replayglowz_app/lib/auth/auth_gate.dart`: UI sign-in et diagnostics.
@@ -218,7 +222,7 @@ Fresh-docs verdict: fresh-docs checked.
 - `AuthService` changes will affect router redirects, protected screens, ReplayGlowz product Convex providers, YouTube connect UI and preferences diagnostics.
 - ReplayGlowz product Convex backend config must accept Clerk/suite JWTs before ReplayGlowz can call protected functions.
 - WinFlowz suite Convex must expose or support a server-only entitlement snapshot path for Clerk sessions and `product_id=replayglowz`.
-- The ReplayGlowz product backend currently lives outside this repo by convention; implementation must set `REPLAYGLOWZ_BACKEND_ROOT` or retrieve the active checkout before backend changes.
+- The ReplayGlowz product backend now lives inside this repo; implementation must not depend on the archived TubeFlow repository for active backend code.
 - Existing Firebase users may not map automatically to Clerk users; the spec forbids email-only merge.
 - Existing `tubeflow` entitlements, if present, must be treated as legacy compatibility inputs and migrated or aliased explicitly; no new entitlement should be created with `product_id=tubeflow`.
 - Vercel env names will change from `FIREBASE_*` to Clerk/suite auth variables; stale Firebase envs should not remain required for web sign-in.
@@ -233,7 +237,7 @@ Update:
 - `replayglowz_app/AGENT.md` and `CLAUDE.md`: replace Firebase-as-stable-provider claims with suite Clerk auth and entitlement rules.
 - `replayglowz_app/.env.example`: replace or demote `FIREBASE_*`, add Clerk/suite auth envs and entitlement endpoint/config.
 - `replayglowz_app/CHANGELOG.md`: note migration from Firebase web auth to suite Clerk auth.
-- `replayglowz_app/tool/check_shared_backend_contract.dart`: document `REPLAYGLOWZ_BACKEND_ROOT` as the product Convex backend selector.
+- `replayglowz_app/tool/check_shared_backend_contract.dart`: document the monorepo backend default path and `REPLAYGLOWZ_BACKEND_ROOT` as an override only.
 - Root `AGENT.md` or monorepo guidance if auth validation commands change.
 - WinFlowz suite docs only by reference or with the suite agent's approval; do not fork the suite decision in ReplayGlowz docs.
 
@@ -256,16 +260,16 @@ Update:
 # Implementation Tasks
 
 - [ ] Tache 1 : Establish the ReplayGlowz product Convex backend checkout contract
-  - Fichier : `replayglowz_app/tool/check_shared_backend_contract.dart`, `replayglowz_app/README.md`, `replayglowz_app/AGENT.md`
-  - Action : Documenter et verifier que `REPLAYGLOWZ_BACKEND_ROOT` pointe vers le backend Convex produit ReplayGlowz. Garder le backend produit separe de WinFlowz Convex; WinFlowz Convex sert uniquement l'identite et les entitlements.
+  - Fichier : `replayglowz_backend/packages/backend/convex/**`, `replayglowz_app/tool/check_shared_backend_contract.dart`, `replayglowz_app/README.md`, `replayglowz_app/AGENT.md`
+  - Action : Integrer et verifier le backend Convex produit ReplayGlowz dans ce monorepo. Garder le backend produit separe de WinFlowz Convex; WinFlowz Convex sert uniquement l'identite et les entitlements.
   - User story link : evite de melanger l'identite suite avec les donnees metier produit.
   - Depends on : none.
   - Validate with : `cd replayglowz_app && REPLAYGLOWZ_BACKEND_ROOT=/path/to/convex dart run tool/check_shared_backend_contract.dart`.
-  - Notes : Si le checkout n'existe pas localement, le recuperer ou pointer `REPLAYGLOWZ_BACKEND_ROOT` avant toute modification backend. Ce n'est pas une decision produit ouverte.
+  - Notes : Ne pas dependre du repo historique TubeFlow; `REPLAYGLOWZ_BACKEND_ROOT` est un override de validation seulement.
 
 - [ ] Tache 2 : Define ReplayGlowz suite auth env contract
   - Fichier : `replayglowz_app/.env.example`, `replayglowz_app/build.sh`, `replayglowz_app/lib/app/build_info.dart`, `replayglowz_app/vercel.json`
-  - Action : Ajouter les variables publiques `CLERK_PUBLISHABLE_KEY`, `CLERK_SIGN_IN_URL`, `CLERK_SIGN_UP_URL`, `REPLAYGLOWZ_PRODUCT_ID=replayglowz`, `REPLAYGLOWZ_LEGACY_PRODUCT_IDS=tubeflow`, `REPLAYGLOWZ_ACCOUNT_CENTER_URL`, et garder `CONVEX_URL` pour le backend produit. Ajouter les variables serveur Vercel `CLERK_SECRET_KEY`, `SUITE_ENTITLEMENT_VERIFY_URL` et `SUITE_ENTITLEMENT_VERIFY_SECRET` pour les API YouTube. Retirer `FIREBASE_*` du chemin obligatoire web.
+  - Action : Ajouter les variables publiques `CLERK_PUBLISHABLE_KEY`, `CLERK_SIGN_IN_URL`, `CLERK_SIGN_UP_URL`, `REPLAYGLOWZ_PRODUCT_ID=replayglowz`, `REPLAYGLOWZ_LEGACY_PRODUCT_IDS=tubeflow`, `REPLAYGLOWZ_ACCOUNT_CENTER_URL`, et garder `CONVEX_URL` pour le backend produit. Ajouter les variables serveur Vercel `CLERK_SECRET_KEY`, `SUITE_ENTITLEMENT_VERIFY_URL=https://www.winflowz.com/api/bridge/entitlement` et `SUITE_ENTITLEMENT_VERIFY_SECRET` pour les API YouTube; le secret est transmis au verifier via `x-suite-entitlement-secret`. Retirer `FIREBASE_*` du chemin obligatoire web.
   - User story link : rend le deploiement reproductible.
   - Depends on : Tache 1.
   - Validate with : source review plus build Vercel preview.
@@ -304,15 +308,15 @@ Update:
   - Notes : Les logs doivent indiquer presence/absence de config sans valeurs secretes.
 
 - [ ] Tache 7 : Expose a WinFlowz suite entitlement verifier for Clerk sessions
-  - Fichier : `/home/claude/winflowz/src/pages/api/bridge/clerk.ts`, `/home/claude/winflowz/convex/bridge.ts`, `/home/claude/winflowz/convex/users.ts`
-  - Action : Ajouter ou verifier un endpoint serveur qui recoit un Clerk session token, verifie issuer/audience/session cote serveur, resolve le `global_user_id`, lit les entitlements dans WinFlowz Convex, et retourne un snapshot redacted pour `product_id=replayglowz`. Proteger l'appel server-to-server avec `SUITE_ENTITLEMENT_VERIFY_SECRET`.
+  - Fichier : `/home/claude/winflowz/src/pages/api/bridge/entitlement.ts`, `/home/claude/winflowz/convex/bridge.ts`, `/home/claude/winflowz/src/lib/suiteBridge.ts`
+  - Action : Ajouter ou verifier un endpoint serveur `POST /api/bridge/entitlement` qui recoit un Clerk session token dans `Authorization: Bearer`, verifie la session cote serveur, resolve le `global_user_id`, lit les entitlements dans WinFlowz Convex, et retourne un snapshot redacted pour `product_id=replayglowz`. Proteger l'appel server-to-server avec `SUITE_ENTITLEMENT_VERIFY_SECRET` transmis via `x-suite-entitlement-secret`.
   - User story link : l'identite est centrale, mais l'acces produit reste deny-by-default dans le ledger suite.
   - Depends on : Tache 2.
   - Validate with : tests endpoint invalid token, missing secret, no entitlement, active entitlement; `cd /home/claude/winflowz && npm run check` ou commande locale equivalente.
   - Notes : Ne jamais accepter `product_id`, `global_user_id` ou entitlement venant directement du client.
 
 - [ ] Tache 8 : Update ReplayGlowz product Convex auth and entitlement enforcement
-  - Fichier : `$REPLAYGLOWZ_BACKEND_ROOT/auth.config.ts`, `$REPLAYGLOWZ_BACKEND_ROOT/users.ts`, `$REPLAYGLOWZ_BACKEND_ROOT/youtube.ts`, `$REPLAYGLOWZ_BACKEND_ROOT/schema.ts`
+  - Fichier : `replayglowz_backend/packages/backend/convex/auth.config.ts`, `replayglowz_backend/packages/backend/convex/users.ts`, `replayglowz_backend/packages/backend/convex/youtube.ts`, `replayglowz_backend/packages/backend/convex/schema.ts`
   - Action : Configurer Clerk comme provider Convex, remplacer les hypotheses Firebase ID token, ajouter un helper serveur qui verifie ou consomme un snapshot WinFlowz pour `product_id=replayglowz`, accepte `tubeflow` seulement comme legacy alias temporaire, et refuser les reads/mutations privees sans entitlement actif.
   - User story link : les donnees ReplayGlowz restent dans le backend produit, mais l'acces vient de la suite.
   - Depends on : Taches 1, 6 et 7.
@@ -391,7 +395,7 @@ Update:
 # Test Strategy
 
 - Static checks: `cd replayglowz_app && flutter analyze`.
-- Product backend preflight: `cd replayglowz_app && REPLAYGLOWZ_BACKEND_ROOT=/path/to/convex dart run tool/check_shared_backend_contract.dart`.
+- Product backend preflight: `cd replayglowz_app && dart run tool/check_shared_backend_contract.dart`.
 - Dart/widget tests: auth state restore, sign-in denied state, entitlement active/absent UI, logout.
 - Node tests: YouTube OAuth start/callback state mismatch, missing session, missing entitlement, Google token exchange failure, Convex mutation failure.
 - Suite backend checks: WinFlowz bridge Clerk endpoint rejects missing secret, invalid token, wrong product and no entitlement; returns redacted snapshot for active `replayglowz` and explicitly documents any temporary `tubeflow` legacy alias behavior.
@@ -420,9 +424,9 @@ Update:
 - Data boundary: WinFlowz suite Convex owns identity and entitlements; ReplayGlowz product Convex owns videos, notes, playlists, transcripts, preferences and YouTube tokens.
 - Integration path: ClerkJS bridge in `web/` plus Dart wrapper; do not use `clerk_flutter` beta.
 - The current Firebase diagnostic patch is useful only until suite auth replaces Firebase. Do not preserve Firebase-specific user-facing copy after migration.
-- Read first: `replayglowz_app/README.md`, `replayglowz_app/AGENT.md`, `replayglowz_app/lib/auth/auth_service.dart`, `replayglowz_app/lib/main.dart`, `replayglowz_app/lib/convex/convex_client.dart`, `replayglowz_app/api/auth/youtube.js`, `replayglowz_app/api/auth/youtube/callback.js`, `/home/claude/winflowz/convex/bridge.ts`, `/home/claude/winflowz/src/pages/api/bridge/*`, and `$REPLAYGLOWZ_BACKEND_ROOT/auth.config.ts`.
+- Read first: `replayglowz_app/README.md`, `replayglowz_app/AGENT.md`, `replayglowz_app/lib/auth/auth_service.dart`, `replayglowz_app/lib/main.dart`, `replayglowz_app/lib/convex/convex_client.dart`, `replayglowz_app/api/auth/youtube.js`, `replayglowz_app/api/auth/youtube/callback.js`, `/home/claude/winflowz/convex/bridge.ts`, `/home/claude/winflowz/src/pages/api/bridge/*`, and `replayglowz_backend/packages/backend/convex/auth.config.ts`.
 - Stop conditions:
-  - `REPLAYGLOWZ_BACKEND_ROOT` cannot be located or fetched;
+  - `replayglowz_backend/packages/backend/convex` is missing or cannot typecheck;
   - ClerkJS cannot mint a Convex JWT template for ReplayGlowz product Convex;
   - entitlement can only be checked client-side;
   - WinFlowz bridge cannot verify Clerk sessions server-side;
@@ -454,6 +458,13 @@ Resolved decisions:
 | 2026-05-23 18:29:02 UTC | sf-ready | GPT-5 Codex | Re-evaluated readiness after two-Convex and product-id corrections. | not ready: ReplayGlowz spec is internally coherent, but canonical WinFlowz suite auth docs/spec still list TubeFlow or `tubeflow` as the product-id canon, conflicting with `product_id=replayglowz`. | `/sf-spec replayglowz-suite-auth-migration suite product-id alignment` |
 | 2026-05-23 18:37:56 UTC | sf-docs | GPT-5 Codex | Aligned canonical WinFlowz suite auth spec, strategy doc and support runbook with ReplayGlowz as the YouTube product. | docs aligned: `product_id=replayglowz` is canonical and `tubeflow` is documented only as legacy alias/migration input. | `/sf-ready replayglowz-suite-auth-migration` |
 | 2026-05-23 19:30:27 UTC | sf-ready | GPT-5 Codex | Re-ran readiness gate after canonical suite docs were aligned to ReplayGlowz. | ready: structure, metadata, user story, two-Convex boundary, ClerkJS bridge contract, entitlement denial, YouTube OAuth separation, docs coherence, fresh-docs evidence and security constraints are sufficient for `/sf-start`. | `/sf-start replayglowz-suite-auth-migration` |
+| 2026-05-23 19:51:46 UTC | sf-start | gpt-5.3-codex | Implemented ReplayGlowz app migration surfaces: ClerkJS bridge + Dart auth wrapper, Firebase web-session replacement, Convex token rewiring, fail-closed YouTube OAuth suite verification, client access-inactive gate, env/docs/changelog updates, and focused Node tests. | partial: app-side implementation and local checks are complete, but suite verifier endpoint contract and ReplayGlowz product Convex backend auth/access functions still need coordinated backend work and hosted proof. | `/sf-start replayglowz-suite-auth-migration backend-followups` |
+| 2026-05-23 19:54:24 UTC | sf-verify | GPT-5 Codex | Re-ran local verification after delegated sf-start: Flutter analysis, YouTube OAuth Node tests, build script syntax, metadata lint, and product-backend preflight. | partial: local app checks pass, but `REPLAYGLOWZ_BACKEND_ROOT` is unresolved, suite entitlement verifier and product Convex Clerk/access functions are not proven, and hosted Vercel auth/OAuth proof is pending. | `/sf-start replayglowz-suite-auth-migration backend-followups` |
+| 2026-05-23 19:54:24 UTC | sf-build | GPT-5 Codex | Orchestrated delegated sequential implementation and verification for ReplayGlowz suite auth migration. | partial: delegated app implementation landed with local checks passing, but lifecycle cannot continue to sf-end/sf-ship until backend contracts and hosted proof exist. | `/sf-start replayglowz-suite-auth-migration backend-followups` |
+| 2026-05-23 21:37:10 UTC | sf-start | GPT-5 Codex | Migrated the historical TubeFlow Convex backend into `replayglowz_backend/packages/backend`, removed the temporary local clone, switched Convex auth config to Clerk, added product access snapshot schema/query, and updated backend contract docs/checks. | partial: ReplayGlowz is no longer dependent on the archived TubeFlow repo and local app/backend checks pass; suite entitlement verifier deployment and hosted proof remain. | `/sf-start replayglowz-suite-auth-migration suite-verifier` |
+| 2026-05-23 21:52:23 UTC | sf-build | GPT-5 Codex | Implemented the WinFlowz suite entitlement verifier endpoint for ReplayGlowz. | partial: local WinFlowz route `POST /api/bridge/entitlement`, Convex query `bridge:getReplayGlowzEntitlementSnapshotByClerkId`, canonical `replayglowz`/legacy `tubeflow` matching, redacted snapshot contract, ReplayGlowz caller header/URL alignment, docs and tests are in place; deployed endpoint proof still remains. | `/sf-verify replayglowz-suite-auth-migration suite-verifier` |
+| 2026-05-24 08:21:02 UTC | sf-prod | GPT-5 Codex | Checked live WinFlowz and ReplayGlowz deployment state, Vercel env presence, Git status, endpoint health and recent runtime logs. | blocked: production env names exist, but `https://www.winflowz.com/api/bridge/entitlement` returns 404, WinFlowz route file is still untracked locally, ReplayGlowz production deployment is from 2026-05-19 and still serves Firebase-era headers, and recent Vercel runtime logs are empty. | `/sf-ship replayglowz-suite-auth-migration current local changes, then /sf-prod` |
+| 2026-05-24 08:26:24 UTC | sf-ship | GPT-5 Codex | Quick-shipped the current suite-auth migration changes for WinFlowz and ReplayGlowz so Vercel can build the hosted verifier and app. | shipped: code and docs were committed/pushed for hosted validation; local checks passed, but production proof remains pending behind `sf-prod`. | `/sf-prod replayglowz-suite-auth-migration` |
 
 # Current Chantier Flow
 
@@ -461,7 +472,7 @@ Resolved decisions:
 |-------|--------|-------|------|
 | sf-spec | done | Spec updated after owner clarification: two Convex layers are explicit, ClerkJS bridge is selected, `product_id=replayglowz` is canonical, `tubeflow` is legacy only, and product backend checkout is an operational preflight. | sf-ready |
 | sf-ready | ready | Canonical WinFlowz suite auth docs/spec now say ReplayGlowz and `product_id=replayglowz`; `tubeflow` is legacy only. Structure, tasks, acceptance criteria, adversarial review and security constraints are sufficient for start. | sf-start |
-| sf-start | pending | Ready to implement from this spec. | sf-verify |
-| sf-verify | pending | Requires hosted auth and OAuth proof. | sf-end |
+| sf-start | partial | ReplayGlowz app codepath, product backend, and WinFlowz suite verifier endpoint are implemented locally with Clerk/suite auth wiring, fail-closed gating, `users:getProductAccessStatus`, backend contract check, redacted entitlement snapshot, and aligned `x-suite-entitlement-secret` caller contract. Hosted deployment has not caught up. | sf-ship |
+| sf-verify | pending | Local checks passed, but hosted WinFlowz verifier and ReplayGlowz auth/OAuth proof must be rerun after the pushed deployments finish. | sf-prod |
 | sf-end | pending | Close after docs, validation and follow-up risks are handled. | sf-ship |
-| sf-ship | pending | Ship after verification and production readiness. | none |
+| sf-ship | shipped | Current code/docs changes have been pushed for hosted deployment validation. This is not a formal task close. | sf-prod |

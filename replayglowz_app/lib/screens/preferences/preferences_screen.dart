@@ -7,7 +7,6 @@ import 'package:replayglowz_app/app/build_info.dart';
 import 'package:replayglowz_app/app/router.dart';
 import 'package:replayglowz_app/auth/auth_state.dart';
 import 'package:replayglowz_app/auth/auth_service.dart';
-import 'package:replayglowz_app/auth/firebase_config.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
@@ -600,14 +599,18 @@ class _DiagnosticsCard extends ConsumerWidget {
       'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}',
       'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
       'CONVEX_URL: ${convexUrl.isNotEmpty ? convexUrl : '(missing)'}',
-      'FIREBASE_PROJECT_ID: ${firebaseProjectId.isNotEmpty ? firebaseProjectId : '(missing)'}',
-      'FIREBASE_APP_ID: ${firebaseAppId.isNotEmpty ? maskValue(firebaseAppId) : '(missing)'}',
+      'CLERK_PUBLISHABLE_KEY: ${clerkPublishableKey.isNotEmpty ? maskValue(clerkPublishableKey) : '(missing)'}',
+      'CLERK_SIGN_IN_URL: $clerkSignInUrl',
+      'CLERK_SIGN_UP_URL: $clerkSignUpUrl',
+      'REPLAYGLOWZ_PRODUCT_ID: $replayGlowzProductId',
+      'REPLAYGLOWZ_LEGACY_PRODUCT_IDS: $replayGlowzLegacyProductIds',
+      'REPLAYGLOWZ_ACCOUNT_CENTER_URL: $replayGlowzAccountCenterUrl',
       'REPLAYGLOWZ_APP_URL: ${replayGlowzAppUrl.isNotEmpty ? replayGlowzAppUrl : '(missing)'}',
       'REPLAYGLOWZ_APP_URL host match: ${hostMatchLabel(replayGlowzAppUrl)}',
       'SENTRY: ${sentryStatusLabel()}',
-      'Firebase Auth initialised: ${auth.isInitialised ? 'yes' : 'no'}',
+      'Suite auth initialised: ${auth.isInitialised ? 'yes' : 'no'}',
       'Auth state: $authLabel',
-      'Current user: ${auth.currentUser?.uid ?? 'none'}',
+      'Current user: ${auth.currentUser?.id ?? 'none'}',
       '',
       'Recent logs:',
       AppLogger.instance.formatAll(),
@@ -636,26 +639,31 @@ class _DiagnosticsCard extends ConsumerWidget {
         ok: convexUrl.isNotEmpty,
       ),
       (
-        key: 'FIREBASE_PROJECT_ID',
-        value: firebaseProjectId.isNotEmpty ? firebaseProjectId : '(missing)',
-        ok: firebaseProjectId.isNotEmpty,
+        key: 'CLERK_PUBLISHABLE_KEY',
+        value: clerkPublishableKey.isNotEmpty
+            ? maskValue(clerkPublishableKey)
+            : '(missing)',
+        ok: clerkPublishableKey.isNotEmpty,
       ),
       (
-        key: 'FIREBASE_APP_ID',
-        value: firebaseAppId.isNotEmpty
-            ? maskValue(firebaseAppId)
-            : '(missing)',
-        ok: firebaseAppId.isNotEmpty,
+        key: 'CLERK_SIGN_IN_URL',
+        value: clerkSignInUrl,
+        ok: clerkSignInUrl.isNotEmpty,
+      ),
+      (
+        key: 'REPLAYGLOWZ_PRODUCT_ID',
+        value: replayGlowzProductId,
+        ok: replayGlowzProductId.isNotEmpty,
+      ),
+      (
+        key: 'REPLAYGLOWZ_LEGACY_PRODUCT_IDS',
+        value: replayGlowzLegacyProductIds,
+        ok: replayGlowzLegacyProductIds.isNotEmpty,
       ),
       (
         key: 'BUILD_COMMIT_SHA',
         value: buildCommitSha,
         ok: buildCommitSha != 'unknown',
-      ),
-      (
-        key: 'BUILD_ENVIRONMENT',
-        value: buildEnvironment,
-        ok: buildEnvironment != 'unknown',
       ),
       (
         key: 'REPLAYGLOWZ_APP_URL',
@@ -670,7 +678,7 @@ class _DiagnosticsCard extends ConsumerWidget {
             hostMatchLabel(replayGlowzAppUrl) == 'not-web',
       ),
       (
-        key: 'Firebase Auth initialised',
+        key: 'Suite auth initialised',
         value: auth.isInitialised ? 'yes' : 'no',
         ok: auth.isInitialised,
       ),

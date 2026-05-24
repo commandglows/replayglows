@@ -42,7 +42,7 @@ The Flutter web client currently uses a popup-based YouTube OAuth flow that dive
 - diagnostics show repeated Convex HTTP bridge failures during the same path that is supposed to confirm YouTube connectivity
 - the working TypeScript web app uses a simpler redirect-driven flow with server-side token exchange and client-side rehydration after the browser returns
 
-The result is a web YouTube auth path that is harder to reason about, harder to recover from, and less robust than the reference flow in `/home/claude/tubeflow`.
+The result is a web YouTube auth path that is harder to reason about, harder to recover from, and less robust than the reference flow migrated into `replayglowz_backend`.
 
 # Solution
 
@@ -92,10 +92,10 @@ This keeps the Clerk beta workaround where needed, but removes popup orchestrati
 - YouTube connect UI and post-return feedback in [lib/widgets/youtube_connect.dart](replayglowz_app/lib/widgets/youtube_connect.dart:1)
 - Refresh helpers in [lib/providers/mutations.dart](replayglowz_app/lib/providers/mutations.dart:177)
 - YouTube status query in [lib/providers/providers.dart](replayglowz_app/lib/providers/providers.dart:295)
-- Reference architecture in `/home/claude/tubeflow`:
-  - [apps/web/src/hooks/use-youtube.ts](/home/claude/tubeflow/apps/web/src/hooks/use-youtube.ts:55)
-  - [apps/web/src/app/api/auth/youtube/route.ts](/home/claude/tubeflow/apps/web/src/app/api/auth/youtube/route.ts:1)
-  - [apps/web/src/app/api/auth/youtube/callback/route.ts](/home/claude/tubeflow/apps/web/src/app/api/auth/youtube/callback/route.ts:1)
+- Reference architecture migrated into `replayglowz_backend`:
+  - [apps/web/src/hooks/use-youtube.ts](/home/claude/replayglowz/replayglowz_backend/packages/backend/src/hooks/use-youtube.ts:55)
+  - [apps/web/src/app/api/auth/youtube/route.ts](/home/claude/replayglowz/replayglowz_backend/packages/backend/src/app/api/auth/youtube/route.ts:1)
+  - [apps/web/src/app/api/auth/youtube/callback/route.ts](/home/claude/replayglowz/replayglowz_backend/packages/backend/src/app/api/auth/youtube/callback/route.ts:1)
 
 # Invariants
 
@@ -247,9 +247,9 @@ This keeps the Clerk beta workaround where needed, but removes popup orchestrati
   - `api/auth/_youtube.js`
   - `lib/providers/mutations.dart`
 - Reference implementation to mirror conceptually:
-  - `/home/claude/tubeflow/apps/web/src/hooks/use-youtube.ts`
-  - `/home/claude/tubeflow/apps/web/src/app/api/auth/youtube/route.ts`
-  - `/home/claude/tubeflow/apps/web/src/app/api/auth/youtube/callback/route.ts`
+  - `/home/claude/replayglowz/replayglowz_backend/packages/backend/src/hooks/use-youtube.ts`
+  - `/home/claude/replayglowz/replayglowz_backend/packages/backend/src/app/api/auth/youtube/route.ts`
+  - `/home/claude/replayglowz/replayglowz_backend/packages/backend/src/app/api/auth/youtube/callback/route.ts`
 - Recommended execution order:
   1. simplify server handlers
   2. simplify Flutter connect initiation

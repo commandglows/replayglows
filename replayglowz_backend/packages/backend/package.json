@@ -1,0 +1,23 @@
+{
+  "name": "@replayglowz/backend",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "convex dev",
+    "setup": "convex dev --until-success",
+    "typecheck": "tsc --noEmit -p convex"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "convex": "^1.29.3",
+    "openai": "^6.9.1",
+    "svix": "^1.84.1",
+    "youtube-captions-scraper": "^2.0.3",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^25.8.0",
+    "typescript": "5.9.3"
+  }
+}

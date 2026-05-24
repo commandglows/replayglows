@@ -1,138 +1,92 @@
 # ReplayGlowz App
 
-Flutter app for watching YouTube videos, taking timestamped notes, and tracking viewing history. Built for web deployment on Vercel, backed by Convex and authenticated via Firebase Auth.
+Flutter web app for ReplayGlowz, deployed on Vercel.
+
+ReplayGlowz now uses suite Clerk web identity and deny-by-default product entitlement checks. Product data (videos, notes, playlists, transcripts, preferences, YouTube tokens) stays in the ReplayGlowz product Convex backend.
+
+## Auth and Data Boundaries
+
+- Identity/session owner: Clerk (suite account on `app.replayglowz.com`)
+- Entitlement authority: WinFlowz suite verifier (`SUITE_ENTITLEMENT_VERIFY_URL`)
+- Product data authority: ReplayGlowz product Convex (`CONVEX_URL`)
+- Canonical entitlement product id: `replayglowz`
+- Legacy alias (read/migration only): `tubeflow`
 
 ## Quick Start
 
 ```bash
 flutter pub get
 
-# Run locally (web)
 flutter run -d chrome \
   --dart-define=CONVEX_URL=https://your-deployment.convex.cloud \
-  --dart-define=FIREBASE_API_KEY=... \
-  --dart-define=FIREBASE_PROJECT_ID=... \
-  --dart-define=FIREBASE_MESSAGING_SENDER_ID=... \
-  --dart-define=FIREBASE_APP_ID=... \
+  --dart-define=CLERK_PUBLISHABLE_KEY=pk_live_xxx \
+  --dart-define=CLERK_SIGN_IN_URL=/sign-in \
+  --dart-define=CLERK_SIGN_UP_URL=/sign-up \
+  --dart-define=REPLAYGLOWZ_PRODUCT_ID=replayglowz \
+  --dart-define=REPLAYGLOWZ_LEGACY_PRODUCT_IDS=tubeflow \
+  --dart-define=REPLAYGLOWZ_ACCOUNT_CENTER_URL=https://winflows.com/account \
   --dart-define=REPLAYGLOWZ_APP_URL=https://app.replayglowz.com
 
-# Production build
-CONVEX_URL=... FIREBASE_API_KEY=... FIREBASE_PROJECT_ID=... FIREBASE_MESSAGING_SENDER_ID=... FIREBASE_APP_ID=... REPLAYGLOWZ_APP_URL=https://app.replayglowz.com bash build.sh
+CONVEX_URL=... \
+CLERK_PUBLISHABLE_KEY=... \
+CLERK_SIGN_IN_URL=/sign-in \
+CLERK_SIGN_UP_URL=/sign-up \
+REPLAYGLOWZ_PRODUCT_ID=replayglowz \
+REPLAYGLOWZ_LEGACY_PRODUCT_IDS=tubeflow \
+REPLAYGLOWZ_ACCOUNT_CENTER_URL=https://winflows.com/account \
+REPLAYGLOWZ_APP_URL=https://app.replayglowz.com \
+bash build.sh
 ```
-
-The `build.sh` script wraps `flutter build web` and passes the required `--dart-define` values. Vercel runs it via `vercel.json`.
 
 ## Environment Variables
 
-The Flutter values are required at **build time** (`--dart-define`), not runtime. Flutter web bakes them into the compiled JS bundle. The OAuth handler values are runtime environment variables for Vercel functions.
+Flutter build-time (`--dart-define`) values:
 
-| Variable | Purpose |
-|---|---|
-| `CONVEX_URL` | Convex deployment URL (e.g. `https://xxx.convex.cloud`). App fails explicitly when missing. |
-| `FIREBASE_API_KEY` | Firebase web API key used by `firebase_core`. |
-| `FIREBASE_AUTH_DOMAIN` | Optional Firebase auth domain, usually `your-project.firebaseapp.com`. |
-| `FIREBASE_PROJECT_ID` | Firebase project ID. Also required by the Convex backend auth config. |
-| `FIREBASE_STORAGE_BUCKET` | Optional Firebase storage bucket. |
-| `FIREBASE_MESSAGING_SENDER_ID` | Firebase web messaging sender ID. |
-| `FIREBASE_APP_ID` | Firebase web app ID. |
-| `REPLAYGLOWZ_APP_URL` | Web app origin used for the YouTube OAuth callback URLs (current deployment: `https://app.replayglowz.com`). |
-| `BUILD_COMMIT_SHA` | Optional build metadata shown in diagnostics. Defaults to `VERCEL_GIT_COMMIT_SHA` or the local Git short SHA in `build.sh`. |
-| `BUILD_ENVIRONMENT` | Optional build metadata shown in diagnostics. Defaults to `VERCEL_ENV` or `local` in `build.sh`. |
-| `BUILD_TIMESTAMP` | Optional build metadata shown in diagnostics. Defaults to the current UTC timestamp in `build.sh`. |
-| `SENTRY_DSN` | Optional Sentry DSN for Flutter error capture. When missing, Sentry stays disabled. |
-| `SENTRY_ENVIRONMENT` | Optional Sentry environment. Defaults to `BUILD_ENVIRONMENT` in `build.sh`. |
-| `SENTRY_RELEASE` | Optional Sentry release. Defaults to `replayglowz_app@BUILD_COMMIT_SHA` in `build.sh`. |
-| `SENTRY_TRACES_SAMPLE_RATE` | Optional Sentry performance tracing sample rate. Defaults to `0` (off). |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID used for the YouTube consent screen. |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret used to exchange the YouTube authorization code for tokens. |
+- `CONVEX_URL`
+- `CLERK_PUBLISHABLE_KEY`
+- `CLERK_SIGN_IN_URL`
+- `CLERK_SIGN_UP_URL`
+- `REPLAYGLOWZ_PRODUCT_ID` (`replayglowz`)
+- `REPLAYGLOWZ_LEGACY_PRODUCT_IDS` (`tubeflow`)
+- `REPLAYGLOWZ_ACCOUNT_CENTER_URL`
+- `REPLAYGLOWZ_APP_URL`
+- `BUILD_COMMIT_SHA`, `BUILD_ENVIRONMENT`, `BUILD_TIMESTAMP` (optional diagnostics)
+- `SENTRY_*` (optional observability)
 
-See `.env.example`. The variables above are the only supported names.
+Vercel server/runtime values:
 
-Convex deployment variables used by backend features:
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `CLERK_SECRET_KEY`
+- `SUITE_ENTITLEMENT_VERIFY_URL` (`https://www.winflowz.com/api/bridge/entitlement`)
+- `SUITE_ENTITLEMENT_VERIFY_SECRET` (sent as `x-suite-entitlement-secret`)
 
-| Variable | Purpose |
-|---|---|
-| `FEEDBACK_ADMIN_EMAILS` | Comma-separated allowlist of admin emails allowed to open the in-app feedback admin screen. Set on the Convex deployment, not in Flutter `--dart-define`. |
+See `.env.example` for placeholders.
 
-## Tech Stack
+## YouTube OAuth Contract
 
-- **Flutter 3.41.7 / Dart 3.11.5** — web target
-- **Riverpod 3** — state management (`flutter_riverpod`)
-- **go_router 17** — routing with auth-aware redirects
-- **Firebase Auth** (`firebase_auth`) — stable Google sign-in provider and ID token source for Convex auth
-- **Convex** (`convex_flutter 3.0.1`) — backend queries / mutations / subscriptions
-- **youtube_player_flutter** — video playback
-- **Material 3** — theming (light / dark / system)
-- **record + just_audio** — feedback audio capture and playback
+- `/api/auth/youtube` requires a Clerk session bearer token.
+- Handler verifies suite entitlement server-side before redirecting to Google.
+- The suite verifier receives the bearer token and returns a redacted entitlement snapshot.
+- Callback re-verifies entitlement and only then writes YouTube tokens to product Convex.
+- Flow is fail-closed (401/403/503) when session or entitlement cannot be verified.
 
-Convex backend lives in a **separate repository** configured with `REPLAYGLOWZ_BACKEND_ROOT` — not in this project. This Flutter app is a client of that shared backend. The code under `lib/convex/` is client transport/state only, not server code.
+## Product Convex Backend Contract
 
-## Project Structure
+The product Convex backend now lives in this monorepo at
+`../replayglowz_backend/packages/backend/convex`.
 
-```
-lib/
-├── main.dart                   # Entry point + bootstrap sequence
-├── app/
-│   ├── router.dart             # go_router config + auth redirects
-│   └── theme.dart              # Material 3 light/dark themes
-├── auth/
-│   ├── firebase_config.dart    # Firebase web dart-define configuration
-│   ├── auth_service.dart       # Firebase-backed auth service
-│   ├── auth_gate.dart          # Firebase Google sign-in page
-│   └── auth_state.dart         # AuthNotifier + current-user state
-├── convex/
-│   ├── convex_client.dart      # Convex client wrapper (query/mutate/subscribe)
-│   └── convex_provider.dart    # Riverpod providers for the shared backend
-├── providers/
-│   ├── providers.dart          # Shared Riverpod providers
-│   └── mutations.dart          # Centralised Convex mutation helpers
-├── models/                     # Data models (video, note, playlist, ...)
-├── screens/                    # Feature screens (videos, notes, play, ...)
-├── widgets/                    # Shared widgets (app_shell, error_feedback)
-├── utils/                      # color / date / duration helpers
-└── i18n/                       # EN + FR translations
-```
-
-## Bootstrap Sequence
-
-1. `main()` initialises `ConvexService` (WebSocket to Convex).
-2. `_AppBootstrap` initializes Firebase Auth and wires Firebase ID token refresh into the Convex client.
-3. Router mounts. Protected routes redirect to `/sign-in` until Firebase restores or creates a session.
-
-## Convex Authentication
-
-Convex now trusts Firebase ID tokens directly. The backend `convex/auth.config.ts` must use:
-
-1. `domain: https://securetoken.google.com/<FIREBASE_PROJECT_ID>`
-2. `applicationID: <FIREBASE_PROJECT_ID>`
-
-No shared secret is used; verification is through Firebase's public token issuer metadata.
-
-## Deployment
-
-- **Platform**: Vercel (static build of `build/web/` + `/api/auth/youtube` functions for YouTube OAuth)
-- **Build command**: `bash build.sh` (see `vercel.json`)
-- **Install command**: clones Flutter `3.41.7` from GitHub into `./flutter/`, runs `pub get`
-- **Security headers**: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`
-- **SPA routing**: all routes rewritten to `/index.html`
-
-If a Flutter change depends on a new Convex function or schema change, deploy the shared backend selected by `REPLAYGLOWZ_BACKEND_ROOT` before rolling out the Flutter build.
-
-## Tests
-
-Currently no test coverage. Listed as an open task in `shipflow_data/workflow/TASKS.md`.
-
-Before shipping a Flutter change that depends on backend functions, you can run:
+The checker uses that path by default. Set `REPLAYGLOWZ_BACKEND_ROOT` only when
+validating another checkout:
 
 ```bash
 dart run tool/check_shared_backend_contract.dart
 ```
 
-This verifies that the critical Convex functions used by Flutter still exist in the shared backend source checkout next to this repo. Use `REPLAYGLOWZ_BACKEND_ROOT=/path/to/packages/backend/convex` if your local layout differs.
+## Validation
 
-## Files
-
-- `shipflow_data/workflow/TASKS.md` — open work items (audit findings)
-- `CHANGELOG.md` — user-facing changes
-- `shipflow_data/workflow/AUDIT_LOG.md` — code audit history
-- `CLAUDE.md` — guidance for Claude Code working in this repo
+```bash
+flutter analyze
+bash -n build.sh
+node --test api/auth/_youtube.test.js
+```

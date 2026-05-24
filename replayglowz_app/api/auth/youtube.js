@@ -2,15 +2,20 @@ const crypto = require('node:crypto');
 
 const {
   YOUTUBE_SCOPE,
-  getEnv,
   getRequestOrigin,
   isSecureOrigin,
+  getBearerTokenFromAuthHeader,
+  getEnv,
+  resolveEntitlementInputs,
+  verifySuiteSessionAndEntitlement,
   serializeCookie,
   sanitizeReturnTo,
 } = require('./_youtube');
 
-const REPLAYGLOWZ_FIREBASE_TOKEN_COOKIE =
-  'replayglowz_youtube_firebase_id_token';
+const REPLAYGLOWZ_SUITE_SESSION_TOKEN_COOKIE =
+  'replayglowz_youtube_suite_session_token';
+const REPLAYGLOWZ_OAUTH_GLOBAL_USER_COOKIE =
+  'replayglowz_youtube_global_user_id';
 
 function sendJsonError(res, statusCode, message) {
   res.statusCode = statusCode;
@@ -30,11 +35,11 @@ module.exports = async function handler(req, res) {
   const secure = isSecureOrigin(origin);
   const requestUrl = new URL(req.url, origin);
   const returnTo = sanitizeReturnTo(requestUrl.searchParams.get('return_to'));
-  const authHeader = req.headers.authorization || '';
-  const firebaseIdToken = authHeader.startsWith('Bearer ')
-    ? authHeader.slice('Bearer '.length).trim()
-    : '';
+  const sessionToken = getBearerTokenFromAuthHeader(req.headers.authorization);
+  const requestId = req.headers['x-request-id'];
   const googleClientId = getEnv('GOOGLE_CLIENT_ID');
+  const { productId, legacyProductIds, verifySecret, verifyUrl } =
+    resolveEntitlementInputs();
 
   if (!googleClientId) {
     sendJsonError(
@@ -45,8 +50,27 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (!firebaseIdToken) {
-    sendJsonError(res, 401, 'Missing Firebase auth token.');
+  if (!sessionToken) {
+    sendJsonError(res, 401, 'Missing suite session token.');
+    return;
+  }
+
+  const verification = await verifySuiteSessionAndEntitlement({
+    sessionToken,
+    verifyUrl,
+    verifySecret,
+    productId,
+    legacyProductIds,
+    requestId: Array.isArray(requestId) ? requestId[0] : requestId,
+  });
+  if (!verification.ok) {
+    sendJsonError(
+      res,
+      verification.status,
+      verification.status === 403
+        ? 'Product access inactive for this account.'
+        : 'Suite session verification failed.',
+    );
     return;
   }
 
@@ -80,12 +104,30 @@ module.exports = async function handler(req, res) {
       secure,
       maxAge: 600,
     }),
-    serializeCookie(REPLAYGLOWZ_FIREBASE_TOKEN_COOKIE, firebaseIdToken, {
+    serializeCookie(REPLAYGLOWZ_SUITE_SESSION_TOKEN_COOKIE, sessionToken, {
       path: '/',
       httpOnly: true,
       sameSite: 'Lax',
       secure,
-      maxAge: 3000,
+      maxAge: 900,
+    }),
+    serializeCookie(
+      REPLAYGLOWZ_OAUTH_GLOBAL_USER_COOKIE,
+      verification.globalUserId || '',
+      {
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax',
+        secure,
+        maxAge: 900,
+      },
+    ),
+    serializeCookie('replayglowz_oauth_product_id', verification.matchedProductId, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'Lax',
+      secure,
+      maxAge: 900,
     }),
   ]);
   res.end(JSON.stringify({ authUrl: authUrl.toString() }));

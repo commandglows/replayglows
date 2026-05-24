@@ -66,7 +66,7 @@ class ConvexService {
   /// Handle returned by [setAuthWithRefresh], disposed on [clearAuth]/[dispose].
   dynamic _authHandle;
 
-  /// Token provider wired from Firebase Auth during bootstrap.
+  /// Token provider wired from suite auth during bootstrap.
   Future<String?> Function()? _tokenProvider;
 
   /// Whether the service has been disposed.
@@ -79,7 +79,7 @@ class ConvexService {
   /// Registers a callback that returns a fresh JWT for Convex auth and sets up
   /// automatic token refresh.
   ///
-  /// Typically wired to the Firebase-backed auth service.
+  /// Typically wired to the Clerk-backed auth service.
   Future<void> setAuth(Future<String?> Function() getToken) async {
     _tokenProvider = getToken;
     if (kIsWeb) {

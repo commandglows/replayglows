@@ -11,8 +11,7 @@ dependencies:
     sdk: flutter
 
   # Authentication
-  # Clerk Flutter SDKs were removed because the available packages are beta.
-  # Keep sign-in disabled until a stable auth provider is integrated.
+  # Clerk is integrated through a web-only ClerkJS bridge.
 
   # Convex backend
   convex_flutter: ^3.0.1
@@ -41,8 +40,6 @@ dependencies:
   record: ^6.2.0
   url_launcher: ^6.3.0
   sentry_flutter: ^9.20.0
-  firebase_core: ^4.7.0
-  firebase_auth: ^6.4.0
 
 dev_dependencies:
   flutter_test:

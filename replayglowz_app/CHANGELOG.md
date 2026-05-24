@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2026-05-23]
+
+### Changed
+- Migrated web auth session ownership from Firebase Auth to suite Clerk via a dedicated ClerkJS bridge (`web/clerk_bridge.js`) and Dart wrapper.
+- Added Clerk/suite auth build contract (`CLERK_*`, `REPLAYGLOWZ_PRODUCT_ID`, `REPLAYGLOWZ_LEGACY_PRODUCT_IDS`, `REPLAYGLOWZ_ACCOUNT_CENTER_URL`) and updated Vercel CSP for Clerk runtime domains.
+- Rewired Convex token provider to use Clerk session token minting (`template: convex`).
+- Added fail-closed client product-access gating (`account recognized, product access inactive`) driven by backend access status.
+- Replaced YouTube OAuth Firebase token handoff with Clerk session token + server entitlement verification (`SUITE_ENTITLEMENT_VERIFY_URL` / `SUITE_ENTITLEMENT_VERIFY_SECRET`) in both start and callback handlers.
+- Added focused Node tests for suite entitlement denial/success paths and callback persistence flow.
+- Updated app docs/contracts (`README.md`, `AGENT.md`, `CLAUDE.md`) to reflect suite Clerk identity and ReplayGlowz product Convex boundaries.
+
 ## [2026-05-15]
 
 ### Changed

@@ -5,6 +5,7 @@ Canonical monorepo for the ReplayGlowz Flutter surfaces.
 ## Repository Layout
 
 - `replayglowz_app` - Flutter application
+- `replayglowz_backend` - product Convex backend
 - `replayglowz_site` - website
 - `replayglowz_lab` - backend and tooling
 
@@ -17,7 +18,7 @@ Canonical monorepo for the ReplayGlowz Flutter surfaces.
 
 ## Related Repository
 
-- `dianedef/tubeflow_expo` remains a separate active repository for the Expo surface
+- Historical TubeFlow repositories are migration sources only; ReplayGlowz must not depend on them for active backend code.
 
 ## Dependency Maintenance
 
@@ -33,6 +34,7 @@ Use the subproject lockfiles and audit commands as the source of truth:
 (cd replayglowz_lab && pip-compile --generate-hashes --allow-unsafe --strip-extras --output-file requirements.lock requirements.in)
 (cd replayglowz_lab && pip-audit -r requirements.lock -f json)
 (cd replayglowz_app && flutter pub outdated --json && flutter analyze)
+(cd replayglowz_backend/packages/backend && npm run typecheck)
 ```
 
 The worker installs from `replayglowz_lab/requirements.lock` with
