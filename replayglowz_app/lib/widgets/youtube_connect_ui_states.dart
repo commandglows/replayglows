@@ -231,7 +231,11 @@ class _YoutubeConnectionSettingsCardState
       await syncAllPlaylists(ref);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ReplayGlowz is syncing your playlists.')),
+        const SnackBar(
+          content: Text(
+            'Sync complete. If this YouTube account is new, create a YouTube playlist or channel, then refresh again.',
+          ),
+        ),
       );
     });
   }

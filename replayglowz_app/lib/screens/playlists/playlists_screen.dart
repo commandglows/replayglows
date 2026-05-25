@@ -95,7 +95,11 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                 await syncAllPlaylists(ref);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Syncing playlists...')),
+                    const SnackBar(
+                      content: Text(
+                        'Sync complete. If this YouTube account is new, create a YouTube playlist or channel, then refresh again.',
+                      ),
+                    ),
                   );
                 }
               } catch (e) {
@@ -124,9 +128,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
               if (playlists.isEmpty) {
                 return YoutubeAwareEmptyState(
                   fallbackIcon: Icons.playlist_play,
-                  fallbackTitle: 'Aucune playlist',
+                  fallbackTitle: 'No YouTube playlists yet',
                   fallbackDescription:
-                      'Créez une playlist ou lancez une synchronisation YouTube.',
+                      'ReplayGlowz is connected, but this YouTube account has no playlists to import yet. New Google accounts may need a YouTube channel before YouTube returns library data.',
                   onRefresh: () => syncAllPlaylists(ref),
                 );
               }

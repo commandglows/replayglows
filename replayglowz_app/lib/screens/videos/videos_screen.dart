@@ -238,9 +238,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
               if (videos.isEmpty) {
                 return YoutubeAwareEmptyState(
                   fallbackIcon: Icons.video_library_outlined,
-                  fallbackTitle: 'Aucune vidéo',
+                  fallbackTitle: 'No YouTube videos yet',
                   fallbackDescription:
-                      'Lancez une synchronisation pour importer vos vidéos YouTube.',
+                      'ReplayGlowz is connected, but this YouTube account does not have imported videos yet. New Google accounts may need a YouTube channel or playlists before anything can sync.',
                   onRefresh: _refreshVideos,
                 );
               }
@@ -315,9 +315,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     try {
       await syncAllPlaylists(ref);
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Refreshing videos...')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Refresh complete. If this YouTube account is new, create a YouTube playlist or channel, then refresh again.',
+          ),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       showErrorSnackBar(context, error: e, prefix: 'Refresh failed');

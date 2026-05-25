@@ -59,6 +59,42 @@ function formatSyncError(error: unknown): string {
   return String(error);
 }
 
+async function parseYoutubeErrorResponse(response: Response): Promise<{
+  message: string;
+  reasons: string[];
+  status: number;
+}> {
+  const text = await response.text();
+  let message = text || response.statusText;
+  const reasons: string[] = [];
+
+  try {
+    const parsed = JSON.parse(text);
+    const error = parsed?.error;
+    if (typeof error?.message === "string" && error.message.length > 0) {
+      message = error.message;
+    }
+    for (const entry of error?.errors ?? []) {
+      if (typeof entry?.reason === "string") reasons.push(entry.reason);
+    }
+    if (typeof error?.status === "string") reasons.push(error.status);
+  } catch {
+    // Keep the raw response text as the message.
+  }
+
+  return { message, reasons, status: response.status };
+}
+
+function isYoutubeSignupRequired(error: {
+  reasons: string[];
+  status: number;
+}): boolean {
+  return (
+    error.status === 401 &&
+    error.reasons.some((reason) => reason === "youtubeSignupRequired")
+  );
+}
+
 // =============================================================================
 // QUERIES
 // =============================================================================
@@ -1796,9 +1832,15 @@ export const fetchYoutubePlaylists = action({
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error("YouTube API error:", error);
-      throw new Error("Failed to fetch playlists");
+      const error = await parseYoutubeErrorResponse(response);
+      console.error("YouTube API error:", error.message);
+      if (isYoutubeSignupRequired(error)) {
+        await ctx.runMutation(api.youtube.updatePlaylistsCache, {
+          playlists: [],
+        });
+        return [];
+      }
+      throw new Error(`Failed to fetch playlists: ${error.message}`);
     }
 
     const data = await response.json();
@@ -2911,9 +2953,15 @@ export const fetchYoutubeSubscriptions = action({
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        console.error("YouTube API error:", error);
-        throw new Error("Failed to fetch subscriptions");
+        const error = await parseYoutubeErrorResponse(response);
+        console.error("YouTube API error:", error.message);
+        if (isYoutubeSignupRequired(error)) {
+          await ctx.runMutation(api.youtube.updateChannelsCache, {
+            channels: [],
+          });
+          return [];
+        }
+        throw new Error(`Failed to fetch subscriptions: ${error.message}`);
       }
 
       const data = await response.json();
