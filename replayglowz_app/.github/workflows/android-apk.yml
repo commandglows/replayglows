@@ -10,7 +10,7 @@ concurrency:
 jobs:
   build-apk:
     if: github.ref == 'refs/heads/android-ci'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 30
 
     steps:
@@ -34,14 +34,26 @@ jobs:
           cache: true
 
       - name: Cache pub packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.pub-cache
             .dart_tool
+            build
           key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.lock') }}
           restore-keys: |
             ${{ runner.os }}-pub-
+
+      - name: Cache Gradle build outputs
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            android/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('android/**/*.gradle*', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Flutter pub get
         run: flutter pub get
