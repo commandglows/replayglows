@@ -11,19 +11,28 @@ class PlayerPanel extends StatelessWidget {
     required this.controller,
     required this.onReady,
     required this.onEnded,
+    this.webController,
+    this.onWebStateChanged,
   });
 
   final String videoId;
   final YoutubePlayerController controller;
   final VoidCallback onReady;
   final VoidCallback onEnded;
+  final WebYoutubePlayerController? webController;
+  final ValueChanged<WebYoutubePlayerSnapshot>? onWebStateChanged;
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 16 / 9,
       child: kIsWeb
-          ? WebYoutubeEmbed(videoId: videoId, onReady: onReady)
+          ? WebYoutubeEmbed(
+              videoId: videoId,
+              onReady: onReady,
+              controller: webController,
+              onStateChanged: onWebStateChanged,
+            )
           : YoutubePlayer(
               controller: controller,
               showVideoProgressIndicator: true,

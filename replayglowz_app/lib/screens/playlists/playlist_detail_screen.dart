@@ -13,6 +13,7 @@ import 'package:replayglowz_app/utils/duration_utils.dart';
 import 'package:replayglowz_app/widgets/app_states.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
 import 'package:replayglowz_app/widgets/media/video_list_tile.dart';
+import 'package:replayglowz_app/widgets/youtube_quota_guard.dart';
 
 /// Playlist detail screen showing the playlist header and its video list.
 ///
@@ -21,7 +22,7 @@ import 'package:replayglowz_app/widgets/media/video_list_tile.dart';
 /// - `videoOrder.getOrder` — fetch custom video sort order within playlist
 /// - `videoOrder.updateOrder` (or `videoOrder.saveVideoOrder`) — persist reorder changes
 /// - `playlists.updatePlaylist` — update playlist metadata (title, color, etc.)
-/// - `playlists.removeVideoFromPlaylist` — remove a video from the playlist
+/// - `youtube.removeVideoFromYoutubePlaylist` — remove a video from the YouTube playlist
 class PlaylistDetailScreen extends ConsumerStatefulWidget {
   /// Convex document ID of the playlist.
   final String id;
@@ -42,6 +43,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
   Widget build(BuildContext context) {
     final videosAsync = ref.watch(playlistVideosProvider(widget.id));
     final playlistsAsync = ref.watch(playlistsProvider);
+    final watchedAsync = ref.watch(watchedVideosProvider);
 
     // Find the current playlist from the playlists list.
     YouTubePlaylist? playlist;
@@ -82,7 +84,12 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                 }
                 return _buildReorderableList();
               }
-              return _buildVideoList(videos);
+              final watchedIds =
+                  watchedAsync.asData?.value
+                      .map((item) => item.youtubeVideoId)
+                      .toSet() ??
+                  const <String>{};
+              return _buildVideoList(videos, watchedIds);
             },
             loading: () => SliverToBoxAdapter(child: _buildShimmerList()),
             error: (error, stack) => SliverToBoxAdapter(
@@ -160,6 +167,14 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
           onSelected: (value) async {
             switch (value) {
               case 'refresh':
+                final confirmed = await confirmYoutubeQuotaRisk(
+                  context: context,
+                  ref: ref,
+                  cost: YoutubeQuotaCost.syncPlaylist,
+                  actionLabel: 'Refreshing this playlist',
+                );
+                if (!confirmed) break;
+
                 try {
                   await syncPlaylist(ref, widget.id);
                   if (context.mounted) {
@@ -191,7 +206,14 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
             const PopupMenuItem(value: 'edit', child: Text('Edit Playlist')),
             const PopupMenuItem(
               value: 'refresh',
-              child: Text('Refresh from YouTube'),
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text('Refresh from YouTube'),
+                subtitle: YoutubeQuotaCostText(
+                  cost: YoutubeQuotaCost.syncPlaylist,
+                  prefix: 'Cost',
+                ),
+              ),
             ),
             const PopupMenuItem(value: 'share', child: Text('Share')),
           ],
@@ -287,7 +309,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     );
   }
 
-  Widget _buildVideoList(List<YouTubeVideo> videos) {
+  Widget _buildVideoList(List<YouTubeVideo> videos, Set<String> watchedIds) {
     if (videos.isEmpty) {
       return const SliverToBoxAdapter(
         child: AppEmptyState(
@@ -301,61 +323,391 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     return SliverList(
       delegate: SliverChildBuilderDelegate((context, index) {
         final video = videos[index];
+        final isWatched = watchedIds.contains(video.youtubeVideoId);
         return VideoListTile(
           video: video,
           leadingWidth: 100,
           leadingHeight: 56,
-          trailing: PopupMenuButton<String>(
-            onSelected: (value) async {
-              switch (value) {
-                case 'remove':
-                  try {
-                    await removeVideoFromPlaylist(
-                      ref,
-                      playlistId: widget.id,
-                      videoId: video.id,
-                    );
-                    if (context.mounted) {
-                      ref.invalidate(playlistVideosProvider(widget.id));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Video removed from playlist.'),
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      showErrorSnackBar(context, error: e, prefix: 'Error');
-                    }
-                  }
-                  break;
-                case 'hide':
-                  try {
-                    await hideVideo(ref, video.youtubeVideoId);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Video hidden from library.'),
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      showErrorSnackBar(context, error: e, prefix: 'Error');
-                    }
-                  }
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(value: 'remove', child: Text('Remove')),
-              const PopupMenuItem(value: 'hide', child: Text('Hide')),
-            ],
+          trailing: _buildVideoActionMenu(
+            video: video,
+            isWatched: isWatched,
+            index: index,
+            videoCount: videos.length,
           ),
           onTap: () => _openVideo(context, video.youtubeVideoId),
         );
       }, childCount: videos.length),
     );
+  }
+
+  Widget _buildVideoActionMenu({
+    required YouTubeVideo video,
+    required bool isWatched,
+    required int index,
+    required int videoCount,
+  }) {
+    final canMove = video.playlistItemId?.isNotEmpty ?? false;
+    return PopupMenuButton<String>(
+      tooltip: 'Video actions',
+      onSelected: (value) => _handleVideoAction(
+        value,
+        video: video,
+        isWatched: isWatched,
+        index: index,
+      ),
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 'play',
+          child: _VideoActionMenuItem(icon: Icons.play_arrow, label: 'Play'),
+        ),
+        const PopupMenuItem(
+          value: 'share',
+          child: _VideoActionMenuItem(
+            icon: Icons.share_outlined,
+            label: 'Copy YouTube link',
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'copy-to-playlist',
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.playlist_add),
+            title: Text('Copy to another playlist'),
+            subtitle: YoutubeQuotaCostText(
+              cost: YoutubeQuotaCost.addPlaylistItem,
+              prefix: 'Cost',
+            ),
+          ),
+        ),
+        PopupMenuItem(
+          value: isWatched ? 'unwatched' : 'watched',
+          child: _VideoActionMenuItem(
+            icon: isWatched
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            label: isWatched ? 'Mark unwatched' : 'Mark watched',
+          ),
+        ),
+        PopupMenuItem(
+          value: 'move-up',
+          enabled: canMove && index > 0,
+          child: const _VideoActionMenuItem(
+            icon: Icons.arrow_upward,
+            label: 'Move up',
+          ),
+        ),
+        PopupMenuItem(
+          value: 'move-down',
+          enabled: canMove && index < videoCount - 1,
+          child: const _VideoActionMenuItem(
+            icon: Icons.arrow_downward,
+            label: 'Move down',
+          ),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem(
+          value: 'remove',
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.playlist_remove),
+            title: Text('Remove from playlist'),
+            subtitle: YoutubeQuotaCostText(
+              cost: YoutubeQuotaCost.removePlaylistItem,
+              prefix: 'Cost',
+            ),
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'hide',
+          child: _VideoActionMenuItem(
+            icon: Icons.hide_source_outlined,
+            label: 'Hide from library',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleVideoAction(
+    String action, {
+    required YouTubeVideo video,
+    required bool isWatched,
+    required int index,
+  }) async {
+    switch (action) {
+      case 'play':
+        _openVideo(context, video.youtubeVideoId);
+        return;
+      case 'share':
+        await _copyYoutubeLink(video.youtubeVideoId);
+        return;
+      case 'copy-to-playlist':
+        await _showCopyToPlaylistSheet(video);
+        return;
+      case 'watched':
+      case 'unwatched':
+        await _toggleWatched(video.youtubeVideoId, isWatched);
+        return;
+      case 'move-up':
+        await _movePlaylistItem(video, index - 1);
+        return;
+      case 'move-down':
+        await _movePlaylistItem(video, index + 1);
+        return;
+      case 'remove':
+        await _removePlaylistItem(video);
+        return;
+      case 'hide':
+        await _hideVideo(video.youtubeVideoId);
+        return;
+    }
+  }
+
+  Future<void> _copyYoutubeLink(String youtubeVideoId) async {
+    await Clipboard.setData(
+      ClipboardData(text: 'https://www.youtube.com/watch?v=$youtubeVideoId'),
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('YouTube link copied.')));
+  }
+
+  Future<void> _toggleWatched(String youtubeVideoId, bool isWatched) async {
+    try {
+      if (isWatched) {
+        await unmarkWatched(ref, youtubeVideoId);
+      } else {
+        await markWatched(ref, youtubeVideoId);
+      }
+      ref
+        ..invalidate(watchedVideosProvider)
+        ..invalidate(playlistVideosProvider(widget.id));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isWatched ? 'Marked unwatched.' : 'Marked watched.'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Watch state failed');
+    }
+  }
+
+  Future<void> _movePlaylistItem(YouTubeVideo video, int newPosition) async {
+    final playlistItemId = video.playlistItemId;
+    if (playlistItemId == null || playlistItemId.isEmpty) {
+      showErrorSnackBar(
+        context,
+        error: StateError(
+          'This playlist item cannot be moved until the playlist is refreshed from YouTube.',
+        ),
+        prefix: 'Move unavailable',
+      );
+      return;
+    }
+
+    final confirmed = await confirmYoutubeQuotaRisk(
+      context: context,
+      ref: ref,
+      cost: YoutubeQuotaCost.movePlaylistItem,
+      actionLabel: 'Moving this video in the playlist',
+    );
+    if (!confirmed) return;
+
+    try {
+      await moveVideoInYoutubePlaylist(
+        ref,
+        playlistId: widget.id,
+        playlistItemId: playlistItemId,
+        videoId: video.youtubeVideoId,
+        newPosition: newPosition,
+      );
+      ref.invalidate(playlistVideosProvider(widget.id));
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Playlist order updated.')));
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(
+        context,
+        error: e,
+        prefix: 'Failed to move playlist item',
+      );
+    }
+  }
+
+  Future<void> _removePlaylistItem(YouTubeVideo video) async {
+    final playlistItemId = video.playlistItemId;
+    if (playlistItemId == null || playlistItemId.isEmpty) {
+      showErrorSnackBar(
+        context,
+        error: StateError(
+          'This playlist item cannot be removed until the playlist is refreshed from YouTube.',
+        ),
+        prefix: 'Remove unavailable',
+      );
+      return;
+    }
+
+    final confirmed = await confirmYoutubeQuotaRisk(
+      context: context,
+      ref: ref,
+      cost: YoutubeQuotaCost.removePlaylistItem,
+      actionLabel: 'Removing this video from the playlist',
+    );
+    if (!confirmed) return;
+
+    try {
+      await removeVideoFromYoutubePlaylist(
+        ref,
+        playlistId: widget.id,
+        playlistItemId: playlistItemId,
+      );
+      ref.invalidate(playlistVideosProvider(widget.id));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video removed from playlist.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Remove failed');
+    }
+  }
+
+  Future<void> _hideVideo(String youtubeVideoId) async {
+    try {
+      await hideVideo(ref, youtubeVideoId);
+      ref
+        ..invalidate(hiddenItemsProvider)
+        ..invalidate(playlistVideosProvider(widget.id))
+        ..invalidate(videosProvider(const VideosArgs()));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video hidden from library.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Could not hide video');
+    }
+  }
+
+  Future<void> _showCopyToPlaylistSheet(YouTubeVideo video) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final playlistsAsync = ref.watch(playlistsProvider);
+            return SafeArea(
+              child: playlistsAsync.when(
+                data: (playlists) {
+                  final writablePlaylists =
+                      playlists
+                          .where(
+                            (playlist) =>
+                                playlist.youtubePlaylistId.isNotEmpty &&
+                                playlist.youtubePlaylistId != widget.id,
+                          )
+                          .toList(growable: false)
+                        ..sort(
+                          (a, b) => a.title.toLowerCase().compareTo(
+                            b.title.toLowerCase(),
+                          ),
+                        );
+
+                  if (writablePlaylists.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: AppEmptyState(
+                        icon: Icons.playlist_add,
+                        title: 'No other playlists available',
+                        description:
+                            'Create or sync another playlist before copying videos.',
+                      ),
+                    );
+                  }
+
+                  return ListView(
+                    shrinkWrap: true,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+                        child: Text(
+                          'Copy to another playlist',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      for (final playlist in writablePlaylists)
+                        ListTile(
+                          leading: const Icon(Icons.playlist_play),
+                          title: Text(playlist.title),
+                          subtitle: Text('${playlist.videoCount} videos'),
+                          onTap: () async {
+                            Navigator.of(sheetContext).pop();
+                            await _copyVideoToPlaylist(
+                              video,
+                              playlist.youtubePlaylistId,
+                            );
+                          },
+                        ),
+                    ],
+                  );
+                },
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (error, stackTrace) => Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: ErrorStateView(
+                    error: error,
+                    prefix: 'Failed to load playlists',
+                    onRetry: () => ref.invalidate(playlistsProvider),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _copyVideoToPlaylist(
+    YouTubeVideo video,
+    String playlistId,
+  ) async {
+    final confirmed = await confirmYoutubeQuotaRisk(
+      context: context,
+      ref: ref,
+      cost: YoutubeQuotaCost.addPlaylistItem,
+      actionLabel: 'Copying this video to another playlist',
+    );
+    if (!confirmed) return;
+
+    try {
+      await addVideoToYoutubePlaylist(
+        ref,
+        playlistId: playlistId,
+        videoId: video.youtubeVideoId,
+      );
+      ref
+        ..invalidate(playlistVideosProvider(widget.id))
+        ..invalidate(playlistVideosProvider(playlistId))
+        ..invalidate(playlistsProvider)
+        ..invalidate(videosProvider(const VideosArgs()));
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Video copied.')));
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Copy failed');
+    }
   }
 
   Future<void> _persistVideoOrder(BuildContext context) async {
@@ -365,7 +717,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     }
 
     final orderedIds = _reorderList
-        .map((video) => video.id)
+        .map((video) => video.youtubeVideoId)
         .toList(growable: false);
     setState(() {
       _isSavingOrder = true;
@@ -645,6 +997,22 @@ class _ColorSwatch extends StatelessWidget {
             ? const Icon(Icons.check, size: 18, color: Colors.white)
             : null,
       ),
+    );
+  }
+}
+
+class _VideoActionMenuItem extends StatelessWidget {
+  const _VideoActionMenuItem({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon),
+      title: Text(label),
     );
   }
 }

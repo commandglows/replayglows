@@ -8,3 +8,4 @@
 | 2026-05-11 | Deps fix: replayglowz_app | — | — | — | — | — | — | A- | — | A- | Beta Clerk SDKs removed and sign-in disabled; direct deps current; Flutter analyze/build web passed |
 | 2026-05-14 | Perf: monorepo | — | — | — | — | — | — | — | A- | A- | 0 critical / 0 high open / 2 medium follow-ups; fixed unused 6.0 MB site payload, global Lenis JS, app playlist-sync waterfall, and eager notes subscription |
 | 2026-05-16 | Design: monorepo | — | C | C | — | C | — | — | — | C | 0 critical / 2 high / 3 medium; public site claims exceed product evidence, app theme selector is not wired, and design tokens diverge across site/app |
+| 2026-05-25 | Feature gap: TubeFlow Expo -> ReplayGlowz Flutter | C | C | — | — | — | B | — | — | C | Audit traced in `shipflow_data/workflow/audits/2026-05-25-tubeflow-expo-feature-gap.md`; main gaps are feed actions, player state, playlist video actions, channel sync UI, quota safeguards, transcript settings, and i18n parity |

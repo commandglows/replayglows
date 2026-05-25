@@ -225,7 +225,8 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
   ) {
     return PlaylistCard(
       playlist: playlist,
-      onTap: () => context.go(Routes.playlistDetail(playlist.id)),
+      onTap: () =>
+          context.go(Routes.playlistDetail(playlist.youtubePlaylistId)),
       trailing: PopupMenuButton<String>(
         onSelected: (value) async {
           switch (value) {

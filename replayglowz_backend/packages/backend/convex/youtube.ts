@@ -1,5 +1,12 @@
 import { v } from "convex/values";
-import { mutation, query, action, internalMutation, internalQuery, internalAction } from "./_generated/server";
+import {
+  mutation,
+  query,
+  action,
+  internalMutation,
+  internalQuery,
+  internalAction,
+} from "./_generated/server";
 import { getUserId } from "./utils";
 import { internal, api } from "./_generated/api";
 import { YOUTUBE_QUOTA_COSTS } from "./metrics";
@@ -39,9 +46,12 @@ function shouldStopForQuota(used: number, limit: number): boolean {
 }
 
 function estimateFullSyncQuotaUnits(playlistCount: number): number {
-  return YOUTUBE_QUOTA_COSTS["playlists.list"] +
+  return (
+    YOUTUBE_QUOTA_COSTS["playlists.list"] +
     playlistCount *
-      (YOUTUBE_QUOTA_COSTS["playlistItems.list"] + YOUTUBE_QUOTA_COSTS["videos.list"]);
+      (YOUTUBE_QUOTA_COSTS["playlistItems.list"] +
+        YOUTUBE_QUOTA_COSTS["videos.list"])
+  );
 }
 
 function formatSyncError(error: unknown): string {
@@ -106,7 +116,7 @@ export const getActiveYoutubeSyncJob = internalQuery({
     const activeJobs = await ctx.db
       .query("youtubeSyncJobs")
       .withIndex("by_user_and_status", (q) =>
-        q.eq("userId", args.userId).eq("status", "running")
+        q.eq("userId", args.userId).eq("status", "running"),
       )
       .collect();
 
@@ -206,8 +216,8 @@ export const updateYoutubeSyncJob = internalMutation({
         v.literal("running"),
         v.literal("completed"),
         v.literal("partial"),
-        v.literal("failed")
-      )
+        v.literal("failed"),
+      ),
     ),
     phase: v.optional(
       v.union(
@@ -215,8 +225,8 @@ export const updateYoutubeSyncJob = internalMutation({
         v.literal("playlists"),
         v.literal("videos"),
         v.literal("completed"),
-        v.literal("failed")
-      )
+        v.literal("failed"),
+      ),
     ),
     current: v.optional(v.number()),
     total: v.optional(v.number()),
@@ -246,8 +256,10 @@ export const updateYoutubeSyncJob = internalMutation({
     if (args.estimatedQuotaUnits !== undefined) {
       patch.estimatedQuotaUnits = args.estimatedQuotaUnits;
     }
-    if (args.usedQuotaUnits !== undefined) patch.usedQuotaUnits = args.usedQuotaUnits;
-    if (args.currentPlaylistId !== undefined) patch.currentPlaylistId = args.currentPlaylistId;
+    if (args.usedQuotaUnits !== undefined)
+      patch.usedQuotaUnits = args.usedQuotaUnits;
+    if (args.currentPlaylistId !== undefined)
+      patch.currentPlaylistId = args.currentPlaylistId;
     if (args.currentPlaylistTitle !== undefined) {
       patch.currentPlaylistTitle = args.currentPlaylistTitle;
     }
@@ -273,14 +285,31 @@ export const getYoutubePlaylists = query({
     if (!userId) return [];
 
     // Fetch all data sources in parallel
-    const [playlists, hiddenPlaylists, hiddenVideos, allCachedVideos] = await Promise.all([
-      ctx.db.query("youtubePlaylistsCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
-      !args.includeHidden
-        ? ctx.db.query("hiddenItems").withIndex("by_user_and_type", (q) => q.eq("userId", userId).eq("itemType", "playlist")).collect()
-        : Promise.resolve([]),
-      ctx.db.query("hiddenItems").withIndex("by_user_and_type", (q) => q.eq("userId", userId).eq("itemType", "video")).collect(),
-      ctx.db.query("youtubeVideosCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
-    ]);
+    const [playlists, hiddenPlaylists, hiddenVideos, allCachedVideos] =
+      await Promise.all([
+        ctx.db
+          .query("youtubePlaylistsCache")
+          .withIndex("by_user", (q) => q.eq("userId", userId))
+          .collect(),
+        !args.includeHidden
+          ? ctx.db
+              .query("hiddenItems")
+              .withIndex("by_user_and_type", (q) =>
+                q.eq("userId", userId).eq("itemType", "playlist"),
+              )
+              .collect()
+          : Promise.resolve([]),
+        ctx.db
+          .query("hiddenItems")
+          .withIndex("by_user_and_type", (q) =>
+            q.eq("userId", userId).eq("itemType", "video"),
+          )
+          .collect(),
+        ctx.db
+          .query("youtubeVideosCache")
+          .withIndex("by_user", (q) => q.eq("userId", userId))
+          .collect(),
+      ]);
 
     const hiddenPlaylistIds = new Set(hiddenPlaylists.map((h) => h.youtubeId));
     const hiddenVideoIds = new Set(hiddenVideos.map((h) => h.youtubeId));
@@ -290,24 +319,34 @@ export const getYoutubePlaylists = query({
     const latestVideoDateByPlaylist = new Map<string, string>();
     for (const video of allCachedVideos) {
       if (!hiddenVideoIds.has(video.youtubeVideoId)) {
-        const current = visibleCountByPlaylist.get(video.youtubePlaylistId) || 0;
+        const current =
+          visibleCountByPlaylist.get(video.youtubePlaylistId) || 0;
         visibleCountByPlaylist.set(video.youtubePlaylistId, current + 1);
       }
       // Track the most recent video publishedAt per playlist
       if (video.publishedAt) {
-        const currentLatest = latestVideoDateByPlaylist.get(video.youtubePlaylistId);
+        const currentLatest = latestVideoDateByPlaylist.get(
+          video.youtubePlaylistId,
+        );
         if (!currentLatest || video.publishedAt > currentLatest) {
-          latestVideoDateByPlaylist.set(video.youtubePlaylistId, video.publishedAt);
+          latestVideoDateByPlaylist.set(
+            video.youtubePlaylistId,
+            video.publishedAt,
+          );
         }
       }
     }
 
     return playlists
-      .filter((p) => args.includeHidden || !hiddenPlaylistIds.has(p.youtubePlaylistId))
+      .filter(
+        (p) =>
+          args.includeHidden || !hiddenPlaylistIds.has(p.youtubePlaylistId),
+      )
       .map((p) => {
         // Use visible count if we have cached videos, otherwise fall back to YouTube count
         const cachedCount = visibleCountByPlaylist.get(p.youtubePlaylistId);
-        const videoCount = cachedCount !== undefined ? cachedCount : p.videoCount;
+        const videoCount =
+          cachedCount !== undefined ? cachedCount : p.videoCount;
 
         return {
           _id: p._id,
@@ -345,7 +384,7 @@ export const getPlaylistVideos = query({
     const videos = await ctx.db
       .query("youtubeVideosCache")
       .withIndex("by_user_and_playlist", (q) =>
-        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId),
       )
       .collect();
 
@@ -355,7 +394,7 @@ export const getPlaylistVideos = query({
       const hiddenItems = await ctx.db
         .query("hiddenItems")
         .withIndex("by_user_and_type", (q) =>
-          q.eq("userId", userId).eq("itemType", "video")
+          q.eq("userId", userId).eq("itemType", "video"),
         )
         .collect();
       hiddenIds = new Set(hiddenItems.map((h) => h.youtubeId));
@@ -367,12 +406,30 @@ export const getPlaylistVideos = query({
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
     const channelThumbnails = new Map(
-      channels.map((c) => [c.youtubeChannelId, c.thumbnailUrl])
+      channels.map((c) => [c.youtubeChannelId, c.thumbnailUrl]),
+    );
+
+    const customOrder = await ctx.db
+      .query("videoOrder")
+      .withIndex("by_user_and_playlist", (q) =>
+        q.eq("userId", userId).eq("playlistId", args.playlistId),
+      )
+      .first();
+    const orderIndex = new Map(
+      (customOrder?.orderedIds ?? []).map((videoId, index) => [videoId, index]),
     );
 
     return videos
       .filter((v) => args.includeHidden || !hiddenIds.has(v.youtubeVideoId))
-      .sort((a, b) => a.position - b.position)
+      .sort((a, b) => {
+        const aIndex = orderIndex.get(a.youtubeVideoId);
+        const bIndex = orderIndex.get(b.youtubeVideoId);
+        if (aIndex !== undefined && bIndex !== undefined)
+          return aIndex - bIndex;
+        if (aIndex !== undefined) return -1;
+        if (bIndex !== undefined) return 1;
+        return a.position - b.position;
+      })
       .map((v) => ({
         _id: v._id,
         id: v.youtubeVideoId,
@@ -407,7 +464,7 @@ export const getPlaylistById = query({
     const playlist = await ctx.db
       .query("youtubePlaylistsCache")
       .withIndex("by_user_and_youtube_id", (q) =>
-        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId),
       )
       .first();
 
@@ -470,7 +527,7 @@ export const getChannelByYoutubeId = query({
     const channel = await ctx.db
       .query("youtubeChannelsCache")
       .withIndex("by_user_and_channel", (q) =>
-        q.eq("userId", userId).eq("youtubeChannelId", args.youtubeChannelId)
+        q.eq("userId", userId).eq("youtubeChannelId", args.youtubeChannelId),
       )
       .first();
 
@@ -496,7 +553,7 @@ export const getVideoByYoutubeId = query({
     const video = await ctx.db
       .query("youtubeVideosCache")
       .withIndex("by_user_and_video", (q) =>
-        q.eq("userId", userId).eq("youtubeVideoId", args.youtubeVideoId)
+        q.eq("userId", userId).eq("youtubeVideoId", args.youtubeVideoId),
       )
       .first();
 
@@ -528,26 +585,36 @@ export const getVideosInfoBatch = query({
         args.youtubeVideoIds.map((vid) =>
           ctx.db
             .query("youtubeVideosCache")
-            .withIndex("by_user_and_video", (q) => q.eq("userId", userId).eq("youtubeVideoId", vid))
-            .first()
-        )
+            .withIndex("by_user_and_video", (q) =>
+              q.eq("userId", userId).eq("youtubeVideoId", vid),
+            )
+            .first(),
+        ),
       ),
-      ctx.db.query("youtubeChannelsCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
+      ctx.db
+        .query("youtubeChannelsCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
     ]);
 
     const channelMap = new Map(channels.map((c) => [c.youtubeChannelId, c]));
 
-    const result: Record<string, {
-      title: string;
-      channelTitle: string;
-      youtubeChannelId?: string;
-      channelThumbnailUrl?: string;
-    }> = {};
+    const result: Record<
+      string,
+      {
+        title: string;
+        channelTitle: string;
+        youtubeChannelId?: string;
+        channelThumbnailUrl?: string;
+      }
+    > = {};
 
     for (let i = 0; i < args.youtubeVideoIds.length; i++) {
       const video = videos[i];
       if (video) {
-        const channel = video.youtubeChannelId ? channelMap.get(video.youtubeChannelId) : undefined;
+        const channel = video.youtubeChannelId
+          ? channelMap.get(video.youtubeChannelId)
+          : undefined;
         result[args.youtubeVideoIds[i]] = {
           title: video.title,
           channelTitle: video.channelTitle,
@@ -574,49 +641,84 @@ export const getAllVideos = query({
         v.literal("asc"),
         v.literal("desc"),
         v.literal("oldest"),
-        v.literal("newest")
-      )
+        v.literal("newest"),
+      ),
     ),
-    paginationOpts: v.optional(v.object({
-      numItems: v.number(),
-      cursor: v.union(v.string(), v.null()),
-    })),
+    paginationOpts: v.optional(
+      v.object({
+        numItems: v.number(),
+        cursor: v.union(v.string(), v.null()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) return { page: [], isDone: true, continueCursor: null };
 
     // Fetch all data sources in parallel instead of sequentially
-    const [allVideos, playlists, channels, hiddenVideos, hiddenPlaylists, watchedVideos] = await Promise.all([
-      ctx.db.query("youtubeVideosCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
-      ctx.db.query("youtubePlaylistsCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
-      ctx.db.query("youtubeChannelsCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
+    const [
+      allVideos,
+      playlists,
+      channels,
+      hiddenVideos,
+      hiddenPlaylists,
+      watchedVideos,
+    ] = await Promise.all([
+      ctx.db
+        .query("youtubeVideosCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("youtubePlaylistsCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("youtubeChannelsCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
       !args.includeHidden
-        ? ctx.db.query("hiddenItems").withIndex("by_user_type_and_id", (q) => q.eq("userId", userId).eq("itemType", "video")).collect()
+        ? ctx.db
+            .query("hiddenItems")
+            .withIndex("by_user_type_and_id", (q) =>
+              q.eq("userId", userId).eq("itemType", "video"),
+            )
+            .collect()
         : Promise.resolve([]),
       !args.includeHidden
-        ? ctx.db.query("hiddenItems").withIndex("by_user_type_and_id", (q) => q.eq("userId", userId).eq("itemType", "playlist")).collect()
+        ? ctx.db
+            .query("hiddenItems")
+            .withIndex("by_user_type_and_id", (q) =>
+              q.eq("userId", userId).eq("itemType", "playlist"),
+            )
+            .collect()
         : Promise.resolve([]),
       !args.includeWatched
-        ? ctx.db.query("watchedVideos").withIndex("by_user", (q) => q.eq("userId", userId)).collect()
+        ? ctx.db
+            .query("watchedVideos")
+            .withIndex("by_user", (q) => q.eq("userId", userId))
+            .collect()
         : Promise.resolve([]),
     ]);
 
     // Build all lookup maps once
-    const playlistMap = new Map(playlists.map(p => [p.youtubePlaylistId, p]));
-    const channelThumbnails = new Map(channels.map(c => [c.youtubeChannelId, c.thumbnailUrl]));
-    const hiddenIds = new Set(hiddenVideos.map(h => h.youtubeId));
-    const hiddenPlaylistIds = new Set(hiddenPlaylists.map(h => h.youtubeId));
-    const watchedIds = new Set(watchedVideos.map(w => w.youtubeVideoId));
+    const playlistMap = new Map(playlists.map((p) => [p.youtubePlaylistId, p]));
+    const channelThumbnails = new Map(
+      channels.map((c) => [c.youtubeChannelId, c.thumbnailUrl]),
+    );
+    const hiddenIds = new Set(hiddenVideos.map((h) => h.youtubeId));
+    const hiddenPlaylistIds = new Set(hiddenPlaylists.map((h) => h.youtubeId));
+    const watchedIds = new Set(watchedVideos.map((w) => w.youtubeVideoId));
 
     // Single pass: deduplicate + filter
     const seen = new Set<string>();
-    const filtered = allVideos.filter(v => {
+    const filtered = allVideos.filter((v) => {
       if (seen.has(v.youtubeVideoId)) return false;
       seen.add(v.youtubeVideoId);
       if (!args.includeHidden && hiddenIds.has(v.youtubeVideoId)) return false;
-      if (!args.includeHidden && hiddenPlaylistIds.has(v.youtubePlaylistId)) return false;
-      if (!args.includeWatched && watchedIds.has(v.youtubeVideoId)) return false;
+      if (!args.includeHidden && hiddenPlaylistIds.has(v.youtubePlaylistId))
+        return false;
+      if (!args.includeWatched && watchedIds.has(v.youtubeVideoId))
+        return false;
       return true;
     });
 
@@ -677,10 +779,12 @@ export const getAllVideos = query({
 export const getUncategorizedVideos = query({
   args: {
     includeHidden: v.optional(v.boolean()),
-    paginationOpts: v.optional(v.object({
-      numItems: v.number(),
-      cursor: v.union(v.string(), v.null()),
-    })),
+    paginationOpts: v.optional(
+      v.object({
+        numItems: v.number(),
+        cursor: v.union(v.string(), v.null()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -688,25 +792,49 @@ export const getUncategorizedVideos = query({
 
     // Fetch all data sources in parallel
     const [links, allVideos, channels, hiddenVideos] = await Promise.all([
-      ctx.db.query("channelPlaylistLinks").withIndex("by_user", (q) => q.eq("userId", userId)).filter((q) => q.eq(q.field("isActive"), true)).collect(),
-      ctx.db.query("youtubeVideosCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
-      ctx.db.query("youtubeChannelsCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
+      ctx.db
+        .query("channelPlaylistLinks")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .filter((q) => q.eq(q.field("isActive"), true))
+        .collect(),
+      ctx.db
+        .query("youtubeVideosCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("youtubeChannelsCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
       !args.includeHidden
-        ? ctx.db.query("hiddenItems").withIndex("by_user_type_and_id", (q) => q.eq("userId", userId).eq("itemType", "video")).collect()
+        ? ctx.db
+            .query("hiddenItems")
+            .withIndex("by_user_type_and_id", (q) =>
+              q.eq("userId", userId).eq("itemType", "video"),
+            )
+            .collect()
         : Promise.resolve([]),
     ]);
 
-    const categorizedChannelIds = new Set(links.map(link => link.youtubeChannelId));
-    const hiddenIds = new Set(hiddenVideos.map(h => h.youtubeId));
-    const channelThumbnails = new Map(channels.map(c => [c.youtubeChannelId, c.thumbnailUrl]));
+    const categorizedChannelIds = new Set(
+      links.map((link) => link.youtubeChannelId),
+    );
+    const hiddenIds = new Set(hiddenVideos.map((h) => h.youtubeId));
+    const channelThumbnails = new Map(
+      channels.map((c) => [c.youtubeChannelId, c.thumbnailUrl]),
+    );
 
     // Single pass: filter uncategorized + hidden + deduplicate
     const seen = new Set<string>();
-    const filtered = allVideos.filter(video => {
+    const filtered = allVideos.filter((video) => {
       if (seen.has(video.youtubeVideoId)) return false;
       seen.add(video.youtubeVideoId);
-      if (video.youtubeChannelId && categorizedChannelIds.has(video.youtubeChannelId)) return false;
-      if (!args.includeHidden && hiddenIds.has(video.youtubeVideoId)) return false;
+      if (
+        video.youtubeChannelId &&
+        categorizedChannelIds.has(video.youtubeChannelId)
+      )
+        return false;
+      if (!args.includeHidden && hiddenIds.has(video.youtubeVideoId))
+        return false;
       return true;
     });
 
@@ -757,10 +885,12 @@ export const getAllCategorizedVideos = query({
   args: {
     includeHidden: v.optional(v.boolean()),
     sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))), // asc = oldest first, desc = newest first
-    paginationOpts: v.optional(v.object({
-      numItems: v.number(),
-      cursor: v.union(v.string(), v.null()),
-    })),
+    paginationOpts: v.optional(
+      v.object({
+        numItems: v.number(),
+        cursor: v.union(v.string(), v.null()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -768,21 +898,37 @@ export const getAllCategorizedVideos = query({
 
     // Fetch all data sources in parallel
     const [allVideos, playlists, channels, hiddenVideos] = await Promise.all([
-      ctx.db.query("youtubeVideosCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
-      ctx.db.query("youtubePlaylistsCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
-      ctx.db.query("youtubeChannelsCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
+      ctx.db
+        .query("youtubeVideosCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("youtubePlaylistsCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("youtubeChannelsCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
       !args.includeHidden
-        ? ctx.db.query("hiddenItems").withIndex("by_user_type_and_id", (q) => q.eq("userId", userId).eq("itemType", "video")).collect()
+        ? ctx.db
+            .query("hiddenItems")
+            .withIndex("by_user_type_and_id", (q) =>
+              q.eq("userId", userId).eq("itemType", "video"),
+            )
+            .collect()
         : Promise.resolve([]),
     ]);
 
-    const playlistMap = new Map(playlists.map(p => [p.youtubePlaylistId, p]));
-    const hiddenIds = new Set(hiddenVideos.map(h => h.youtubeId));
-    const channelThumbnails = new Map(channels.map(c => [c.youtubeChannelId, c.thumbnailUrl]));
+    const playlistMap = new Map(playlists.map((p) => [p.youtubePlaylistId, p]));
+    const hiddenIds = new Set(hiddenVideos.map((h) => h.youtubeId));
+    const channelThumbnails = new Map(
+      channels.map((c) => [c.youtubeChannelId, c.thumbnailUrl]),
+    );
 
     // Single pass: deduplicate + filter hidden
     const seen = new Set<string>();
-    const filtered = allVideos.filter(v => {
+    const filtered = allVideos.filter((v) => {
       if (seen.has(v.youtubeVideoId)) return false;
       seen.add(v.youtubeVideoId);
       if (!args.includeHidden && hiddenIds.has(v.youtubeVideoId)) return false;
@@ -840,11 +986,12 @@ export const getAllCategorizedVideos = query({
 export const areAllChannelsCategorized = query({
   handler: async (ctx) => {
     const userId = await getUserId(ctx);
-    if (!userId) return {
-      allCategorized: false,
-      totalChannels: 0,
-      categorizedCount: 0,
-    };
+    if (!userId)
+      return {
+        allCategorized: false,
+        totalChannels: 0,
+        categorizedCount: 0,
+      };
 
     // Get all unique channel IDs from videos
     const allVideos = await ctx.db
@@ -854,8 +1001,8 @@ export const areAllChannelsCategorized = query({
 
     const uniqueChannels = new Set(
       allVideos
-        .map(v => v.youtubeChannelId)
-        .filter((id): id is string => id !== undefined)
+        .map((v) => v.youtubeChannelId)
+        .filter((id): id is string => id !== undefined),
     );
 
     // Get categorized channel IDs
@@ -866,12 +1013,13 @@ export const areAllChannelsCategorized = query({
       .collect();
 
     const categorizedChannels = new Set(
-      links.map(link => link.youtubeChannelId)
+      links.map((link) => link.youtubeChannelId),
     );
 
     // Check if all channels are categorized
-    const allCategorized = uniqueChannels.size > 0 &&
-      Array.from(uniqueChannels).every(id => categorizedChannels.has(id));
+    const allCategorized =
+      uniqueChannels.size > 0 &&
+      Array.from(uniqueChannels).every((id) => categorizedChannels.has(id));
 
     return {
       allCategorized,
@@ -896,7 +1044,7 @@ export const updatePlaylistColor = mutation({
     const playlist = await ctx.db
       .query("youtubePlaylistsCache")
       .withIndex("by_user_and_youtube_id", (q) =>
-        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId),
       )
       .first();
 
@@ -924,7 +1072,7 @@ export const updatePlaylistDetails = mutation({
     const playlist = await ctx.db
       .query("youtubePlaylistsCache")
       .withIndex("by_user_and_youtube_id", (q) =>
-        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId),
       )
       .first();
 
@@ -932,7 +1080,8 @@ export const updatePlaylistDetails = mutation({
 
     const patch: Record<string, string | undefined> = {};
     if (args.color !== undefined) patch.color = args.color;
-    if (args.customThumbnailUrl !== undefined) patch.customThumbnailUrl = args.customThumbnailUrl;
+    if (args.customThumbnailUrl !== undefined)
+      patch.customThumbnailUrl = args.customThumbnailUrl;
 
     await ctx.db.patch(playlist._id, patch);
   },
@@ -952,7 +1101,7 @@ export const updatePlaylistTitleInCache = internalMutation({
     const playlist = await ctx.db
       .query("youtubePlaylistsCache")
       .withIndex("by_user_and_youtube_id", (q) =>
-        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId),
       )
       .first();
 
@@ -1028,8 +1177,14 @@ export const disconnectYoutube = mutation({
 
     // Clear playlists + videos cache in parallel
     const [playlists, videos] = await Promise.all([
-      ctx.db.query("youtubePlaylistsCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
-      ctx.db.query("youtubeVideosCache").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
+      ctx.db
+        .query("youtubePlaylistsCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("youtubeVideosCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
     ]);
 
     await Promise.all([
@@ -1053,7 +1208,7 @@ export const updatePlaylistsCache = mutation({
         videoCount: v.number(),
         privacyStatus: v.string(),
         publishedAt: v.optional(v.string()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -1069,7 +1224,7 @@ export const updatePlaylistsCache = mutation({
       .collect();
 
     const existingMap = new Map(
-      existingPlaylists.map((p) => [p.youtubePlaylistId, p])
+      existingPlaylists.map((p) => [p.youtubePlaylistId, p]),
     );
 
     // Update or insert playlists
@@ -1096,7 +1251,9 @@ export const updatePlaylistsCache = mutation({
       const staleVideos = await ctx.db
         .query("youtubeVideosCache")
         .withIndex("by_user_and_playlist", (q) =>
-          q.eq("userId", userId).eq("youtubePlaylistId", playlist.youtubePlaylistId)
+          q
+            .eq("userId", userId)
+            .eq("youtubePlaylistId", playlist.youtubePlaylistId),
         )
         .collect();
       for (const video of staleVideos) {
@@ -1125,7 +1282,7 @@ export const updateVideosCache = mutation({
         duration: v.optional(v.string()),
         position: v.number(),
         publishedAt: v.optional(v.string()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -1138,12 +1295,12 @@ export const updateVideosCache = mutation({
     const existingVideos = await ctx.db
       .query("youtubeVideosCache")
       .withIndex("by_user_and_playlist", (q) =>
-        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId),
       )
       .collect();
 
     const existingMap = new Map(
-      existingVideos.map((v) => [v.youtubeVideoId, v])
+      existingVideos.map((v) => [v.youtubeVideoId, v]),
     );
 
     // Update or insert videos
@@ -1187,7 +1344,7 @@ export const updateChannelsCache = mutation({
         thumbnailUrl: v.optional(v.string()),
         subscriberCount: v.optional(v.string()),
         videoCount: v.optional(v.string()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -1203,7 +1360,7 @@ export const updateChannelsCache = mutation({
       .collect();
 
     const existingMap = new Map(
-      existingChannels.map((c) => [c.youtubeChannelId, c])
+      existingChannels.map((c) => [c.youtubeChannelId, c]),
     );
 
     // Update or insert channels
@@ -1258,7 +1415,7 @@ export const insertVideoToCache = internalMutation({
     const existing = await ctx.db
       .query("youtubeVideosCache")
       .withIndex("by_user_and_playlist", (q) =>
-        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId),
       )
       .filter((q) => q.eq(q.field("youtubeVideoId"), args.video.videoId))
       .first();
@@ -1300,7 +1457,7 @@ export const insertVideoToCache = internalMutation({
     const playlist = await ctx.db
       .query("youtubePlaylistsCache")
       .withIndex("by_user_and_youtube_id", (q) =>
-        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId),
       )
       .first();
 
@@ -1356,7 +1513,7 @@ export const getVideoCacheEntries = internalQuery({
     const entries = await ctx.db
       .query("youtubeVideosCache")
       .withIndex("by_user_and_video", (q) =>
-        q.eq("userId", args.userId).eq("youtubeVideoId", args.videoId)
+        q.eq("userId", args.userId).eq("youtubeVideoId", args.videoId),
       )
       .collect();
 
@@ -1382,7 +1539,7 @@ export const removeVideoFromCache = internalMutation({
     const video = await ctx.db
       .query("youtubeVideosCache")
       .withIndex("by_user_and_playlist", (q) =>
-        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId),
       )
       .filter((q) => q.eq(q.field("playlistItemId"), args.playlistItemId))
       .first();
@@ -1394,7 +1551,7 @@ export const removeVideoFromCache = internalMutation({
       const playlist = await ctx.db
         .query("youtubePlaylistsCache")
         .withIndex("by_user_and_youtube_id", (q) =>
-          q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId)
+          q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId),
         )
         .first();
 
@@ -1423,12 +1580,14 @@ export const updateVideoPositionInCache = internalMutation({
     const videos = await ctx.db
       .query("youtubeVideosCache")
       .withIndex("by_user_and_playlist", (q) =>
-        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId),
       )
       .collect();
 
     // Find the moved video
-    const movedVideo = videos.find((v) => v.playlistItemId === args.playlistItemId);
+    const movedVideo = videos.find(
+      (v) => v.playlistItemId === args.playlistItemId,
+    );
     if (!movedVideo) return;
 
     const oldPosition = movedVideo.position;
@@ -1438,7 +1597,10 @@ export const updateVideoPositionInCache = internalMutation({
     for (const video of videos) {
       if (video.playlistItemId === args.playlistItemId) {
         // Update the moved video's position
-        await ctx.db.patch(video._id, { position: newPosition, cachedAt: Date.now() });
+        await ctx.db.patch(video._id, {
+          position: newPosition,
+          cachedAt: Date.now(),
+        });
       } else if (oldPosition < newPosition) {
         // Moving down: shift videos in between up by 1
         if (video.position > oldPosition && video.position <= newPosition) {
@@ -1522,20 +1684,27 @@ export const refreshYoutubeToken = action({
     if (!identity) throw new Error("Unauthorized");
 
     const userId = identity.subject;
-    const tokens = await ctx.runQuery(internal.youtube.getUserTokens, { userId });
+    const tokens = await ctx.runQuery(internal.youtube.getUserTokens, {
+      userId,
+    });
 
     if (!tokens?.refreshToken) {
       throw new Error("No refresh token available");
     }
 
-    const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const clientId =
+      process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
       console.error("Missing Google OAuth credentials:", {
         hasClientId: !!clientId,
         hasClientSecret: !!clientSecret,
-        clientIdSource: process.env.GOOGLE_CLIENT_ID ? "GOOGLE_CLIENT_ID" : (process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? "NEXT_PUBLIC_GOOGLE_CLIENT_ID" : "none")
+        clientIdSource: process.env.GOOGLE_CLIENT_ID
+          ? "GOOGLE_CLIENT_ID"
+          : process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+            ? "NEXT_PUBLIC_GOOGLE_CLIENT_ID"
+            : "none",
       });
       throw new Error("Google OAuth credentials not configured");
     }
@@ -1612,7 +1781,7 @@ export const fetchYoutubePlaylists = action({
         }),
       {
         headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      },
     );
     const responseTimeMs = Date.now() - startTime;
 
@@ -1677,7 +1846,7 @@ export const fetchPlaylistItems = action({
         }),
       {
         headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      },
     );
     const responseTimeMs1 = Date.now() - startTime1;
 
@@ -1705,12 +1874,15 @@ export const fetchPlaylistItems = action({
       .filter(Boolean);
     const uniqueVideoIds: string[] = Array.from(new Set(videoIdList));
 
-    const cachedDetails = await ctx.runQuery(youtubeInternal.getCachedVideoDetailsByIds, {
-      userId,
-      videoIds: uniqueVideoIds,
-    });
+    const cachedDetails = await ctx.runQuery(
+      youtubeInternal.getCachedVideoDetailsByIds,
+      {
+        userId,
+        videoIds: uniqueVideoIds,
+      },
+    );
     const cachedDetailsById = new Map<string, any>(
-      cachedDetails.map((video: any) => [video.youtubeVideoId, video])
+      cachedDetails.map((video: any) => [video.youtubeVideoId, video]),
     );
     const missingVideoIds = uniqueVideoIds.filter((videoId) => {
       const cached = cachedDetailsById.get(videoId);
@@ -1722,7 +1894,8 @@ export const fetchPlaylistItems = action({
     let videoPublishDates: Record<string, string> = {};
     for (const video of cachedDetails) {
       if (video.duration) durations[video.youtubeVideoId] = video.duration;
-      if (video.publishedAt) videoPublishDates[video.youtubeVideoId] = video.publishedAt;
+      if (video.publishedAt)
+        videoPublishDates[video.youtubeVideoId] = video.publishedAt;
     }
 
     if (missingVideoIds.length > 0) {
@@ -1735,7 +1908,7 @@ export const fetchPlaylistItems = action({
           }),
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
       const responseTimeMs2 = Date.now() - startTime2;
 
@@ -1745,7 +1918,9 @@ export const fetchPlaylistItems = action({
         endpoint: "videos.list",
         quotaUnits: YOUTUBE_QUOTA_COSTS["videos.list"],
         success: videosResponse.ok,
-        errorMessage: videosResponse.ok ? undefined : await videosResponse.clone().text(),
+        errorMessage: videosResponse.ok
+          ? undefined
+          : await videosResponse.clone().text(),
         responseTimeMs: responseTimeMs2,
       });
 
@@ -1756,7 +1931,7 @@ export const fetchPlaylistItems = action({
             acc[item.id] = parseDuration(item.contentDetails?.duration);
             return acc;
           },
-          {}
+          {},
         );
         // Extract actual video upload dates
         videoPublishDates = (videosData.items || []).reduce(
@@ -1764,7 +1939,7 @@ export const fetchPlaylistItems = action({
             acc[item.id] = item.snippet?.publishedAt;
             return acc;
           },
-          {}
+          {},
         );
       }
     }
@@ -1782,7 +1957,9 @@ export const fetchPlaylistItems = action({
       youtubeChannelId: item.snippet.videoOwnerChannelId || undefined,
       duration: durations[item.contentDetails?.videoId] || "",
       position: item.snippet.position ?? index,
-      publishedAt: videoPublishDates[item.contentDetails?.videoId] || item.snippet.publishedAt,
+      publishedAt:
+        videoPublishDates[item.contentDetails?.videoId] ||
+        item.snippet.publishedAt,
     }));
 
     // Update cache
@@ -1808,26 +1985,35 @@ export const startQuotaSafeSync = action({
     if (!identity) throw new Error("Unauthorized");
 
     const userId = identity.subject;
-    const activeJob = await ctx.runQuery(youtubeInternal.getActiveYoutubeSyncJob, {
-      userId,
-    });
+    const activeJob = await ctx.runQuery(
+      youtubeInternal.getActiveYoutubeSyncJob,
+      {
+        userId,
+      },
+    );
     if (activeJob) {
       return { reused: true, job: activeJob };
     }
 
-    const cachedPlan = await ctx.runQuery(youtubeInternal.getCachedPlaylistSyncPlan, {
-      userId,
-    });
-    const quotaBefore = await ctx.runQuery(metricsInternal.getQuotaUsageForUserInternal, {
-      userId,
-    });
+    const cachedPlan = await ctx.runQuery(
+      youtubeInternal.getCachedPlaylistSyncPlan,
+      {
+        userId,
+      },
+    );
+    const quotaBefore = await ctx.runQuery(
+      metricsInternal.getQuotaUsageForUserInternal,
+      {
+        userId,
+      },
+    );
     const effectiveLimit = getEffectiveQuotaLimit(quotaBefore.limit);
     const usedBefore = quotaBefore.used;
     const percentageBefore = getQuotaPercentage(usedBefore, effectiveLimit);
 
     if (percentageBefore >= YOUTUBE_SYNC_HARD_STOP_PERCENTAGE) {
       throw new Error(
-        `YouTube sync disabled: quota usage is ${percentageBefore}% of the daily limit.`
+        `YouTube sync disabled: quota usage is ${percentageBefore}% of the daily limit.`,
       );
     }
 
@@ -1846,7 +2032,10 @@ export const startQuotaSafeSync = action({
         usedQuotaUnits: 0,
       });
 
-      const playlists = await ctx.runAction(youtubeApi.fetchYoutubePlaylists, {});
+      const playlists = await ctx.runAction(
+        youtubeApi.fetchYoutubePlaylists,
+        {},
+      );
       const playlistSummaries = (Array.isArray(playlists) ? playlists : [])
         .map((playlist: any) => ({
           youtubePlaylistId: playlist.youtubePlaylistId?.toString() ?? "",
@@ -1859,7 +2048,9 @@ export const startQuotaSafeSync = action({
         jobId,
         phase: "videos",
         total: playlistSummaries.length,
-        estimatedQuotaUnits: estimateFullSyncQuotaUnits(playlistSummaries.length),
+        estimatedQuotaUnits: estimateFullSyncQuotaUnits(
+          playlistSummaries.length,
+        ),
         usedQuotaUnits: YOUTUBE_QUOTA_COSTS["playlists.list"],
       });
 
@@ -1868,21 +2059,28 @@ export const startQuotaSafeSync = action({
       let terminalJob: unknown = null;
 
       for (const playlist of playlistSummaries) {
-        const quotaNow = await ctx.runQuery(metricsInternal.getQuotaUsageForUserInternal, {
-          userId,
-        });
+        const quotaNow = await ctx.runQuery(
+          metricsInternal.getQuotaUsageForUserInternal,
+          {
+            userId,
+          },
+        );
         const currentEffectiveLimit = getEffectiveQuotaLimit(quotaNow.limit);
         if (shouldStopForQuota(quotaNow.used, currentEffectiveLimit)) {
           stoppedForQuota = true;
-          terminalJob = await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
-            jobId,
-            status: "partial",
-            phase: "videos",
-            current: completedPlaylists,
-            usedQuotaUnits: quotaNow.used - usedBefore,
-            error: "Stopped before the next playlist because YouTube quota usage reached the safety threshold.",
-            completed: true,
-          });
+          terminalJob = await ctx.runMutation(
+            youtubeInternal.updateYoutubeSyncJob,
+            {
+              jobId,
+              status: "partial",
+              phase: "videos",
+              current: completedPlaylists,
+              usedQuotaUnits: quotaNow.used - usedBefore,
+              error:
+                "Stopped before the next playlist because YouTube quota usage reached the safety threshold.",
+              completed: true,
+            },
+          );
           break;
         }
 
@@ -1910,27 +2108,36 @@ export const startQuotaSafeSync = action({
       }
 
       if (!stoppedForQuota) {
-        const quotaAfter = await ctx.runQuery(metricsInternal.getQuotaUsageForUserInternal, {
-          userId,
-        });
-        const latestJob = await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
-          jobId,
-          status: "completed",
-          phase: "completed",
-          current: playlistSummaries.length,
-          total: playlistSummaries.length,
-          usedQuotaUnits: quotaAfter.used - usedBefore,
-          completed: true,
-        });
+        const quotaAfter = await ctx.runQuery(
+          metricsInternal.getQuotaUsageForUserInternal,
+          {
+            userId,
+          },
+        );
+        const latestJob = await ctx.runMutation(
+          youtubeInternal.updateYoutubeSyncJob,
+          {
+            jobId,
+            status: "completed",
+            phase: "completed",
+            current: playlistSummaries.length,
+            total: playlistSummaries.length,
+            usedQuotaUnits: quotaAfter.used - usedBefore,
+            completed: true,
+          },
+        );
 
         return { reused: false, job: latestJob };
       }
 
       return { reused: false, job: terminalJob };
     } catch (error) {
-      const quotaAfter = await ctx.runQuery(metricsInternal.getQuotaUsageForUserInternal, {
-        userId,
-      });
+      const quotaAfter = await ctx.runQuery(
+        metricsInternal.getQuotaUsageForUserInternal,
+        {
+          userId,
+        },
+      );
       await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
         jobId,
         status: "failed",
@@ -1978,7 +2185,7 @@ export const createYoutubePlaylist = action({
             privacyStatus: args.privacyStatus || "private",
           },
         }),
-      }
+      },
     );
     const responseTimeMs = Date.now() - startTime;
 
@@ -1999,7 +2206,10 @@ export const createYoutubePlaylist = action({
       let errorMessage = errorText;
       try {
         const errorData = JSON.parse(errorText);
-        errorMessage = errorData?.error?.errors?.[0]?.reason || errorData?.error?.message || errorText;
+        errorMessage =
+          errorData?.error?.errors?.[0]?.reason ||
+          errorData?.error?.message ||
+          errorText;
       } catch {
         // Keep errorText as-is
       }
@@ -2066,7 +2276,7 @@ export const addVideoToYoutubePlaylist = action({
           }),
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
       const detailsResponseTimeMs = Date.now() - detailsStartTime;
 
@@ -2075,7 +2285,9 @@ export const addVideoToYoutubePlaylist = action({
         endpoint: "videos.list",
         quotaUnits: YOUTUBE_QUOTA_COSTS["videos.list"],
         success: detailsResponse.ok,
-        errorMessage: detailsResponse.ok ? undefined : await detailsResponse.clone().text(),
+        errorMessage: detailsResponse.ok
+          ? undefined
+          : await detailsResponse.clone().text(),
         responseTimeMs: detailsResponseTimeMs,
       });
 
@@ -2124,7 +2336,7 @@ export const addVideoToYoutubePlaylist = action({
             },
           },
         }),
-      }
+      },
     );
     const responseTimeMs = Date.now() - startTime;
 
@@ -2191,7 +2403,7 @@ export const removeVideoFromYoutubePlaylist = action({
       {
         method: "DELETE",
         headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      },
     );
     const responseTimeMs = Date.now() - startTime;
 
@@ -2256,7 +2468,7 @@ export const removeVideoFromAllPlaylists = action({
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
       const responseTimeMs = Date.now() - startTime;
 
@@ -2319,7 +2531,7 @@ export const searchYoutubeVideos = action({
         }),
       {
         headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      },
     );
     const responseTimeMs1 = Date.now() - startTime1;
 
@@ -2329,7 +2541,9 @@ export const searchYoutubeVideos = action({
       endpoint: "search.list",
       quotaUnits: YOUTUBE_QUOTA_COSTS["search.list"],
       success: searchResponse.ok,
-      errorMessage: searchResponse.ok ? undefined : await searchResponse.clone().text(),
+      errorMessage: searchResponse.ok
+        ? undefined
+        : await searchResponse.clone().text(),
       responseTimeMs: responseTimeMs1,
     });
 
@@ -2359,7 +2573,7 @@ export const searchYoutubeVideos = action({
           }),
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
       const responseTimeMs2 = Date.now() - startTime2;
 
@@ -2369,7 +2583,9 @@ export const searchYoutubeVideos = action({
         endpoint: "videos.list",
         quotaUnits: YOUTUBE_QUOTA_COSTS["videos.list"],
         success: videosResponse.ok,
-        errorMessage: videosResponse.ok ? undefined : await videosResponse.clone().text(),
+        errorMessage: videosResponse.ok
+          ? undefined
+          : await videosResponse.clone().text(),
         responseTimeMs: responseTimeMs2,
       });
 
@@ -2380,7 +2596,7 @@ export const searchYoutubeVideos = action({
             acc[item.id] = parseDuration(item.contentDetails?.duration);
             return acc;
           },
-          {}
+          {},
         );
       }
     }
@@ -2421,7 +2637,7 @@ export const getYoutubeVideoDetails = action({
         }),
       {
         headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      },
     );
     const responseTimeMs = Date.now() - startTime;
 
@@ -2503,7 +2719,7 @@ export const moveVideoInYoutubePlaylist = action({
             position: args.newPosition,
           },
         }),
-      }
+      },
     );
     const responseTimeMs = Date.now() - startTime;
 
@@ -2553,7 +2769,7 @@ export const deleteYoutubePlaylist = action({
       {
         method: "DELETE",
         headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      },
     );
     const responseTimeMs = Date.now() - startTime;
 
@@ -2610,7 +2826,7 @@ export const updateYoutubePlaylist = action({
             description: args.description ?? "",
           },
         }),
-      }
+      },
     );
     const responseTimeMs = Date.now() - startTime;
 
@@ -2680,7 +2896,7 @@ export const fetchYoutubeSubscriptions = action({
         `https://www.googleapis.com/youtube/v3/subscriptions?${params}`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
       const responseTimeMs = Date.now() - startTime;
 
@@ -2718,7 +2934,9 @@ export const fetchYoutubeSubscriptions = action({
     } while (pageToken);
 
     // Update cache
-    await ctx.runMutation(api.youtube.updateChannelsCache, { channels: allChannels });
+    await ctx.runMutation(api.youtube.updateChannelsCache, {
+      channels: allChannels,
+    });
 
     return allChannels;
   },
@@ -2740,7 +2958,9 @@ export const getTranscript = query({
     const cached = await ctx.db
       .query("youtubeTranscriptsCache")
       .withIndex("by_video_and_lang", (q) =>
-        q.eq("youtubeVideoId", args.youtubeVideoId).eq("language", args.language)
+        q
+          .eq("youtubeVideoId", args.youtubeVideoId)
+          .eq("language", args.language),
       )
       .first();
 
@@ -2765,14 +2985,16 @@ export const upsertTranscriptCache = internalMutation({
         start: v.number(),
         duration: v.number(),
         text: v.string(),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("youtubeTranscriptsCache")
       .withIndex("by_video_and_lang", (q) =>
-        q.eq("youtubeVideoId", args.youtubeVideoId).eq("language", args.language)
+        q
+          .eq("youtubeVideoId", args.youtubeVideoId)
+          .eq("language", args.language),
       )
       .first();
 
@@ -2829,7 +3051,9 @@ export const updateSubscriptionPlaylist = mutation({
     const existing = await ctx.db
       .query("youtubePlaylistsCache")
       .withIndex("by_user_and_youtube_id", (q) =>
-        q.eq("userId", userId).eq("youtubePlaylistId", SUBSCRIPTION_PLAYLIST_ID)
+        q
+          .eq("userId", userId)
+          .eq("youtubePlaylistId", SUBSCRIPTION_PLAYLIST_ID),
       )
       .first();
 
@@ -2875,12 +3099,16 @@ export const fetchSubscriptionFeed = action({
     const maxVideosPerChannel = args.maxVideosPerChannel ?? 5;
 
     // 1. Get subscribed channels from cache
-    let channels = await ctx.runQuery(internal.youtube.getSubscribedChannels, { userId });
+    let channels = await ctx.runQuery(internal.youtube.getSubscribedChannels, {
+      userId,
+    });
 
     // If no channels cached, fetch them first
     if (!channels || channels.length === 0) {
       await ctx.runAction(api.youtube.fetchYoutubeSubscriptions);
-      channels = await ctx.runQuery(internal.youtube.getSubscribedChannels, { userId });
+      channels = await ctx.runQuery(internal.youtube.getSubscribedChannels, {
+        userId,
+      });
     }
 
     if (!channels || channels.length === 0) {
@@ -2891,13 +3119,22 @@ export const fetchSubscriptionFeed = action({
     // YouTube channel IDs start with "UC", uploads playlist IDs start with "UU"
     const selectedChannels = channels.slice(0, maxChannels);
     const uploadsPlaylists = selectedChannels
-      .filter((c: { youtubeChannelId?: string }) => c.youtubeChannelId && c.youtubeChannelId.startsWith("UC"))
-      .map((c: { youtubeChannelId?: string; title: string; thumbnailUrl?: string }) => ({
-        channelId: c.youtubeChannelId!,
-        channelTitle: c.title,
-        channelThumbnailUrl: c.thumbnailUrl,
-        uploadsPlaylistId: "UU" + c.youtubeChannelId!.slice(2),
-      }));
+      .filter(
+        (c: { youtubeChannelId?: string }) =>
+          c.youtubeChannelId && c.youtubeChannelId.startsWith("UC"),
+      )
+      .map(
+        (c: {
+          youtubeChannelId?: string;
+          title: string;
+          thumbnailUrl?: string;
+        }) => ({
+          channelId: c.youtubeChannelId!,
+          channelTitle: c.title,
+          channelThumbnailUrl: c.thumbnailUrl,
+          uploadsPlaylistId: "UU" + c.youtubeChannelId!.slice(2),
+        }),
+      );
 
     // 3. Fetch recent videos from each uploads playlist (parallel batches of 5)
     const allVideos: Array<{
@@ -2918,52 +3155,58 @@ export const fetchSubscriptionFeed = action({
       const batch = uploadsPlaylists.slice(i, i + BATCH_SIZE);
 
       const results = await Promise.allSettled(
-        batch.map(async (channel: {
-          channelId?: string;
-          channelTitle: string;
-          channelThumbnailUrl?: string;
-          uploadsPlaylistId: string;
-        }) => {
-          const startTime = Date.now();
-          const response = await fetch(
-            "https://www.googleapis.com/youtube/v3/playlistItems?" +
-              new URLSearchParams({
-                part: "snippet,contentDetails",
-                playlistId: channel.uploadsPlaylistId,
-                maxResults: String(maxVideosPerChannel),
-              }),
-            {
-              headers: { Authorization: `Bearer ${accessToken}` },
-            }
-          );
-          const responseTimeMs = Date.now() - startTime;
+        batch.map(
+          async (channel: {
+            channelId?: string;
+            channelTitle: string;
+            channelThumbnailUrl?: string;
+            uploadsPlaylistId: string;
+          }) => {
+            const startTime = Date.now();
+            const response = await fetch(
+              "https://www.googleapis.com/youtube/v3/playlistItems?" +
+                new URLSearchParams({
+                  part: "snippet,contentDetails",
+                  playlistId: channel.uploadsPlaylistId,
+                  maxResults: String(maxVideosPerChannel),
+                }),
+              {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              },
+            );
+            const responseTimeMs = Date.now() - startTime;
 
-          await ctx.runMutation(internal.metrics.logApiCallInternal, {
-            userId,
-            endpoint: "playlistItems.list",
-            quotaUnits: YOUTUBE_QUOTA_COSTS["playlistItems.list"],
-            success: response.ok,
-            errorMessage: response.ok ? undefined : await response.clone().text(),
-            responseTimeMs,
-          });
+            await ctx.runMutation(internal.metrics.logApiCallInternal, {
+              userId,
+              endpoint: "playlistItems.list",
+              quotaUnits: YOUTUBE_QUOTA_COSTS["playlistItems.list"],
+              success: response.ok,
+              errorMessage: response.ok
+                ? undefined
+                : await response.clone().text(),
+              responseTimeMs,
+            });
 
-          if (!response.ok) return [];
+            if (!response.ok) return [];
 
-          const data = await response.json();
-          return (data.items || []).map((item: any, index: number) => ({
-            youtubeVideoId: item.contentDetails?.videoId,
-            title: item.snippet?.title || "",
-            description: item.snippet?.description || "",
-            thumbnailUrl:
-              item.snippet?.thumbnails?.high?.url ||
-              item.snippet?.thumbnails?.medium?.url ||
-              item.snippet?.thumbnails?.default?.url,
-            channelTitle: item.snippet?.videoOwnerChannelTitle || channel.channelTitle,
-            youtubeChannelId: item.snippet?.videoOwnerChannelId || channel.channelId,
-            position: index,
-            publishedAt: item.snippet?.publishedAt,
-          }));
-        })
+            const data = await response.json();
+            return (data.items || []).map((item: any, index: number) => ({
+              youtubeVideoId: item.contentDetails?.videoId,
+              title: item.snippet?.title || "",
+              description: item.snippet?.description || "",
+              thumbnailUrl:
+                item.snippet?.thumbnails?.high?.url ||
+                item.snippet?.thumbnails?.medium?.url ||
+                item.snippet?.thumbnails?.default?.url,
+              channelTitle:
+                item.snippet?.videoOwnerChannelTitle || channel.channelTitle,
+              youtubeChannelId:
+                item.snippet?.videoOwnerChannelId || channel.channelId,
+              position: index,
+              publishedAt: item.snippet?.publishedAt,
+            }));
+          },
+        ),
       );
 
       for (const result of results) {
@@ -2974,9 +3217,7 @@ export const fetchSubscriptionFeed = action({
     }
 
     // 4. Get video details for duration and actual publish dates (batch up to 50)
-    const videoIds = allVideos
-      .map(v => v.youtubeVideoId)
-      .filter(Boolean);
+    const videoIds = allVideos.map((v) => v.youtubeVideoId).filter(Boolean);
 
     const durations: Record<string, string> = {};
     const videoPublishDates: Record<string, string> = {};
@@ -2992,7 +3233,7 @@ export const fetchSubscriptionFeed = action({
           }),
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
       const responseTimeMs = Date.now() - startTime;
 
@@ -3016,7 +3257,7 @@ export const fetchSubscriptionFeed = action({
 
     // 5. Enrich videos with duration and actual publish dates
     const enrichedVideos = allVideos
-      .filter(v => v.youtubeVideoId)
+      .filter((v) => v.youtubeVideoId)
       .map((v, index) => ({
         ...v,
         duration: durations[v.youtubeVideoId] || "",
@@ -3049,13 +3290,16 @@ export const fetchSubscriptionFeed = action({
 export const internalRefreshYoutubeToken = internalAction({
   args: { userId: v.string() },
   handler: async (ctx, args): Promise<string> => {
-    const tokens = await ctx.runQuery(internal.youtube.getUserTokens, { userId: args.userId });
+    const tokens = await ctx.runQuery(internal.youtube.getUserTokens, {
+      userId: args.userId,
+    });
 
     if (!tokens?.refreshToken) {
       throw new Error("No refresh token available");
     }
 
-    const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const clientId =
+      process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
@@ -3095,7 +3339,10 @@ export const internalRefreshYoutubeToken = internalAction({
  * Get a valid access token for a user, refreshing if needed.
  * Internal version for cron usage (no auth context).
  */
-export async function getValidAccessTokenInternal(ctx: any, userId: string): Promise<string> {
+export async function getValidAccessTokenInternal(
+  ctx: any,
+  userId: string,
+): Promise<string> {
   const tokens = await ctx.runQuery(internal.youtube.getUserTokens, { userId });
 
   if (!tokens?.accessToken) {
@@ -3103,7 +3350,9 @@ export async function getValidAccessTokenInternal(ctx: any, userId: string): Pro
   }
 
   if (tokens.tokenExpiry && tokens.tokenExpiry < Date.now() + 5 * 60 * 1000) {
-    return await ctx.runAction(internal.youtube.internalRefreshYoutubeToken, { userId });
+    return await ctx.runAction(internal.youtube.internalRefreshYoutubeToken, {
+      userId,
+    });
   }
 
   return tokens.accessToken;
@@ -3118,7 +3367,9 @@ export const getSubscriptionVideoIds = internalQuery({
     const videos = await ctx.db
       .query("youtubeVideosCache")
       .withIndex("by_user_and_playlist", (q) =>
-        q.eq("userId", args.userId).eq("youtubePlaylistId", SUBSCRIPTION_PLAYLIST_ID)
+        q
+          .eq("userId", args.userId)
+          .eq("youtubePlaylistId", SUBSCRIPTION_PLAYLIST_ID),
       )
       .collect();
 
@@ -3181,7 +3432,9 @@ export const internalUpdateSubscriptionPlaylist = internalMutation({
     const existing = await ctx.db
       .query("youtubePlaylistsCache")
       .withIndex("by_user_and_youtube_id", (q) =>
-        q.eq("userId", args.userId).eq("youtubePlaylistId", SUBSCRIPTION_PLAYLIST_ID)
+        q
+          .eq("userId", args.userId)
+          .eq("youtubePlaylistId", SUBSCRIPTION_PLAYLIST_ID),
       )
       .first();
 
@@ -3223,7 +3476,7 @@ export const internalUpdateVideosCache = internalMutation({
         duration: v.optional(v.string()),
         position: v.number(),
         publishedAt: v.optional(v.string()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -3232,12 +3485,12 @@ export const internalUpdateVideosCache = internalMutation({
     const existingVideos = await ctx.db
       .query("youtubeVideosCache")
       .withIndex("by_user_and_playlist", (q) =>
-        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId),
       )
       .collect();
 
     const existingMap = new Map(
-      existingVideos.map((v) => [v.youtubeVideoId, v])
+      existingVideos.map((v) => [v.youtubeVideoId, v]),
     );
 
     for (const video of args.videos) {

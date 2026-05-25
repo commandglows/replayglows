@@ -67,9 +67,26 @@ void main() {
       expect(video.id, 'doc-video');
       expect(video.youtubeVideoId, 'vid123');
       expect(video.playlistId, 'PL123');
+      expect(video.playlistItemId, isNull);
       expect(video.description, isNull);
       expect(video.thumbnailUrl, isNull);
       expect(video.channelTitle, 'Creator');
+    });
+
+    test('keeps playlist item id for YouTube playlist mutations', () {
+      final video = YouTubeVideo.fromJson({
+        '_id': 'doc-video',
+        'id': 'vid789',
+        'youtubeVideoId': 'vid789',
+        'playlistId': 'PL789',
+        'playlistItemId': 'PLI789',
+        'title': 'Mutable playlist item',
+        'cachedAt': 1760000000000,
+      });
+
+      expect(video.id, 'doc-video');
+      expect(video.youtubeVideoId, 'vid789');
+      expect(video.playlistItemId, 'PLI789');
     });
 
     test('falls back to id and playlistId for compact projections', () {

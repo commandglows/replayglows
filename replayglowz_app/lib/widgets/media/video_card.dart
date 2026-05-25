@@ -6,10 +6,16 @@ import 'package:replayglowz_app/utils/duration_utils.dart';
 import 'package:replayglowz_app/widgets/media/media_thumbnail.dart';
 
 class VideoCard extends StatelessWidget {
-  const VideoCard({super.key, required this.video, required this.onTap});
+  const VideoCard({
+    super.key,
+    required this.video,
+    required this.onTap,
+    this.trailing,
+  });
 
   final YouTubeVideo video;
   final VoidCallback onTap;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +40,22 @@ class VideoCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    video.title,
-                    style: theme.textTheme.titleMedium,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          video.title,
+                          style: theme.textTheme.titleMedium,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (trailing != null) ...[
+                        const SizedBox(width: 8),
+                        trailing!,
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Row(

@@ -942,6 +942,47 @@ final videoProgressProvider = FutureProvider.family<VideoProgress?, String>((
 // 11. quotaUsageProvider
 // ---------------------------------------------------------------------------
 
+class QuotaUsageSnapshot {
+  const QuotaUsageSnapshot({
+    required this.used,
+    required this.limit,
+    required this.raw,
+  });
+
+  final int used;
+  final int limit;
+  final Map<String, dynamic>? raw;
+
+  int get remaining => (limit - used).clamp(0, limit);
+  double get usageRatio => limit <= 0 ? 0 : used / limit;
+
+  bool isRisky(int cost) {
+    if (limit <= 0) return false;
+    if (cost > remaining) return true;
+    return (used + cost) / limit >= 0.9;
+  }
+
+  String describeCost(int cost) {
+    final projected = used + cost;
+    return '$cost quota unit${cost == 1 ? '' : 's'}; '
+        '$remaining of $limit remaining today'
+        '${projected > limit ? ' (would exceed the daily limit)' : ''}.';
+  }
+}
+
+int _readQuotaInt(Map<String, dynamic>? data, List<String> keys, int fallback) {
+  if (data == null) return fallback;
+  for (final key in keys) {
+    final value = data[key];
+    if (value is num) return value.toInt();
+    if (value is String) {
+      final parsed = int.tryParse(value);
+      if (parsed != null) return parsed;
+    }
+  }
+  return fallback;
+}
+
 /// One-shot query for `metrics:getTodayQuotaUsage`.
 ///
 /// Returns the raw map which typically includes `{ used: int, limit: int }`.
@@ -949,6 +990,23 @@ final quotaUsageProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   final service = ref.watch(convexServiceProvider);
   final raw = await service.query<dynamic>('metrics:getTodayQuotaUsage', {});
   return _decodeMap(raw);
+});
+
+final quotaUsageSnapshotProvider = Provider<AsyncValue<QuotaUsageSnapshot>>((
+  ref,
+) {
+  return ref.watch(quotaUsageProvider).whenData((data) {
+    final limit = _readQuotaInt(data, const [
+      'limit',
+      'dailyLimit',
+      'quotaLimit',
+    ], 10000);
+    return QuotaUsageSnapshot(
+      used: _readQuotaInt(data, const ['used', 'quotaUsed', 'total'], 0),
+      limit: limit <= 0 ? 10000 : limit,
+      raw: data,
+    );
+  });
 });
 
 /// Subscribes to the latest backend-orchestrated YouTube sync job.

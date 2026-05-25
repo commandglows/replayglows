@@ -12,6 +12,9 @@ class YouTubeVideo {
   /// ID of the playlist this video belongs to.
   final String playlistId;
 
+  /// YouTube playlist item ID (required for remove/move operations).
+  final String? playlistItemId;
+
   /// Video title.
   final String title;
 
@@ -49,6 +52,7 @@ class YouTubeVideo {
     required this.id,
     required this.youtubeVideoId,
     required this.playlistId,
+    this.playlistItemId,
     required this.title,
     this.description,
     this.thumbnailUrl,
@@ -78,6 +82,7 @@ class YouTubeVideo {
           _optionalString(json['youtubePlaylistId']) ??
           _optionalString(json['playlistId']) ??
           '',
+      playlistItemId: _optionalString(json['playlistItemId']),
       title: _optionalString(json['title']) ?? 'Untitled video',
       description: _optionalString(json['description']),
       thumbnailUrl: _optionalString(json['thumbnailUrl']),
@@ -97,6 +102,7 @@ class YouTubeVideo {
       '_id': id,
       'youtubeVideoId': youtubeVideoId,
       'youtubePlaylistId': playlistId,
+      if (playlistItemId != null) 'playlistItemId': playlistItemId,
       'title': title,
       if (description != null) 'description': description,
       if (thumbnailUrl != null) 'thumbnailUrl': thumbnailUrl,
@@ -116,6 +122,7 @@ class YouTubeVideo {
     String? id,
     String? youtubeVideoId,
     String? playlistId,
+    String? playlistItemId,
     String? title,
     String? description,
     String? thumbnailUrl,
@@ -132,6 +139,7 @@ class YouTubeVideo {
       id: id ?? this.id,
       youtubeVideoId: youtubeVideoId ?? this.youtubeVideoId,
       playlistId: playlistId ?? this.playlistId,
+      playlistItemId: playlistItemId ?? this.playlistItemId,
       title: title ?? this.title,
       description: description ?? this.description,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,

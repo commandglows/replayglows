@@ -21,6 +21,7 @@ import 'package:replayglowz_app/widgets/notes/note_tile.dart';
 import 'package:replayglowz_app/widgets/play/comments_placeholder.dart';
 import 'package:replayglowz_app/widgets/play/playback_controls.dart';
 import 'package:replayglowz_app/widgets/play/player_panel.dart';
+import 'package:replayglowz_app/widgets/play/web_youtube_embed.dart';
 import 'package:replayglowz_app/widgets/transcripts/transcript_entry_tile.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
@@ -66,6 +67,8 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   late final YoutubePlayerController _playerController;
+  final WebYoutubePlayerController _webPlayerController =
+      WebYoutubePlayerController();
   final TextEditingController _noteController = TextEditingController();
 
   String _loadedVideoId = '';
@@ -75,8 +78,11 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   bool _isGeneratingTranscript = false;
   int _lastSyncedSecond = -1;
   double _currentTimestamp = 0.0;
+  double? _pendingSeekSeconds;
   int _activeTabIndex = 0;
   YouTubeVideo? _currentVideoCache;
+  WebYoutubePlayerSnapshot _webPlayerSnapshot =
+      const WebYoutubePlayerSnapshot();
 
   @override
   void initState() {
@@ -104,10 +110,16 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _loadedVideoId = widget.videoId;
     _progressRestored = false;
     _currentTimestamp = 0;
+    _pendingSeekSeconds = null;
     _lastSyncedSecond = -1;
     _currentVideoCache = null;
+    _webPlayerSnapshot = const WebYoutubePlayerSnapshot();
+    _isPlaying = false;
+    if (kIsWeb) {
+      _isPlayerReady = false;
+    }
 
-    if (_isPlayerReady && _loadedVideoId.isNotEmpty) {
+    if (_isPlayerReady && _loadedVideoId.isNotEmpty && !kIsWeb) {
       _playerController.load(_loadedVideoId);
     }
   }
@@ -143,6 +155,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   }
 
   void _syncPlayerState() {
+    if (kIsWeb) {
+      return;
+    }
     if (!mounted) return;
     final value = _playerController.value;
     if (!value.isReady) return;
@@ -330,21 +345,31 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     return PlayerPanel(
       videoId: _loadedVideoId,
       controller: _playerController,
+      webController: _webPlayerController,
+      onWebStateChanged: _handleWebPlayerSnapshot,
       onReady: () {
         if (!mounted) return;
         if (!_isPlayerReady) {
           setState(() => _isPlayerReady = true);
         }
-        if (_loadedVideoId.isNotEmpty &&
+        if (!kIsWeb &&
+            _loadedVideoId.isNotEmpty &&
             _playerController.metadata.videoId != _loadedVideoId) {
           _playerController.load(_loadedVideoId);
         }
+        final pendingSeek = _pendingSeekSeconds;
+        if (pendingSeek != null) {
+          _pendingSeekSeconds = null;
+          _seekToSeconds(pendingSeek);
+        }
       },
       onEnded: () {
+        if (kIsWeb) return;
+        final playerDuration = _playerController.metadata.duration.inSeconds
+            .toDouble();
         setState(() {
           _isPlaying = false;
-          _currentTimestamp = _playerController.metadata.duration.inSeconds
-              .toDouble();
+          _currentTimestamp = playerDuration;
         });
         _saveProgress();
       },
@@ -628,6 +653,12 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   }
 
   int _resolvedDurationSeconds(YouTubeVideo? currentVideo) {
+    if (kIsWeb) {
+      final webDuration = _webPlayerSnapshot.durationSeconds.round();
+      if (webDuration > 0) {
+        return webDuration;
+      }
+    }
     final playerDuration = _playerController.metadata.duration.inSeconds;
     if (playerDuration > 0) {
       return playerDuration;
@@ -640,16 +671,25 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   }
 
   void _seekToSeconds(double seconds) {
-    final duration = _playerController.metadata.duration.inSeconds;
-    final max = duration > 0 ? duration.toDouble() : math.max(seconds, 0.0);
+    final duration = kIsWeb
+        ? _webPlayerSnapshot.durationSeconds
+        : _playerController.metadata.duration.inSeconds.toDouble();
+    final max = duration > 0 ? duration : math.max(seconds, 0.0);
     final clamped = seconds.clamp(0, max).toDouble();
     setState(() => _currentTimestamp = clamped);
 
-    if (_isPlayerReady) {
-      _playerController.seekTo(
-        Duration(milliseconds: (clamped * 1000).round()),
-      );
+    if (!_isPlayerReady) {
+      _pendingSeekSeconds = clamped;
+      return;
     }
+
+    _pendingSeekSeconds = null;
+    if (kIsWeb) {
+      _webPlayerController.seekTo(clamped);
+      return;
+    }
+
+    _playerController.seekTo(Duration(milliseconds: (clamped * 1000).round()));
   }
 
   void _togglePlayPause() {
@@ -657,10 +697,51 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       return;
     }
     if (_isPlaying) {
-      _playerController.pause();
+      if (kIsWeb) {
+        _webPlayerController.pause();
+      } else {
+        _playerController.pause();
+      }
       _saveProgress();
     } else {
-      _playerController.play();
+      if (kIsWeb) {
+        _webPlayerController.play();
+      } else {
+        _playerController.play();
+      }
+    }
+  }
+
+  void _handleWebPlayerSnapshot(WebYoutubePlayerSnapshot snapshot) {
+    if (!mounted) return;
+
+    final currentSeconds = snapshot.currentSeconds.isFinite
+        ? snapshot.currentSeconds
+        : 0.0;
+    final second = currentSeconds.floor();
+    final hasTimeChanged = second != _lastSyncedSecond;
+    final hasPlayStateChanged = snapshot.isPlaying != _isPlaying;
+    final hasDurationChanged =
+        snapshot.durationSeconds.round() !=
+        _webPlayerSnapshot.durationSeconds.round();
+    final endedTransition = snapshot.hasEnded && !_webPlayerSnapshot.hasEnded;
+
+    _webPlayerSnapshot = snapshot;
+    if (!hasTimeChanged &&
+        !hasPlayStateChanged &&
+        !hasDurationChanged &&
+        !endedTransition) {
+      return;
+    }
+
+    _lastSyncedSecond = second;
+    setState(() {
+      _currentTimestamp = currentSeconds.clamp(0, double.infinity).toDouble();
+      _isPlaying = snapshot.isPlaying;
+    });
+
+    if (endedTransition) {
+      _saveProgress();
     }
   }
 

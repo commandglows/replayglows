@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,6 +13,7 @@ import 'package:replayglowz_app/widgets/common_app_bar_actions.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
 import 'package:replayglowz_app/widgets/media/video_card.dart';
 import 'package:replayglowz_app/widgets/media/video_list_tile.dart';
+import 'package:replayglowz_app/widgets/youtube_quota_guard.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
 /// Video feed screen with multiple view modes.
@@ -31,6 +33,12 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     with SingleTickerProviderStateMixin {
   static const _compactViewBreakpoint = 640.0;
   late final TabController _tabController;
+  String _sortOrder = 'desc';
+  bool _includeWatched = true;
+  String? _playlistFilterId;
+
+  VideosArgs get _videosArgs =>
+      VideosArgs(sortOrder: _sortOrder, includeWatched: _includeWatched);
 
   @override
   void initState() {
@@ -116,11 +124,14 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
         youtubeConnectionAsync.asData?.value?['connected'] == true;
     final isNotesView = _tabController.index == 2;
     final videosAsync = youtubeConnected
-        ? ref.watch(videosProvider(const VideosArgs()))
+        ? ref.watch(videosProvider(_videosArgs))
         : null;
     final notesAsync = youtubeConnected && isNotesView
         ? ref.watch(notesProvider)
         : null;
+    final watchedAsync = youtubeConnected
+        ? ref.watch(watchedVideosProvider)
+        : const AsyncValue<List<WatchedVideo>>.data(<WatchedVideo>[]);
 
     return Scaffold(
       appBar: AppBar(
@@ -138,41 +149,57 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
         actions: [
           if (useCompactViewSwitcher) _buildViewModeAction(context),
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: Icon(
+              _includeWatched ? Icons.visibility : Icons.visibility_off,
+            ),
+            tooltip: _includeWatched ? 'Hide watched' : 'Show watched',
             onPressed: () {
-              // TODO: open search delegate
+              setState(() => _includeWatched = !_includeWatched);
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              // TODO: show filter bottom sheet (by playlist, date, etc.)
+          PopupMenuButton<String>(
+            tooltip: 'Sort videos',
+            icon: const Icon(Icons.sort),
+            onSelected: (value) {
+              setState(() => _sortOrder = value);
             },
+            itemBuilder: (context) => [
+              _SortMenuItem(
+                value: 'desc',
+                label: 'Newest first',
+                selected: _sortOrder == 'desc',
+              ),
+              _SortMenuItem(
+                value: 'asc',
+                label: 'Oldest first',
+                selected: _sortOrder == 'asc',
+              ),
+            ],
+          ),
+          IconButton(
+            icon: Icon(
+              _playlistFilterId == null
+                  ? Icons.filter_list
+                  : Icons.filter_list_alt,
+            ),
+            tooltip: 'Filter by playlist',
+            onPressed: videosAsync == null
+                ? null
+                : () => _showPlaylistFilterSheet(
+                    context,
+                    videosAsync.asData?.value ?? const [],
+                  ),
           ),
           IconButton(
             icon: const Icon(Icons.sync),
+            tooltip:
+                'Refresh videos (${youtubeQuotaCostLabel(YoutubeQuotaCost.syncAllPlaylists)})',
             onPressed: () async {
               if (!youtubeConnected) {
                 await startYoutubeConnectFlow(context, returnTo: Routes.videos);
                 return;
               }
-
-              try {
-                await syncAllPlaylists(ref);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Refreshing videos...')),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  showErrorSnackBar(
-                    context,
-                    error: e,
-                    prefix: 'Refresh failed',
-                  );
-                }
-              }
+              await _refreshVideos();
             },
           ),
           ...commonAppBarActions(context, ref),
@@ -201,22 +228,48 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 }
               });
 
+              final visibleVideos = _applyLocalFilters(videos);
+              final watchedIds =
+                  watchedAsync.asData?.value
+                      .map((item) => item.youtubeVideoId)
+                      .toSet() ??
+                  const <String>{};
+
               if (videos.isEmpty) {
                 return YoutubeAwareEmptyState(
                   fallbackIcon: Icons.video_library_outlined,
                   fallbackTitle: 'Aucune vidéo',
                   fallbackDescription:
                       'Lancez une synchronisation pour importer vos vidéos YouTube.',
-                  onRefresh: () => syncAllPlaylists(ref),
+                  onRefresh: _refreshVideos,
+                );
+              }
+
+              if (visibleVideos.isEmpty) {
+                return AppEmptyState(
+                  icon: Icons.filter_list_off,
+                  title: 'No videos match these filters',
+                  description:
+                      'Clear the playlist filter or show watched videos to see more results.',
+                  action: FilledButton.tonalIcon(
+                    onPressed: () {
+                      setState(() {
+                        _playlistFilterId = null;
+                        _includeWatched = true;
+                      });
+                    },
+                    icon: const Icon(Icons.clear),
+                    label: const Text('Clear filters'),
+                  ),
                 );
               }
 
               return TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildCardView(videos),
-                  _buildListView(videos),
-                  _buildSummaryView(videos, notesByVideo),
+                  _buildCardView(visibleVideos, watchedIds),
+                  _buildListView(visibleVideos, watchedIds),
+                  _buildSummaryView(visibleVideos, notesByVideo),
                 ],
               );
             },
@@ -224,7 +277,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
             error: (error, stack) => ErrorStateView(
               error: error,
               prefix: 'Failed to load videos',
-              onRetry: () => ref.invalidate(videosProvider(const VideosArgs())),
+              onRetry: () => ref.invalidate(videosProvider(_videosArgs)),
             ),
           );
         },
@@ -241,29 +294,34 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       ),
       floatingActionButton: youtubeConnected
           ? FloatingActionButton(
-              onPressed: () async {
-                try {
-                  await syncAllPlaylists(ref);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Refreshing videos...')),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    showErrorSnackBar(
-                      context,
-                      error: e,
-                      prefix: 'Refresh failed',
-                    );
-                  }
-                }
-              },
-              tooltip: 'Refresh videos',
+              onPressed: _refreshVideos,
+              tooltip:
+                  'Refresh videos (${youtubeQuotaCostLabel(YoutubeQuotaCost.syncAllPlaylists)})',
               child: const Icon(Icons.refresh),
             )
           : null,
     );
+  }
+
+  Future<void> _refreshVideos() async {
+    final confirmed = await confirmYoutubeQuotaRisk(
+      context: context,
+      ref: ref,
+      cost: YoutubeQuotaCost.syncAllPlaylists,
+      actionLabel: 'Refreshing videos',
+    );
+    if (!confirmed) return;
+
+    try {
+      await syncAllPlaylists(ref);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Refreshing videos...')));
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Refresh failed');
+    }
   }
 
   Widget _buildShimmerLoading() {
@@ -305,7 +363,17 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     );
   }
 
-  Widget _buildCardView(List<YouTubeVideo> videos) {
+  List<YouTubeVideo> _applyLocalFilters(List<YouTubeVideo> videos) {
+    final playlistFilterId = _playlistFilterId;
+    if (playlistFilterId == null) {
+      return videos;
+    }
+    return videos
+        .where((video) => video.playlistId == playlistFilterId)
+        .toList(growable: false);
+  }
+
+  Widget _buildCardView(List<YouTubeVideo> videos, Set<String> watchedIds) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: videos.length,
@@ -313,20 +381,21 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
         final video = videos[index];
         return VideoCard(
           video: video,
+          trailing: _buildVideoActionMenu(video, watchedIds),
           onTap: () => _openVideo(context, video.youtubeVideoId),
         );
       },
     );
   }
 
-  Widget _buildListView(List<YouTubeVideo> videos) {
+  Widget _buildListView(List<YouTubeVideo> videos, Set<String> watchedIds) {
     return ListView.builder(
       itemCount: videos.length,
       itemBuilder: (context, index) {
         final video = videos[index];
         return VideoListTile(
           video: video,
-          trailing: const Icon(Icons.more_vert),
+          trailing: _buildVideoActionMenu(video, watchedIds),
           onTap: () => _openVideo(context, video.youtubeVideoId),
         );
       },
@@ -412,6 +481,317 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
         path: Routes.play,
         queryParameters: {'videoId': youtubeVideoId},
       ).toString(),
+    );
+  }
+
+  Widget _buildVideoActionMenu(YouTubeVideo video, Set<String> watchedIds) {
+    final isWatched = watchedIds.contains(video.youtubeVideoId);
+    return PopupMenuButton<String>(
+      tooltip: 'Video actions',
+      onSelected: (value) => _handleVideoAction(value, video, isWatched),
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 'play',
+          child: _VideoActionMenuItem(icon: Icons.play_arrow, label: 'Play'),
+        ),
+        const PopupMenuItem(
+          value: 'share',
+          child: _VideoActionMenuItem(
+            icon: Icons.share_outlined,
+            label: 'Copy YouTube link',
+          ),
+        ),
+        PopupMenuItem(
+          value: isWatched ? 'unwatched' : 'watched',
+          child: _VideoActionMenuItem(
+            icon: isWatched
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            label: isWatched ? 'Mark unwatched' : 'Mark watched',
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'add-to-playlist',
+          child: _VideoActionMenuItem(
+            icon: Icons.playlist_add,
+            label: 'Add to playlist',
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'hide',
+          child: _VideoActionMenuItem(
+            icon: Icons.hide_source_outlined,
+            label: 'Hide from library',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleVideoAction(
+    String action,
+    YouTubeVideo video,
+    bool isWatched,
+  ) async {
+    switch (action) {
+      case 'play':
+        _openVideo(context, video.youtubeVideoId);
+        return;
+      case 'share':
+        await Clipboard.setData(
+          ClipboardData(
+            text: 'https://www.youtube.com/watch?v=${video.youtubeVideoId}',
+          ),
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('YouTube link copied.')));
+        return;
+      case 'watched':
+      case 'unwatched':
+        try {
+          if (isWatched) {
+            await unmarkWatched(ref, video.youtubeVideoId);
+          } else {
+            await markWatched(ref, video.youtubeVideoId);
+          }
+          ref
+            ..invalidate(watchedVideosProvider)
+            ..invalidate(videosProvider(_videosArgs));
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isWatched ? 'Marked unwatched.' : 'Marked watched.',
+              ),
+            ),
+          );
+        } catch (e) {
+          if (!mounted) return;
+          showErrorSnackBar(context, error: e, prefix: 'Watch state failed');
+        }
+        return;
+      case 'add-to-playlist':
+        await _showAddToPlaylistSheet(video);
+        return;
+      case 'hide':
+        try {
+          await hideVideo(ref, video.youtubeVideoId);
+          ref
+            ..invalidate(hiddenItemsProvider)
+            ..invalidate(videosProvider(_videosArgs));
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Video hidden from library.')),
+          );
+        } catch (e) {
+          if (!mounted) return;
+          showErrorSnackBar(context, error: e, prefix: 'Could not hide video');
+        }
+        return;
+    }
+  }
+
+  Future<void> _showAddToPlaylistSheet(YouTubeVideo video) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final playlistsAsync = ref.watch(playlistsProvider);
+            return SafeArea(
+              child: playlistsAsync.when(
+                data: (playlists) {
+                  final writablePlaylists =
+                      playlists
+                          .where(
+                            (playlist) => playlist.youtubePlaylistId.isNotEmpty,
+                          )
+                          .toList(growable: false)
+                        ..sort(
+                          (a, b) => a.title.toLowerCase().compareTo(
+                            b.title.toLowerCase(),
+                          ),
+                        );
+
+                  if (writablePlaylists.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: AppEmptyState(
+                        icon: Icons.playlist_add,
+                        title: 'No playlists available',
+                        description:
+                            'Create or sync a playlist before adding videos.',
+                      ),
+                    );
+                  }
+
+                  return ListView(
+                    shrinkWrap: true,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Add to playlist',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 6),
+                            const YoutubeQuotaCostText(
+                              cost: YoutubeQuotaCost.addPlaylistItem,
+                            ),
+                          ],
+                        ),
+                      ),
+                      for (final playlist in writablePlaylists)
+                        ListTile(
+                          leading: const Icon(Icons.playlist_play),
+                          title: Text(playlist.title),
+                          subtitle: Text('${playlist.videoCount} videos'),
+                          onTap: () async {
+                            Navigator.of(sheetContext).pop();
+                            await _addVideoToPlaylist(
+                              video,
+                              playlist.youtubePlaylistId,
+                            );
+                          },
+                        ),
+                    ],
+                  );
+                },
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (error, stackTrace) => Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: ErrorStateView(
+                    error: error,
+                    prefix: 'Failed to load playlists',
+                    onRetry: () => ref.invalidate(playlistsProvider),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _addVideoToPlaylist(
+    YouTubeVideo video,
+    String playlistId,
+  ) async {
+    final confirmed = await confirmYoutubeQuotaRisk(
+      context: context,
+      ref: ref,
+      cost: YoutubeQuotaCost.addPlaylistItem,
+      actionLabel: 'Adding this video to a playlist',
+    );
+    if (!confirmed) return;
+
+    try {
+      await addVideoToYoutubePlaylist(
+        ref,
+        playlistId: playlistId,
+        videoId: video.youtubeVideoId,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Video added to playlist.')));
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Add to playlist failed');
+    }
+  }
+
+  Future<void> _showPlaylistFilterSheet(
+    BuildContext context,
+    List<YouTubeVideo> videos,
+  ) async {
+    final playlists = <String, String>{};
+    for (final video in videos) {
+      if (video.playlistId.isEmpty) continue;
+      playlists[video.playlistId] = video.playlistTitle ?? 'Untitled playlist';
+    }
+    final entries = playlists.entries.toList()
+      ..sort((a, b) => a.value.toLowerCase().compareTo(b.value.toLowerCase()));
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.video_library_outlined),
+                title: const Text('All playlists'),
+                trailing: _playlistFilterId == null
+                    ? const Icon(Icons.check)
+                    : null,
+                onTap: () {
+                  setState(() => _playlistFilterId = null);
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+              for (final entry in entries)
+                ListTile(
+                  leading: const Icon(Icons.playlist_play),
+                  title: Text(entry.value),
+                  trailing: _playlistFilterId == entry.key
+                      ? const Icon(Icons.check)
+                      : null,
+                  onTap: () {
+                    setState(() => _playlistFilterId = entry.key);
+                    Navigator.of(sheetContext).pop();
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SortMenuItem extends PopupMenuItem<String> {
+  _SortMenuItem({
+    required String value,
+    required String label,
+    required bool selected,
+  }) : super(
+         value: value,
+         child: Row(
+           children: [
+             Expanded(child: Text(label)),
+             if (selected) const Icon(Icons.check, size: 18),
+           ],
+         ),
+       );
+}
+
+class _VideoActionMenuItem extends StatelessWidget {
+  const _VideoActionMenuItem({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18),
+        const SizedBox(width: 12),
+        Expanded(child: Text(label)),
+      ],
     );
   }
 }

@@ -123,7 +123,7 @@ Future<dynamic> unhideItem(WidgetRef ref, String hiddenItemId) async {
 /// Marks a video as watched.
 Future<dynamic> markWatched(WidgetRef ref, String videoId) async {
   final service = ref.read(convexServiceProvider);
-  return service.mutate<dynamic>('watched:markWatched', {
+  return service.mutate<dynamic>('watched:markAsWatched', {
     'youtubeVideoId': videoId,
   });
 }
@@ -131,7 +131,7 @@ Future<dynamic> markWatched(WidgetRef ref, String videoId) async {
 /// Removes the watched mark from a video.
 Future<dynamic> unmarkWatched(WidgetRef ref, String videoId) async {
   final service = ref.read(convexServiceProvider);
-  return service.mutate<dynamic>('watched:unmarkWatched', {
+  return service.mutate<dynamic>('watched:unmarkAsWatched', {
     'youtubeVideoId': videoId,
   });
 }
@@ -168,8 +168,8 @@ Future<dynamic> upsertProgress(
   double progressSeconds,
 ) async {
   final service = ref.read(convexServiceProvider);
-  return service.mutate<dynamic>('progress:upsertProgress', {
-    'videoId': videoId,
+  return service.mutate<dynamic>('progress:saveProgress', {
+    'youtubeVideoId': videoId,
     'progressSeconds': progressSeconds,
   });
 }
@@ -269,6 +269,68 @@ Future<dynamic> reorderPlaylistVideos(
 Future<dynamic> disconnectYoutube(WidgetRef ref) async {
   final service = ref.read(convexServiceProvider);
   return service.mutate<dynamic>('youtube:disconnectYoutube', {});
+}
+
+/// Adds a video to a YouTube playlist.
+Future<dynamic> addVideoToYoutubePlaylist(
+  WidgetRef ref, {
+  required String playlistId,
+  required String videoId,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.action<dynamic>(
+    'youtube:addVideoToYoutubePlaylist',
+    {'playlistId': playlistId, 'videoId': videoId},
+  );
+  ref
+    ..invalidate(playlistVideosProvider(playlistId))
+    ..invalidate(playlistsProvider)
+    ..invalidate(videosProvider(const VideosArgs()))
+    ..invalidate(quotaUsageProvider);
+  return result;
+}
+
+/// Removes a video from a YouTube playlist using its playlist item ID.
+Future<dynamic> removeVideoFromYoutubePlaylist(
+  WidgetRef ref, {
+  required String playlistId,
+  required String playlistItemId,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.action<dynamic>(
+    'youtube:removeVideoFromYoutubePlaylist',
+    {'playlistId': playlistId, 'playlistItemId': playlistItemId},
+  );
+  ref
+    ..invalidate(playlistVideosProvider(playlistId))
+    ..invalidate(playlistsProvider)
+    ..invalidate(videosProvider(const VideosArgs()))
+    ..invalidate(quotaUsageProvider);
+  return result;
+}
+
+/// Moves a video within a YouTube playlist.
+Future<dynamic> moveVideoInYoutubePlaylist(
+  WidgetRef ref, {
+  required String playlistId,
+  required String playlistItemId,
+  required String videoId,
+  required int newPosition,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service
+      .action<dynamic>('youtube:moveVideoInYoutubePlaylist', {
+        'playlistId': playlistId,
+        'playlistItemId': playlistItemId,
+        'videoId': videoId,
+        'newPosition': newPosition,
+      });
+  ref
+    ..invalidate(playlistVideosProvider(playlistId))
+    ..invalidate(playlistsProvider)
+    ..invalidate(videosProvider(const VideosArgs()))
+    ..invalidate(quotaUsageProvider);
+  return result;
 }
 
 /// Removes a video from a playlist.
