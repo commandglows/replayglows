@@ -95,6 +95,28 @@ function isYoutubeSignupRequired(error: {
   );
 }
 
+function resolveYoutubeOAuthCredentials() {
+  const clientIdEntries = [
+    ["YOUTUBE_OAUTH_CLIENT_ID", process.env.YOUTUBE_OAUTH_CLIENT_ID],
+    ["GOOGLE_CLIENT_ID", process.env.GOOGLE_CLIENT_ID],
+    ["NEXT_PUBLIC_GOOGLE_CLIENT_ID", process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID],
+  ] as const;
+  const clientSecretEntries = [
+    ["YOUTUBE_OAUTH_CLIENT_SECRET", process.env.YOUTUBE_OAUTH_CLIENT_SECRET],
+    ["GOOGLE_CLIENT_SECRET", process.env.GOOGLE_CLIENT_SECRET],
+  ] as const;
+
+  const clientIdEntry = clientIdEntries.find(([, value]) => value);
+  const clientSecretEntry = clientSecretEntries.find(([, value]) => value);
+
+  return {
+    clientId: clientIdEntry?.[1],
+    clientSecret: clientSecretEntry?.[1],
+    clientIdSource: clientIdEntry?.[0] ?? "none",
+    clientSecretSource: clientSecretEntry?.[0] ?? "none",
+  };
+}
+
 // =============================================================================
 // QUERIES
 // =============================================================================
@@ -1728,21 +1750,17 @@ export const refreshYoutubeToken = action({
       throw new Error("No refresh token available");
     }
 
-    const clientId =
-      process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const { clientId, clientSecret, clientIdSource, clientSecretSource } =
+      resolveYoutubeOAuthCredentials();
 
     if (!clientId || !clientSecret) {
-      console.error("Missing Google OAuth credentials:", {
+      console.error("Missing YouTube OAuth credentials:", {
         hasClientId: !!clientId,
         hasClientSecret: !!clientSecret,
-        clientIdSource: process.env.GOOGLE_CLIENT_ID
-          ? "GOOGLE_CLIENT_ID"
-          : process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-            ? "NEXT_PUBLIC_GOOGLE_CLIENT_ID"
-            : "none",
+        clientIdSource,
+        clientSecretSource,
       });
-      throw new Error("Google OAuth credentials not configured");
+      throw new Error("YouTube OAuth credentials not configured");
     }
 
     const response = await fetch("https://oauth2.googleapis.com/token", {
@@ -3346,12 +3364,10 @@ export const internalRefreshYoutubeToken = internalAction({
       throw new Error("No refresh token available");
     }
 
-    const clientId =
-      process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const { clientId, clientSecret } = resolveYoutubeOAuthCredentials();
 
     if (!clientId || !clientSecret) {
-      throw new Error("Google OAuth credentials not configured");
+      throw new Error("YouTube OAuth credentials not configured");
     }
 
     const response = await fetch("https://oauth2.googleapis.com/token", {
