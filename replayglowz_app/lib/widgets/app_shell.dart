@@ -318,71 +318,83 @@ class _ProductAccessInactiveView extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: statusAsync.when(
-                data: (status) => Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.lock_outline,
-                          color: theme.colorScheme.primary,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          status.accountRecognized
-                              ? 'Account recognized, product access inactive'
-                              : 'ReplayGlowz access check required',
-                          style: theme.textTheme.titleMedium,
+                data: (status) {
+                  final isNewAccount = status.reasonCode == 'account_not_found';
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            isNewAccount
+                                ? Icons.hourglass_empty_rounded
+                                : Icons.lock_outline,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            isNewAccount
+                                ? 'Setting up your ReplayGlowz account'
+                                : status.accountRecognized
+                                ? 'Account recognized, product access inactive'
+                                : 'ReplayGlowz access check required',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        isNewAccount
+                            ? 'Your sign-in worked. ReplayGlowz is creating your workspace and free access; retry in a moment if this message stays visible.'
+                            : status.accountRecognized
+                            ? 'Your account is valid, but it does not have active ReplayGlowz access yet.'
+                            : 'ReplayGlowz could not confirm your product access for this account.',
+                      ),
+                      const SizedBox(height: 16),
+                      const _FreeTrialAccessSummary(),
+                      if ((status.reasonCode ?? '').isNotEmpty &&
+                          !isNewAccount) ...[
+                        const SizedBox(height: 12),
+                        SelectableText(
+                          'Reason: ${status.reasonCode}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontFamily: 'monospace',
+                          ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      status.accountRecognized
-                          ? 'Your account is valid, but it does not have active ReplayGlowz access yet.'
-                          : 'ReplayGlowz could not confirm your product access for this account.',
-                    ),
-                    if ((status.reasonCode ?? '').isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      SelectableText(
-                        'Reason: ${status.reasonCode}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontFamily: 'monospace',
-                        ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: () {
+                              ref.invalidate(productAccessStatusProvider);
+                            },
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Retry access check'),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () async {
+                              final launched = await ref
+                                  .read(authServiceProvider)
+                                  .openAccountCenter();
+                              if (!context.mounted || launched) return;
+                              showErrorSnackBar(
+                                context,
+                                error: 'Could not open the account center.',
+                                prefix: 'Account center unavailable',
+                              );
+                            },
+                            icon: const Icon(Icons.manage_accounts),
+                            label: const Text('Open account center'),
+                          ),
+                        ],
                       ),
                     ],
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        FilledButton.icon(
-                          onPressed: () {
-                            ref.invalidate(productAccessStatusProvider);
-                          },
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry access check'),
-                        ),
-                        OutlinedButton.icon(
-                          onPressed: () async {
-                            final launched = await ref
-                                .read(authServiceProvider)
-                                .openAccountCenter();
-                            if (!context.mounted || launched) return;
-                            showErrorSnackBar(
-                              context,
-                              error: 'Could not open the account center.',
-                              prefix: 'Account center unavailable',
-                            );
-                          },
-                          icon: const Icon(Icons.manage_accounts),
-                          label: const Text('Open account center'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  );
+                },
                 loading: () => const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -423,6 +435,91 @@ class _ProductAccessInactiveView extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _FreeTrialAccessSummary extends StatelessWidget {
+  const _FreeTrialAccessSummary();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.workspace_premium_outlined,
+                  size: 18,
+                  color: colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text('Free trial access', style: theme.textTheme.labelLarge),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const _TrialAccessRow(
+              icon: Icons.video_library_outlined,
+              text: 'Sync a starter YouTube library',
+            ),
+            const _TrialAccessRow(
+              icon: Icons.playlist_play_outlined,
+              text: 'Create and manage playlists',
+            ),
+            const _TrialAccessRow(
+              icon: Icons.sticky_note_2_outlined,
+              text: 'Save timestamped notes and watch progress',
+            ),
+            const _TrialAccessRow(
+              icon: Icons.speed_outlined,
+              text:
+                  'Quota placeholders: daily sync and playlist actions included while limits are finalized',
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Trial limits are placeholders during beta and may change before billing launches.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TrialAccessRow extends StatelessWidget {
+  const _TrialAccessRow({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 7),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 17, color: color),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text)),
+        ],
       ),
     );
   }

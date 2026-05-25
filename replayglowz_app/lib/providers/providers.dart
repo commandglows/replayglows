@@ -501,6 +501,13 @@ final productAccessStatusProvider = FutureProvider<ProductAccessStatus>((
 
   final service = ref.watch(convexServiceProvider);
   try {
+    await _mutateWithTimeout(service, 'users:ensureUser', {
+      'email': authState.user.email,
+      if (authState.user.displayName != null)
+        'name': authState.user.displayName,
+      if (authState.user.imageUrl != null) 'avatarUrl': authState.user.imageUrl,
+    });
+
     final raw = await service.query<dynamic>('users:getProductAccessStatus', {
       'productId': replayGlowzProductId,
       'legacyProductIds': _legacyProductIds(),
