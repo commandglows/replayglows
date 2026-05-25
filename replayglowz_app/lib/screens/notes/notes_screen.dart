@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:replayglowz_app/app/router.dart';
 import 'package:replayglowz_app/models/models.dart';
+import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
 import 'package:replayglowz_app/widgets/app_states.dart';
 import 'package:replayglowz_app/widgets/common_app_bar_actions.dart';
@@ -221,7 +223,22 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        NoteGroupHeader(title: videoTitle, noteCount: notes.length),
+        Row(
+          children: [
+            Expanded(
+              child: NoteGroupHeader(
+                title: videoTitle,
+                noteCount: notes.length,
+              ),
+            ),
+            if (notes.first.youtubeVideoId != null)
+              IconButton(
+                tooltip: 'Copy notes as Markdown',
+                icon: const Icon(Icons.copy_all_outlined),
+                onPressed: () => _copyVideoNotes(notes.first.youtubeVideoId!),
+              ),
+          ],
+        ),
         // Notes for this video
         ...notes.map((note) {
           return NoteTile(
@@ -237,5 +254,25 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         if (groupIndex < totalGroups - 1) const Divider(),
       ],
     );
+  }
+
+  Future<void> _copyVideoNotes(String youtubeVideoId) async {
+    try {
+      final markdown = await exportNotesForVideo(
+        ref,
+        youtubeVideoId: youtubeVideoId,
+      );
+      if (markdown.trim().isEmpty) {
+        throw StateError('There are no notes to export for this video.');
+      }
+      await Clipboard.setData(ClipboardData(text: markdown));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Notes copied as Markdown.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Export unavailable');
+    }
   }
 }

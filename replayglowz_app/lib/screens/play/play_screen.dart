@@ -41,6 +41,112 @@ class _TranscriptEntry {
   double get endSeconds => startSeconds + durationSeconds;
 }
 
+class _TranscriptControlHeader extends StatelessWidget {
+  const _TranscriptControlHeader({
+    required this.language,
+    required this.isGenerating,
+    required this.jobAsync,
+    required this.versionsAsync,
+    required this.onGenerate,
+    required this.onSelectVersion,
+  });
+
+  final String language;
+  final bool isGenerating;
+  final AsyncValue<TranscriptJob?> jobAsync;
+  final AsyncValue<List<TranscriptVersion>> versionsAsync;
+  final VoidCallback onGenerate;
+  final Future<void> Function(String versionId) onSelectVersion;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Transcript · $language',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                FilledButton.icon(
+                  onPressed: isGenerating ? null : onGenerate,
+                  icon: isGenerating
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.auto_awesome),
+                  label: Text(isGenerating ? 'Generating...' : 'Generate'),
+                ),
+              ],
+            ),
+            jobAsync.when(
+              data: (job) {
+                if (job == null) return const SizedBox.shrink();
+                final text =
+                    job.errorMessage ?? job.progressMessage ?? job.status;
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    children: [
+                      Icon(
+                        job.isRunning ? Icons.sync : Icons.info_outline,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(text)),
+                    ],
+                  ),
+                );
+              },
+              loading: () => const SizedBox.shrink(),
+              error: (error, stack) => const SizedBox.shrink(),
+            ),
+            versionsAsync.when(
+              data: (versions) {
+                if (versions.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: versions
+                        .map((version) {
+                          final label =
+                              '${version.provider?.toJson() ?? 'provider'} v${version.version}';
+                          return ChoiceChip(
+                            label: Text(label),
+                            selected: version.isActive,
+                            onSelected: version.isActive
+                                ? null
+                                : (_) => onSelectVersion(version.id),
+                          );
+                        })
+                        .toList(growable: false),
+                  ),
+                );
+              },
+              loading: () => const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: LinearProgressIndicator(),
+              ),
+              error: (error, stack) => const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Video player screen with notes, transcript, and comments tabs.
 ///
 /// Convex queries/mutations used:
@@ -516,6 +622,13 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     AsyncValue<Map<String, dynamic>?> transcriptAsync, {
     required String language,
   }) {
+    final args = TranscriptArgs(
+      youtubeVideoId: widget.videoId,
+      language: language,
+    );
+    final versionsAsync = ref.watch(transcriptVersionsProvider(args));
+    final jobAsync = ref.watch(latestTranscriptJobProvider(args));
+
     return transcriptAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => ErrorStateView(
@@ -529,55 +642,42 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       ),
       data: (rawTranscript) {
         final entries = _parseTranscriptEntries(rawTranscript);
+        final header = _TranscriptControlHeader(
+          language: language,
+          isGenerating: _isGeneratingTranscript,
+          jobAsync: jobAsync,
+          versionsAsync: versionsAsync,
+          onGenerate: () => _generateTranscript(language),
+          onSelectVersion: (versionId) => selectTranscriptVersion(
+            ref,
+            versionId: versionId,
+            youtubeVideoId: widget.videoId,
+            language: language,
+          ),
+        );
+
         if (entries.isEmpty) {
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 360),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.subtitles_off,
-                      size: 40,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'No transcript available yet.',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    FilledButton.icon(
-                      onPressed: _isGeneratingTranscript
-                          ? null
-                          : () => _generateTranscript(language),
-                      icon: _isGeneratingTranscript
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.auto_awesome),
-                      label: Text(
-                        _isGeneratingTranscript
-                            ? 'Generating...'
-                            : 'Generate Transcript',
-                      ),
-                    ),
-                  ],
-                ),
+          return ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              header,
+              const SizedBox(height: 24),
+              const Icon(Icons.subtitles_off, size: 40, color: Colors.grey),
+              const SizedBox(height: 12),
+              const Text(
+                'No transcript available yet.',
+                textAlign: TextAlign.center,
               ),
-            ),
+            ],
           );
         }
 
         return ListView.builder(
           padding: const EdgeInsets.all(12),
-          itemCount: entries.length,
+          itemCount: entries.length + 1,
           itemBuilder: (context, index) {
-            final entry = entries[index];
+            if (index == 0) return header;
+            final entry = entries[index - 1];
             final isActive =
                 _currentTimestamp >= entry.startSeconds &&
                 _currentTimestamp < entry.endSeconds;
@@ -798,6 +898,17 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
           TranscriptArgs(youtubeVideoId: widget.videoId, language: language),
         ),
       );
+      ref
+        ..invalidate(
+          transcriptVersionsProvider(
+            TranscriptArgs(youtubeVideoId: widget.videoId, language: language),
+          ),
+        )
+        ..invalidate(
+          latestTranscriptJobProvider(
+            TranscriptArgs(youtubeVideoId: widget.videoId, language: language),
+          ),
+        );
       if (mounted) {
         ScaffoldMessenger.of(
           context,

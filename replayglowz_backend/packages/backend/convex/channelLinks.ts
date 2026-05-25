@@ -1,5 +1,11 @@
 import { v } from "convex/values";
-import { mutation, query, action, internalMutation, internalQuery } from "./_generated/server";
+import {
+  mutation,
+  query,
+  action,
+  internalMutation,
+  internalQuery,
+} from "./_generated/server";
 import { getUserId } from "./utils";
 import { internal, api } from "./_generated/api";
 import { Doc } from "./_generated/dataModel";
@@ -59,7 +65,7 @@ export const getChannelLinksForPlaylist = query({
     const links = await ctx.db
       .query("channelPlaylistLinks")
       .withIndex("by_user_and_playlist", (q) =>
-        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId),
       )
       .collect();
 
@@ -87,7 +93,7 @@ export const getChannelLinkByChannel = query({
     const link = await ctx.db
       .query("channelPlaylistLinks")
       .withIndex("by_user_and_channel", (q) =>
-        q.eq("userId", userId).eq("youtubeChannelId", args.youtubeChannelId)
+        q.eq("userId", userId).eq("youtubeChannelId", args.youtubeChannelId),
       )
       .first();
 
@@ -126,14 +132,21 @@ export const linkChannelToPlaylist = mutation({
     const existing = await ctx.db
       .query("channelPlaylistLinks")
       .withIndex("by_user_and_channel", (q) =>
-        q.eq("userId", userId).eq("youtubeChannelId", args.youtubeChannelId)
+        q.eq("userId", userId).eq("youtubeChannelId", args.youtubeChannelId),
       )
       .first();
 
     if (existing) {
-      // Update existing link to point to new playlist
+      if (
+        existing.isActive &&
+        existing.youtubePlaylistId !== args.youtubePlaylistId
+      ) {
+        throw new Error(
+          "CHANNEL_ALREADY_LINKED: This channel is already linked to another playlist.",
+        );
+      }
+
       await ctx.db.patch(existing._id, {
-        youtubePlaylistId: args.youtubePlaylistId,
         channelTitle: args.channelTitle,
         linkedAt: Date.now(),
         isActive: true,
@@ -268,7 +281,7 @@ export const getPlaylistVideoIds = internalQuery({
     const videos = await ctx.db
       .query("youtubeVideosCache")
       .withIndex("by_user_and_playlist", (q) =>
-        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId)
+        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId),
       )
       .collect();
 
@@ -315,7 +328,7 @@ export const getQuotaUsageForUser = internalQuery({
     const todayMetrics = await ctx.db
       .query("apiMetrics")
       .withIndex("by_user_and_timestamp", (q) =>
-        q.eq("userId", args.userId).gte("timestamp", todayStart)
+        q.eq("userId", args.userId).gte("timestamp", todayStart),
       )
       .collect();
 
@@ -347,9 +360,12 @@ export const syncPastVideosFromChannel = action({
     const userId = identity.subject;
 
     // Check current quota before syncing
-    const quota = await ctx.runQuery(channelLinksInternal.getQuotaUsageForUser, {
-      userId,
-    });
+    const quota = await ctx.runQuery(
+      channelLinksInternal.getQuotaUsageForUser,
+      {
+        userId,
+      },
+    );
 
     // Calculate how many videos we can sync based on remaining quota
     const maxVideosAllowed = Math.floor(quota.remaining / COST_PER_VIDEO_SYNC);
@@ -369,20 +385,20 @@ export const syncPastVideosFromChannel = action({
     // Get videos from this channel in cache
     const channelVideos = await ctx.runQuery(
       channelLinksInternal.getVideosByChannel,
-      { userId, channelTitle: args.channelTitle }
+      { userId, channelTitle: args.channelTitle },
     );
 
     // Get videos already in the target playlist
     const existingVideoIds = await ctx.runQuery(
       channelLinksInternal.getPlaylistVideoIds,
-      { userId, playlistId: args.youtubePlaylistId }
+      { userId, playlistId: args.youtubePlaylistId },
     );
 
     const existingSet = new Set(existingVideoIds);
 
     // Filter to videos not already in playlist
     const videosToAdd = channelVideos.filter(
-      (v: CachedVideo) => !existingSet.has(v.youtubeVideoId)
+      (v: CachedVideo) => !existingSet.has(v.youtubeVideoId),
     );
 
     // Limit videos to sync based on quota (max 50 per sync, but respect quota)
@@ -420,7 +436,8 @@ export const syncPastVideosFromChannel = action({
       errors,
       quotaUsed,
       remainingQuota: remainingAfterSync,
-      limitedByQuota: maxVideosAllowed < 50 && videosToAdd.length > maxVideosAllowed,
+      limitedByQuota:
+        maxVideosAllowed < 50 && videosToAdd.length > maxVideosAllowed,
     };
   },
 });
@@ -442,7 +459,9 @@ export const syncAllLinkedChannels = action({
       userId,
     });
 
-    const activeLinks = links.filter((link: Doc<"channelPlaylistLinks">) => link.isActive);
+    const activeLinks = links.filter(
+      (link: Doc<"channelPlaylistLinks">) => link.isActive,
+    );
 
     let totalAdded = 0;
     const results: Array<{
@@ -453,11 +472,14 @@ export const syncAllLinkedChannels = action({
 
     for (const link of activeLinks) {
       try {
-        const result = await ctx.runAction(channelLinksApi.syncPastVideosFromChannel, {
-          youtubeChannelId: link.youtubeChannelId,
-          channelTitle: link.channelTitle,
-          youtubePlaylistId: link.youtubePlaylistId,
-        });
+        const result = await ctx.runAction(
+          channelLinksApi.syncPastVideosFromChannel,
+          {
+            youtubeChannelId: link.youtubeChannelId,
+            channelTitle: link.channelTitle,
+            youtubePlaylistId: link.youtubePlaylistId,
+          },
+        );
 
         totalAdded += result.addedCount;
         results.push({
@@ -503,20 +525,20 @@ export const getVideosToSyncCount = action({
     // Get videos from this channel in cache
     const channelVideos = await ctx.runQuery(
       channelLinksInternal.getVideosByChannel,
-      { userId, channelTitle: args.channelTitle }
+      { userId, channelTitle: args.channelTitle },
     );
 
     // Get videos already in the target playlist
     const existingVideoIds = await ctx.runQuery(
       channelLinksInternal.getPlaylistVideoIds,
-      { userId, playlistId: args.youtubePlaylistId }
+      { userId, playlistId: args.youtubePlaylistId },
     );
 
     const existingSet = new Set(existingVideoIds);
 
     // Count videos not already in playlist
     const count = channelVideos.filter(
-      (v: CachedVideo) => !existingSet.has(v.youtubeVideoId)
+      (v: CachedVideo) => !existingSet.has(v.youtubeVideoId),
     ).length;
 
     return count;

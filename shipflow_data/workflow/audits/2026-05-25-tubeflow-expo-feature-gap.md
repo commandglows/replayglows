@@ -66,6 +66,13 @@ The current ReplayGlowz backend already contains many of the old domain primitiv
 
 The main gap is product exposure in the Flutter app. Several historical features exist partially in Convex or models/providers, but are not yet wired into user-facing Flutter screens.
 
+Implementation update 2026-05-25:
+
+- P2 channel sync is now partially exposed in Preferences: subscribed channels can be listed, linked to playlists, paused/resumed, unlinked, and synced from the selected channel.
+- P2 transcript provider management is now partially exposed in Preferences and Play: provider catalog, secret save/test/delete, generation status, version chips, and active-version selection.
+- P2 notes export is now partially exposed as Markdown copy from grouped video notes, with server-side plan gating.
+- Remaining gaps: authenticated hosted QA, richer provider sorting, more complete notes share/focus workflows, playlist-detail linked-channel placement, and final UX polish/i18n.
+
 ## Priority Findings
 
 ### P1 - Video Feed Advanced Controls

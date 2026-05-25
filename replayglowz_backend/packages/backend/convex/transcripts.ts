@@ -1,5 +1,10 @@
 import { v } from "convex/values";
-import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "./_generated/server";
 import { getUserId } from "./utils";
 import { defaultTranscriptSettings } from "./settings";
 import { buildTranscriptProviderCatalog } from "./transcriptCatalog.helpers";
@@ -10,7 +15,7 @@ const transcriptProviderValidator = v.union(
   v.literal("sensevoice"),
   v.literal("openai_mini"),
   v.literal("openai"),
-  v.literal("deepgram")
+  v.literal("deepgram"),
 );
 
 const transcriptEntryValidator = v.object({
@@ -72,14 +77,20 @@ export const getTranscriptVersions = query({
     const versions = await ctx.db
       .query("transcriptVersions")
       .withIndex("by_user_video_lang", (q) =>
-        q.eq("userId", userId).eq("youtubeVideoId", args.youtubeVideoId).eq("language", args.language)
+        q
+          .eq("userId", userId)
+          .eq("youtubeVideoId", args.youtubeVideoId)
+          .eq("language", args.language),
       )
       .collect();
 
     const selection = await ctx.db
       .query("transcriptSelections")
       .withIndex("by_user_video_lang", (q) =>
-        q.eq("userId", userId).eq("youtubeVideoId", args.youtubeVideoId).eq("language", args.language)
+        q
+          .eq("userId", userId)
+          .eq("youtubeVideoId", args.youtubeVideoId)
+          .eq("language", args.language),
       )
       .first();
 
@@ -101,6 +112,43 @@ export const getTranscriptVersions = query({
   },
 });
 
+export const getLatestTranscriptJob = query({
+  args: {
+    youtubeVideoId: v.string(),
+    language: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    const jobs = await ctx.db
+      .query("transcriptJobs")
+      .withIndex("by_user_video_lang", (q) =>
+        q
+          .eq("userId", userId)
+          .eq("youtubeVideoId", args.youtubeVideoId)
+          .eq("language", args.language),
+      )
+      .collect();
+
+    const job = jobs.sort((a, b) => b.updatedAt - a.updatedAt)[0] ?? null;
+    if (!job) return null;
+
+    return {
+      _id: job._id,
+      provider: job.provider,
+      status: job.status,
+      progressMessage: job.progressMessage,
+      errorMessage: job.errorMessage,
+      versionId: job.versionId,
+      createdAt: job.createdAt,
+      updatedAt: job.updatedAt,
+      startedAt: job.startedAt,
+      finishedAt: job.finishedAt,
+    };
+  },
+});
+
 export const getActiveTranscript = query({
   args: {
     youtubeVideoId: v.string(),
@@ -113,18 +161,23 @@ export const getActiveTranscript = query({
     const selection = await ctx.db
       .query("transcriptSelections")
       .withIndex("by_user_video_lang", (q) =>
-        q.eq("userId", userId).eq("youtubeVideoId", args.youtubeVideoId).eq("language", args.language)
+        q
+          .eq("userId", userId)
+          .eq("youtubeVideoId", args.youtubeVideoId)
+          .eq("language", args.language),
       )
       .first();
 
-    let version =
-      selection ? await ctx.db.get(selection.versionId) : null;
+    let version = selection ? await ctx.db.get(selection.versionId) : null;
 
     if (!version) {
       const versions = await ctx.db
         .query("transcriptVersions")
         .withIndex("by_user_video_lang", (q) =>
-          q.eq("userId", userId).eq("youtubeVideoId", args.youtubeVideoId).eq("language", args.language)
+          q
+            .eq("userId", userId)
+            .eq("youtubeVideoId", args.youtubeVideoId)
+            .eq("language", args.language),
         )
         .collect();
       version =
@@ -164,13 +217,15 @@ export const getLatestVersionForProvider = internalQuery({
           .eq("userId", args.userId)
           .eq("youtubeVideoId", args.youtubeVideoId)
           .eq("language", args.language)
-          .eq("provider", args.provider)
+          .eq("provider", args.provider),
       )
       .collect();
 
-    return versions
-      .filter((version) => version.status === "ready")
-      .sort((a, b) => b.version - a.version)[0] ?? null;
+    return (
+      versions
+        .filter((version) => version.status === "ready")
+        .sort((a, b) => b.version - a.version)[0] ?? null
+    );
   },
 });
 
@@ -204,8 +259,8 @@ export const updateJob = internalMutation({
         v.literal("running"),
         v.literal("completed"),
         v.literal("failed"),
-        v.literal("canceled")
-      )
+        v.literal("canceled"),
+      ),
     ),
     progressMessage: v.optional(v.string()),
     errorMessage: v.optional(v.string()),
@@ -218,8 +273,10 @@ export const updateJob = internalMutation({
       updatedAt: Date.now(),
     };
     if (args.status !== undefined) update.status = args.status;
-    if (args.progressMessage !== undefined) update.progressMessage = args.progressMessage;
-    if (args.errorMessage !== undefined) update.errorMessage = args.errorMessage;
+    if (args.progressMessage !== undefined)
+      update.progressMessage = args.progressMessage;
+    if (args.errorMessage !== undefined)
+      update.errorMessage = args.errorMessage;
     if (args.versionId !== undefined) update.versionId = args.versionId;
     if (args.startedAt !== undefined) update.startedAt = args.startedAt;
     if (args.finishedAt !== undefined) update.finishedAt = args.finishedAt;
@@ -247,7 +304,7 @@ export const createVersion = internalMutation({
           .eq("userId", args.userId)
           .eq("youtubeVideoId", args.youtubeVideoId)
           .eq("language", args.language)
-          .eq("provider", args.provider)
+          .eq("provider", args.provider),
       )
       .collect();
     const now = Date.now();
@@ -280,7 +337,10 @@ export const upsertSelection = internalMutation({
     const existing = await ctx.db
       .query("transcriptSelections")
       .withIndex("by_user_video_lang", (q) =>
-        q.eq("userId", args.userId).eq("youtubeVideoId", args.youtubeVideoId).eq("language", args.language)
+        q
+          .eq("userId", args.userId)
+          .eq("youtubeVideoId", args.youtubeVideoId)
+          .eq("language", args.language),
       )
       .first();
     const now = Date.now();
@@ -319,7 +379,10 @@ export const selectTranscriptVersion = mutation({
     const existing = await ctx.db
       .query("transcriptSelections")
       .withIndex("by_user_video_lang", (q) =>
-        q.eq("userId", userId).eq("youtubeVideoId", version.youtubeVideoId).eq("language", version.language)
+        q
+          .eq("userId", userId)
+          .eq("youtubeVideoId", version.youtubeVideoId)
+          .eq("language", version.language),
       )
       .first();
     const now = Date.now();

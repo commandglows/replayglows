@@ -398,6 +398,64 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
             }),
           ),
         ),
+        SettingsChoiceTile(
+          icon: Icons.auto_awesome,
+          title: 'Default transcript provider',
+          value: settings.transcripts.defaultProvider?.toJson() ?? 'automatic',
+          onTap: () => showSettingsChoiceDialog(
+            context,
+            title: 'Default transcript provider',
+            options: const [
+              'automatic',
+              'youtube_captions',
+              'faster_whisper',
+              'sensevoice',
+              'openai_mini',
+              'openai',
+              'deepgram',
+            ],
+            currentValue:
+                settings.transcripts.defaultProvider?.toJson() ?? 'automatic',
+            onSelected: (value) => _persistSettings({
+              'transcripts': {
+                ...settings.transcripts.toJson(),
+                if (value == 'automatic')
+                  'defaultProvider': null
+                else
+                  'defaultProvider': value,
+              },
+            }),
+          ),
+        ),
+        SettingsSwitchTile(
+          icon: Icons.closed_caption,
+          title: 'Try YouTube captions first',
+          subtitle: 'Uses published captions before audio transcription',
+          value: settings.transcripts.autoAttemptYoutubeCaptions ?? true,
+          onChanged: (value) => _persistSettings({
+            'transcripts': {
+              ...settings.transcripts.toJson(),
+              'autoAttemptYoutubeCaptions': value,
+            },
+          }),
+        ),
+        SettingsSwitchTile(
+          icon: Icons.computer,
+          title: 'Use local fallback',
+          subtitle: 'Enabled only when the transcript worker is available',
+          value: settings.transcripts.autoAttemptLocalFallback ?? true,
+          onChanged: (value) => _persistSettings({
+            'transcripts': {
+              ...settings.transcripts.toJson(),
+              'autoAttemptLocalFallback': value,
+            },
+          }),
+        ),
+        const _TranscriptProviderSettingsCard(),
+        const Divider(),
+
+        const SettingsSection(title: 'Channel automation'),
+        const _ChannelAutomationSettingsCard(),
         const Divider(),
 
         const SettingsSection(title: 'Support'),
@@ -477,6 +535,349 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
         return 1440;
       default:
         return 60;
+    }
+  }
+}
+
+class _TranscriptProviderSettingsCard extends ConsumerStatefulWidget {
+  const _TranscriptProviderSettingsCard();
+
+  @override
+  ConsumerState<_TranscriptProviderSettingsCard> createState() =>
+      _TranscriptProviderSettingsCardState();
+}
+
+class _TranscriptProviderSettingsCardState
+    extends ConsumerState<_TranscriptProviderSettingsCard> {
+  final _controllers = <String, TextEditingController>{};
+  final _busy = <String>{};
+
+  @override
+  void dispose() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final catalogAsync = ref.watch(transcriptProviderCatalogProvider);
+    return catalogAsync.when(
+      data: (catalog) {
+        if (catalog.isEmpty) {
+          return const ListTile(
+            leading: Icon(Icons.subtitles_off),
+            title: Text('No transcript providers available'),
+            subtitle: Text('YouTube captions will be used when available.'),
+          );
+        }
+        return Column(
+          children: catalog
+              .map(
+                (provider) => ExpansionTile(
+                  leading: Icon(
+                    provider.available ? Icons.check_circle : Icons.info,
+                    color: provider.available ? Colors.green : null,
+                  ),
+                  title: Text(provider.label),
+                  subtitle: Text(
+                    provider.available
+                        ? '${provider.priceLabel} · ${provider.speedLabel} · ${provider.qualityLabel}'
+                        : provider.unavailableReason ??
+                              'Not available in this environment.',
+                  ),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(provider.recommendedUse),
+                      ),
+                    ),
+                    if (provider.requiresSecret &&
+                        provider.secretProvider != null)
+                      _buildSecretControls(provider.secretProvider!),
+                  ],
+                ),
+              )
+              .toList(growable: false),
+        );
+      },
+      loading: () => const ListTile(
+        leading: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+        title: Text('Loading transcript providers'),
+      ),
+      error: (error, stack) => ErrorStateView(
+        error: error,
+        prefix: 'Failed to load transcript providers',
+        onRetry: () => ref.invalidate(transcriptProviderCatalogProvider),
+      ),
+    );
+  }
+
+  Widget _buildSecretControls(String provider) {
+    final controller = _controllers.putIfAbsent(
+      provider,
+      TextEditingController.new,
+    );
+    final isBusy = _busy.contains(provider);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        children: [
+          TextField(
+            controller: controller,
+            obscureText: true,
+            decoration: InputDecoration(
+              labelText: '${provider.toUpperCase()} API key',
+              prefixIcon: const Icon(Icons.key),
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            children: [
+              FilledButton.icon(
+                onPressed: isBusy
+                    ? null
+                    : () => _runSecretAction(provider, () async {
+                        final value = controller.text.trim();
+                        if (value.isEmpty) {
+                          throw StateError('Enter an API key first.');
+                        }
+                        await upsertTranscriptSecret(
+                          ref,
+                          provider: provider,
+                          apiKey: value,
+                        );
+                        controller.clear();
+                      }, 'Secret saved.'),
+                icon: const Icon(Icons.save),
+                label: const Text('Save'),
+              ),
+              OutlinedButton.icon(
+                onPressed: isBusy
+                    ? null
+                    : () => _runSecretAction(
+                        provider,
+                        () => testTranscriptSecret(ref, provider: provider),
+                        'Secret test passed.',
+                      ),
+                icon: const Icon(Icons.verified),
+                label: const Text('Test'),
+              ),
+              TextButton.icon(
+                onPressed: isBusy
+                    ? null
+                    : () => _runSecretAction(
+                        provider,
+                        () => deleteTranscriptSecret(ref, provider: provider),
+                        'Secret deleted.',
+                      ),
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Delete'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _runSecretAction(
+    String provider,
+    Future<dynamic> Function() action,
+    String successMessage,
+  ) async {
+    setState(() => _busy.add(provider));
+    try {
+      await action();
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(successMessage)));
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Transcript secret failed');
+    } finally {
+      if (mounted) setState(() => _busy.remove(provider));
+    }
+  }
+}
+
+class _ChannelAutomationSettingsCard extends ConsumerWidget {
+  const _ChannelAutomationSettingsCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final channelsAsync = ref.watch(subscribedChannelsProvider);
+    final linksAsync = ref.watch(channelLinksProvider);
+    final playlistsAsync = ref.watch(playlistsProvider);
+
+    return channelsAsync.when(
+      data: (channels) {
+        if (channels.isEmpty) {
+          return const ListTile(
+            leading: Icon(Icons.subscriptions_outlined),
+            title: Text('No YouTube subscriptions found'),
+            subtitle: Text(
+              'This is normal for a new YouTube account. Playlists still work.',
+            ),
+          );
+        }
+        return Column(
+          children: channels
+              .take(12)
+              .map((channel) {
+                ChannelPlaylistLink? link;
+                for (final item
+                    in linksAsync.asData?.value ??
+                        const <ChannelPlaylistLink>[]) {
+                  if (item.youtubeChannelId == channel.youtubeChannelId) {
+                    link = item;
+                    break;
+                  }
+                }
+                final currentLink = link;
+                return ListTile(
+                  leading: const Icon(Icons.account_circle_outlined),
+                  title: Text(channel.title),
+                  subtitle: Text(
+                    currentLink == null
+                        ? 'Not linked'
+                        : '${currentLink.isActive ? 'Active' : 'Paused'} · ${currentLink.youtubePlaylistId}',
+                  ),
+                  trailing: Wrap(
+                    spacing: 4,
+                    children: [
+                      if (currentLink != null)
+                        IconButton(
+                          tooltip: currentLink.isActive
+                              ? 'Pause link'
+                              : 'Resume link',
+                          icon: Icon(
+                            currentLink.isActive
+                                ? Icons.pause
+                                : Icons.play_arrow,
+                          ),
+                          onPressed: () async {
+                            await toggleChannelLinkStatus(ref, currentLink.id);
+                          },
+                        ),
+                      IconButton(
+                        tooltip: currentLink == null
+                            ? 'Link to playlist'
+                            : 'Sync channel',
+                        icon: Icon(
+                          currentLink == null ? Icons.add_link : Icons.sync,
+                        ),
+                        onPressed: () async {
+                          if (currentLink == null) {
+                            await _showLinkDialog(
+                              context,
+                              ref,
+                              channel,
+                              playlistsAsync.asData?.value ?? const [],
+                            );
+                            return;
+                          }
+                          final result = await syncPastVideosFromChannel(
+                            ref,
+                            youtubeChannelId: currentLink.youtubeChannelId,
+                            channelTitle: currentLink.channelTitle,
+                            youtubePlaylistId: currentLink.youtubePlaylistId,
+                          );
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                result.message ??
+                                    'Synced ${result.addedCount} video(s).',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      if (currentLink != null)
+                        IconButton(
+                          tooltip: 'Unlink channel',
+                          icon: const Icon(Icons.link_off),
+                          onPressed: () => unlinkChannel(ref, currentLink.id),
+                        ),
+                    ],
+                  ),
+                );
+              })
+              .toList(growable: false),
+        );
+      },
+      loading: () => const ListTile(
+        leading: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+        title: Text('Loading YouTube subscriptions'),
+      ),
+      error: (error, stack) => ErrorStateView(
+        error: error,
+        prefix: 'Failed to load subscriptions',
+        onRetry: () => ref.invalidate(subscribedChannelsProvider),
+      ),
+    );
+  }
+
+  Future<void> _showLinkDialog(
+    BuildContext context,
+    WidgetRef ref,
+    YouTubeChannel channel,
+    List<YouTubePlaylist> playlists,
+  ) async {
+    if (playlists.isEmpty) {
+      showErrorSnackBar(
+        context,
+        error: StateError('Create or sync a playlist before linking channels.'),
+        prefix: 'No playlist available',
+      );
+      return;
+    }
+    final selected = await showDialog<YouTubePlaylist>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text('Link ${channel.title}'),
+        children: playlists
+            .map(
+              (playlist) => SimpleDialogOption(
+                onPressed: () => Navigator.of(context).pop(playlist),
+                child: Text(playlist.title),
+              ),
+            )
+            .toList(growable: false),
+      ),
+    );
+    if (selected == null) return;
+    try {
+      await linkChannelToPlaylist(
+        ref,
+        youtubeChannelId: channel.youtubeChannelId,
+        channelTitle: channel.title,
+        youtubePlaylistId: selected.youtubePlaylistId,
+      );
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${channel.title} linked to ${selected.title}.'),
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Link failed');
     }
   }
 }

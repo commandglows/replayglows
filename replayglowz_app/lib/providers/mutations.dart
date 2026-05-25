@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:replayglowz_app/convex/convex_client.dart';
 import 'package:replayglowz_app/convex/convex_errors.dart';
 import 'package:replayglowz_app/convex/convex_provider.dart';
+import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/providers.dart';
 
 // =============================================================================
@@ -179,12 +180,16 @@ Future<Map<String, dynamic>> generateTranscript(
   WidgetRef ref, {
   required String youtubeVideoId,
   String language = 'en',
+  String? provider,
 }) async {
   final service = ref.read(convexServiceProvider);
-  final raw = await service.action<dynamic>(
-    'transcriptGeneration:generateTranscript',
-    {'youtubeVideoId': youtubeVideoId, 'language': language, 'activate': true},
-  );
+  final raw = await service
+      .action<dynamic>('transcriptGeneration:generateTranscript', {
+        'youtubeVideoId': youtubeVideoId,
+        'language': language,
+        'activate': true,
+        'provider': ?provider,
+      });
 
   if (raw is Map<String, dynamic>) {
     return raw;
@@ -193,6 +198,146 @@ Future<Map<String, dynamic>> generateTranscript(
   throw StateError(
     'Transcript generation returned an unexpected response: ${raw.runtimeType}',
   );
+}
+
+Future<dynamic> selectTranscriptVersion(
+  WidgetRef ref, {
+  required String versionId,
+  required String youtubeVideoId,
+  required String language,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>(
+    'transcripts:selectTranscriptVersion',
+    {'versionId': versionId},
+  );
+  ref
+    ..invalidate(
+      activeTranscriptProvider(
+        TranscriptArgs(youtubeVideoId: youtubeVideoId, language: language),
+      ),
+    )
+    ..invalidate(
+      transcriptVersionsProvider(
+        TranscriptArgs(youtubeVideoId: youtubeVideoId, language: language),
+      ),
+    );
+  return result;
+}
+
+Future<dynamic> upsertTranscriptSecret(
+  WidgetRef ref, {
+  required String provider,
+  required String apiKey,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>(
+    'transcriptSecrets:upsertSecret',
+    {'provider': provider, 'apiKey': apiKey},
+  );
+  ref
+    ..invalidate(transcriptSecretsStatusProvider)
+    ..invalidate(transcriptProviderCatalogProvider);
+  return result;
+}
+
+Future<dynamic> deleteTranscriptSecret(
+  WidgetRef ref, {
+  required String provider,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>(
+    'transcriptSecrets:deleteSecret',
+    {'provider': provider},
+  );
+  ref
+    ..invalidate(transcriptSecretsStatusProvider)
+    ..invalidate(transcriptProviderCatalogProvider);
+  return result;
+}
+
+Future<dynamic> testTranscriptSecret(
+  WidgetRef ref, {
+  required String provider,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  return service.action<dynamic>('transcriptSecrets:testSecret', {
+    'provider': provider,
+  });
+}
+
+Future<String> exportNotesForVideo(
+  WidgetRef ref, {
+  required String youtubeVideoId,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final raw = await service.query<dynamic>('notes:exportNotesForVideo', {
+    'youtubeVideoId': youtubeVideoId,
+  });
+  final decoded = raw is Map<String, dynamic> ? raw : null;
+  return decoded?['markdown']?.toString() ?? '';
+}
+
+Future<dynamic> linkChannelToPlaylist(
+  WidgetRef ref, {
+  required String youtubeChannelId,
+  required String channelTitle,
+  required String youtubePlaylistId,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service
+      .mutate<dynamic>('channelLinks:linkChannelToPlaylist', {
+        'youtubeChannelId': youtubeChannelId,
+        'channelTitle': channelTitle,
+        'youtubePlaylistId': youtubePlaylistId,
+      });
+  ref
+    ..invalidate(channelLinksProvider)
+    ..invalidate(playlistsProvider);
+  return result;
+}
+
+Future<dynamic> unlinkChannel(WidgetRef ref, String linkId) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>('channelLinks:unlinkChannel', {
+    'linkId': linkId,
+  });
+  ref.invalidate(channelLinksProvider);
+  return result;
+}
+
+Future<dynamic> toggleChannelLinkStatus(WidgetRef ref, String linkId) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>(
+    'channelLinks:toggleLinkStatus',
+    {'linkId': linkId},
+  );
+  ref.invalidate(channelLinksProvider);
+  return result;
+}
+
+Future<ChannelSyncResult> syncPastVideosFromChannel(
+  WidgetRef ref, {
+  required String youtubeChannelId,
+  required String channelTitle,
+  required String youtubePlaylistId,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final raw = await service
+      .action<dynamic>('channelLinks:syncPastVideosFromChannel', {
+        'youtubeChannelId': youtubeChannelId,
+        'channelTitle': channelTitle,
+        'youtubePlaylistId': youtubePlaylistId,
+      });
+  ref
+    ..invalidate(channelLinksProvider)
+    ..invalidate(playlistVideosProvider(youtubePlaylistId))
+    ..invalidate(videosProvider(const VideosArgs()))
+    ..invalidate(quotaUsageProvider);
+  if (raw is Map<String, dynamic>) {
+    return ChannelSyncResult.fromJson(raw);
+  }
+  throw StateError('Channel sync returned an unexpected response.');
 }
 
 // ---------------------------------------------------------------------------

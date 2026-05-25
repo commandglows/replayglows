@@ -2,7 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { getUserId } from "./utils";
-
+import { PLANS } from "./subscriptions";
 
 // =============================================================================
 // GENERIC NOTES (Legacy)
@@ -50,7 +50,8 @@ export const createNote = mutation({
     const userId = await getUserId(ctx);
     if (!userId) throw new Error("User not found");
     if (title.length > 500) throw new Error("Title too long (max 500 chars)");
-    if (content.length > 50000) throw new Error("Content too long (max 50,000 chars)");
+    if (content.length > 50000)
+      throw new Error("Content too long (max 50,000 chars)");
 
     const noteId = await ctx.db.insert("notes", {
       userId,
@@ -107,7 +108,7 @@ export const getNotesByYoutubeVideo = query({
     const notes = await ctx.db
       .query("notes")
       .withIndex("by_youtube_video", (q) =>
-        q.eq("userId", userId).eq("youtubeVideoId", args.youtubeVideoId)
+        q.eq("userId", userId).eq("youtubeVideoId", args.youtubeVideoId),
       )
       .collect();
 
@@ -131,7 +132,8 @@ export const createNoteForYoutubeVideo = mutation({
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) throw new Error("Unauthorized");
-    if (args.content.length > 50000) throw new Error("Content too long (max 50,000 chars)");
+    if (args.content.length > 50000)
+      throw new Error("Content too long (max 50,000 chars)");
 
     const noteId = await ctx.db.insert("notes", {
       userId,
@@ -185,7 +187,7 @@ export const getNoteCountForVideo = query({
     const notes = await ctx.db
       .query("notes")
       .withIndex("by_youtube_video", (q) =>
-        q.eq("userId", userId).eq("youtubeVideoId", args.youtubeVideoId)
+        q.eq("userId", userId).eq("youtubeVideoId", args.youtubeVideoId),
       )
       .collect();
 
@@ -228,10 +230,21 @@ export const exportNotesForVideo = query({
     const userId = await getUserId(ctx);
     if (!userId) return null;
 
+    const subscription = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_user_id", (q) => q.eq("userId", userId))
+      .first();
+    const plan = subscription?.plan ?? "free";
+    if (!PLANS[plan].exportNotes) {
+      throw new Error(
+        "EXPORT_NOTES_NOT_ALLOWED: Note export is not available on this plan.",
+      );
+    }
+
     const notes = await ctx.db
       .query("notes")
       .withIndex("by_youtube_video", (q) =>
-        q.eq("userId", userId).eq("youtubeVideoId", args.youtubeVideoId)
+        q.eq("userId", userId).eq("youtubeVideoId", args.youtubeVideoId),
       )
       .collect();
 
@@ -255,7 +268,9 @@ export const exportNotesForVideo = query({
     const markdown = sortedNotes
       .map((note) => {
         const timestamp =
-          note.timestamp !== undefined ? `[${formatTime(note.timestamp)}] ` : "";
+          note.timestamp !== undefined
+            ? `[${formatTime(note.timestamp)}] `
+            : "";
         return `- ${timestamp}${note.content}`;
       })
       .join("\n");

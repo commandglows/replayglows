@@ -900,6 +900,130 @@ final activeTranscriptProvider =
       }
     });
 
+/// One-shot query for cached YouTube subscriptions.
+final subscribedChannelsProvider = FutureProvider<List<YouTubeChannel>>((
+  ref,
+) async {
+  if (!await _waitForConvexAuthReady(
+    ref,
+    consumer: 'subscribedChannelsProvider',
+  )) {
+    return const [];
+  }
+
+  final service = ref.watch(convexServiceProvider);
+  final raw = await service.action<dynamic>(
+    'youtube:fetchYoutubeSubscriptions',
+    {},
+  );
+  return _decodeList(
+    raw,
+  ).map((json) => YouTubeChannel.fromJson(json)).toList(growable: false);
+});
+
+/// One-shot query for channel-to-playlist automation links.
+final channelLinksProvider = FutureProvider<List<ChannelPlaylistLink>>((
+  ref,
+) async {
+  if (!await _waitForConvexAuthReady(ref, consumer: 'channelLinksProvider')) {
+    return const [];
+  }
+
+  final service = ref.watch(convexServiceProvider);
+  final raw = await service.query<dynamic>('channelLinks:getChannelLinks', {});
+  return _decodeList(
+    raw,
+  ).map((json) => ChannelPlaylistLink.fromJson(json)).toList(growable: false);
+});
+
+/// One-shot query for transcript provider availability.
+final transcriptProviderCatalogProvider =
+    FutureProvider<List<TranscriptProviderCatalogItem>>((ref) async {
+      if (!await _waitForConvexAuthReady(
+        ref,
+        consumer: 'transcriptProviderCatalogProvider',
+      )) {
+        return const [];
+      }
+
+      final service = ref.watch(convexServiceProvider);
+      final raw = await service.query<dynamic>(
+        'transcripts:getProviderCatalog',
+        {},
+      );
+      return _decodeList(raw)
+          .map((json) => TranscriptProviderCatalogItem.fromJson(json))
+          .toList(growable: false);
+    });
+
+/// One-shot query for masked transcript provider secret status.
+final transcriptSecretsStatusProvider =
+    FutureProvider<List<TranscriptSecretStatus>>((ref) async {
+      if (!await _waitForConvexAuthReady(
+        ref,
+        consumer: 'transcriptSecretsStatusProvider',
+      )) {
+        return const [];
+      }
+
+      final service = ref.watch(convexServiceProvider);
+      final raw = await service.query<dynamic>(
+        'transcriptSecrets:getSecretsStatus',
+        {},
+      );
+      return _decodeList(raw)
+          .map((json) => TranscriptSecretStatus.fromJson(json))
+          .toList(growable: false);
+    });
+
+/// One-shot query for transcript versions on a video/language pair.
+final transcriptVersionsProvider =
+    FutureProvider.family<List<TranscriptVersion>, TranscriptArgs>((
+      ref,
+      args,
+    ) async {
+      if (args.youtubeVideoId.trim().isEmpty) {
+        return const [];
+      }
+      if (!await _waitForConvexAuthReady(
+        ref,
+        consumer: 'transcriptVersionsProvider',
+      )) {
+        return const [];
+      }
+
+      final service = ref.watch(convexServiceProvider);
+      final raw = await service.query<dynamic>(
+        'transcripts:getTranscriptVersions',
+        {'youtubeVideoId': args.youtubeVideoId, 'language': args.language},
+      );
+      return _decodeList(
+        raw,
+      ).map((json) => TranscriptVersion.fromJson(json)).toList(growable: false);
+    });
+
+/// One-shot query for the latest transcript generation job.
+final latestTranscriptJobProvider =
+    FutureProvider.family<TranscriptJob?, TranscriptArgs>((ref, args) async {
+      if (args.youtubeVideoId.trim().isEmpty) {
+        return null;
+      }
+      if (!await _waitForConvexAuthReady(
+        ref,
+        consumer: 'latestTranscriptJobProvider',
+      )) {
+        return null;
+      }
+
+      final service = ref.watch(convexServiceProvider);
+      final raw = await service.query<dynamic>(
+        'transcripts:getLatestTranscriptJob',
+        {'youtubeVideoId': args.youtubeVideoId, 'language': args.language},
+      );
+      final json = _decodeMap(raw);
+      return json == null ? null : TranscriptJob.fromJson(json);
+    });
+
 // ---------------------------------------------------------------------------
 // 8. hiddenItemsProvider
 // ---------------------------------------------------------------------------

@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:replayglowz_app/models/playlist.dart';
+import 'package:replayglowz_app/models/transcript.dart';
 import 'package:replayglowz_app/models/video.dart';
+import 'package:replayglowz_app/models/youtube_channel.dart';
 
 void main() {
   group('YouTubePlaylist.fromJson', () {
@@ -101,6 +103,66 @@ void main() {
       expect(video.youtubeVideoId, 'vid456');
       expect(video.playlistId, 'PL456');
       expect(video.channelTitle, '');
+    });
+  });
+
+  group('YouTubeChannel.fromJson', () {
+    test('accepts cached subscription projection fields', () {
+      final channel = YouTubeChannel.fromJson({
+        'youtubeChannelId': 'UC123',
+        'title': 'Creator',
+        'description': 'Channel description',
+        'thumbnailUrl': 'https://example.com/thumb.jpg',
+      });
+
+      expect(channel.youtubeChannelId, 'UC123');
+      expect(channel.title, 'Creator');
+      expect(channel.description, 'Channel description');
+      expect(channel.thumbnailUrl, contains('thumb.jpg'));
+    });
+  });
+
+  group('ChannelPlaylistLink.fromJson', () {
+    test('accepts channel link projection fields', () {
+      final link = ChannelPlaylistLink.fromJson({
+        'id': 'link123',
+        'youtubeChannelId': 'UC123',
+        'channelTitle': 'Creator',
+        'youtubePlaylistId': 'PL123',
+        'linkedAt': 1760000000000,
+        'lastSyncedAt': 1760000000100,
+        'isActive': false,
+      });
+
+      expect(link.id, 'link123');
+      expect(link.youtubeChannelId, 'UC123');
+      expect(link.youtubePlaylistId, 'PL123');
+      expect(link.isActive, isFalse);
+      expect(link.lastSyncedAt, 1760000000100);
+    });
+  });
+
+  group('TranscriptProviderCatalogItem.fromJson', () {
+    test('accepts backend isAvailable and maskedSecret fields', () {
+      final item = TranscriptProviderCatalogItem.fromJson({
+        'id': 'openai',
+        'label': 'OpenAI',
+        'description': 'Premium provider',
+        'type': 'paid_api',
+        'requiresSecret': true,
+        'secretProvider': 'openai',
+        'requiresWorker': true,
+        'priceLabel': 'Billed by OpenAI',
+        'speedLabel': 'Fast',
+        'qualityLabel': 'Excellent',
+        'recommendedUse': 'Premium rerun',
+        'isAvailable': true,
+        'maskedSecret': '....abcd',
+      });
+
+      expect(item.id?.toJson(), 'openai');
+      expect(item.available, isTrue);
+      expect(item.maskedSecret, '....abcd');
     });
   });
 }
