@@ -27,6 +27,9 @@ dependencies:
   # YouTube player
   youtube_player_flutter: ^9.1.0
 
+  # Web platform views
+  web: ^1.1.1
+
   # UI components
   cached_network_image: ^3.4.0
   shimmer: ^3.0.0

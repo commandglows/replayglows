@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -284,7 +285,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
           return Column(
             children: [
               _buildPlayerArea(),
-              _buildPlaybackControls(currentVideo),
+              if (!kIsWeb) _buildPlaybackControls(currentVideo),
               TabBar(
                 controller: _tabController,
                 tabs: const [
@@ -327,6 +328,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
 
   Widget _buildPlayerArea() {
     return PlayerPanel(
+      videoId: _loadedVideoId,
       controller: _playerController,
       onReady: () {
         if (!mounted) return;
