@@ -7,9 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:replayglowz_app/app/router.dart';
 import 'package:replayglowz_app/convex/convex_provider.dart';
+import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
@@ -23,6 +25,7 @@ import 'package:replayglowz_app/widgets/play/playback_controls.dart';
 import 'package:replayglowz_app/widgets/play/player_panel.dart';
 import 'package:replayglowz_app/widgets/play/web_youtube_embed.dart';
 import 'package:replayglowz_app/widgets/transcripts/transcript_entry_tile.dart';
+import 'package:replayglowz_app/widgets/ui_hint_card.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
 class _TranscriptEntry {
@@ -171,6 +174,7 @@ class PlayScreen extends ConsumerStatefulWidget {
 
 class _PlayScreenState extends ConsumerState<PlayScreen>
     with SingleTickerProviderStateMixin {
+  static const _prefsFocusMode = 'play.pref.focusMode';
   late final TabController _tabController;
   late final YoutubePlayerController _playerController;
   final WebYoutubePlayerController _webPlayerController =
@@ -189,6 +193,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   YouTubeVideo? _currentVideoCache;
   WebYoutubePlayerSnapshot _webPlayerSnapshot =
       const WebYoutubePlayerSnapshot();
+  bool _focusMode = false;
 
   @override
   void initState() {
@@ -204,6 +209,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         captionLanguage: 'en',
       ),
     )..addListener(_syncPlayerState);
+    _loadPrefs();
   }
 
   @override
@@ -247,6 +253,23 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
     setState(() => _activeTabIndex = _tabController.index);
   }
+
+  Future<void> _loadPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final focus = prefs.getBool(_prefsFocusMode) ?? false;
+    if (!mounted) return;
+    setState(() => _focusMode = focus);
+  }
+
+  Future<void> _persistPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_prefsFocusMode, _focusMode);
+  }
+
+  AppLocale _locale(BuildContext context) =>
+      Localizations.localeOf(context).languageCode == 'fr'
+      ? AppLocale.fr
+      : AppLocale.en;
 
   /// Save playback progress to Convex on dispose / pause.
   Future<void> _saveProgress() async {
@@ -332,11 +355,29 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     final title =
         currentVideo?.title ??
         (playerTitle.isEmpty ? 'Now Playing' : playerTitle);
+    final l = _locale(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
+          IconButton(
+            icon: Icon(
+              _focusMode
+                  ? Icons.center_focus_strong
+                  : Icons.panorama_horizontal,
+            ),
+            tooltip: t('p3.play.focusMode', locale: l),
+            onPressed: () {
+              setState(() => _focusMode = !_focusMode);
+              _persistPrefs();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.keyboard_outlined),
+            tooltip: t('p3.play.shortcuts', locale: l),
+            onPressed: () => _showShortcutsOverlay(l),
+          ),
           IconButton(
             icon: const Icon(Icons.playlist_play),
             tooltip: 'Playlist queue',
@@ -403,34 +444,52 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
             );
           }
 
-          return Column(
-            children: [
-              _buildPlayerArea(),
-              if (!kIsWeb) _buildPlaybackControls(currentVideo),
-              TabBar(
-                controller: _tabController,
-                tabs: const [
-                  Tab(text: 'Notes'),
-                  Tab(text: 'Transcript'),
-                  Tab(text: 'Comments'),
+          return CallbackShortcuts(
+            bindings: _shortcutBindings(l),
+            child: Focus(
+              autofocus: true,
+              child: Column(
+                children: [
+                  _buildPlayerArea(),
+                  if (!kIsWeb) _buildPlaybackControls(currentVideo),
+                  if (!_focusMode)
+                    UiHintCard(
+                      hintId: 'play-shortcuts-hint',
+                      icon: Icons.keyboard,
+                      title: t('p3.play.hintTitle', locale: l),
+                      message: t('p3.play.hintMessage', locale: l),
+                      actionLabel: t('p3.play.shortcuts', locale: l),
+                      onAction: () => _showShortcutsOverlay(l),
+                    ),
+                  if (!_focusMode)
+                    TabBar(
+                      controller: _tabController,
+                      tabs: const [
+                        Tab(text: 'Notes'),
+                        Tab(text: 'Transcript'),
+                        Tab(text: 'Comments'),
+                      ],
+                    ),
+                  Expanded(
+                    child: _focusMode
+                        ? _buildNotesTab(notesAsync)
+                        : TabBarView(
+                            controller: _tabController,
+                            children: [
+                              _buildNotesTab(notesAsync),
+                              isTranscriptTabActive
+                                  ? _buildTranscriptTab(
+                                      transcriptAsync,
+                                      language: transcriptLanguage,
+                                    )
+                                  : const SizedBox.shrink(),
+                              _buildCommentsTab(),
+                            ],
+                          ),
+                  ),
                 ],
               ),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildNotesTab(notesAsync),
-                    isTranscriptTabActive
-                        ? _buildTranscriptTab(
-                            transcriptAsync,
-                            language: transcriptLanguage,
-                          )
-                        : const SizedBox.shrink(),
-                    _buildCommentsTab(),
-                  ],
-                ),
-              ),
-            ],
+            ),
           );
         },
         loading: () => const YoutubeConnectionLoadingState(
@@ -443,6 +502,58 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
           prefix: 'Failed to check YouTube connection',
           onRetry: () => ref.invalidate(youtubeConnectionProvider),
         ),
+      ),
+    );
+  }
+
+  bool _isTypingInInput() {
+    final focused = FocusManager.instance.primaryFocus;
+    final context = focused?.context;
+    if (context == null) return false;
+    return context.widget is EditableText;
+  }
+
+  Map<ShortcutActivator, VoidCallback> _shortcutBindings(AppLocale l) {
+    return <ShortcutActivator, VoidCallback>{
+      const SingleActivator(LogicalKeyboardKey.space): () {
+        if (_isTypingInInput()) return;
+        _togglePlayPause();
+      },
+      const SingleActivator(LogicalKeyboardKey.arrowLeft): () {
+        if (_isTypingInInput()) return;
+        _seekToSeconds(_currentTimestamp - 10);
+      },
+      const SingleActivator(LogicalKeyboardKey.arrowRight): () {
+        if (_isTypingInInput()) return;
+        _seekToSeconds(_currentTimestamp + 10);
+      },
+      const SingleActivator(LogicalKeyboardKey.slash): () {
+        if (_isTypingInInput()) return;
+        _showShortcutsOverlay(l);
+      },
+    };
+  }
+
+  Future<void> _showShortcutsOverlay(AppLocale l) async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(t('p3.play.shortcuts', locale: l)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Space: ${t('p3.play.shortcutPlayPause', locale: l)}'),
+            Text('← / →: ${t('p3.play.shortcutSeek', locale: l)}'),
+            Text('/: ${t('p3.play.shortcutHelp', locale: l)}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }

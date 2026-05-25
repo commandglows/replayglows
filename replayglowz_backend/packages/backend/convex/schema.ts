@@ -24,7 +24,9 @@ export default defineSchema({
 
   settings: defineTable({
     userId: v.string(),
-    theme: v.optional(v.union(v.literal("light"), v.literal("dark"), v.literal("system"))),
+    theme: v.optional(
+      v.union(v.literal("light"), v.literal("dark"), v.literal("system")),
+    ),
     language: v.optional(v.string()),
     notifications: v.optional(
       v.object({
@@ -35,31 +37,33 @@ export default defineSchema({
         newVideos: v.optional(v.boolean()),
         feedRefreshIntervalMinutes: v.optional(v.number()), // 0=disabled, 30, 60, 120, 360, 1440
         lastFeedCheckAt: v.optional(v.number()),
-      })
+      }),
     ),
     playback: v.optional(
       v.object({
         autoplay: v.boolean(),
         defaultQuality: v.optional(v.string()),
         defaultSpeed: v.optional(v.number()),
-        mobileControlsPosition: v.optional(v.union(v.literal("bottom"), v.literal("player"))),
+        mobileControlsPosition: v.optional(
+          v.union(v.literal("bottom"), v.literal("player")),
+        ),
         captionsEnabled: v.optional(v.boolean()),
         captionsLanguage: v.optional(v.string()),
         autoMarkWatchedThreshold: v.optional(v.number()),
-      })
+      }),
     ),
     notes: v.optional(
       v.object({
         defaultTimestamped: v.boolean(),
         sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
-      })
+      }),
     ),
     channelSync: v.optional(
       v.object({
         autoSyncOnVisit: v.boolean(),
         syncIntervalMinutes: v.optional(v.number()), // 0 = disabled, 60, 360, 1440
         lastAutoSyncAt: v.optional(v.number()),
-      })
+      }),
     ),
     transcripts: v.optional(
       v.object({
@@ -70,8 +74,8 @@ export default defineSchema({
             v.literal("sensevoice"),
             v.literal("openai_mini"),
             v.literal("openai"),
-            v.literal("deepgram")
-          )
+            v.literal("deepgram"),
+          ),
         ),
         defaultLanguage: v.optional(v.string()),
         autoAttemptYoutubeCaptions: v.optional(v.boolean()),
@@ -82,10 +86,59 @@ export default defineSchema({
             v.literal("price"),
             v.literal("speed"),
             v.literal("quality"),
-            v.literal("name")
-          )
+            v.literal("name"),
+          ),
         ),
-      })
+      }),
+    ),
+    ux: v.optional(
+      v.object({
+        dismissedHints: v.optional(v.array(v.string())),
+        feed: v.optional(
+          v.object({
+            selectedTab: v.optional(
+              v.union(
+                v.literal("all"),
+                v.literal("subscriptions"),
+                v.literal("playlists"),
+                v.literal("history"),
+              ),
+            ),
+            viewMode: v.optional(v.union(v.literal("list"), v.literal("grid"))),
+            showWatched: v.optional(v.boolean()),
+          }),
+        ),
+        playlists: v.optional(
+          v.object({
+            viewMode: v.optional(v.union(v.literal("list"), v.literal("grid"))),
+            layout: v.optional(
+              v.union(v.literal("comfortable"), v.literal("compact")),
+            ),
+            lastFilterPlaylistId: v.optional(v.string()),
+          }),
+        ),
+        notes: v.optional(
+          v.object({
+            sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
+            viewMode: v.optional(
+              v.union(v.literal("list"), v.literal("compact")),
+            ),
+          }),
+        ),
+        player: v.optional(
+          v.object({
+            layout: v.optional(
+              v.union(
+                v.literal("default"),
+                v.literal("focus"),
+                v.literal("theater"),
+              ),
+            ),
+            focusMode: v.optional(v.boolean()),
+            shortcutsHintDismissed: v.optional(v.boolean()),
+          }),
+        ),
+      }),
     ),
     updatedAt: v.optional(v.number()),
   }).index("by_user_id", ["userId"]),
@@ -98,7 +151,7 @@ export default defineSchema({
       v.literal("canceled"),
       v.literal("past_due"),
       v.literal("trialing"),
-      v.literal("revoked")
+      v.literal("revoked"),
     ),
     // Polar integration
     polarCustomerId: v.optional(v.string()),
@@ -123,7 +176,7 @@ export default defineSchema({
       v.literal("active"),
       v.literal("trialing"),
       v.literal("inactive"),
-      v.literal("revoked")
+      v.literal("revoked"),
     ),
     reasonCode: v.optional(v.string()),
     expiresAt: v.number(),
@@ -252,14 +305,14 @@ export default defineSchema({
       v.literal("running"),
       v.literal("completed"),
       v.literal("partial"),
-      v.literal("failed")
+      v.literal("failed"),
     ),
     phase: v.union(
       v.literal("planning"),
       v.literal("playlists"),
       v.literal("videos"),
       v.literal("completed"),
-      v.literal("failed")
+      v.literal("failed"),
     ),
     current: v.number(),
     total: v.number(),
@@ -404,7 +457,7 @@ export default defineSchema({
         start: v.number(),
         duration: v.number(),
         text: v.string(),
-      })
+      }),
     ),
     cachedAt: v.number(),
   }).index("by_video_and_lang", ["youtubeVideoId", "language"]),
@@ -414,7 +467,11 @@ export default defineSchema({
     youtubeVideoId: v.string(),
     language: v.string(),
     provider: v.string(),
-    status: v.union(v.literal("ready"), v.literal("failed"), v.literal("superseded")),
+    status: v.union(
+      v.literal("ready"),
+      v.literal("failed"),
+      v.literal("superseded"),
+    ),
     sourceType: v.union(v.literal("captions"), v.literal("audio")),
     version: v.number(),
     entries: v.array(
@@ -423,7 +480,7 @@ export default defineSchema({
         duration: v.number(),
         text: v.string(),
         speaker: v.optional(v.string()),
-      })
+      }),
     ),
     fullText: v.string(),
     estimatedCostUsd: v.optional(v.number()),
@@ -433,7 +490,12 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_user_video_lang", ["userId", "youtubeVideoId", "language"])
-    .index("by_user_video_lang_provider", ["userId", "youtubeVideoId", "language", "provider"]),
+    .index("by_user_video_lang_provider", [
+      "userId",
+      "youtubeVideoId",
+      "language",
+      "provider",
+    ]),
 
   transcriptJobs: defineTable({
     userId: v.string(),
@@ -445,7 +507,7 @@ export default defineSchema({
       v.literal("running"),
       v.literal("completed"),
       v.literal("failed"),
-      v.literal("canceled")
+      v.literal("canceled"),
     ),
     progressMessage: v.optional(v.string()),
     errorMessage: v.optional(v.string()),
@@ -496,7 +558,7 @@ export default defineSchema({
     type: v.union(
       v.literal("new_video"),
       v.literal("transcript_ready"),
-      v.literal("system")
+      v.literal("system"),
     ),
     title: v.string(),
     body: v.optional(v.string()),
@@ -520,7 +582,11 @@ export default defineSchema({
     message: v.optional(v.string()),
     audioStorageId: v.optional(v.id("_storage")),
     audioDurationMs: v.optional(v.number()),
-    platform: v.union(v.literal("web"), v.literal("android"), v.literal("other")),
+    platform: v.union(
+      v.literal("web"),
+      v.literal("android"),
+      v.literal("other"),
+    ),
     locale: v.string(),
     buildCommitSha: v.optional(v.string()),
     buildEnvironment: v.optional(v.string()),
@@ -543,6 +609,5 @@ export default defineSchema({
     webhookId: v.string(),
     source: v.union(v.literal("clerk"), v.literal("polar")),
     processedAt: v.number(),
-  })
-    .index("by_webhook_id", ["webhookId"]),
+  }).index("by_webhook_id", ["webhookId"]),
 });

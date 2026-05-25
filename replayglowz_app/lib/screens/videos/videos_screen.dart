@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:replayglowz_app/app/router.dart';
+import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
@@ -13,6 +15,7 @@ import 'package:replayglowz_app/widgets/common_app_bar_actions.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
 import 'package:replayglowz_app/widgets/media/video_card.dart';
 import 'package:replayglowz_app/widgets/media/video_list_tile.dart';
+import 'package:replayglowz_app/widgets/ui_hint_card.dart';
 import 'package:replayglowz_app/widgets/youtube_quota_guard.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
@@ -32,10 +35,19 @@ class VideosScreen extends ConsumerStatefulWidget {
 class _VideosScreenState extends ConsumerState<VideosScreen>
     with SingleTickerProviderStateMixin {
   static const _compactViewBreakpoint = 640.0;
+  static const _prefsTab = 'videos.pref.tab';
+  static const _prefsSort = 'videos.pref.sort';
+  static const _prefsWatched = 'videos.pref.watched';
+  static const _prefsPlaylist = 'videos.pref.playlist';
+  static const _prefsScroll = 'videos.pref.scroll';
   late final TabController _tabController;
+  final _cardScrollController = ScrollController();
+  final _listScrollController = ScrollController();
+  final _summaryScrollController = ScrollController();
   String _sortOrder = 'desc';
   bool _includeWatched = true;
   String? _playlistFilterId;
+  bool _prefsLoaded = false;
 
   VideosArgs get _videosArgs =>
       VideosArgs(sortOrder: _sortOrder, includeWatched: _includeWatched);
@@ -45,20 +57,83 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabChanged);
+    _loadLocalPrefs();
   }
 
   @override
   void dispose() {
     _tabController.removeListener(_handleTabChanged);
     _tabController.dispose();
+    _cardScrollController.dispose();
+    _listScrollController.dispose();
+    _summaryScrollController.dispose();
     super.dispose();
   }
 
   void _handleTabChanged() {
+    _persistLocalPrefs();
     if (mounted) {
       setState(() {});
     }
   }
+
+  Future<void> _loadLocalPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final tab = prefs.getInt(_prefsTab) ?? 0;
+    final sort = prefs.getString(_prefsSort) ?? 'desc';
+    final watched = prefs.getBool(_prefsWatched) ?? true;
+    final playlist = prefs.getString(_prefsPlaylist);
+    final scroll = prefs.getDouble(_prefsScroll) ?? 0;
+
+    if (!mounted) return;
+    setState(() {
+      _sortOrder = sort;
+      _includeWatched = watched;
+      _playlistFilterId = (playlist == null || playlist.isEmpty)
+          ? null
+          : playlist;
+      _prefsLoaded = true;
+    });
+    _tabController.index = tab.clamp(0, 2);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = _activeScrollController();
+      if (mounted && controller.hasClients) {
+        controller.jumpTo(scroll.clamp(0, 200000));
+      }
+    });
+  }
+
+  Future<void> _persistLocalPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_prefsTab, _tabController.index);
+    await prefs.setString(_prefsSort, _sortOrder);
+    await prefs.setBool(_prefsWatched, _includeWatched);
+    await prefs.setString(_prefsPlaylist, _playlistFilterId ?? '');
+  }
+
+  Future<void> _persistScroll() async {
+    final controller = _activeScrollController();
+    if (!controller.hasClients) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_prefsScroll, controller.offset);
+  }
+
+  ScrollController _activeScrollController() {
+    switch (_tabController.index) {
+      case 1:
+        return _listScrollController;
+      case 2:
+        return _summaryScrollController;
+      case 0:
+      default:
+        return _cardScrollController;
+    }
+  }
+
+  AppLocale _locale(BuildContext context) =>
+      Localizations.localeOf(context).languageCode == 'fr'
+      ? AppLocale.fr
+      : AppLocale.en;
 
   bool _useCompactViewSwitcher(BuildContext context) {
     return MediaQuery.sizeOf(context).width < _compactViewBreakpoint;
@@ -132,10 +207,11 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     final watchedAsync = youtubeConnected
         ? ref.watch(watchedVideosProvider)
         : const AsyncValue<List<WatchedVideo>>.data(<WatchedVideo>[]);
+    final l = _locale(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Videos'),
+        title: Text(t('videosPage.title', locale: l)),
         bottom: useCompactViewSwitcher
             ? null
             : TabBar(
@@ -155,6 +231,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
             tooltip: _includeWatched ? 'Hide watched' : 'Show watched',
             onPressed: () {
               setState(() => _includeWatched = !_includeWatched);
+              _persistLocalPrefs();
             },
           ),
           PopupMenuButton<String>(
@@ -162,6 +239,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
             icon: const Icon(Icons.sort),
             onSelected: (value) {
               setState(() => _sortOrder = value);
+              _persistLocalPrefs();
             },
             itemBuilder: (context) => [
               _SortMenuItem(
@@ -208,10 +286,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       body: youtubeConnectionAsync.when(
         data: (status) {
           if (status?['connected'] != true) {
-            return const YoutubeConnectRequiredState(
-              title: 'Connect YouTube to browse videos',
-              description:
-                  'ReplayGlowz builds your video library from your synced YouTube playlists. Connect YouTube first, then your videos will appear here.',
+            return YoutubeConnectRequiredState(
+              title: t('p3.videos.connectTitle', locale: l),
+              description: t('p3.videos.connectDesc', locale: l),
               returnTo: Routes.videos,
             );
           }
@@ -235,41 +312,63 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                       .toSet() ??
                   const <String>{};
 
-              if (videos.isEmpty) {
-                return YoutubeAwareEmptyState(
-                  fallbackIcon: Icons.video_library_outlined,
-                  fallbackTitle: 'No YouTube videos yet',
-                  fallbackDescription:
-                      'ReplayGlowz is connected, but this YouTube account does not have imported videos yet. New Google accounts may need a YouTube channel or playlists before anything can sync.',
-                  onRefresh: _refreshVideos,
-                );
+              if (!_prefsLoaded) {
+                return _buildShimmerLoading();
               }
 
-              if (visibleVideos.isEmpty) {
-                return AppEmptyState(
-                  icon: Icons.filter_list_off,
-                  title: 'No videos match these filters',
-                  description:
-                      'Clear the playlist filter or show watched videos to see more results.',
-                  action: FilledButton.tonalIcon(
-                    onPressed: () {
-                      setState(() {
-                        _playlistFilterId = null;
-                        _includeWatched = true;
-                      });
-                    },
-                    icon: const Icon(Icons.clear),
-                    label: const Text('Clear filters'),
-                  ),
-                );
+              if (_playlistFilterId != null &&
+                  !videos.any((v) => v.playlistId == _playlistFilterId)) {
+                _playlistFilterId = null;
+                _persistLocalPrefs();
               }
 
-              return TabBarView(
-                controller: _tabController,
+              final body = videos.isEmpty
+                  ? YoutubeAwareEmptyState(
+                      fallbackIcon: Icons.video_library_outlined,
+                      fallbackTitle: t('p3.videos.noVideosTitle', locale: l),
+                      fallbackDescription: t(
+                        'p3.videos.noVideosDesc',
+                        locale: l,
+                      ),
+                      onRefresh: _refreshVideos,
+                    )
+                  : visibleVideos.isEmpty
+                  ? AppEmptyState(
+                      icon: Icons.filter_list_off,
+                      title: t('p3.videos.noFilterMatchTitle', locale: l),
+                      description: t('p3.videos.noFilterMatchDesc', locale: l),
+                      action: FilledButton.tonalIcon(
+                        onPressed: () {
+                          setState(() {
+                            _playlistFilterId = null;
+                            _includeWatched = true;
+                          });
+                          _persistLocalPrefs();
+                        },
+                        icon: const Icon(Icons.clear),
+                        label: Text(t('p3.common.clearFilters', locale: l)),
+                      ),
+                    )
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildCardView(visibleVideos, watchedIds),
+                        _buildListView(visibleVideos, watchedIds),
+                        _buildSummaryView(visibleVideos, notesByVideo),
+                      ],
+                    );
+
+              return Column(
                 children: [
-                  _buildCardView(visibleVideos, watchedIds),
-                  _buildListView(visibleVideos, watchedIds),
-                  _buildSummaryView(visibleVideos, notesByVideo),
+                  UiHintCard(
+                    hintId: 'videos-first-actions',
+                    icon: Icons.tips_and_updates_outlined,
+                    title: t('p3.videos.hintTitle', locale: l),
+                    message: t('p3.videos.hintMessage', locale: l),
+                    actionLabel: t('p3.videos.hintAction', locale: l),
+                    onAction: _refreshVideos,
+                  ),
+                  Expanded(child: body),
                 ],
               );
             },
@@ -379,6 +478,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
 
   Widget _buildCardView(List<YouTubeVideo> videos, Set<String> watchedIds) {
     return ListView.builder(
+      controller: _cardScrollController,
+      key: const PageStorageKey('videos-card'),
       padding: const EdgeInsets.all(16),
       itemCount: videos.length,
       itemBuilder: (context, index) {
@@ -394,6 +495,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
 
   Widget _buildListView(List<YouTubeVideo> videos, Set<String> watchedIds) {
     return ListView.builder(
+      controller: _listScrollController,
+      key: const PageStorageKey('videos-list'),
       itemCount: videos.length,
       itemBuilder: (context, index) {
         final video = videos[index];
@@ -411,6 +514,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     Map<String, int> notesByVideo,
   ) {
     return ListView.builder(
+      controller: _summaryScrollController,
+      key: const PageStorageKey('videos-summary'),
       padding: const EdgeInsets.all(16),
       itemCount: videos.length,
       itemBuilder: (context, index) {
@@ -471,6 +576,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   }
 
   void _openVideo(BuildContext context, String youtubeVideoId) {
+    _persistScroll();
     if (youtubeVideoId.isEmpty) {
       showErrorSnackBar(
         context,
@@ -539,6 +645,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   ) async {
     switch (action) {
       case 'play':
+        _persistScroll();
         _openVideo(context, video.youtubeVideoId);
         return;
       case 'share':
@@ -743,6 +850,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                     : null,
                 onTap: () {
                   setState(() => _playlistFilterId = null);
+                  _persistLocalPrefs();
                   Navigator.of(sheetContext).pop();
                 },
               ),
@@ -755,6 +863,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                       : null,
                   onTap: () {
                     setState(() => _playlistFilterId = entry.key);
+                    _persistLocalPrefs();
                     Navigator.of(sheetContext).pop();
                   },
                 ),

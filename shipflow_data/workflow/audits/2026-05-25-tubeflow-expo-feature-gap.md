@@ -71,7 +71,8 @@ Implementation update 2026-05-25:
 - P2 channel sync is now partially exposed in Preferences: subscribed channels can be listed, linked to playlists, paused/resumed, unlinked, and synced from the selected channel.
 - P2 transcript provider management is now partially exposed in Preferences and Play: provider catalog, secret save/test/delete, generation status, version chips, and active-version selection.
 - P2 notes export is now partially exposed as Markdown copy from grouped video notes, with server-side plan gating.
-- Remaining gaps: authenticated hosted QA, richer provider sorting, more complete notes share/focus workflows, playlist-detail linked-channel placement, and final UX polish/i18n.
+- P3 onboarding and persistent UX helpers are now partially exposed: dismissible hints, reset hints action, persisted local view preferences, bounded scroll restoration, lightweight player focus mode, keyboard shortcut overlay, and P3 EN/FR strings.
+- Remaining gaps: authenticated hosted QA, richer provider sorting, more complete notes share/focus workflows, playlist-detail linked-channel placement, mini-player, browse/discovery decision, advanced study workflows, and full app-wide i18n parity.
 
 ## Priority Findings
 
@@ -205,15 +206,14 @@ Decision needed:
 Current evidence:
 
 - Historical app had onboarding modal, swipe hints, study mode, focus mode, scroll restoration, and persistent view preferences.
-- Current Flutter app has some local state but limited persisted UX helpers.
+- Current Flutter app now has P3 local persisted UX helpers in feed/playlists/notes/player, reusable dismissible hints, a reset hints action in Preferences, and lightweight player focus/shortcut UI.
 
 Missing or incomplete:
 
-- Onboarding for YouTube connection and first sync.
-- Dismissible swipe/action hints.
-- Study mode and focus mode.
-- Persistent feed/playlist view mode.
-- Scroll restoration between feed/detail/play.
+- Advanced study mode beyond presentation-only focus mode.
+- Global mini-player.
+- Cross-device persistence for all UX helpers; current implementation uses local browser persistence for hints/scroll and server settings model support for future account-level UX settings.
+- More complete playlist-detail linked-channel placement and notes focus/share workflows.
 
 ### P3 - i18n Parity
 
@@ -221,11 +221,12 @@ Current evidence:
 
 - `replayglowz_app/lib/i18n/en.dart` and `fr.dart` contain TODOs to copy remaining sections.
 - Historical i18n included many keys for quota, channel links, shortcuts, onboarding, mini-player, transcripts, browse, and notes.
+- P3 added EN/FR keys for new hints, focus mode, shortcuts, empty states and hint reset controls.
 
 Missing or incomplete:
 
 - Full English/French key parity for restored features.
-- Avoid hard-coded strings in new Flutter screens.
+- App-wide cleanup of pre-existing hard-coded strings and legacy TODO headers.
 
 ## Suggested Implementation Order
 

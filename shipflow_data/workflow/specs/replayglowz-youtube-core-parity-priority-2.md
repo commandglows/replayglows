@@ -261,7 +261,7 @@ Construire P2 en quatre lots bornes: channel sync/subscriptions, transcript prov
   - Validate with: Flutter analyze; manual QA for free/trial/pro plan states if available.
   - Notes: Do not promise PDF unless implementation actually creates a PDF.
 
-- [ ] Task 9: Add P2 onboarding and persistent UX helpers.
+- [x] Task 9: Add P2 onboarding and persistent UX helpers.
   - File: `replayglowz_app/lib/widgets/youtube_connect_ui_states.dart`, `replayglowz_app/lib/screens/videos/videos_screen.dart`, `replayglowz_app/lib/screens/playlists/playlists_screen.dart`, `replayglowz_app/lib/screens/preferences/preferences_screen.dart`, existing settings/preferences model if persistence belongs backend.
   - Action: Add dismissible guidance for empty YouTube account, zero subscriptions, zero playlists, no transcript provider, and persist lightweight view preferences/scroll where patterns already exist.
   - User story link: Advanced features remain discoverable without overwhelming the first-use flow.
@@ -352,6 +352,7 @@ None.
 | 2026-05-25 16:25:34 UTC | sf-spec | GPT-5 Codex | Created Priority 2 YouTube parity spec from Expo gap audit and P1 exclusions. | draft spec created | `/sf-ready replayglowz-youtube-core-parity-priority-2` |
 | 2026-05-25 16:34:12 UTC | sf-ready | GPT-5 Codex | Resolved blocking open questions with conservative defaults and completed readiness review. | ready | `/sf-start replayglowz-youtube-core-parity-priority-2` |
 | 2026-05-25 17:35:07 UTC | sf-start | GPT-5 Codex + bounded subagents | Implemented P2 channel automation, transcript provider/version/job UI, notes Markdown copy, and backend guardrails. | partial | Continue remaining onboarding/tests/QA polish or run `/sf-verify replayglowz-youtube-core-parity-priority-2` on current scope. |
+| 2026-05-25 17:51:12 UTC | sf-browser | GPT-5 Codex | Browser preflight for authenticated P2 testing request. | rerouted | `/sf-ship replayglowz-youtube-core-parity-priority-2`, `/sf-prod replayglowz_app`, then `/sf-auth-debug` or `/sf-test` on preview. |
 
 ## Current Chantier Flow
 

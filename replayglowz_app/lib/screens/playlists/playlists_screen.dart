@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:replayglowz_app/app/router.dart';
+import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
@@ -13,6 +15,7 @@ import 'package:replayglowz_app/widgets/app_states.dart';
 import 'package:replayglowz_app/widgets/common_app_bar_actions.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
 import 'package:replayglowz_app/widgets/media/playlist_card.dart';
+import 'package:replayglowz_app/widgets/ui_hint_card.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
 /// Playlists overview screen showing all user playlists.
@@ -29,9 +32,11 @@ class PlaylistsScreen extends ConsumerStatefulWidget {
 }
 
 class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
+  static const _prefsScroll = 'playlists.pref.scroll';
   final _scrollController = ScrollController();
   Timer? _fadeTimer;
   double _fabOpacity = 0.22;
+  bool _restoredScroll = false;
 
   static const _colorOptions = [
     Colors.purple,
@@ -51,6 +56,25 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
     super.dispose();
   }
 
+  AppLocale _locale(BuildContext context) =>
+      Localizations.localeOf(context).languageCode == 'fr'
+      ? AppLocale.fr
+      : AppLocale.en;
+
+  Future<void> _persistScroll() async {
+    if (!_scrollController.hasClients) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_prefsScroll, _scrollController.offset);
+  }
+
+  Future<void> _restoreScroll() async {
+    if (_restoredScroll || !_scrollController.hasClients) return;
+    final prefs = await SharedPreferences.getInstance();
+    final offset = prefs.getDouble(_prefsScroll) ?? 0;
+    _scrollController.jumpTo(offset.clamp(0, 200000));
+    _restoredScroll = true;
+  }
+
   void _showFabForScroll() {
     _fadeTimer?.cancel();
     if (_fabOpacity != 0.78) {
@@ -63,6 +87,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = _locale(context);
     final youtubeConnectionAsync = ref.watch(youtubeConnectionProvider);
     final youtubeConnected =
         youtubeConnectionAsync.asData?.value?['connected'] == true;
@@ -72,7 +97,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Playlists'),
+        title: Text(t('playlistsPage.title', locale: l)),
         actions: [
           IconButton(
             icon: const Icon(Icons.sort),
@@ -134,21 +159,40 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                   onRefresh: () => syncAllPlaylists(ref),
                 );
               }
-              return NotificationListener<ScrollNotification>(
-                onNotification: (notification) {
-                  if (notification.metrics.axis == Axis.vertical) {
-                    _showFabForScroll();
-                  }
-                  return false;
-                },
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                  itemCount: playlists.length,
-                  itemBuilder: (context, index) {
-                    return _buildPlaylistCard(context, ref, playlists[index]);
-                  },
-                ),
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _restoreScroll();
+              });
+              return Column(
+                children: [
+                  UiHintCard(
+                    hintId: 'playlists-onboarding',
+                    icon: Icons.playlist_add_check_circle_outlined,
+                    title: t('p3.playlists.hintTitle', locale: l),
+                    message: t('p3.playlists.hintMessage', locale: l),
+                  ),
+                  Expanded(
+                    child: NotificationListener<ScrollNotification>(
+                      onNotification: (notification) {
+                        if (notification.metrics.axis == Axis.vertical) {
+                          _showFabForScroll();
+                        }
+                        return false;
+                      },
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                        itemCount: playlists.length,
+                        itemBuilder: (context, index) {
+                          return _buildPlaylistCard(
+                            context,
+                            ref,
+                            playlists[index],
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
             loading: () => AppLoadingListSkeleton(
@@ -229,8 +273,10 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
   ) {
     return PlaylistCard(
       playlist: playlist,
-      onTap: () =>
-          context.go(Routes.playlistDetail(playlist.youtubePlaylistId)),
+      onTap: () {
+        _persistScroll();
+        context.go(Routes.playlistDetail(playlist.youtubePlaylistId));
+      },
       trailing: PopupMenuButton<String>(
         onSelected: (value) async {
           switch (value) {

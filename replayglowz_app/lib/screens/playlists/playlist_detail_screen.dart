@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:replayglowz_app/app/router.dart';
+import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
@@ -13,6 +14,7 @@ import 'package:replayglowz_app/utils/duration_utils.dart';
 import 'package:replayglowz_app/widgets/app_states.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
 import 'package:replayglowz_app/widgets/media/video_list_tile.dart';
+import 'package:replayglowz_app/widgets/ui_hint_card.dart';
 import 'package:replayglowz_app/widgets/youtube_quota_guard.dart';
 
 /// Playlist detail screen showing the playlist header and its video list.
@@ -39,6 +41,11 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
   bool _isSavingOrder = false;
   List<YouTubeVideo> _reorderList = [];
 
+  AppLocale _locale(BuildContext context) =>
+      Localizations.localeOf(context).languageCode == 'fr'
+      ? AppLocale.fr
+      : AppLocale.en;
+
   @override
   Widget build(BuildContext context) {
     final videosAsync = ref.watch(playlistVideosProvider(widget.id));
@@ -60,6 +67,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
         ? parseHexColor(playlist!.color!)
         : Colors.purple;
     final playlistTitle = playlist?.title ?? 'Playlist';
+    final l = _locale(context);
 
     return Scaffold(
       body: CustomScrollView(
@@ -69,7 +77,17 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
           // Stats bar
           SliverToBoxAdapter(
             child: videosAsync.when(
-              data: (videos) => _buildStatsBar(context, videos),
+              data: (videos) => Column(
+                children: [
+                  UiHintCard(
+                    hintId: 'playlist-detail-actions',
+                    icon: Icons.touch_app_outlined,
+                    title: t('p3.playlistDetail.hintTitle', locale: l),
+                    message: t('p3.playlistDetail.hintMessage', locale: l),
+                  ),
+                  _buildStatsBar(context, videos),
+                ],
+              ),
               loading: () => _buildStatsBar(context, []),
               error: (error, stackTrace) => _buildStatsBar(context, []),
             ),

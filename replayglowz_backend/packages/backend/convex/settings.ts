@@ -18,7 +18,9 @@ const playbackValidator = v.object({
   autoplay: v.boolean(),
   defaultQuality: v.optional(v.string()),
   defaultSpeed: v.optional(v.number()),
-  mobileControlsPosition: v.optional(v.union(v.literal("bottom"), v.literal("player"))),
+  mobileControlsPosition: v.optional(
+    v.union(v.literal("bottom"), v.literal("player")),
+  ),
   captionsEnabled: v.optional(v.boolean()),
   captionsLanguage: v.optional(v.string()),
   autoMarkWatchedThreshold: v.optional(v.number()),
@@ -43,8 +45,8 @@ const transcriptsValidator = v.object({
       v.literal("sensevoice"),
       v.literal("openai_mini"),
       v.literal("openai"),
-      v.literal("deepgram")
-    )
+      v.literal("deepgram"),
+    ),
   ),
   defaultLanguage: v.optional(v.string()),
   autoAttemptYoutubeCaptions: v.optional(v.boolean()),
@@ -55,8 +57,50 @@ const transcriptsValidator = v.object({
       v.literal("price"),
       v.literal("speed"),
       v.literal("quality"),
-      v.literal("name")
-    )
+      v.literal("name"),
+    ),
+  ),
+});
+
+const uxSettingsValidator = v.object({
+  dismissedHints: v.optional(v.array(v.string())),
+  feed: v.optional(
+    v.object({
+      selectedTab: v.optional(
+        v.union(
+          v.literal("all"),
+          v.literal("subscriptions"),
+          v.literal("playlists"),
+          v.literal("history"),
+        ),
+      ),
+      viewMode: v.optional(v.union(v.literal("list"), v.literal("grid"))),
+      showWatched: v.optional(v.boolean()),
+    }),
+  ),
+  playlists: v.optional(
+    v.object({
+      viewMode: v.optional(v.union(v.literal("list"), v.literal("grid"))),
+      layout: v.optional(
+        v.union(v.literal("comfortable"), v.literal("compact")),
+      ),
+      lastFilterPlaylistId: v.optional(v.string()),
+    }),
+  ),
+  notes: v.optional(
+    v.object({
+      sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
+      viewMode: v.optional(v.union(v.literal("list"), v.literal("compact"))),
+    }),
+  ),
+  player: v.optional(
+    v.object({
+      layout: v.optional(
+        v.union(v.literal("default"), v.literal("focus"), v.literal("theater")),
+      ),
+      focusMode: v.optional(v.boolean()),
+      shortcutsHintDismissed: v.optional(v.boolean()),
+    }),
   ),
 });
 
@@ -111,6 +155,9 @@ export const getSettings = query({
           syncIntervalMinutes: 0,
         },
         transcripts: defaultTranscriptSettings,
+        ux: {
+          dismissedHints: [],
+        },
       };
     }
 
@@ -320,16 +367,47 @@ export const updateTranscriptSettings = mutation({
   },
 });
 
+export const updateUxSettings = mutation({
+  args: {
+    ux: uxSettingsValidator,
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Unauthorized");
+
+    const settings = await ctx.db
+      .query("settings")
+      .withIndex("by_user_id", (q) => q.eq("userId", userId))
+      .first();
+
+    if (settings) {
+      await ctx.db.patch(settings._id, {
+        ux: args.ux,
+        updatedAt: Date.now(),
+      });
+    } else {
+      await ctx.db.insert("settings", {
+        userId,
+        ux: args.ux,
+        updatedAt: Date.now(),
+      });
+    }
+  },
+});
+
 // Update all settings at once
 export const updateAllSettings = mutation({
   args: {
-    theme: v.optional(v.union(v.literal("light"), v.literal("dark"), v.literal("system"))),
+    theme: v.optional(
+      v.union(v.literal("light"), v.literal("dark"), v.literal("system")),
+    ),
     language: v.optional(v.string()),
     notifications: v.optional(notificationsValidator),
     playback: v.optional(playbackValidator),
     notes: v.optional(notesValidator),
     channelSync: v.optional(channelSyncValidator),
     transcripts: v.optional(transcriptsValidator),
+    ux: v.optional(uxSettingsValidator),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -346,11 +424,15 @@ export const updateAllSettings = mutation({
 
     if (args.theme !== undefined) updateData.theme = args.theme;
     if (args.language !== undefined) updateData.language = args.language;
-    if (args.notifications !== undefined) updateData.notifications = args.notifications;
+    if (args.notifications !== undefined)
+      updateData.notifications = args.notifications;
     if (args.playback !== undefined) updateData.playback = args.playback;
     if (args.notes !== undefined) updateData.notes = args.notes;
-    if (args.channelSync !== undefined) updateData.channelSync = args.channelSync;
-    if (args.transcripts !== undefined) updateData.transcripts = args.transcripts;
+    if (args.channelSync !== undefined)
+      updateData.channelSync = args.channelSync;
+    if (args.transcripts !== undefined)
+      updateData.transcripts = args.transcripts;
+    if (args.ux !== undefined) updateData.ux = args.ux;
 
     if (settings) {
       await ctx.db.patch(settings._id, updateData);
@@ -395,6 +477,28 @@ export const updateAllSettings = mutation({
           autoAttemptYoutubeCaptions?: boolean;
           autoAttemptLocalFallback?: boolean;
           sortBy?: "recommended" | "price" | "speed" | "quality" | "name";
+        };
+        ux?: {
+          dismissedHints?: string[];
+          feed?: {
+            selectedTab?: "all" | "subscriptions" | "playlists" | "history";
+            viewMode?: "list" | "grid";
+            showWatched?: boolean;
+          };
+          playlists?: {
+            viewMode?: "list" | "grid";
+            layout?: "comfortable" | "compact";
+            lastFilterPlaylistId?: string;
+          };
+          notes?: {
+            sortOrder?: "asc" | "desc";
+            viewMode?: "list" | "compact";
+          };
+          player?: {
+            layout?: "default" | "focus" | "theater";
+            focusMode?: boolean;
+            shortcutsHintDismissed?: boolean;
+          };
         };
         updatedAt: number;
       });

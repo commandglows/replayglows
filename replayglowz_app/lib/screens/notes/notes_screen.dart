@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:replayglowz_app/app/router.dart';
+import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
@@ -12,6 +14,7 @@ import 'package:replayglowz_app/widgets/common_app_bar_actions.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
 import 'package:replayglowz_app/widgets/notes/note_group_header.dart';
 import 'package:replayglowz_app/widgets/notes/note_tile.dart';
+import 'package:replayglowz_app/widgets/ui_hint_card.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
 /// Notes overview screen with search and grouped display.
@@ -27,8 +30,16 @@ class NotesScreen extends ConsumerStatefulWidget {
 }
 
 class _NotesScreenState extends ConsumerState<NotesScreen> {
+  static const _prefsSort = 'notes.pref.sort';
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  NoteSortOrder _sortOrder = NoteSortOrder.desc;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrefs();
+  }
 
   @override
   void dispose() {
@@ -36,8 +47,31 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     super.dispose();
   }
 
+  Future<void> _loadPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_prefsSort);
+    if (!mounted) return;
+    setState(() {
+      _sortOrder = NoteSortOrder.fromJson(raw);
+    });
+  }
+
+  Future<void> _persistSort() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_prefsSort, _sortOrder.toJson());
+  }
+
+  AppLocale _locale(BuildContext context) =>
+      Localizations.localeOf(context).languageCode == 'fr'
+      ? AppLocale.fr
+      : AppLocale.en;
+
   @override
   Widget build(BuildContext context) {
+    final l = _locale(context);
+    final settings = ref.watch(settingsProvider).asData?.value;
+    final preferredSort = settings?.notes.sortOrder;
+    final effectiveSort = preferredSort ?? _sortOrder;
     final youtubeConnectionAsync = ref.watch(youtubeConnectionProvider);
     final youtubeConnected =
         youtubeConnectionAsync.asData?.value?['connected'] == true;
@@ -45,26 +79,35 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notes'),
+        title: Text(t('common.notes', locale: l)),
         actions: [
           IconButton(
             icon: const Icon(Icons.sort),
-            onPressed: () {
-              // TODO: show sort options (by date, by video, by timestamp)
-            },
+            onPressed: () => setState(() {
+              _sortOrder = _sortOrder == NoteSortOrder.desc
+                  ? NoteSortOrder.asc
+                  : NoteSortOrder.desc;
+              _persistSort();
+            }),
           ),
           ...commonAppBarActions(context, ref),
         ],
       ),
       body: Column(
         children: [
+          UiHintCard(
+            hintId: 'notes-onboarding',
+            icon: Icons.sticky_note_2_outlined,
+            title: t('p3.notes.hintTitle', locale: l),
+            message: t('p3.notes.hintMessage', locale: l),
+          ),
           // Search bar
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search notes...',
+                hintText: t('notesSection.searchPlaceholder', locale: l),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -99,8 +142,12 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                 }
 
                 return notesAsync!.when(
-                  data: (notes) =>
-                      _buildGroupedNotesList(context, notes, youtubeConnected),
+                  data: (notes) => _buildGroupedNotesList(
+                    context,
+                    notes,
+                    youtubeConnected,
+                    effectiveSort,
+                  ),
                   loading: () => _buildShimmerLoading(),
                   error: (error, stack) => ErrorStateView(
                     error: error,
@@ -152,6 +199,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     BuildContext context,
     List<Note> allNotes,
     bool youtubeConnected,
+    NoteSortOrder effectiveSort,
   ) {
     final normalizedQuery = _searchQuery.trim().toLowerCase();
 
@@ -165,6 +213,13 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                     n.content.toLowerCase().contains(normalizedQuery),
               )
               .toList();
+    filtered.sort((a, b) {
+      final left = a.createdAt ?? 0;
+      final right = b.createdAt ?? 0;
+      return effectiveSort == NoteSortOrder.asc
+          ? left.compareTo(right)
+          : right.compareTo(left);
+    });
 
     if (filtered.isEmpty) {
       if (!youtubeConnected) {

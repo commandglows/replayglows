@@ -179,4 +179,54 @@ const Map<String, dynamic> fr = {
     'connectDesc': 'Importez vos playlists et abonnements',
     'connectYoutube': 'Connecter YouTube',
   },
+  'p3': {
+    'common': {'clearFilters': 'Effacer les filtres'},
+    'videos': {
+      'connectTitle': 'Connectez YouTube pour voir les vidéos',
+      'connectDesc':
+          'ReplayGlowz construit la bibliothèque depuis vos playlists YouTube synchronisées.',
+      'noVideosTitle': 'Aucune vidéo YouTube pour le moment',
+      'noVideosDesc':
+          'Ce compte est connecté mais aucune vidéo n’a encore été importée.',
+      'noFilterMatchTitle': 'Aucune vidéo ne correspond à ces filtres',
+      'noFilterMatchDesc':
+          'Effacez les filtres ou affichez les vidéos déjà vues.',
+      'hintTitle': 'Astuce',
+      'hintMessage':
+          'Utilisez les filtres et actions de playlist pour trier rapidement votre file.',
+      'hintAction': 'Actualiser',
+    },
+    'playlists': {
+      'hintTitle': 'Démarrage playlists',
+      'hintMessage':
+          'Créez une playlist puis actualisez pour importer les changements YouTube.',
+    },
+    'playlistDetail': {
+      'hintTitle': 'Actions rapides',
+      'hintMessage':
+          'Utilisez le menu de chaque vidéo pour copier, marquer vue ou déplacer.',
+    },
+    'play': {
+      'focusMode': 'Mode focus',
+      'shortcuts': 'Raccourcis clavier',
+      'hintTitle': 'Contrôles rapides',
+      'hintMessage':
+          'Utilisez Espace pour lecture/pause et les flèches pour avancer/reculer sans quitter les notes.',
+      'shortcutPlayPause': 'Lecture / pause',
+      'shortcutSeek': 'Saut de 10 secondes',
+      'shortcutHelp': 'Ouvrir cette aide',
+    },
+    'notes': {
+      'hintTitle': 'Workflow notes',
+      'hintMessage':
+          'Les notes prises pendant la lecture sont groupées par vidéo et horodatage.',
+      'openVideo': 'Touchez pour ouvrir la vidéo',
+    },
+    'preferences': {
+      'hintsTitle': 'Aides UI',
+      'hintsSubtitle': 'Réafficher les conseils de démarrage',
+      'hintsReset': 'Conseils réinitialisés.',
+      'reset': 'Réinitialiser',
+    },
+  },
 };

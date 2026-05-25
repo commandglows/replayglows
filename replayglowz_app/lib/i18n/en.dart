@@ -178,4 +178,53 @@ const Map<String, dynamic> en = {
     'connectDesc': 'Import your playlists and subscriptions',
     'connectYoutube': 'Connect YouTube',
   },
+  'p3': {
+    'common': {'clearFilters': 'Clear filters'},
+    'videos': {
+      'connectTitle': 'Connect YouTube to browse videos',
+      'connectDesc':
+          'ReplayGlowz builds your library from synced YouTube playlists.',
+      'noVideosTitle': 'No YouTube videos yet',
+      'noVideosDesc':
+          'This account is connected but has no imported videos yet.',
+      'noFilterMatchTitle': 'No videos match these filters',
+      'noFilterMatchDesc': 'Clear filters or show watched videos.',
+      'hintTitle': 'Tip',
+      'hintMessage':
+          'Use filters and playlist actions to quickly triage your queue.',
+      'hintAction': 'Refresh now',
+    },
+    'playlists': {
+      'hintTitle': 'Playlist onboarding',
+      'hintMessage':
+          'Create one playlist first, then refresh to import new YouTube changes.',
+    },
+    'playlistDetail': {
+      'hintTitle': 'Quick actions',
+      'hintMessage':
+          'Use each video menu to copy links, mark watched, or move videos.',
+    },
+    'play': {
+      'focusMode': 'Focus mode',
+      'shortcuts': 'Keyboard shortcuts',
+      'hintTitle': 'Faster controls',
+      'hintMessage':
+          'Use Space to play/pause and arrows to seek without leaving notes.',
+      'shortcutPlayPause': 'Play / pause',
+      'shortcutSeek': 'Seek 10 seconds',
+      'shortcutHelp': 'Open this help',
+    },
+    'notes': {
+      'hintTitle': 'Notes workflow',
+      'hintMessage':
+          'Notes saved during playback are grouped by video and timestamp.',
+      'openVideo': 'Tap to view video',
+    },
+    'preferences': {
+      'hintsTitle': 'UI hints',
+      'hintsSubtitle': 'Show onboarding tips again',
+      'hintsReset': 'Hints reset.',
+      'reset': 'Reset',
+    },
+  },
 };

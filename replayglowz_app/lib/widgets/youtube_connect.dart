@@ -516,7 +516,9 @@ class _YoutubeOAuthFeedbackBannerState
                   IconButton(
                     onPressed: _dismissBanner,
                     icon: Icon(Icons.close_rounded, color: foregroundColor),
-                    tooltip: 'Dismiss',
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).closeButtonTooltip,
                   ),
                 ],
               ),

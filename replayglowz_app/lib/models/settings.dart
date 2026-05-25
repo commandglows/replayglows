@@ -143,6 +143,27 @@ enum TranscriptSortBy {
   }
 }
 
+Map<String, dynamic>? _asMap(dynamic value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return value.cast<String, dynamic>();
+  return null;
+}
+
+bool? _asBool(dynamic value) => value is bool ? value : null;
+
+String? _asString(dynamic value) => value is String ? value : null;
+
+int? _asInt(dynamic value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return null;
+}
+
+List<String>? _asStringList(dynamic value) {
+  if (value is! List) return null;
+  return value.whereType<String>().toList();
+}
+
 // ---------------------------------------------------------------------------
 // Nested settings objects
 // ---------------------------------------------------------------------------
@@ -430,6 +451,254 @@ class TranscriptSettings {
   }
 }
 
+enum FeedTabPreference { all, subscriptions, playlists, history }
+
+extension FeedTabPreferenceJson on FeedTabPreference {
+  static FeedTabPreference? fromJson(String? value) {
+    switch (value) {
+      case 'all':
+        return FeedTabPreference.all;
+      case 'subscriptions':
+        return FeedTabPreference.subscriptions;
+      case 'playlists':
+        return FeedTabPreference.playlists;
+      case 'history':
+        return FeedTabPreference.history;
+      default:
+        return null;
+    }
+  }
+
+  String toJson() => name;
+}
+
+enum CollectionViewMode { list, grid }
+
+extension CollectionViewModeJson on CollectionViewMode {
+  static CollectionViewMode? fromJson(String? value) {
+    switch (value) {
+      case 'list':
+        return CollectionViewMode.list;
+      case 'grid':
+        return CollectionViewMode.grid;
+      default:
+        return null;
+    }
+  }
+
+  String toJson() => name;
+}
+
+enum DensityLayout { comfortable, compact }
+
+extension DensityLayoutJson on DensityLayout {
+  static DensityLayout? fromJson(String? value) {
+    switch (value) {
+      case 'comfortable':
+        return DensityLayout.comfortable;
+      case 'compact':
+        return DensityLayout.compact;
+      default:
+        return null;
+    }
+  }
+
+  String toJson() => name;
+}
+
+enum NotesViewMode { list, compact }
+
+extension NotesViewModeJson on NotesViewMode {
+  static NotesViewMode? fromJson(String? value) {
+    switch (value) {
+      case 'list':
+        return NotesViewMode.list;
+      case 'compact':
+        return NotesViewMode.compact;
+      default:
+        return null;
+    }
+  }
+
+  String toJson() => name;
+}
+
+enum PlayerLayoutPreference { defaultLayout, focus, theater }
+
+extension PlayerLayoutPreferenceJson on PlayerLayoutPreference {
+  static PlayerLayoutPreference? fromJson(String? value) {
+    switch (value) {
+      case 'default':
+        return PlayerLayoutPreference.defaultLayout;
+      case 'focus':
+        return PlayerLayoutPreference.focus;
+      case 'theater':
+        return PlayerLayoutPreference.theater;
+      default:
+        return null;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case PlayerLayoutPreference.defaultLayout:
+        return 'default';
+      case PlayerLayoutPreference.focus:
+        return 'focus';
+      case PlayerLayoutPreference.theater:
+        return 'theater';
+    }
+  }
+}
+
+class UxFeedSettings {
+  final FeedTabPreference? selectedTab;
+  final CollectionViewMode? viewMode;
+  final bool? showWatched;
+
+  const UxFeedSettings({this.selectedTab, this.viewMode, this.showWatched});
+
+  factory UxFeedSettings.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return const UxFeedSettings();
+    return UxFeedSettings(
+      selectedTab: FeedTabPreferenceJson.fromJson(
+        _asString(json['selectedTab']),
+      ),
+      viewMode: CollectionViewModeJson.fromJson(_asString(json['viewMode'])),
+      showWatched: _asBool(json['showWatched']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (selectedTab != null) 'selectedTab': selectedTab!.toJson(),
+      if (viewMode != null) 'viewMode': viewMode!.toJson(),
+      if (showWatched != null) 'showWatched': showWatched,
+    };
+  }
+}
+
+class UxPlaylistsSettings {
+  final CollectionViewMode? viewMode;
+  final DensityLayout? layout;
+  final String? lastFilterPlaylistId;
+
+  const UxPlaylistsSettings({
+    this.viewMode,
+    this.layout,
+    this.lastFilterPlaylistId,
+  });
+
+  factory UxPlaylistsSettings.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return const UxPlaylistsSettings();
+    return UxPlaylistsSettings(
+      viewMode: CollectionViewModeJson.fromJson(_asString(json['viewMode'])),
+      layout: DensityLayoutJson.fromJson(_asString(json['layout'])),
+      lastFilterPlaylistId: _asString(json['lastFilterPlaylistId']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (viewMode != null) 'viewMode': viewMode!.toJson(),
+      if (layout != null) 'layout': layout!.toJson(),
+      if (lastFilterPlaylistId != null)
+        'lastFilterPlaylistId': lastFilterPlaylistId,
+    };
+  }
+}
+
+class UxNotesSettings {
+  final NoteSortOrder? sortOrder;
+  final NotesViewMode? viewMode;
+
+  const UxNotesSettings({this.sortOrder, this.viewMode});
+
+  factory UxNotesSettings.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return const UxNotesSettings();
+    return UxNotesSettings(
+      sortOrder: json['sortOrder'] != null
+          ? NoteSortOrder.fromJson(_asString(json['sortOrder']))
+          : null,
+      viewMode: NotesViewModeJson.fromJson(_asString(json['viewMode'])),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (sortOrder != null) 'sortOrder': sortOrder!.toJson(),
+      if (viewMode != null) 'viewMode': viewMode!.toJson(),
+    };
+  }
+}
+
+class UxPlayerSettings {
+  final PlayerLayoutPreference? layout;
+  final bool? focusMode;
+  final bool? shortcutsHintDismissed;
+
+  const UxPlayerSettings({
+    this.layout,
+    this.focusMode,
+    this.shortcutsHintDismissed,
+  });
+
+  factory UxPlayerSettings.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return const UxPlayerSettings();
+    return UxPlayerSettings(
+      layout: PlayerLayoutPreferenceJson.fromJson(_asString(json['layout'])),
+      focusMode: _asBool(json['focusMode']),
+      shortcutsHintDismissed: _asBool(json['shortcutsHintDismissed']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (layout != null) 'layout': layout!.toJson(),
+      if (focusMode != null) 'focusMode': focusMode,
+      if (shortcutsHintDismissed != null)
+        'shortcutsHintDismissed': shortcutsHintDismissed,
+    };
+  }
+}
+
+class UxSettings {
+  final List<String> dismissedHints;
+  final UxFeedSettings feed;
+  final UxPlaylistsSettings playlists;
+  final UxNotesSettings notes;
+  final UxPlayerSettings player;
+
+  const UxSettings({
+    this.dismissedHints = const [],
+    this.feed = const UxFeedSettings(),
+    this.playlists = const UxPlaylistsSettings(),
+    this.notes = const UxNotesSettings(),
+    this.player = const UxPlayerSettings(),
+  });
+
+  factory UxSettings.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return const UxSettings();
+    return UxSettings(
+      dismissedHints: _asStringList(json['dismissedHints']) ?? const [],
+      feed: UxFeedSettings.fromJson(_asMap(json['feed'])),
+      playlists: UxPlaylistsSettings.fromJson(_asMap(json['playlists'])),
+      notes: UxNotesSettings.fromJson(_asMap(json['notes'])),
+      player: UxPlayerSettings.fromJson(_asMap(json['player'])),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'dismissedHints': dismissedHints,
+      if (feed.toJson().isNotEmpty) 'feed': feed.toJson(),
+      if (playlists.toJson().isNotEmpty) 'playlists': playlists.toJson(),
+      if (notes.toJson().isNotEmpty) 'notes': notes.toJson(),
+      if (player.toJson().isNotEmpty) 'player': player.toJson(),
+    };
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Top-level settings model
 // ---------------------------------------------------------------------------
@@ -467,6 +736,9 @@ class UserSettings {
   /// Transcript generation preferences.
   final TranscriptSettings transcripts;
 
+  /// Persisted UX preferences and dismissed helper hints.
+  final UxSettings ux;
+
   /// Last update timestamp (ms since epoch).
   final int? updatedAt;
 
@@ -480,6 +752,7 @@ class UserSettings {
     this.notes = const NoteSettings(),
     this.channelSync = const ChannelSyncSettings(),
     this.transcripts = const TranscriptSettings(),
+    this.ux = const UxSettings(),
     this.updatedAt,
   });
 
@@ -490,19 +763,14 @@ class UserSettings {
       theme: AppThemeMode.fromJson(json['theme'] as String?),
       language: json['language'] as String?,
       notifications: NotificationSettings.fromJson(
-        json['notifications'] as Map<String, dynamic>?,
+        _asMap(json['notifications']),
       ),
-      playback: PlaybackSettings.fromJson(
-        json['playback'] as Map<String, dynamic>?,
-      ),
-      notes: NoteSettings.fromJson(json['notes'] as Map<String, dynamic>?),
-      channelSync: ChannelSyncSettings.fromJson(
-        json['channelSync'] as Map<String, dynamic>?,
-      ),
-      transcripts: TranscriptSettings.fromJson(
-        json['transcripts'] as Map<String, dynamic>?,
-      ),
-      updatedAt: json['updatedAt'] as int?,
+      playback: PlaybackSettings.fromJson(_asMap(json['playback'])),
+      notes: NoteSettings.fromJson(_asMap(json['notes'])),
+      channelSync: ChannelSyncSettings.fromJson(_asMap(json['channelSync'])),
+      transcripts: TranscriptSettings.fromJson(_asMap(json['transcripts'])),
+      ux: UxSettings.fromJson(_asMap(json['ux'])),
+      updatedAt: _asInt(json['updatedAt']),
     );
   }
 
@@ -517,6 +785,7 @@ class UserSettings {
       'notes': notes.toJson(),
       'channelSync': channelSync.toJson(),
       'transcripts': transcripts.toJson(),
+      'ux': ux.toJson(),
       if (updatedAt != null) 'updatedAt': updatedAt,
     };
   }
@@ -531,6 +800,7 @@ class UserSettings {
     NoteSettings? notes,
     ChannelSyncSettings? channelSync,
     TranscriptSettings? transcripts,
+    UxSettings? ux,
     int? updatedAt,
   }) {
     return UserSettings(
@@ -543,6 +813,7 @@ class UserSettings {
       notes: notes ?? this.notes,
       channelSync: channelSync ?? this.channelSync,
       transcripts: transcripts ?? this.transcripts,
+      ux: ux ?? this.ux,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }

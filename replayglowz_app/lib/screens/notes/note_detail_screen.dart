@@ -4,6 +4,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:replayglowz_app/app/router.dart';
+import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
@@ -51,8 +52,14 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     return null;
   }
 
+  AppLocale _locale(BuildContext context) =>
+      Localizations.localeOf(context).languageCode == 'fr'
+      ? AppLocale.fr
+      : AppLocale.en;
+
   @override
   Widget build(BuildContext context) {
+    final l = _locale(context);
     final notesAsync = ref.watch(notesProvider);
 
     return notesAsync.when(
@@ -80,7 +87,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         return _buildNoteDetail(context, note);
       },
       loading: () => Scaffold(
-        appBar: AppBar(title: const Text('Note')),
+        appBar: AppBar(title: Text(t('common.notes', locale: l))),
         body: Shimmer.fromColors(
           baseColor: Colors.grey[300]!,
           highlightColor: Colors.grey[100]!,
@@ -100,7 +107,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         ),
       ),
       error: (error, stack) => Scaffold(
-        appBar: AppBar(title: const Text('Note')),
+        appBar: AppBar(title: Text(t('common.notes', locale: l))),
         body: ErrorStateView(error: error, prefix: 'Error'),
       ),
     );
@@ -177,7 +184,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                     maxLines: null,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
-                      hintText: 'Write your note...',
+                      hintText: 'Type a note...',
                     ),
                     style: Theme.of(context).textTheme.bodyLarge,
                   )
@@ -214,7 +221,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        subtitle: const Text('Tap to view video'),
+        subtitle: Text(t('p3.notes.openVideo', locale: _locale(context))),
         trailing: const Icon(Icons.open_in_new, size: 18),
         onTap: () {
           _openNoteVideo(note);

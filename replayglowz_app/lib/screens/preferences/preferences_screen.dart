@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:replayglowz_app/app/build_info.dart';
 import 'package:replayglowz_app/app/router.dart';
 import 'package:replayglowz_app/auth/auth_state.dart';
+import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/auth/auth_service.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
@@ -139,6 +141,9 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   }
 
   Widget _buildSettingsBody(BuildContext context, PreferencesData data) {
+    final locale = Localizations.localeOf(context).languageCode == 'fr'
+        ? AppLocale.fr
+        : AppLocale.en;
     final settings = data.settings;
     final subscription = data.subscription;
     final user = data.user;
@@ -151,6 +156,34 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        ListTile(
+          leading: const Icon(Icons.lightbulb_outline),
+          title: Text(t('p3.preferences.hintsTitle', locale: locale)),
+          subtitle: Text(t('p3.preferences.hintsSubtitle', locale: locale)),
+          trailing: FilledButton.tonal(
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              final keys = prefs
+                  .getKeys()
+                  .where((k) => k.startsWith('ui_hint_dismissed:'))
+                  .toList(growable: false);
+              for (final key in keys) {
+                await prefs.remove(key);
+              }
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      t('p3.preferences.hintsReset', locale: locale),
+                    ),
+                  ),
+                );
+              }
+            },
+            child: Text(t('p3.preferences.reset', locale: locale)),
+          ),
+        ),
+        const Divider(),
         ListTile(
           leading: const Icon(Icons.workspace_premium),
           title: const Text('Subscription'),
