@@ -179,6 +179,25 @@ const Map<String, dynamic> fr = {
     'connectDesc': 'Importez vos playlists et abonnements',
     'connectYoutube': 'Connecter YouTube',
   },
+  'youtubeLibrary': {
+    'title': 'Configuration de la bibliothèque YouTube',
+    'description':
+        'Si YouTube ne renvoie pas encore votre bibliothèque, créez une chaîne YouTube depuis votre compte Google. Cela ne change pas votre connexion Google. Vous pouvez aussi importer une playlist publique ou non répertoriée par URL.',
+    'createChannel': 'Créer une chaîne YouTube',
+    'importAction': 'Importer une URL de playlist',
+    'importing': 'Import...',
+    'urlLabel': 'URL de playlist YouTube',
+    'publicHint':
+        'Les playlists privées, À regarder plus tard et les vidéos aimées ne peuvent pas être importées par URL via l’API YouTube.',
+    'importSuccess': '{title} importée ({count} vidéos).',
+    'importFailed': 'Import impossible',
+    'errorEmpty': 'Collez d’abord une URL de playlist YouTube.',
+    'errorNotYoutube': 'Utilisez une URL de playlist YouTube.',
+    'errorMissingList': 'L’URL doit contenir un identifiant list=.',
+    'errorInvalidId': 'Cet identifiant de playlist n’est pas valide.',
+    'errorSpecialPlaylist':
+        'À regarder plus tard et les vidéos aimées ne peuvent pas être importées automatiquement.',
+  },
   'p3': {
     'common': {'clearFilters': 'Effacer les filtres'},
     'videos': {

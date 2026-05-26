@@ -22,6 +22,9 @@ void main() {
         'lastVideoAddedAt': '2026-05-24T21:00:00Z',
         'cachedAt': 1760000000000,
         'isStale': false,
+        'source': 'url_import',
+        'importedByUrlAt': '2026-05-24T21:30:00Z',
+        'importedPlaylistId': 'PL123',
       });
 
       expect(playlist.id, 'doc-playlist');
@@ -31,6 +34,9 @@ void main() {
       expect(playlist.videoCount, 2);
       expect(playlist.originalVideoCount, 5);
       expect(playlist.lastVideoAddedAt, isA<int>());
+      expect(playlist.source, 'url_import');
+      expect(playlist.importedByUrlAt, isA<int>());
+      expect(playlist.importedPlaylistId, 'PL123');
     });
 
     test('falls back to id when youtubePlaylistId is absent', () {

@@ -388,6 +388,32 @@ Future<dynamic> syncPlaylist(WidgetRef ref, String playlistId) async {
   return result;
 }
 
+Future<Map<String, dynamic>> importPlaylistByUrl(
+  WidgetRef ref,
+  String url,
+) async {
+  final service = ref.read(convexServiceProvider);
+  final raw = await service.action<dynamic>('youtube:importPlaylistByUrl', {
+    'url': url,
+  });
+  ref
+    ..invalidate(playlistVideosProvider(_readPlaylistId(raw)))
+    ..invalidate(playlistsProvider)
+    ..invalidate(videosProvider(const VideosArgs()))
+    ..invalidate(quotaUsageProvider)
+    ..invalidate(youtubeSyncJobProvider);
+  if (raw is Map<String, dynamic>) return raw;
+  if (raw is Map) return Map<String, dynamic>.from(raw);
+  throw StateError('Playlist import returned an unexpected response.');
+}
+
+String _readPlaylistId(dynamic raw) {
+  if (raw is Map && raw['playlistId'] != null) {
+    return raw['playlistId'].toString();
+  }
+  return '';
+}
+
 /// Persists the custom video ordering for a playlist.
 ///
 /// Uses `videoOrder:updateOrder` when available, and falls back to

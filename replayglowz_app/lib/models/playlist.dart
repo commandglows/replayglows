@@ -45,6 +45,15 @@ class YouTubePlaylist {
   /// Hex color code for playlist theming (e.g. "#8b5cf6").
   final String? color;
 
+  /// Cache source: owned, url_import, subscriptions, or null for legacy rows.
+  final String? source;
+
+  /// Timestamp (ms since epoch) when this playlist was first imported by URL.
+  final int? importedByUrlAt;
+
+  /// Original imported YouTube playlist ID when this entry came from URL import.
+  final String? importedPlaylistId;
+
   const YouTubePlaylist({
     required this.id,
     required this.youtubePlaylistId,
@@ -60,6 +69,9 @@ class YouTubePlaylist {
     required this.cachedAt,
     required this.isStale,
     this.color,
+    this.source,
+    this.importedByUrlAt,
+    this.importedPlaylistId,
   });
 
   /// Returns the best available thumbnail: custom first, then YouTube default.
@@ -91,6 +103,9 @@ class YouTubePlaylist {
       cachedAt: _intValue(json['cachedAt']),
       isStale: json['isStale'] as bool? ?? false,
       color: _optionalString(json['color']),
+      source: _optionalString(json['source']),
+      importedByUrlAt: _optionalEpochMs(json['importedByUrlAt']),
+      importedPlaylistId: _optionalString(json['importedPlaylistId']),
     );
   }
 
@@ -110,6 +125,9 @@ class YouTubePlaylist {
       'cachedAt': cachedAt,
       'isStale': isStale,
       if (color != null) 'color': color,
+      if (source != null) 'source': source,
+      if (importedByUrlAt != null) 'importedByUrlAt': importedByUrlAt,
+      if (importedPlaylistId != null) 'importedPlaylistId': importedPlaylistId,
     };
   }
 
@@ -128,6 +146,9 @@ class YouTubePlaylist {
     int? cachedAt,
     bool? isStale,
     String? color,
+    String? source,
+    int? importedByUrlAt,
+    String? importedPlaylistId,
   }) {
     return YouTubePlaylist(
       id: id ?? this.id,
@@ -144,6 +165,9 @@ class YouTubePlaylist {
       cachedAt: cachedAt ?? this.cachedAt,
       isStale: isStale ?? this.isStale,
       color: color ?? this.color,
+      source: source ?? this.source,
+      importedByUrlAt: importedByUrlAt ?? this.importedByUrlAt,
+      importedPlaylistId: importedPlaylistId ?? this.importedPlaylistId,
     );
   }
 

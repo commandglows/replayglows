@@ -15,6 +15,7 @@ import 'package:replayglowz_app/providers/providers.dart';
 import 'package:replayglowz_app/utils/app_logger.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
 import 'package:replayglowz_app/widgets/settings/settings_rows.dart';
+import 'package:replayglowz_app/widgets/youtube_channel_onboarding.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
 /// Preferences screen with grouped settings sections.
@@ -488,6 +489,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
         const Divider(),
 
         const SettingsSection(title: 'Channel automation'),
+        const _YouTubeLibrarySetupSection(),
         const _ChannelAutomationSettingsCard(),
         const Divider(),
 
@@ -569,6 +571,23 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
       default:
         return 60;
     }
+  }
+}
+
+class _YouTubeLibrarySetupSection extends ConsumerWidget {
+  const _YouTubeLibrarySetupSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final playlistsAsync = ref.watch(playlistsProvider);
+    return playlistsAsync.when(
+      data: (playlists) => playlists.isEmpty
+          ? const YouTubeChannelOnboardingCard(compact: true)
+          : const SizedBox.shrink(),
+      loading: () => const SizedBox.shrink(),
+      error: (error, stackTrace) =>
+          const YouTubeChannelOnboardingCard(compact: true),
+    );
   }
 }
 

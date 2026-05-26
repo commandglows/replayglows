@@ -16,6 +16,7 @@ import 'package:replayglowz_app/widgets/common_app_bar_actions.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
 import 'package:replayglowz_app/widgets/media/playlist_card.dart';
 import 'package:replayglowz_app/widgets/ui_hint_card.dart';
+import 'package:replayglowz_app/widgets/youtube_channel_onboarding.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
 /// Playlists overview screen showing all user playlists.
@@ -151,12 +152,23 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
           return playlistsAsync!.when(
             data: (playlists) {
               if (playlists.isEmpty) {
-                return YoutubeAwareEmptyState(
-                  fallbackIcon: Icons.playlist_play,
-                  fallbackTitle: 'No YouTube playlists yet',
-                  fallbackDescription:
-                      'ReplayGlowz is connected, but this YouTube account has no playlists to import yet. New Google accounts may need a YouTube channel before YouTube returns library data.',
-                  onRefresh: () => syncAllPlaylists(ref),
+                return ListView(
+                  padding: const EdgeInsets.only(bottom: 96),
+                  children: [
+                    YouTubeChannelOnboardingCard(
+                      onImported: () => ref.invalidate(playlistsProvider),
+                    ),
+                    SizedBox(
+                      height: 360,
+                      child: YoutubeAwareEmptyState(
+                        fallbackIcon: Icons.playlist_play,
+                        fallbackTitle: 'No YouTube playlists yet',
+                        fallbackDescription:
+                            'ReplayGlowz is connected, but this YouTube account has no playlists to import yet. New Google accounts may need a YouTube channel before YouTube returns library data.',
+                        onRefresh: () => syncAllPlaylists(ref),
+                      ),
+                    ),
+                  ],
                 );
               }
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -271,6 +283,8 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
     WidgetRef ref,
     YouTubePlaylist playlist,
   ) {
+    final canMutateOnYoutube =
+        playlist.source == null || playlist.source == 'owned';
     return PlaylistCard(
       playlist: playlist,
       onTap: () {
@@ -303,9 +317,11 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
           }
         },
         itemBuilder: (context) => [
-          const PopupMenuItem(value: 'edit', child: Text('Edit')),
+          if (canMutateOnYoutube)
+            const PopupMenuItem(value: 'edit', child: Text('Edit')),
           const PopupMenuItem(value: 'hide', child: Text('Hide')),
-          const PopupMenuItem(value: 'delete', child: Text('Delete')),
+          if (canMutateOnYoutube)
+            const PopupMenuItem(value: 'delete', child: Text('Delete')),
         ],
       ),
     );

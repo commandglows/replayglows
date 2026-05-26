@@ -18,6 +18,13 @@ const YOUTUBE_SYNC_HARD_STOP_PERCENTAGE = 90;
 const YOUTUBE_SYNC_WARN_PERCENTAGE = 70;
 const SUBSCRIPTION_FEED_SYNC_MAX_CHANNELS = 20;
 const SUBSCRIPTION_FEED_SYNC_MAX_VIDEOS_PER_CHANNEL = 5;
+const SUBSCRIPTION_PLAYLIST_ID = "__subscriptions__";
+const PLAYLIST_URL_IMPORT_MAX_ITEMS = 500;
+type PlaylistSource = "owned" | "url_import" | "subscriptions";
+const PLAYLIST_SOURCE_OWNED: PlaylistSource = "owned";
+const PLAYLIST_SOURCE_URL_IMPORT: PlaylistSource = "url_import";
+const PLAYLIST_SOURCE_SUBSCRIPTIONS: PlaylistSource = "subscriptions";
+const UNSUPPORTED_SPECIAL_PLAYLIST_IDS = new Set(["WL", "LL"]);
 
 // Self-referencing generated API types are updated by Convex codegen after new
 // functions exist. Keep these local aliases isolated to this module.
@@ -107,6 +114,109 @@ function isYoutubeSignupRequired(error: {
     error.reasons.some((reason) => reason === "channelNotFound") ||
     normalizedMessage.includes("channel not found")
   );
+}
+
+function isUnsupportedSpecialPlaylistId(playlistId: string): boolean {
+  return UNSUPPORTED_SPECIAL_PLAYLIST_IDS.has(playlistId.toUpperCase());
+}
+
+function parseYoutubePlaylistInput(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) {
+    throw new Error("Paste a YouTube playlist URL containing list=...");
+  }
+
+  let candidate = trimmed;
+  const hasScheme = /^https?:\/\//i.test(trimmed);
+  const hasYoutubeHostWithoutScheme =
+    /^(youtube\.com|m\.youtube\.com|music\.youtube\.com|youtu\.be)\//i.test(
+      trimmed,
+    );
+  const maybeUrl = hasScheme
+    ? trimmed
+    : trimmed.startsWith("www.") || hasYoutubeHostWithoutScheme
+      ? `https://${trimmed}`
+      : null;
+
+  if (maybeUrl) {
+    let parsed: URL;
+    try {
+      parsed = new URL(maybeUrl);
+    } catch {
+      throw new Error("Paste a valid YouTube playlist URL.");
+    }
+
+    const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
+    const allowedHosts = new Set([
+      "youtube.com",
+      "m.youtube.com",
+      "music.youtube.com",
+      "youtu.be",
+    ]);
+    if (!allowedHosts.has(host)) {
+      throw new Error("Paste a YouTube playlist URL.");
+    }
+
+    candidate = parsed.searchParams.get("list") ?? "";
+  }
+
+  candidate = candidate.trim();
+  if (!candidate) {
+    throw new Error("Paste a YouTube URL containing list=...");
+  }
+
+  if (!/^[A-Za-z0-9_-]{2,150}$/.test(candidate)) {
+    throw new Error("This YouTube playlist ID is not valid.");
+  }
+
+  if (isUnsupportedSpecialPlaylistId(candidate)) {
+    throw new Error(
+      "This YouTube playlist is not available through the YouTube API. Watch Later and liked videos cannot be imported automatically.",
+    );
+  }
+
+  if (candidate === SUBSCRIPTION_PLAYLIST_ID) {
+    throw new Error("The ReplayGlowz subscriptions feed cannot be imported.");
+  }
+
+  return candidate;
+}
+
+function playlistImportErrorMessage(error: {
+  message: string;
+  reasons: string[];
+  status: number;
+}): string {
+  const reasons = new Set(error.reasons.map((reason) => reason.toLowerCase()));
+  const normalizedMessage = error.message.toLowerCase();
+
+  if (
+    reasons.has("playlistoperationunsupported") ||
+    normalizedMessage.includes("watch later") ||
+    normalizedMessage.includes("liked videos")
+  ) {
+    return "This YouTube playlist is not available through the YouTube API. Watch Later and liked videos cannot be imported automatically.";
+  }
+
+  if (
+    error.status === 403 ||
+    reasons.has("playlistforbidden") ||
+    reasons.has("forbidden") ||
+    reasons.has("permission_denied")
+  ) {
+    return "ReplayGlowz cannot access this playlist. Make it public or unlisted, then try again.";
+  }
+
+  if (
+    error.status === 404 ||
+    reasons.has("playlistnotfound") ||
+    reasons.has("notfound") ||
+    reasons.has("not_found")
+  ) {
+    return "ReplayGlowz could not find this playlist. Check the URL and make sure the playlist is public or unlisted.";
+  }
+
+  return "ReplayGlowz could not import this playlist from YouTube. Try again later.";
 }
 
 function resolveYoutubeOAuthCredentials() {
@@ -207,12 +317,18 @@ export const getCachedPlaylistSyncPlan = internalQuery({
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .collect();
 
-    return playlists.map((playlist) => ({
-      youtubePlaylistId: playlist.youtubePlaylistId,
-      title: playlist.title,
-      videoCount: playlist.videoCount,
-      cachedAt: playlist.cachedAt,
-    }));
+    return playlists
+      .filter(
+        (playlist) =>
+          playlist.youtubePlaylistId !== SUBSCRIPTION_PLAYLIST_ID &&
+          (playlist.source ?? PLAYLIST_SOURCE_OWNED) === PLAYLIST_SOURCE_OWNED,
+      )
+      .map((playlist) => ({
+        youtubePlaylistId: playlist.youtubePlaylistId,
+        title: playlist.title,
+        videoCount: playlist.videoCount,
+        cachedAt: playlist.cachedAt,
+      }));
   },
 });
 
@@ -436,6 +552,13 @@ export const getYoutubePlaylists = query({
           cachedAt: p.cachedAt,
           isStale: Date.now() - p.cachedAt > CACHE_TTL,
           color: p.color,
+          source:
+            p.source ??
+            (p.youtubePlaylistId === SUBSCRIPTION_PLAYLIST_ID
+              ? PLAYLIST_SOURCE_SUBSCRIPTIONS
+              : PLAYLIST_SOURCE_OWNED),
+          importedByUrlAt: p.importedByUrlAt,
+          importedPlaylistId: p.importedPlaylistId,
         };
       });
   },
@@ -1306,6 +1429,7 @@ export const updatePlaylistsCache = mutation({
       if (existing) {
         await ctx.db.patch(existing._id, {
           ...playlist,
+          source: PLAYLIST_SOURCE_OWNED,
           cachedAt: now,
         });
         existingMap.delete(playlist.youtubePlaylistId);
@@ -1313,13 +1437,22 @@ export const updatePlaylistsCache = mutation({
         await ctx.db.insert("youtubePlaylistsCache", {
           userId,
           ...playlist,
+          source: PLAYLIST_SOURCE_OWNED,
           cachedAt: now,
         });
       }
     }
 
-    // Delete playlists that no longer exist on YouTube
+    // Delete owned playlists that no longer exist on YouTube. URL imports and
+    // virtual playlists are preserved because they are not returned by mine=true.
     for (const playlist of Array.from(existingMap.values())) {
+      const playlistSource: PlaylistSource =
+        playlist.source ??
+        (playlist.youtubePlaylistId === SUBSCRIPTION_PLAYLIST_ID
+          ? PLAYLIST_SOURCE_SUBSCRIPTIONS
+          : PLAYLIST_SOURCE_OWNED);
+      if (playlistSource !== PLAYLIST_SOURCE_OWNED) continue;
+
       const staleVideos = await ctx.db
         .query("youtubeVideosCache")
         .withIndex("by_user_and_playlist", (q) =>
@@ -1333,6 +1466,53 @@ export const updatePlaylistsCache = mutation({
       }
       await ctx.db.delete(playlist._id);
     }
+  },
+});
+
+export const upsertImportedPlaylistCache = internalMutation({
+  args: {
+    userId: v.string(),
+    playlist: v.object({
+      youtubePlaylistId: v.string(),
+      title: v.string(),
+      description: v.optional(v.string()),
+      thumbnailUrl: v.optional(v.string()),
+      videoCount: v.number(),
+      privacyStatus: v.string(),
+      publishedAt: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("youtubePlaylistsCache")
+      .withIndex("by_user_and_youtube_id", (q) =>
+        q
+          .eq("userId", args.userId)
+          .eq("youtubePlaylistId", args.playlist.youtubePlaylistId),
+      )
+      .first();
+
+    const now = Date.now();
+    const patch = {
+      ...args.playlist,
+      source:
+        existing?.source === PLAYLIST_SOURCE_OWNED
+          ? PLAYLIST_SOURCE_OWNED
+          : PLAYLIST_SOURCE_URL_IMPORT,
+      importedByUrlAt: existing?.importedByUrlAt ?? now,
+      importedPlaylistId: args.playlist.youtubePlaylistId,
+      cachedAt: now,
+    };
+
+    if (existing) {
+      await ctx.db.patch(existing._id, patch);
+      return existing._id;
+    }
+
+    return ctx.db.insert("youtubePlaylistsCache", {
+      userId: args.userId,
+      ...patch,
+    });
   },
 });
 
@@ -2043,6 +2223,225 @@ export const fetchPlaylistItems = action({
     });
 
     return videos;
+  },
+});
+
+export const importPlaylistByUrl = action({
+  args: { url: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const userId = identity.subject;
+    const playlistId = parseYoutubePlaylistInput(args.url);
+    const accessToken = await getValidAccessToken(ctx, userId);
+
+    const metadataStartTime = Date.now();
+    const metadataResponse = await fetch(
+      "https://www.googleapis.com/youtube/v3/playlists?" +
+        new URLSearchParams({
+          part: "snippet,contentDetails,status",
+          id: playlistId,
+          maxResults: "1",
+        }),
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+    );
+    const metadataResponseTimeMs = Date.now() - metadataStartTime;
+
+    await ctx.runMutation(internal.metrics.logApiCallInternal, {
+      userId,
+      endpoint: "playlists.list",
+      quotaUnits: YOUTUBE_QUOTA_COSTS["playlists.list"],
+      success: metadataResponse.ok,
+      errorMessage: metadataResponse.ok
+        ? undefined
+        : await metadataResponse.clone().text(),
+      responseTimeMs: metadataResponseTimeMs,
+    });
+
+    if (!metadataResponse.ok) {
+      const error = await parseYoutubeErrorResponse(metadataResponse);
+      throw new Error(playlistImportErrorMessage(error));
+    }
+
+    const metadata = await metadataResponse.json();
+    const playlistItem = metadata.items?.[0];
+    if (!playlistItem) {
+      throw new Error(
+        "ReplayGlowz could not find this playlist. Check the URL and make sure the playlist is public or unlisted.",
+      );
+    }
+
+    await ctx.runMutation(youtubeInternal.upsertImportedPlaylistCache, {
+      userId,
+      playlist: {
+        youtubePlaylistId: playlistId,
+        title: playlistItem.snippet?.title || "Imported playlist",
+        description: playlistItem.snippet?.description || undefined,
+        thumbnailUrl:
+          playlistItem.snippet?.thumbnails?.high?.url ||
+          playlistItem.snippet?.thumbnails?.medium?.url ||
+          playlistItem.snippet?.thumbnails?.default?.url,
+        videoCount: Number(playlistItem.contentDetails?.itemCount ?? 0),
+        privacyStatus: playlistItem.status?.privacyStatus || "unlisted",
+        publishedAt: playlistItem.snippet?.publishedAt,
+      },
+    });
+
+    const allItems: any[] = [];
+    let pageToken: string | undefined;
+    let partial = false;
+
+    do {
+      const remaining = PLAYLIST_URL_IMPORT_MAX_ITEMS - allItems.length;
+      if (remaining <= 0) {
+        partial = true;
+        break;
+      }
+
+      const params = new URLSearchParams({
+        part: "snippet,contentDetails",
+        playlistId,
+        maxResults: String(Math.min(50, remaining)),
+      });
+      if (pageToken) params.set("pageToken", pageToken);
+
+      const itemsStartTime = Date.now();
+      const itemsResponse = await fetch(
+        "https://www.googleapis.com/youtube/v3/playlistItems?" + params,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      );
+      const itemsResponseTimeMs = Date.now() - itemsStartTime;
+
+      await ctx.runMutation(internal.metrics.logApiCallInternal, {
+        userId,
+        endpoint: "playlistItems.list",
+        quotaUnits: YOUTUBE_QUOTA_COSTS["playlistItems.list"],
+        success: itemsResponse.ok,
+        errorMessage: itemsResponse.ok
+          ? undefined
+          : await itemsResponse.clone().text(),
+        responseTimeMs: itemsResponseTimeMs,
+      });
+
+      if (!itemsResponse.ok) {
+        const error = await parseYoutubeErrorResponse(itemsResponse);
+        throw new Error(playlistImportErrorMessage(error));
+      }
+
+      const itemsData = await itemsResponse.json();
+      allItems.push(...(itemsData.items || []));
+      pageToken = itemsData.nextPageToken;
+    } while (pageToken && allItems.length < PLAYLIST_URL_IMPORT_MAX_ITEMS);
+
+    if (pageToken) partial = true;
+
+    const uniqueVideoIds: string[] = Array.from(
+      new Set(
+        allItems
+          .map((item: any) => item.contentDetails?.videoId)
+          .filter(Boolean),
+      ),
+    );
+
+    const cachedDetails = await ctx.runQuery(
+      youtubeInternal.getCachedVideoDetailsByIds,
+      {
+        userId,
+        videoIds: uniqueVideoIds,
+      },
+    );
+    const cachedDetailsById = new Map<string, any>(
+      cachedDetails.map((video: any) => [video.youtubeVideoId, video]),
+    );
+    const missingVideoIds = uniqueVideoIds.filter((videoId) => {
+      const cached = cachedDetailsById.get(videoId);
+      return !cached?.duration || !cached?.publishedAt;
+    });
+
+    const durations: Record<string, string> = {};
+    const videoPublishDates: Record<string, string> = {};
+    for (const video of cachedDetails) {
+      if (video.duration) durations[video.youtubeVideoId] = video.duration;
+      if (video.publishedAt) {
+        videoPublishDates[video.youtubeVideoId] = video.publishedAt;
+      }
+    }
+
+    for (let i = 0; i < missingVideoIds.length; i += 50) {
+      const batch = missingVideoIds.slice(i, i + 50);
+      const videosStartTime = Date.now();
+      const videosResponse = await fetch(
+        "https://www.googleapis.com/youtube/v3/videos?" +
+          new URLSearchParams({
+            part: "contentDetails,snippet",
+            id: batch.join(","),
+          }),
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      );
+      const videosResponseTimeMs = Date.now() - videosStartTime;
+
+      await ctx.runMutation(internal.metrics.logApiCallInternal, {
+        userId,
+        endpoint: "videos.list",
+        quotaUnits: YOUTUBE_QUOTA_COSTS["videos.list"],
+        success: videosResponse.ok,
+        errorMessage: videosResponse.ok
+          ? undefined
+          : await videosResponse.clone().text(),
+        responseTimeMs: videosResponseTimeMs,
+      });
+
+      if (videosResponse.ok) {
+        const videosData = await videosResponse.json();
+        for (const item of videosData.items || []) {
+          durations[item.id] = parseDuration(item.contentDetails?.duration);
+          videoPublishDates[item.id] = item.snippet?.publishedAt;
+        }
+      }
+    }
+
+    const videos = allItems
+      .filter((item: any) => item.contentDetails?.videoId)
+      .map((item: any, index: number) => {
+        const videoId = item.contentDetails?.videoId;
+        return {
+          youtubeVideoId: videoId,
+          playlistItemId: item.id,
+          title: item.snippet?.title || "Untitled video",
+          description: item.snippet?.description || "",
+          thumbnailUrl:
+            item.snippet?.thumbnails?.high?.url ||
+            item.snippet?.thumbnails?.medium?.url ||
+            item.snippet?.thumbnails?.default?.url,
+          channelTitle: item.snippet?.videoOwnerChannelTitle || "",
+          youtubeChannelId: item.snippet?.videoOwnerChannelId || undefined,
+          duration: durations[videoId] || "",
+          position: item.snippet?.position ?? index,
+          publishedAt: videoPublishDates[videoId] || item.snippet?.publishedAt,
+        };
+      });
+
+    await ctx.runMutation(api.youtube.updateVideosCache, {
+      playlistId,
+      videos,
+    });
+
+    return {
+      playlistId,
+      title: playlistItem.snippet?.title || "Imported playlist",
+      importedVideoCount: videos.length,
+      partial,
+      reason: partial
+        ? `Imported the first ${PLAYLIST_URL_IMPORT_MAX_ITEMS} videos. Re-run import later if you need more.`
+        : undefined,
+    };
   },
 });
 
@@ -3155,8 +3554,6 @@ export const upsertTranscriptCache = internalMutation({
 // SUBSCRIPTION FEED
 // =============================================================================
 
-const SUBSCRIPTION_PLAYLIST_ID = "__subscriptions__";
-
 /**
  * Internal query to get subscribed channels from cache
  */
@@ -3197,6 +3594,7 @@ export const updateSubscriptionPlaylist = mutation({
       description: "Recent videos from your YouTube subscriptions",
       videoCount: args.videoCount,
       privacyStatus: "private",
+      source: PLAYLIST_SOURCE_SUBSCRIPTIONS,
       cachedAt: Date.now(),
     };
 
@@ -3576,6 +3974,7 @@ export const internalUpdateSubscriptionPlaylist = internalMutation({
       description: "Recent videos from your YouTube subscriptions",
       videoCount: args.videoCount,
       privacyStatus: "private",
+      source: PLAYLIST_SOURCE_SUBSCRIPTIONS,
       cachedAt: Date.now(),
     };
 

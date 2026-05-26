@@ -276,6 +276,15 @@ export default defineSchema({
     cachedAt: v.number(),
     color: v.optional(v.string()), // Hex color code (e.g., "#8b5cf6")
     customThumbnailUrl: v.optional(v.string()),
+    source: v.optional(
+      v.union(
+        v.literal("owned"),
+        v.literal("url_import"),
+        v.literal("subscriptions"),
+      ),
+    ),
+    importedByUrlAt: v.optional(v.number()),
+    importedPlaylistId: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
     .index("by_user_and_youtube_id", ["userId", "youtubePlaylistId"]),

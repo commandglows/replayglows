@@ -46,6 +46,11 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       ? AppLocale.fr
       : AppLocale.en;
 
+  bool _canMutatePlaylistOnYoutube(YouTubePlaylist? playlist) {
+    return playlist != null &&
+        (playlist.source == null || playlist.source == 'owned');
+  }
+
   @override
   Widget build(BuildContext context) {
     final videosAsync = ref.watch(playlistVideosProvider(widget.id));
@@ -107,7 +112,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                       .map((item) => item.youtubeVideoId)
                       .toSet() ??
                   const <String>{};
-              return _buildVideoList(videos, watchedIds);
+              return _buildVideoList(videos, watchedIds, playlist);
             },
             loading: () => SliverToBoxAdapter(child: _buildShimmerList()),
             error: (error, stack) => SliverToBoxAdapter(
@@ -221,7 +226,8 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
             }
           },
           itemBuilder: (context) => [
-            const PopupMenuItem(value: 'edit', child: Text('Edit Playlist')),
+            if (_canMutatePlaylistOnYoutube(playlist))
+              const PopupMenuItem(value: 'edit', child: Text('Edit Playlist')),
             const PopupMenuItem(
               value: 'refresh',
               child: ListTile(
@@ -327,7 +333,11 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     );
   }
 
-  Widget _buildVideoList(List<YouTubeVideo> videos, Set<String> watchedIds) {
+  Widget _buildVideoList(
+    List<YouTubeVideo> videos,
+    Set<String> watchedIds,
+    YouTubePlaylist? playlist,
+  ) {
     if (videos.isEmpty) {
       return const SliverToBoxAdapter(
         child: AppEmptyState(
@@ -351,6 +361,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
             isWatched: isWatched,
             index: index,
             videoCount: videos.length,
+            canMutatePlaylistOnYoutube: _canMutatePlaylistOnYoutube(playlist),
           ),
           onTap: () => _openVideo(context, video.youtubeVideoId),
         );
@@ -363,8 +374,11 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     required bool isWatched,
     required int index,
     required int videoCount,
+    required bool canMutatePlaylistOnYoutube,
   }) {
-    final canMove = video.playlistItemId?.isNotEmpty ?? false;
+    final canMove =
+        canMutatePlaylistOnYoutube &&
+        (video.playlistItemId?.isNotEmpty ?? false);
     return PopupMenuButton<String>(
       tooltip: 'Video actions',
       onSelected: (value) => _handleVideoAction(
@@ -406,35 +420,38 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
             label: isWatched ? 'Mark unwatched' : 'Mark watched',
           ),
         ),
-        PopupMenuItem(
-          value: 'move-up',
-          enabled: canMove && index > 0,
-          child: const _VideoActionMenuItem(
-            icon: Icons.arrow_upward,
-            label: 'Move up',
-          ),
-        ),
-        PopupMenuItem(
-          value: 'move-down',
-          enabled: canMove && index < videoCount - 1,
-          child: const _VideoActionMenuItem(
-            icon: Icons.arrow_downward,
-            label: 'Move down',
-          ),
-        ),
-        const PopupMenuDivider(),
-        const PopupMenuItem(
-          value: 'remove',
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.playlist_remove),
-            title: Text('Remove from playlist'),
-            subtitle: YoutubeQuotaCostText(
-              cost: YoutubeQuotaCost.removePlaylistItem,
-              prefix: 'Cost',
+        if (canMutatePlaylistOnYoutube)
+          PopupMenuItem(
+            value: 'move-up',
+            enabled: canMove && index > 0,
+            child: const _VideoActionMenuItem(
+              icon: Icons.arrow_upward,
+              label: 'Move up',
             ),
           ),
-        ),
+        if (canMutatePlaylistOnYoutube)
+          PopupMenuItem(
+            value: 'move-down',
+            enabled: canMove && index < videoCount - 1,
+            child: const _VideoActionMenuItem(
+              icon: Icons.arrow_downward,
+              label: 'Move down',
+            ),
+          ),
+        if (canMutatePlaylistOnYoutube) const PopupMenuDivider(),
+        if (canMutatePlaylistOnYoutube)
+          const PopupMenuItem(
+            value: 'remove',
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(Icons.playlist_remove),
+              title: Text('Remove from playlist'),
+              subtitle: YoutubeQuotaCostText(
+                cost: YoutubeQuotaCost.removePlaylistItem,
+                prefix: 'Cost',
+              ),
+            ),
+          ),
         const PopupMenuItem(
           value: 'hide',
           child: _VideoActionMenuItem(
@@ -627,6 +644,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                       playlists
                           .where(
                             (playlist) =>
+                                _canMutatePlaylistOnYoutube(playlist) &&
                                 playlist.youtubePlaylistId.isNotEmpty &&
                                 playlist.youtubePlaylistId != widget.id,
                           )

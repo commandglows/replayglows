@@ -178,6 +178,25 @@ const Map<String, dynamic> en = {
     'connectDesc': 'Import your playlists and subscriptions',
     'connectYoutube': 'Connect YouTube',
   },
+  'youtubeLibrary': {
+    'title': 'YouTube library setup',
+    'description':
+        'If YouTube does not return your library yet, create a YouTube channel from your Google account. It does not change your Google login. You can also import any public or unlisted playlist by URL.',
+    'createChannel': 'Create YouTube channel',
+    'importAction': 'Import playlist URL',
+    'importing': 'Importing...',
+    'urlLabel': 'YouTube playlist URL',
+    'publicHint':
+        'Private playlists, Watch Later, and liked videos cannot be imported by URL through the YouTube API.',
+    'importSuccess': 'Imported {title} ({count} videos).',
+    'importFailed': 'Import failed',
+    'errorEmpty': 'Paste a YouTube playlist URL first.',
+    'errorNotYoutube': 'Use a YouTube playlist URL.',
+    'errorMissingList': 'The URL must include a list= playlist id.',
+    'errorInvalidId': 'This playlist id is not valid.',
+    'errorSpecialPlaylist':
+        'Watch Later and liked videos cannot be imported automatically.',
+  },
   'p3': {
     'common': {'clearFilters': 'Clear filters'},
     'videos': {

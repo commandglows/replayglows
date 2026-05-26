@@ -16,6 +16,7 @@ import 'package:replayglowz_app/widgets/error_feedback.dart';
 import 'package:replayglowz_app/widgets/media/video_card.dart';
 import 'package:replayglowz_app/widgets/media/video_list_tile.dart';
 import 'package:replayglowz_app/widgets/ui_hint_card.dart';
+import 'package:replayglowz_app/widgets/youtube_channel_onboarding.dart';
 import 'package:replayglowz_app/widgets/youtube_quota_guard.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
@@ -323,14 +324,28 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
               }
 
               final body = videos.isEmpty
-                  ? YoutubeAwareEmptyState(
-                      fallbackIcon: Icons.video_library_outlined,
-                      fallbackTitle: t('p3.videos.noVideosTitle', locale: l),
-                      fallbackDescription: t(
-                        'p3.videos.noVideosDesc',
-                        locale: l,
-                      ),
-                      onRefresh: _refreshVideos,
+                  ? ListView(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      children: [
+                        YouTubeChannelOnboardingCard(
+                          onImported: _refreshVideos,
+                        ),
+                        SizedBox(
+                          height: 360,
+                          child: YoutubeAwareEmptyState(
+                            fallbackIcon: Icons.video_library_outlined,
+                            fallbackTitle: t(
+                              'p3.videos.noVideosTitle',
+                              locale: l,
+                            ),
+                            fallbackDescription: t(
+                              'p3.videos.noVideosDesc',
+                              locale: l,
+                            ),
+                            onRefresh: _refreshVideos,
+                          ),
+                        ),
+                      ],
                     )
                   : visibleVideos.isEmpty
                   ? AppEmptyState(
