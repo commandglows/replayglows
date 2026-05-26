@@ -16,6 +16,8 @@ const CACHE_TTL = 60 * 60 * 1000;
 const YOUTUBE_SYNC_LOCK_TTL_MS = 10 * 60 * 1000;
 const YOUTUBE_SYNC_HARD_STOP_PERCENTAGE = 90;
 const YOUTUBE_SYNC_WARN_PERCENTAGE = 70;
+const SUBSCRIPTION_FEED_SYNC_MAX_CHANNELS = 20;
+const SUBSCRIPTION_FEED_SYNC_MAX_VIDEOS_PER_CHANNEL = 5;
 
 // Self-referencing generated API types are updated by Convex codegen after new
 // functions exist. Keep these local aliases isolated to this module.
@@ -54,6 +56,14 @@ function estimateFullSyncQuotaUnits(playlistCount: number): number {
   );
 }
 
+function estimateSubscriptionFeedQuotaUnits(maxChannels: number): number {
+  return (
+    YOUTUBE_QUOTA_COSTS["subscriptions.list"] +
+    maxChannels * YOUTUBE_QUOTA_COSTS["playlistItems.list"] +
+    YOUTUBE_QUOTA_COSTS["videos.list"]
+  );
+}
+
 function formatSyncError(error: unknown): string {
   if (error instanceof Error) return error.message;
   return String(error);
@@ -86,12 +96,16 @@ async function parseYoutubeErrorResponse(response: Response): Promise<{
 }
 
 function isYoutubeSignupRequired(error: {
+  message?: string;
   reasons: string[];
   status: number;
 }): boolean {
+  const normalizedMessage = (error.message ?? "").toLowerCase();
   return (
-    error.status === 401 &&
-    error.reasons.some((reason) => reason === "youtubeSignupRequired")
+    (error.status === 401 &&
+      error.reasons.some((reason) => reason === "youtubeSignupRequired")) ||
+    error.reasons.some((reason) => reason === "channelNotFound") ||
+    normalizedMessage.includes("channel not found")
   );
 }
 
@@ -2077,7 +2091,11 @@ export const startQuotaSafeSync = action({
       );
     }
 
-    const initialEstimate = estimateFullSyncQuotaUnits(cachedPlan.length);
+    const subscriptionFeedEstimate = estimateSubscriptionFeedQuotaUnits(
+      SUBSCRIPTION_FEED_SYNC_MAX_CHANNELS,
+    );
+    const initialEstimate =
+      estimateFullSyncQuotaUnits(cachedPlan.length) + subscriptionFeedEstimate;
     const jobId = await ctx.runMutation(youtubeInternal.createYoutubeSyncJob, {
       userId,
       total: cachedPlan.length,
@@ -2107,14 +2125,14 @@ export const startQuotaSafeSync = action({
       await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
         jobId,
         phase: "videos",
-        total: playlistSummaries.length,
+        total: playlistSummaries.length + 1,
         estimatedQuotaUnits: estimateFullSyncQuotaUnits(
           playlistSummaries.length,
-        ),
+        ) + subscriptionFeedEstimate,
         usedQuotaUnits: YOUTUBE_QUOTA_COSTS["playlists.list"],
       });
 
-      let completedPlaylists = 0;
+      let completedItems = 0;
       let stoppedForQuota = false;
       let terminalJob: unknown = null;
 
@@ -2134,7 +2152,7 @@ export const startQuotaSafeSync = action({
               jobId,
               status: "partial",
               phase: "videos",
-              current: completedPlaylists,
+              current: completedItems,
               usedQuotaUnits: quotaNow.used - usedBefore,
               error:
                 "Stopped before the next playlist because YouTube quota usage reached the safety threshold.",
@@ -2147,7 +2165,7 @@ export const startQuotaSafeSync = action({
         await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
           jobId,
           phase: "videos",
-          current: completedPlaylists,
+          current: completedItems,
           currentPlaylistId: playlist.youtubePlaylistId,
           currentPlaylistTitle: playlist.title,
           usedQuotaUnits: quotaNow.used - usedBefore,
@@ -2164,7 +2182,56 @@ export const startQuotaSafeSync = action({
           });
         }
 
-        completedPlaylists += 1;
+        completedItems += 1;
+      }
+
+      if (!stoppedForQuota) {
+        const quotaNow = await ctx.runQuery(
+          metricsInternal.getQuotaUsageForUserInternal,
+          {
+            userId,
+          },
+        );
+        const currentEffectiveLimit = getEffectiveQuotaLimit(quotaNow.limit);
+        if (shouldStopForQuota(quotaNow.used, currentEffectiveLimit)) {
+          stoppedForQuota = true;
+          terminalJob = await ctx.runMutation(
+            youtubeInternal.updateYoutubeSyncJob,
+            {
+              jobId,
+              status: "partial",
+              phase: "videos",
+              current: completedItems,
+              usedQuotaUnits: quotaNow.used - usedBefore,
+              error:
+                "Stopped before refreshing subscriptions because YouTube quota usage reached the safety threshold.",
+              completed: true,
+            },
+          );
+        } else {
+          await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
+            jobId,
+            phase: "videos",
+            current: completedItems,
+            currentPlaylistId: SUBSCRIPTION_PLAYLIST_ID,
+            currentPlaylistTitle: "Subscriptions",
+            usedQuotaUnits: quotaNow.used - usedBefore,
+          });
+
+          try {
+            await ctx.runAction(youtubeApi.fetchSubscriptionFeed, {
+              maxChannels: SUBSCRIPTION_FEED_SYNC_MAX_CHANNELS,
+              maxVideosPerChannel: SUBSCRIPTION_FEED_SYNC_MAX_VIDEOS_PER_CHANNEL,
+            });
+          } catch (error) {
+            await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
+              jobId,
+              error: `Subscriptions: ${formatSyncError(error)}`,
+            });
+          }
+
+          completedItems += 1;
+        }
       }
 
       if (!stoppedForQuota) {
@@ -2180,8 +2247,8 @@ export const startQuotaSafeSync = action({
             jobId,
             status: "completed",
             phase: "completed",
-            current: playlistSummaries.length,
-            total: playlistSummaries.length,
+            current: completedItems,
+            total: playlistSummaries.length + 1,
             usedQuotaUnits: quotaAfter.used - usedBefore,
             completed: true,
           },

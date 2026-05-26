@@ -6,7 +6,7 @@ project: "replayglowz"
 created: "2026-05-25"
 created_at: "2026-05-25 17:55:50 UTC"
 updated: "2026-05-25"
-updated_at: "2026-05-25 20:08:52 UTC"
+updated_at: "2026-05-26 05:19:08 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -48,7 +48,7 @@ evidence:
   - "Current backend settings schema persists theme, language, notifications, playback, notes, channelSync and transcripts, but not app UX helper state or persisted feed/playlist view preferences."
   - "Current `replayglowz_app/lib/i18n/en.dart` and `fr.dart` still contain TODO headers to copy remaining sections."
   - "Documentation freshness gate applied: P3 is primarily local Flutter/Convex state and UX; no new external API behavior is introduced."
-next_step: "/sf-fix ReplayGlowz Convex YouTube OAuth env var mismatch"
+next_step: "/sf-auth-debug retest ReplayGlowz YouTube sync with empty-channel test account"
 ---
 
 # Spec: ReplayGlowz YouTube Core Parity Priority 3
@@ -320,6 +320,8 @@ None. P3 includes only a lightweight presentation-focused focus/study mode; adva
 | 2026-05-25 19:18:21 UTC | sf-ship | GPT-5 Codex | Quick ship requested after partial verification; committing P3 iteration with explicit bug/auth preview risk note and no full closure. | shipped | `/sf-prod replayglowz` |
 | 2026-05-25 19:53:31 UTC | sf-prod | GPT-5 Codex | Verified Vercel production deployment for commit `b2d995b`, health-checked `https://app.replayglowz.com/`, deployed Convex prod to expose P3 `settings.ux` functions, and rechecked Convex health. Auth/browser QA remains pending. | partial | `/sf-auth-debug https://app.replayglowz.com ReplayGlowz P3 auth and YouTube QA` |
 | 2026-05-25 20:08:52 UTC | sf-auth-debug | GPT-5 Codex | Tested production sign-in without secrets, confirmed Clerk Google auth reaches Google with `redirect_uri=https://clerk.replayglowz.com/v1/oauth_callback`, confirmed YouTube start fails closed without a session, and inspected Convex prod logs for YouTube sync failures. | failed auth/backend QA: Convex `youtube:refreshYoutubeToken` still reads `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` while Vercel OAuth uses `YOUTUBE_OAUTH_CLIENT_ID`/`YOUTUBE_OAUTH_CLIENT_SECRET`; logs show `Google OAuth credentials not configured` cascading into `fetchYoutubeSubscriptions`. | `/sf-fix ReplayGlowz Convex YouTube OAuth env var mismatch` |
+| 2026-05-26 05:12:10 UTC | sf-auth-debug | GPT-5 Codex | Inspected production Convex logs for Request ID `d943c70bec06e005`, traced `youtube:startQuotaSafeSync` to `youtube:fetchYoutubePlaylists`, and deployed backend handling for Google accounts connected through OAuth but missing a YouTube channel. | fixed and deployed: `Channel not found` is now treated like YouTube signup-required empty-account state, caches are cleared, and sync can complete with empty results instead of surfacing Server Error. | Retest sync in production with the connected test account. |
+| 2026-05-26 05:19:08 UTC | sf-auth-debug | GPT-5 Codex | Corrected the sync contract after operator clarification: users may have subscriptions without relying on a personal YouTube channel/playlist library. `youtube:startQuotaSafeSync` now refreshes the virtual Subscriptions feed independently from user playlists and includes it in quota/job progress. | fixed and deployed: playlist sync no longer gates subscription-feed sync; Convex prod redeployed and healthy. | Retest `Refresh videos` on the test account and inspect Convex logs if subscription API still returns a provider-specific error. |
 
 ## Current Chantier Flow
 
@@ -331,4 +333,4 @@ None. P3 includes only a lightweight presentation-focused focus/study mode; adva
 | sf-verify | partial | Local checks passed; hosted Vercel/Convex auth/browser QA is still required before final readiness. |
 | sf-end | pending | Update audit and create final master checklist after P3 implementation. |
 | sf-ship | shipped | Quick ship for iteration; not a full closure because hosted proof and linked bug retests remain pending. |
-| sf-auth-debug | failed | Production sign-in and Clerk Google handoff load, but YouTube backend QA fails because Convex token refresh reads legacy Google env var names that are absent in Convex prod. |
+| sf-auth-debug | partial | Production logs identified the test-account sync failure as YouTube `Channel not found`; Convex prod now handles missing personal playlists and also syncs the Subscriptions feed independently. Browser retest on the connected test account remains required. |
