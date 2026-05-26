@@ -56,7 +56,8 @@ class AppShell extends ConsumerWidget {
   /// active route location, or 0 if no match is found.
   int _selectedIndex(String location) {
     for (var i = 0; i < _destinations.length; i++) {
-      if (location.startsWith(_destinations[i].path)) {
+      final path = _destinations[i].path;
+      if (location == path || location.startsWith('$path/')) {
         return i;
       }
     }
