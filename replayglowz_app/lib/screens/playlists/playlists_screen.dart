@@ -36,7 +36,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
   static const _prefsScroll = 'playlists.pref.scroll';
   final _scrollController = ScrollController();
   Timer? _fadeTimer;
-  double _fabOpacity = 0.22;
+  double _fabOpacity = 0.0;
   bool _restoredScroll = false;
 
   static const _colorOptions = [
@@ -73,17 +73,45 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
     final prefs = await SharedPreferences.getInstance();
     final offset = prefs.getDouble(_prefsScroll) ?? 0;
     _scrollController.jumpTo(offset.clamp(0, 200000));
+    final restingOpacity = offset > 12 ? 0.24 : 0.0;
+    if (_fabOpacity != restingOpacity && mounted) {
+      setState(() => _fabOpacity = restingOpacity);
+    }
     _restoredScroll = true;
   }
 
-  void _showFabForScroll() {
+  void _showFabForScroll({double currentOffset = 0}) {
     _fadeTimer?.cancel();
-    if (_fabOpacity != 0.78) {
+    if (_fabOpacity < 0.78) {
       setState(() => _fabOpacity = 0.78);
     }
     _fadeTimer = Timer(const Duration(milliseconds: 850), () {
-      if (mounted) setState(() => _fabOpacity = 0.22);
+      if (!mounted) return;
+      final effectiveOffset = _scrollController.hasClients
+          ? _scrollController.offset
+          : currentOffset;
+      setState(() => _fabOpacity = effectiveOffset > 12 ? 0.24 : 0.0);
     });
+  }
+
+  String _playlistSource(YouTubePlaylist playlist) {
+    return playlist.source ?? 'owned';
+  }
+
+  String _playlistsHintMessage(List<YouTubePlaylist> playlists, AppLocale l) {
+    final hasImported = playlists.any(
+      (playlist) => _playlistSource(playlist) == 'url_import',
+    );
+    final hasOwned = playlists.any(
+      (playlist) => _playlistSource(playlist) == 'owned',
+    );
+    if (hasImported && !hasOwned) {
+      return t('p3.playlists.hintMessageImported', locale: l);
+    }
+    if (hasOwned) {
+      return t('p3.playlists.hintMessageOwned', locale: l);
+    }
+    return t('p3.playlists.hintMessage', locale: l);
   }
 
   @override
@@ -180,13 +208,15 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                     hintId: 'playlists-onboarding',
                     icon: Icons.playlist_add_check_circle_outlined,
                     title: t('p3.playlists.hintTitle', locale: l),
-                    message: t('p3.playlists.hintMessage', locale: l),
+                    message: _playlistsHintMessage(playlists, l),
                   ),
                   Expanded(
                     child: NotificationListener<ScrollNotification>(
                       onNotification: (notification) {
                         if (notification.metrics.axis == Axis.vertical) {
-                          _showFabForScroll();
+                          _showFabForScroll(
+                            currentOffset: notification.metrics.pixels,
+                          );
                         }
                         return false;
                       },
@@ -261,18 +291,25 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
           onRetry: () => ref.invalidate(youtubeConnectionProvider),
         ),
       ),
-      floatingActionButton: AnimatedOpacity(
-        duration: const Duration(milliseconds: 180),
-        opacity: youtubeConnected ? _fabOpacity : 0.12,
-        child: FloatingActionButton.small(
-          onPressed: youtubeConnected
-              ? () {
-                  _showFabForScroll();
-                  context.go(Routes.playlistCreate);
-                }
-              : null,
-          tooltip: 'Create playlist',
-          child: const Icon(Icons.add),
+      floatingActionButton: IgnorePointer(
+        ignoring: !youtubeConnected || _fabOpacity == 0.0,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 180),
+          opacity: youtubeConnected ? _fabOpacity : 0.0,
+          child: FloatingActionButton.small(
+            onPressed: youtubeConnected
+                ? () {
+                    _showFabForScroll(
+                      currentOffset: _scrollController.hasClients
+                          ? _scrollController.offset
+                          : 0,
+                    );
+                    _showCreatePlaylistDialog(context, ref, l);
+                  }
+                : null,
+            tooltip: t('playlistCreate.title', locale: l),
+            child: const Icon(Icons.add),
+          ),
         ),
       ),
     );
@@ -457,6 +494,177 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
     );
 
     titleController.dispose();
+    descriptionController.dispose();
+  }
+
+  Future<void> _showCreatePlaylistDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocale l,
+  ) async {
+    final formKey = GlobalKey<FormState>();
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+    var isPublic = true;
+    var selectedColor = Theme.of(context).colorScheme.primary;
+    var saving = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(t('playlistCreate.title', locale: l)),
+              content: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: nameController,
+                        autofocus: true,
+                        decoration: InputDecoration(
+                          labelText: t('playlistCreate.titleLabel', locale: l),
+                          border: const OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          final name = value?.trim() ?? '';
+                          if (name.isEmpty) {
+                            return t(
+                              'playlistCreate.nameRequired',
+                              locale: l,
+                            );
+                          }
+                          if (name.length < 2) {
+                            return t('playlistCreate.nameTooShort', locale: l);
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: descriptionController,
+                        minLines: 2,
+                        maxLines: 4,
+                        decoration: InputDecoration(
+                          labelText: t(
+                            'playlistCreate.descriptionLabel',
+                            locale: l,
+                          ),
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SwitchListTile.adaptive(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(t('playlistCreate.makePublic', locale: l)),
+                        subtitle: Text(
+                          isPublic
+                              ? t('playlistCreate.publicDescription', locale: l)
+                              : t(
+                                  'playlistCreate.privateDescription',
+                                  locale: l,
+                                ),
+                        ),
+                        value: isPublic,
+                        onChanged: saving
+                            ? null
+                            : (value) => setDialogState(() => isPublic = value),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        t('playlistCreate.colorLabel', locale: l),
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          for (final color in _colorOptions)
+                            _ColorSwatch(
+                              color: color,
+                              selected:
+                                  color.toARGB32() == selectedColor.toARGB32(),
+                              onTap: saving
+                                  ? null
+                                  : () => setDialogState(() {
+                                      selectedColor = color;
+                                    }),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: saving
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: Text(t('common.cancel', locale: l)),
+                ),
+                FilledButton.icon(
+                  onPressed: saving
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setDialogState(() => saving = true);
+                          try {
+                            await createPlaylist(
+                              ref,
+                              title: nameController.text.trim(),
+                              description:
+                                  descriptionController.text.trim().isEmpty
+                                  ? null
+                                  : descriptionController.text.trim(),
+                              privacyStatus: isPublic ? 'public' : 'private',
+                              color: _colorToHex(selectedColor),
+                            );
+                            if (!dialogContext.mounted) return;
+                            Navigator.of(dialogContext).pop();
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  t('playlistCreate.created', locale: l),
+                                ),
+                              ),
+                            );
+                          } catch (e) {
+                            if (dialogContext.mounted) {
+                              showErrorSnackBar(
+                                dialogContext,
+                                error: e,
+                                prefix: t(
+                                  'playlistCreate.createError',
+                                  locale: l,
+                                ),
+                              );
+                            }
+                            setDialogState(() => saving = false);
+                          }
+                        },
+                  icon: saving
+                      ? const SizedBox.square(
+                          dimension: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.check),
+                  label: Text(t('playlistCreate.create', locale: l)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    nameController.dispose();
     descriptionController.dispose();
   }
 

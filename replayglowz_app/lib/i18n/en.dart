@@ -98,6 +98,13 @@ const Map<String, dynamic> en = {
     'descriptionLabel': 'Description',
     'descriptionPlaceholder': 'What is this playlist about?',
     'makePublic': 'Make public',
+    'publicDescription': 'Visible to everyone',
+    'privateDescription': 'Only visible to you',
+    'colorLabel': 'Color',
+    'nameRequired': 'Please enter a playlist name',
+    'nameTooShort': 'Name must be at least 2 characters',
+    'created': 'Playlist created.',
+    'createError': 'Error creating playlist',
     'create': 'Create',
     'backToPlaylists': 'Back to playlists',
   },
@@ -217,6 +224,10 @@ const Map<String, dynamic> en = {
       'hintTitle': 'Playlist onboarding',
       'hintMessage':
           'Create one playlist first, then refresh to import new YouTube changes.',
+      'hintMessageImported':
+          'Your imported playlists are ready. Use + to create a YouTube playlist only if you want to publish or sync changes back to YouTube.',
+      'hintMessageOwned':
+          'Use + for a new playlist, or refresh when you want to pull your latest YouTube updates.',
     },
     'playlistDetail': {
       'hintTitle': 'Quick actions',

@@ -901,6 +901,10 @@ final activeTranscriptProvider =
     });
 
 /// One-shot query for cached YouTube subscriptions.
+///
+/// This provider is intentionally cache-only (`youtube:getYoutubeChannels`) so
+/// route navigation and Preferences page loads do not trigger hidden YouTube
+/// API quota spend.
 final subscribedChannelsProvider = FutureProvider<List<YouTubeChannel>>((
   ref,
 ) async {
@@ -912,10 +916,7 @@ final subscribedChannelsProvider = FutureProvider<List<YouTubeChannel>>((
   }
 
   final service = ref.watch(convexServiceProvider);
-  final raw = await service.action<dynamic>(
-    'youtube:fetchYoutubeSubscriptions',
-    {},
-  );
+  final raw = await service.query<dynamic>('youtube:getYoutubeChannels', {});
   return _decodeList(
     raw,
   ).map((json) => YouTubeChannel.fromJson(json)).toList(growable: false);

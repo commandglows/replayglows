@@ -774,99 +774,138 @@ class _ChannelAutomationSettingsCard extends ConsumerWidget {
 
     return channelsAsync.when(
       data: (channels) {
+        final header = ListTile(
+          leading: const Icon(Icons.subscriptions_outlined),
+          title: const Text('YouTube subscriptions cache'),
+          subtitle: const Text(
+            'Refresh only when you want to pull the latest subscriptions from YouTube.',
+          ),
+          trailing: TextButton.icon(
+            icon: const Icon(Icons.sync),
+            label: const Text('Refresh'),
+            onPressed: () async {
+              try {
+                await refreshYoutubeSubscriptions(ref);
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Subscriptions refreshed.')),
+                );
+              } catch (e) {
+                if (!context.mounted) return;
+                showErrorSnackBar(
+                  context,
+                  error: e,
+                  prefix: 'Subscriptions refresh failed',
+                );
+              }
+            },
+          ),
+        );
         if (channels.isEmpty) {
-          return const ListTile(
-            leading: Icon(Icons.subscriptions_outlined),
-            title: Text('No YouTube subscriptions found'),
-            subtitle: Text(
-              'This is normal for a new YouTube account. Playlists still work.',
-            ),
+          return Column(
+            children: [
+              header,
+              const ListTile(
+                leading: Icon(Icons.subscriptions_outlined),
+                title: Text('No YouTube subscriptions found'),
+                subtitle: Text(
+                  'This is normal for a new YouTube account. Playlists still work.',
+                ),
+              ),
+            ],
           );
         }
         return Column(
-          children: channels
-              .take(12)
-              .map((channel) {
-                ChannelPlaylistLink? link;
-                for (final item
-                    in linksAsync.asData?.value ??
-                        const <ChannelPlaylistLink>[]) {
-                  if (item.youtubeChannelId == channel.youtubeChannelId) {
-                    link = item;
-                    break;
-                  }
-                }
-                final currentLink = link;
-                return ListTile(
-                  leading: const Icon(Icons.account_circle_outlined),
-                  title: Text(channel.title),
-                  subtitle: Text(
-                    currentLink == null
-                        ? 'Not linked'
-                        : '${currentLink.isActive ? 'Active' : 'Paused'} · ${currentLink.youtubePlaylistId}',
-                  ),
-                  trailing: Wrap(
-                    spacing: 4,
-                    children: [
-                      if (currentLink != null)
-                        IconButton(
-                          tooltip: currentLink.isActive
-                              ? 'Pause link'
-                              : 'Resume link',
-                          icon: Icon(
-                            currentLink.isActive
-                                ? Icons.pause
-                                : Icons.play_arrow,
-                          ),
-                          onPressed: () async {
-                            await toggleChannelLinkStatus(ref, currentLink.id);
-                          },
-                        ),
-                      IconButton(
-                        tooltip: currentLink == null
-                            ? 'Link to playlist'
-                            : 'Sync channel',
-                        icon: Icon(
-                          currentLink == null ? Icons.add_link : Icons.sync,
-                        ),
-                        onPressed: () async {
-                          if (currentLink == null) {
-                            await _showLinkDialog(
-                              context,
-                              ref,
-                              channel,
-                              playlistsAsync.asData?.value ?? const [],
-                            );
-                            return;
-                          }
-                          final result = await syncPastVideosFromChannel(
-                            ref,
-                            youtubeChannelId: currentLink.youtubeChannelId,
-                            channelTitle: currentLink.channelTitle,
-                            youtubePlaylistId: currentLink.youtubePlaylistId,
-                          );
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                result.message ??
-                                    'Synced ${result.addedCount} video(s).',
-                              ),
-                            ),
-                          );
-                        },
+          children:
+              channels
+                  .take(12)
+                  .map((channel) {
+                    ChannelPlaylistLink? link;
+                    for (final item
+                        in linksAsync.asData?.value ??
+                            const <ChannelPlaylistLink>[]) {
+                      if (item.youtubeChannelId == channel.youtubeChannelId) {
+                        link = item;
+                        break;
+                      }
+                    }
+                    final currentLink = link;
+                    return ListTile(
+                      leading: const Icon(Icons.account_circle_outlined),
+                      title: Text(channel.title),
+                      subtitle: Text(
+                        currentLink == null
+                            ? 'Not linked'
+                            : '${currentLink.isActive ? 'Active' : 'Paused'} · ${currentLink.youtubePlaylistId}',
                       ),
-                      if (currentLink != null)
-                        IconButton(
-                          tooltip: 'Unlink channel',
-                          icon: const Icon(Icons.link_off),
-                          onPressed: () => unlinkChannel(ref, currentLink.id),
-                        ),
-                    ],
-                  ),
-                );
-              })
-              .toList(growable: false),
+                      trailing: Wrap(
+                        spacing: 4,
+                        children: [
+                          if (currentLink != null)
+                            IconButton(
+                              tooltip: currentLink.isActive
+                                  ? 'Pause link'
+                                  : 'Resume link',
+                              icon: Icon(
+                                currentLink.isActive
+                                    ? Icons.pause
+                                    : Icons.play_arrow,
+                              ),
+                              onPressed: () async {
+                                await toggleChannelLinkStatus(
+                                  ref,
+                                  currentLink.id,
+                                );
+                              },
+                            ),
+                          IconButton(
+                            tooltip: currentLink == null
+                                ? 'Link to playlist'
+                                : 'Sync channel',
+                            icon: Icon(
+                              currentLink == null ? Icons.add_link : Icons.sync,
+                            ),
+                            onPressed: () async {
+                              if (currentLink == null) {
+                                await _showLinkDialog(
+                                  context,
+                                  ref,
+                                  channel,
+                                  playlistsAsync.asData?.value ?? const [],
+                                );
+                                return;
+                              }
+                              final result = await syncPastVideosFromChannel(
+                                ref,
+                                youtubeChannelId: currentLink.youtubeChannelId,
+                                channelTitle: currentLink.channelTitle,
+                                youtubePlaylistId:
+                                    currentLink.youtubePlaylistId,
+                              );
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    result.message ??
+                                        'Synced ${result.addedCount} video(s).',
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          if (currentLink != null)
+                            IconButton(
+                              tooltip: 'Unlink channel',
+                              icon: const Icon(Icons.link_off),
+                              onPressed: () =>
+                                  unlinkChannel(ref, currentLink.id),
+                            ),
+                        ],
+                      ),
+                    );
+                  })
+                  .toList(growable: false)
+                ..insert(0, header),
         );
       },
       loading: () => const ListTile(

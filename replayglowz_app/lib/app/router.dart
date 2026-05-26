@@ -62,14 +62,21 @@ String _resolvedRedirectTarget(GoRouterState state) {
 // ---------------------------------------------------------------------------
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // Derive a simple boolean from the sealed AuthState for redirect logic.
-  final authState = ref.watch(authStateProvider);
-  final isAuthenticated = authState is AuthAuthenticated;
-  final isLoading = authState is AuthLoading;
+  // Keep one router instance alive and refresh redirects from auth updates.
+  final authStateListenable = ValueNotifier<AuthState>(
+    ref.read(authStateProvider),
+  );
+  ref.listen<AuthState>(authStateProvider, (_, next) {
+    authStateListenable.value = next;
+  });
 
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: Routes.videos,
+    refreshListenable: authStateListenable,
     redirect: (BuildContext context, GoRouterState state) {
+      final authState = authStateListenable.value;
+      final isAuthenticated = authState is AuthAuthenticated;
+      final isLoading = authState is AuthLoading;
       final goingToSignIn = state.matchedLocation == Routes.signIn;
       final goingToSsoCallback = state.matchedLocation == Routes.ssoCallback;
       final goingToPublicFeedback = state.matchedLocation == Routes.feedback;
@@ -121,7 +128,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Main app with shell navigation
       ShellRoute(
-        builder: (context, state, child) => AppShell(child: child),
+        builder: (context, state, child) =>
+            AppShell(shellState: state, child: child),
         routes: [
           GoRoute(
             path: Routes.videos,
@@ -192,4 +200,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+
+  ref.onDispose(() {
+    router.dispose();
+    authStateListenable.dispose();
+  });
+
+  return router;
 });

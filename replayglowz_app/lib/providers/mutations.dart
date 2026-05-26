@@ -278,6 +278,19 @@ Future<String> exportNotesForVideo(
   return decoded?['markdown']?.toString() ?? '';
 }
 
+Future<dynamic> refreshYoutubeSubscriptions(WidgetRef ref) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.action<dynamic>(
+    'youtube:fetchYoutubeSubscriptions',
+    {},
+  );
+  ref
+    ..invalidate(subscribedChannelsProvider)
+    ..invalidate(channelLinksProvider)
+    ..invalidate(quotaUsageProvider);
+  return result;
+}
+
 Future<dynamic> linkChannelToPlaylist(
   WidgetRef ref, {
   required String youtubeChannelId,

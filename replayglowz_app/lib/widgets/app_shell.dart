@@ -15,10 +15,11 @@ import 'package:replayglowz_app/widgets/youtube_connect.dart';
 /// Used as the builder for the [ShellRoute] in [router.dart]. The [child]
 /// parameter is the currently active route widget injected by GoRouter.
 class AppShell extends ConsumerWidget {
-  const AppShell({super.key, required this.child});
+  const AppShell({super.key, required this.shellState, required this.child});
 
   /// The routed page content.
   final Widget child;
+  final GoRouterState shellState;
 
   // ---------------------------------------------------------------------------
   // Navigation destinations
@@ -53,8 +54,7 @@ class AppShell extends ConsumerWidget {
 
   /// Returns the index of the currently selected destination based on the
   /// active route location, or 0 if no match is found.
-  int _selectedIndex(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
+  int _selectedIndex(String location) {
     for (var i = 0; i < _destinations.length; i++) {
       if (location.startsWith(_destinations[i].path)) {
         return i;
@@ -63,8 +63,7 @@ class AppShell extends ConsumerWidget {
     return 0;
   }
 
-  bool _showYoutubeStatusChrome(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
+  bool _showYoutubeStatusChrome(String location) {
     return location.startsWith(Routes.videos) ||
         location.startsWith(Routes.play) ||
         location.startsWith(Routes.playlists) ||
@@ -87,7 +86,8 @@ class AppShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final width = MediaQuery.sizeOf(context).width;
-    final selected = _selectedIndex(context);
+    final location = shellState.uri.path;
+    final selected = _selectedIndex(location);
     final authState = ref.watch(authStateProvider);
     final accessAsync = ref.watch(productAccessStatusProvider);
     final shouldGate =
@@ -101,9 +101,9 @@ class AppShell extends ConsumerWidget {
         : child;
 
     if (width >= _railBreakpoint) {
-      return _buildWithRail(context, ref, selected, routedChild);
+      return _buildWithRail(context, ref, selected, routedChild, location);
     }
-    return _buildWithBottomNav(context, ref, selected, routedChild);
+    return _buildWithBottomNav(context, ref, selected, routedChild, location);
   }
 
   // ---------------------------------------------------------------------------
@@ -115,8 +115,9 @@ class AppShell extends ConsumerWidget {
     WidgetRef ref,
     int selected,
     Widget routedChild,
+    String location,
   ) {
-    final showYoutubeStatusChrome = _showYoutubeStatusChrome(context);
+    final showYoutubeStatusChrome = _showYoutubeStatusChrome(location);
     return Scaffold(
       body: Column(
         children: [
@@ -150,9 +151,10 @@ class AppShell extends ConsumerWidget {
     WidgetRef ref,
     int selected,
     Widget routedChild,
+    String location,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
-    final showYoutubeStatusChrome = _showYoutubeStatusChrome(context);
+    final showYoutubeStatusChrome = _showYoutubeStatusChrome(location);
 
     return Scaffold(
       body: Row(

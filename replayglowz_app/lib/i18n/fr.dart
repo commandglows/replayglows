@@ -99,6 +99,13 @@ const Map<String, dynamic> fr = {
     'descriptionLabel': 'Description',
     'descriptionPlaceholder': 'À quoi sert cette playlist ?',
     'makePublic': 'Rendre publique',
+    'publicDescription': 'Visible par tout le monde',
+    'privateDescription': 'Visible uniquement par vous',
+    'colorLabel': 'Couleur',
+    'nameRequired': 'Saisissez un nom de playlist',
+    'nameTooShort': 'Le nom doit contenir au moins 2 caractères',
+    'created': 'Playlist créée.',
+    'createError': 'Erreur lors de la création de la playlist',
     'create': 'Créer',
     'backToPlaylists': 'Retour aux playlists',
   },
@@ -219,6 +226,10 @@ const Map<String, dynamic> fr = {
       'hintTitle': 'Démarrage playlists',
       'hintMessage':
           'Créez une playlist puis actualisez pour importer les changements YouTube.',
+      'hintMessageImported':
+          'Vos playlists importées sont prêtes. Utilisez + pour créer une playlist YouTube seulement si vous voulez publier ou resynchroniser vers YouTube.',
+      'hintMessageOwned':
+          'Utilisez + pour créer une playlist, ou actualisez quand vous voulez récupérer vos dernières mises à jour YouTube.',
     },
     'playlistDetail': {
       'hintTitle': 'Actions rapides',
