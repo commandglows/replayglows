@@ -1,3 +1,17 @@
+## 2026-05-26 - ReplayGlowz YouTube Stabilization Prod Verify
+
+- Scope: replayglowz-youtube-parity-stabilization-qa-closure
+- Environment: production
+- Tester: Codex browser automation
+- Source: sf-prod/sf-verify
+- Status: partial
+- Confidence: medium
+- Result summary: Production deployment `39c6062` is live on `https://app.replayglowz.com`; direct Preferences, Playlists, Notes and Videos smoke passed; Playlists imported-state hint and hidden top-rest `+` passed; visible quota stayed `13 / 1000` across passive navigation. Full closure is still blocked by remaining P2/P3/import matrix items and metrics-bound quota proof.
+- Bug pointer: BUG-2026-05-26-001 -> bugs/BUG-2026-05-26-001.md; BUG-2026-05-26-002 -> bugs/BUG-2026-05-26-002.md; BUG-2026-05-26-003 -> bugs/BUG-2026-05-26-003.md
+- Evidence pointer: shipflow_data/workflow/audits/2026-05-26-replayglowz-prod-qa-followups.md
+- Checks: `(cd replayglowz_app && flutter analyze)` pass; `/home/claude/shipflow/tools/shipflow_metadata_lint.py AGENT.md shipflow_data` pass before ship; production HTTP 200 for `/` and `/playlists`.
+- Follow-up: Continue remaining P2/P3/import QA matrix before `/sf-end`.
+
 ## 2026-05-26 - ReplayGlowz Prod YouTube Import And P3 QA
 
 - Scope: prod-youtube-import-p3-qa

@@ -6,7 +6,7 @@ project: "replayglowz"
 created: "2026-05-26"
 updated: "2026-05-26"
 status: "draft"
-source_skill: "sf-start"
+source_skill: "sf-verify"
 scope: "prod-youtube-p3-url-import-qa-followups"
 owner: "Diane"
 confidence: "medium"
@@ -27,7 +27,7 @@ evidence:
   - "Production browser QA on https://app.replayglowz.com with the test account on 2026-05-26."
   - "Playlist URL import of PL5xqnrd8FwHaxdtMQugvbXOzbX9QGW4iI succeeded and displayed one video."
   - "Screenshots stored under test-evidence/BUG-2026-05-26-*."
-next_step: "/sf-ship replayglowz-youtube-parity-stabilization-qa-closure"
+next_step: "/sf-verify replayglowz-youtube-parity-stabilization-qa-closure"
 ---
 
 # ReplayGlowz Prod QA Followups - 2026-05-26
@@ -44,6 +44,7 @@ Production target:
 
 - App: `https://app.replayglowz.com`
 - Build commit observed: `f61779674cd68a4bbbbc2aac4ba563083e78b14b`
+- Latest production smoke commit observed after fixes: `39c6062b2af42830211d3e4c9d8ea18a729dfa3d`
 - Test account class: ReplayGlowz account authenticated with YouTube connected, no YouTube subscriptions, imported playlist `Fun`.
 
 ## Spec QA Matrix
@@ -71,9 +72,9 @@ Production target:
 | P3 | Keyboard shortcuts helper | pass | Shortcut dialog opens from hint button and top keyboard icon. | `test-evidence/replayglowz-prod-three-spec-qa/player-shortcuts-dialog.png` |
 | P3 | Hint dismissal persistence | not run | Hints were observed, but close/reload persistence was not tested. | none |
 | P3 | Focus/study panel behavior | partial | Player UI and shortcuts render; panel toggles/focus persistence not fully verified. | `/tmp/replayglowz-browser-check/qa4-08-player-panels.png` |
-| P3 | Route/deep-link persistence | fixed-local-awaiting-preview-qa | Router lifecycle now keeps a stable `GoRouter` instance during auth transitions, and Shell route chrome/nav resolve from live route state. Needs hosted retest. | `bugs/BUG-2026-05-26-001.md` |
-| P3 | Playlists low-friction add UI | fixed-local-awaiting-preview-qa | Onboarding hint now branches for imported vs owned playlists, `+` is hidden at top rest and scroll-revealed, and create defaults to an in-place modal dialog. Needs hosted visual retest. | `bugs/BUG-2026-05-26-002.md` |
-| Quota | Cache-first navigation | mitigated-local-awaiting-preview-qa | Subscriptions provider changed to cache-only query; YouTube subscriptions refresh is now an explicit user action in Preferences. Needs quota before/after hosted retest. | `bugs/BUG-2026-05-26-003.md` |
+| P3 | Route/deep-link persistence | pass-partial | Production smoke on commit `39c6062` verified direct `/preferences`, `/playlists`, `/notes`, and `/videos`; a nav-prefix bug where `/playlists` selected `Play` was fixed in `app_shell.dart`. Signed-out redirect still needs explicit retest. | `bugs/BUG-2026-05-26-001.md` |
+| P3 | Playlists low-friction add UI | pass-partial | Production smoke on commit `39c6062` verified imported-playlist hint copy and no visible `+` at top rest. Create/edit modal save/cancel flow remains untested. | `bugs/BUG-2026-05-26-002.md` |
+| Quota | Cache-first navigation | pass-smoke-pending-metrics | Production smoke on commit `39c6062` kept visible quota at `13 / 1000` across Preferences, Playlists, Notes, and Videos without sync/import/refresh. Convex log/metrics binding remains pending. | `bugs/BUG-2026-05-26-003.md` |
 
 ## Confirmed Working
 
@@ -91,9 +92,9 @@ Production target:
 
 | ID | Severity | Status | Finding | Evidence |
 |----|----------|--------|---------|----------|
-| BUG-2026-05-26-001 | medium | fixed-awaiting-preview-qa | Routing/auth bootstrap was stabilized to preserve protected-route intent and avoid router reset to `/videos` during auth state transitions. | `bugs/BUG-2026-05-26-001.md` |
-| BUG-2026-05-26-002 | medium | fixed-awaiting-preview-qa | Playlists hint copy, `+` subtle behavior, and default create flow were updated to match the low-friction modal-first UX contract. | `bugs/BUG-2026-05-26-002.md` |
-| BUG-2026-05-26-003 | medium | mitigated-awaiting-preview-qa | Hidden quota spend path identified in code (`fetchYoutubeSubscriptions` on passive Preferences load) and moved behind explicit refresh action. | `bugs/BUG-2026-05-26-003.md` |
+| BUG-2026-05-26-001 | medium | fixed-partial-prod-verify | Direct protected routes rendered their intended pages in production after the router and shell-nav fixes; signed-out redirect still needs explicit retest. | `bugs/BUG-2026-05-26-001.md` |
+| BUG-2026-05-26-002 | medium | fixed-partial-prod-verify | Playlists hint copy and top-rest `+` behavior were verified in production; create/edit modal still needs interaction QA. | `bugs/BUG-2026-05-26-002.md` |
+| BUG-2026-05-26-003 | medium | mitigated-partial-prod-verify | Hidden quota spend path identified in code (`fetchYoutubeSubscriptions` on passive Preferences load), moved behind explicit refresh, and smoke-tested visually with stable quota. Metrics-bound proof remains pending. | `bugs/BUG-2026-05-26-003.md` |
 
 ## Remaining Test Queue
 

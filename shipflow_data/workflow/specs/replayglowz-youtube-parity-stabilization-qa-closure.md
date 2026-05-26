@@ -6,7 +6,7 @@ project: "replayglowz"
 created: "2026-05-26"
 created_at: "2026-05-26 16:45:18 UTC"
 updated: "2026-05-26"
-updated_at: "2026-05-26 19:13:32 UTC"
+updated_at: "2026-05-26 21:18:49 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -87,7 +87,7 @@ evidence:
   - "Current backend has quota-safe YouTube sync/import code and explicit playlist cache sources: owned, url_import and subscriptions."
   - "Official YouTube docs checked 2026-05-26: playlistItems.list and subscriptions.list calls cost 1 unit, max playlistItems page size is 50, and default project quota is documented as 10,000 units/day."
   - "Official go_router docs checked 2026-05-26: go_router is a URL-based declarative router and ShellRoute wraps sub-routes in an inner Navigator."
-next_step: "/sf-start replayglowz-youtube-parity-stabilization-qa-closure"
+next_step: "/sf-verify replayglowz-youtube-parity-stabilization-qa-closure"
 ---
 
 # Spec: ReplayGlowz YouTube Parity Stabilization And QA Closure
@@ -441,6 +441,8 @@ None. Non-blocking execution notes:
 | 2026-05-26 19:13:32 UTC | sf-ready | GPT-5 Codex | Reviewed readiness, resolved non-blocking open questions, and made language/copy expectations explicit. | ready | `/sf-start replayglowz-youtube-parity-stabilization-qa-closure` |
 | 2026-05-26 19:24:03 UTC | sf-start | GPT-5 Codex | Implemented routing/auth stabilization, Playlists modal-first low-friction UX updates, and quota-spend mitigation by moving subscriptions refresh from passive load to explicit action; updated bug/audit/test records and ran required local checks. | partial | `/sf-ship replayglowz-youtube-parity-stabilization-qa-closure` |
 | 2026-05-26 19:38:55 UTC | sf-ship | GPT-5 Codex | Ran quick ship checks and prepared the stabilization implementation for push. | shipped | `/sf-prod replayglowz` |
+| 2026-05-26 19:55:00 UTC | sf-prod | GPT-5 Codex | Confirmed Vercel production deployment `dpl_9DM2pzMHBonJfrWg7uZpuodDgtF7` for commit `39c6062`, aliases including `https://app.replayglowz.com`, and HTTP 200 for root and `/playlists`. | pass | `/sf-verify replayglowz-youtube-parity-stabilization-qa-closure` |
+| 2026-05-26 19:56:00 UTC | sf-verify | GPT-5 Codex | Ran authenticated production browser smoke on commit `39c6062`: Preferences, Playlists, Notes and Videos rendered correctly; Playlists hint and hidden top-rest `+` matched the new UX; visible quota stayed stable at `13 / 1000` across passive navigation. | partial | Continue remaining P2/P3/import QA matrix before `/sf-end`. |
 
 ## Current Chantier Flow
 
@@ -449,6 +451,7 @@ None. Non-blocking execution notes:
 | sf-spec | done | This spec defines the stabilization contract. |
 | sf-ready | done | Spec passes readiness after modal/default and language doctrine clarifications. |
 | sf-start | partial | Local implementation/checks are complete for BUG-001/002 and mitigation for BUG-003, but hosted QA and remaining P2/P3 matrix proofs are still pending. |
-| sf-verify | pending | Verify preview/prod behavior, quota retest evidence, and remaining P2/P3/import QA statuses (pass/deferred/blocked). |
+| sf-prod | done | Production deployment `dpl_9DM2pzMHBonJfrWg7uZpuodDgtF7` is ready and aliased to `https://app.replayglowz.com`; root and `/playlists` returned HTTP 200. |
+| sf-verify | partial | Production smoke passed for route rendering, Playlists imported-state UX and visible quota stability, but remaining P2/P3/import matrix proofs are still pending. |
 | sf-end | pending | Update final trackers and closure notes. |
-| sf-ship | done | Quick ship performed to trigger Vercel preview/prod deployment; hosted verification remains pending. |
+| sf-ship | done | Quick ship performed and nav route matching fix was shipped in follow-up commit `39c6062`. |
