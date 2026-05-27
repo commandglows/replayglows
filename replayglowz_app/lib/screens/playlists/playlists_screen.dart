@@ -38,6 +38,10 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
   Timer? _fadeTimer;
   double _fabOpacity = 0.0;
   bool _restoredScroll = false;
+  static const _fabIdleOpacity = 0.24;
+  static const _fabActiveOpacity = 0.78;
+  static const _fabScrollRevealDelay = Duration(milliseconds: 850);
+  static const _fabScrollThreshold = 12.0;
 
   static const _colorOptions = [
     Colors.purple,
@@ -73,24 +77,45 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
     final prefs = await SharedPreferences.getInstance();
     final offset = prefs.getDouble(_prefsScroll) ?? 0;
     _scrollController.jumpTo(offset.clamp(0, 200000));
-    final restingOpacity = offset > 12 ? 0.24 : 0.0;
+    if (!mounted) return;
+    _setFabToRestingState(currentOffset: offset);
+    _restoredScroll = true;
+  }
+
+  bool _isScrollRangeAvailable() {
+    return _scrollController.hasClients &&
+        _scrollController.position.maxScrollExtent > 0;
+  }
+
+  double _computeFabRestingOpacity(double currentOffset) {
+    if (_isScrollRangeAvailable()) {
+      return currentOffset > _fabScrollThreshold ? _fabIdleOpacity : 0.0;
+    }
+
+    return _fabIdleOpacity;
+  }
+
+  void _setFabToRestingState({double currentOffset = 0}) {
+    final effectiveOffset = _scrollController.hasClients
+        ? _scrollController.offset
+        : currentOffset;
+    final restingOpacity = _computeFabRestingOpacity(effectiveOffset);
     if (_fabOpacity != restingOpacity && mounted) {
       setState(() => _fabOpacity = restingOpacity);
     }
-    _restoredScroll = true;
   }
 
   void _showFabForScroll({double currentOffset = 0}) {
     _fadeTimer?.cancel();
-    if (_fabOpacity < 0.78) {
-      setState(() => _fabOpacity = 0.78);
+    if (_fabOpacity < _fabActiveOpacity) {
+      setState(() => _fabOpacity = _fabActiveOpacity);
     }
-    _fadeTimer = Timer(const Duration(milliseconds: 850), () {
+    _fadeTimer = Timer(_fabScrollRevealDelay, () {
       if (!mounted) return;
       final effectiveOffset = _scrollController.hasClients
           ? _scrollController.offset
           : currentOffset;
-      setState(() => _fabOpacity = effectiveOffset > 12 ? 0.24 : 0.0);
+      setState(() => _fabOpacity = _computeFabRestingOpacity(effectiveOffset));
     });
   }
 
@@ -180,6 +205,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
           return playlistsAsync!.when(
             data: (playlists) {
               if (playlists.isEmpty) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _setFabToRestingState();
+                });
                 return ListView(
                   padding: const EdgeInsets.only(bottom: 96),
                   children: [
@@ -533,10 +561,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                         validator: (value) {
                           final name = value?.trim() ?? '';
                           if (name.isEmpty) {
-                            return t(
-                              'playlistCreate.nameRequired',
-                              locale: l,
-                            );
+                            return t('playlistCreate.nameRequired', locale: l);
                           }
                           if (name.length < 2) {
                             return t('playlistCreate.nameTooShort', locale: l);

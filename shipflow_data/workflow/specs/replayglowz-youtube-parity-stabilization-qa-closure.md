@@ -6,7 +6,7 @@ project: "replayglowz"
 created: "2026-05-26"
 created_at: "2026-05-26 16:45:18 UTC"
 updated: "2026-05-26"
-updated_at: "2026-05-27 03:14:26 UTC"
+updated_at: "2026-05-27 09:04:31 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -444,6 +444,8 @@ None. Non-blocking execution notes:
 | 2026-05-26 19:55:00 UTC | sf-prod | GPT-5 Codex | Confirmed Vercel production deployment `dpl_9DM2pzMHBonJfrWg7uZpuodDgtF7` for commit `39c6062`, aliases including `https://app.replayglowz.com`, and HTTP 200 for root and `/playlists`. | pass | `/sf-verify replayglowz-youtube-parity-stabilization-qa-closure` |
 | 2026-05-26 19:56:00 UTC | sf-verify | GPT-5 Codex | Ran authenticated production browser smoke on commit `39c6062`: Preferences, Playlists, Notes and Videos rendered correctly; Playlists hint and hidden top-rest `+` matched the new UX; visible quota stayed stable at `13 / 1000` across passive navigation. | partial | Continue remaining P2/P3/import QA matrix before `/sf-end`. |
 | 2026-05-27 03:14:26 UTC | sf-verify | GPT-5 Codex | Reran production verification on deployment `dpl_8SWzTGdT61HbmqfePKkNANJrY2Yr`: signed-out redirect and authenticated direct routes passed, visible quota stayed `13 / 1000`, but Playlists `+` is unreachable on short/non-scrollable pages while the hint tells users to use it. | partial | Fix Playlists `+` discoverability on short pages, then rerun targeted `/sf-verify`. |
+| 2026-05-27 09:04:31 UTC | sf-build | GPT-5 Codex + subagent | Implemented the short-page Playlists `+` affordance fix through a bounded worker: non-scrollable pages now keep a low-opacity clickable `+`, while scrollable pages retain hidden top-rest and scroll-reveal behavior. | partial | Ship/deploy, then rerun targeted `/sf-verify`. |
+| 2026-05-27 09:04:31 UTC | sf-ship | GPT-5 Codex | Prepared quick ship for the bounded Playlists short-page `+` fix and associated bug/audit/test/spec trace updates. | shipped | `/sf-prod replayglowz_app` then targeted `/sf-verify`. |
 
 ## Current Chantier Flow
 
@@ -451,8 +453,8 @@ None. Non-blocking execution notes:
 |-------|--------|-------|
 | sf-spec | done | This spec defines the stabilization contract. |
 | sf-ready | done | Spec passes readiness after modal/default and language doctrine clarifications. |
-| sf-start | partial | Local implementation/checks are complete for BUG-001/002 and mitigation for BUG-003, but hosted QA and remaining P2/P3 matrix proofs are still pending. |
+| sf-start | partial | Local implementation/checks are complete for BUG-001/002 and mitigation for BUG-003, including the short-page Playlists `+` fix; hosted QA and remaining P2/P3 matrix proofs are still pending. |
 | sf-prod | done | Production deployment `dpl_9DM2pzMHBonJfrWg7uZpuodDgtF7` is ready and aliased to `https://app.replayglowz.com`; root and `/playlists` returned HTTP 200. |
-| sf-verify | partial | Production smoke passes for route rendering and visible quota stability, but BUG-2026-05-26-002 still fails because the `+` create affordance is unreachable on short/non-scrollable Playlists pages; remaining P2/P3/import matrix proofs are also pending. |
+| sf-verify | partial | Production smoke passes for route rendering and visible quota stability. BUG-2026-05-26-002 has a local fix for the short/non-scrollable `+` edge case, but production retest and remaining P2/P3/import matrix proofs are still pending. |
 | sf-end | pending | Update final trackers and closure notes. |
-| sf-ship | done | Quick ship performed and nav route matching fix was shipped in follow-up commit `39c6062`. |
+| sf-ship | done | Quick ship performed for the nav route matching fix in commit `39c6062`; current quick ship covers the bounded Playlists short-page `+` fix. |

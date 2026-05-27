@@ -1,3 +1,17 @@
+## 2026-05-27 - ReplayGlowz Playlists Short-Page FAB Fix
+
+- Scope: BUG-2026-05-26-002 / replayglowz-youtube-parity-stabilization-qa-closure
+- Environment: local implementation
+- Tester: Codex + subagent Linnaeus
+- Source: sf-build
+- Status: fix-implemented-pending-prod-retest
+- Confidence: medium
+- Result summary: Updated Playlists so the `+` create affordance remains low-opacity and clickable on short/non-scrollable pages, while scrollable pages still hide it at top rest and reveal it on scroll.
+- Bug pointer: BUG-2026-05-26-002 -> bugs/BUG-2026-05-26-002.md
+- Evidence pointer: replayglowz_app/lib/screens/playlists/playlists_screen.dart
+- Checks: `(cd replayglowz_app && flutter analyze)` pass.
+- Follow-up: Ship/deploy, then browser retest the short imported-playlist page and create modal open/cancel flow.
+
 ## 2026-05-27 - ReplayGlowz YouTube Stabilization Verify Rerun
 
 - Scope: replayglowz-youtube-parity-stabilization-qa-closure
