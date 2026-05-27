@@ -1,3 +1,17 @@
+## 2026-05-27 - ReplayGlowz Authenticated Playlists FAB Retest
+
+- Scope: BUG-2026-05-26-002 / replayglowz-youtube-parity-stabilization-qa-closure
+- Environment: production
+- Tester: Codex authenticated persistent Playwright profile
+- Source: sf-auth-debug
+- Status: pass
+- Confidence: high
+- Result summary: Authenticated production retest confirmed the short imported-playlist page shows the low-opacity `+`; clicking it opens the in-place `New Playlist` modal. The modal was canceled and no playlist was created.
+- Bug pointer: BUG-2026-05-26-002 -> bugs/BUG-2026-05-26-002.md
+- Evidence pointer: ephemeral screenshots reviewed then deleted for redaction; session retained in `/tmp/replayglowz-playwright-profile` and `/tmp/replayglowz-auth-state.json`.
+- Checks: Browser proof on deployed commit `78b888a`.
+- Follow-up: Continue remaining P2/P3/import QA matrix.
+
 ## 2026-05-27 - ReplayGlowz Playlists Short-Page FAB Fix
 
 - Scope: BUG-2026-05-26-002 / replayglowz-youtube-parity-stabilization-qa-closure

@@ -74,7 +74,7 @@ Production target:
 | P3 | Hint dismissal persistence | not run | Hints were observed, but close/reload persistence was not tested. | none |
 | P3 | Focus/study panel behavior | partial | Player UI and shortcuts render; panel toggles/focus persistence not fully verified. | `/tmp/replayglowz-browser-check/qa4-08-player-panels.png` |
 | P3 | Route/deep-link persistence | pass | Production smoke on 2026-05-27 verified signed-out redirect to `/sign-in?tf_redirect=/playlists` and authenticated direct `/preferences`, `/playlists`, `/notes`, and `/videos` route retention/rendering when browser locale was explicit. | `bugs/BUG-2026-05-26-001.md` |
-| P3 | Playlists low-friction add UI | fix-implemented-pending-prod-retest | Local fix keeps `+` low-opacity and clickable on short/non-scrollable pages while preserving scroll-reveal behavior on scrollable pages. Production browser retest and create modal open/cancel proof still pending. | `bugs/BUG-2026-05-26-002.md` |
+| P3 | Playlists low-friction add UI | pass | Authenticated production retest on 2026-05-27 confirmed the low-opacity `+` is visible on the short imported-playlist page and opens the in-place `New Playlist` modal. The modal was canceled; no playlist was created. | `bugs/BUG-2026-05-26-002.md` |
 | Quota | Cache-first navigation | pass-smoke-pending-metrics | Production smoke on 2026-05-27 kept visible quota at `13 / 1000` across Preferences, Playlists, Notes, and Videos without sync/import/refresh. Convex log/metrics binding remains pending. | `bugs/BUG-2026-05-26-003.md` |
 
 ## Confirmed Working
@@ -94,7 +94,7 @@ Production target:
 | ID | Severity | Status | Finding | Evidence |
 |----|----------|--------|---------|----------|
 | BUG-2026-05-26-001 | medium | fixed-prod-verify | Direct protected routes and signed-out redirect passed production smoke. | `bugs/BUG-2026-05-26-001.md` |
-| BUG-2026-05-26-002 | medium | fix-implemented-pending-prod-retest | Local fix makes the `+` reachable on short/non-scrollable Playlists pages; production retest is pending after deployment. | `bugs/BUG-2026-05-26-002.md` |
+| BUG-2026-05-26-002 | medium | closed | Short/non-scrollable Playlists page `+` is reachable and opens the create modal in authenticated production QA. | `bugs/BUG-2026-05-26-002.md` |
 | BUG-2026-05-26-003 | medium | mitigated-partial-prod-verify | Hidden quota spend path identified in code (`fetchYoutubeSubscriptions` on passive Preferences load), moved behind explicit refresh, and smoke-tested visually with stable quota. Metrics-bound proof remains pending. | `bugs/BUG-2026-05-26-003.md` |
 
 ## Remaining Test Queue
