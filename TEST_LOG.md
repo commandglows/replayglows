@@ -1,3 +1,17 @@
+## 2026-05-27 - ReplayGlowz YouTube Stabilization Verify Rerun
+
+- Scope: replayglowz-youtube-parity-stabilization-qa-closure
+- Environment: production
+- Tester: Codex browser automation
+- Source: sf-verify
+- Status: fail-partial
+- Confidence: medium
+- Result summary: Auth route smoke passed and visible quota stayed `13 / 1000`, but Playlists `+` is unreachable on the short imported-playlist page because there is no scrollable content to trigger the scroll-revealed affordance. Full closure is not verified.
+- Bug pointer: BUG-2026-05-26-002 -> bugs/BUG-2026-05-26-002.md
+- Evidence pointer: shipflow_data/workflow/audits/2026-05-26-replayglowz-prod-qa-followups.md
+- Checks: ShipFlow metadata lint passed for `AGENT.md shipflow_data` and `bugs`; production HTTP 200 for `/playlists`.
+- Follow-up: Fix `+` discoverability on non-scrollable Playlists pages, then rerun targeted `/sf-verify`.
+
 ## 2026-05-26 - ReplayGlowz YouTube Stabilization Prod Verify
 
 - Scope: replayglowz-youtube-parity-stabilization-qa-closure
