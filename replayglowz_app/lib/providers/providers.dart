@@ -39,6 +39,63 @@ final activePlayVideoIdProvider =
       ActivePlayVideoIdNotifier.new,
     );
 
+class AppPlaybackControllerState {
+  const AppPlaybackControllerState({
+    this.isPlaying = false,
+    this.hasActiveVideo = false,
+    this.controllerMode = false,
+    this.toggleRequestId = 0,
+  });
+
+  final bool isPlaying;
+  final bool hasActiveVideo;
+  final bool controllerMode;
+  final int toggleRequestId;
+
+  AppPlaybackControllerState copyWith({
+    bool? isPlaying,
+    bool? hasActiveVideo,
+    bool? controllerMode,
+    int? toggleRequestId,
+  }) {
+    return AppPlaybackControllerState(
+      isPlaying: isPlaying ?? this.isPlaying,
+      hasActiveVideo: hasActiveVideo ?? this.hasActiveVideo,
+      controllerMode: controllerMode ?? this.controllerMode,
+      toggleRequestId: toggleRequestId ?? this.toggleRequestId,
+    );
+  }
+}
+
+class AppPlaybackControllerNotifier
+    extends Notifier<AppPlaybackControllerState> {
+  @override
+  AppPlaybackControllerState build() => const AppPlaybackControllerState();
+
+  void setActiveVideo(bool hasActiveVideo) {
+    if (state.hasActiveVideo == hasActiveVideo) return;
+    state = state.copyWith(hasActiveVideo: hasActiveVideo);
+  }
+
+  void setPlaying(bool isPlaying) {
+    if (state.isPlaying == isPlaying) return;
+    state = state.copyWith(isPlaying: isPlaying);
+  }
+
+  void requestToggle() {
+    if (!state.hasActiveVideo) return;
+    state = state.copyWith(
+      controllerMode: true,
+      toggleRequestId: state.toggleRequestId + 1,
+    );
+  }
+}
+
+final appPlaybackControllerProvider =
+    NotifierProvider<AppPlaybackControllerNotifier, AppPlaybackControllerState>(
+      AppPlaybackControllerNotifier.new,
+    );
+
 class FeedPlaybackQueue {
   const FeedPlaybackQueue({
     this.videoIds = const <String>[],

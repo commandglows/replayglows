@@ -388,6 +388,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
         video: video,
         isWatched: isWatched,
         index: index,
+        canMutatePlaylistOnYoutube: canMutatePlaylistOnYoutube,
       ),
       itemBuilder: (context) => [
         const PopupMenuItem(
@@ -440,20 +441,21 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
               label: 'Move down',
             ),
           ),
-        if (canMutatePlaylistOnYoutube) const PopupMenuDivider(),
-        if (canMutatePlaylistOnYoutube)
-          const PopupMenuItem(
-            value: 'remove',
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.playlist_remove),
-              title: Text('Remove from playlist'),
-              subtitle: YoutubeQuotaCostText(
-                cost: YoutubeQuotaCost.removePlaylistItem,
-                prefix: 'Cost',
-              ),
-            ),
+        const PopupMenuDivider(),
+        PopupMenuItem(
+          value: 'remove',
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.playlist_remove),
+            title: const Text('Remove from playlist'),
+            subtitle: canMove
+                ? const YoutubeQuotaCostText(
+                    cost: YoutubeQuotaCost.removePlaylistItem,
+                    prefix: 'Cost',
+                  )
+                : const Text('Removes it from this ReplayGlowz playlist only.'),
           ),
+        ),
         const PopupMenuItem(
           value: 'hide',
           child: _VideoActionMenuItem(
@@ -470,6 +472,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     required YouTubeVideo video,
     required bool isWatched,
     required int index,
+    required bool canMutatePlaylistOnYoutube,
   }) async {
     switch (action) {
       case 'play':
@@ -492,7 +495,10 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
         await _movePlaylistItem(video, index + 1);
         return;
       case 'remove':
-        await _removePlaylistItem(video);
+        await _removePlaylistItem(
+          video,
+          canMutatePlaylistOnYoutube: canMutatePlaylistOnYoutube,
+        );
         return;
       case 'hide':
         await _hideVideo(video.youtubeVideoId);
@@ -576,33 +582,40 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     }
   }
 
-  Future<void> _removePlaylistItem(YouTubeVideo video) async {
+  Future<void> _removePlaylistItem(
+    YouTubeVideo video, {
+    required bool canMutatePlaylistOnYoutube,
+  }) async {
     final playlistItemId = video.playlistItemId;
-    if (playlistItemId == null || playlistItemId.isEmpty) {
-      showErrorSnackBar(
-        context,
-        error: StateError(
-          'This playlist item cannot be removed until the playlist is refreshed from YouTube.',
-        ),
-        prefix: 'Remove unavailable',
+    final canRemoveOnYoutube =
+        canMutatePlaylistOnYoutube &&
+        playlistItemId != null &&
+        playlistItemId.isNotEmpty;
+
+    if (canRemoveOnYoutube) {
+      final confirmed = await confirmYoutubeQuotaRisk(
+        context: context,
+        ref: ref,
+        cost: YoutubeQuotaCost.removePlaylistItem,
+        actionLabel: 'Removing this video from the playlist',
       );
-      return;
+      if (!confirmed) return;
     }
 
-    final confirmed = await confirmYoutubeQuotaRisk(
-      context: context,
-      ref: ref,
-      cost: YoutubeQuotaCost.removePlaylistItem,
-      actionLabel: 'Removing this video from the playlist',
-    );
-    if (!confirmed) return;
-
     try {
-      await removeVideoFromYoutubePlaylist(
-        ref,
-        playlistId: widget.id,
-        playlistItemId: playlistItemId,
-      );
+      if (canRemoveOnYoutube) {
+        await removeVideoFromYoutubePlaylist(
+          ref,
+          playlistId: widget.id,
+          playlistItemId: playlistItemId,
+        );
+      } else {
+        await removeCachedVideoFromPlaylist(
+          ref,
+          playlistId: widget.id,
+          videoCacheId: video.id,
+        );
+      }
       ref.invalidate(playlistVideosProvider(widget.id));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

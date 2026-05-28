@@ -21,6 +21,8 @@ class AppShell extends ConsumerWidget {
     required this.navigationShell,
   });
 
+  static const _bottomNavIconSize = 28.0;
+
   /// The stateful routed page content.
   final StatefulNavigationShell navigationShell;
   final GoRouterState shellState;
@@ -134,6 +136,7 @@ class AppShell extends ConsumerWidget {
     String location,
   ) {
     final showYoutubeStatusChrome = _showYoutubeStatusChrome(location);
+    final playbackController = ref.watch(appPlaybackControllerProvider);
     return Scaffold(
       body: Column(
         children: [
@@ -149,11 +152,61 @@ class AppShell extends ConsumerWidget {
         destinations: [
           for (final dest in _destinations)
             NavigationDestination(
-              icon: Icon(dest.icon),
-              selectedIcon: Icon(dest.selectedIcon),
+              icon: _buildBottomNavIcon(
+                context,
+                ref,
+                dest,
+                selected: false,
+                playbackController: playbackController,
+              ),
+              selectedIcon: _buildBottomNavIcon(
+                context,
+                ref,
+                dest,
+                selected: true,
+                playbackController: playbackController,
+              ),
               label: dest.label,
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBottomNavIcon(
+    BuildContext context,
+    WidgetRef ref,
+    _NavDestination destination, {
+    required bool selected,
+    required AppPlaybackControllerState playbackController,
+  }) {
+    if (destination.path != Routes.play) {
+      return Icon(
+        selected ? destination.selectedIcon : destination.icon,
+        size: _bottomNavIconSize,
+      );
+    }
+
+    final icon = playbackController.controllerMode
+        ? playbackController.isPlaying
+              ? Icons.pause_circle
+              : Icons.play_circle
+        : selected
+        ? destination.selectedIcon
+        : destination.icon;
+
+    return Tooltip(
+      message: playbackController.hasActiveVideo
+          ? 'Double tap to play or pause'
+          : destination.label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onDoubleTap: playbackController.hasActiveVideo
+            ? () => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .requestToggle()
+            : null,
+        child: Icon(icon, size: _bottomNavIconSize),
       ),
     );
   }

@@ -2525,9 +2525,9 @@ export const startQuotaSafeSync = action({
         jobId,
         phase: "videos",
         total: playlistSummaries.length + 1,
-        estimatedQuotaUnits: estimateFullSyncQuotaUnits(
-          playlistSummaries.length,
-        ) + subscriptionFeedEstimate,
+        estimatedQuotaUnits:
+          estimateFullSyncQuotaUnits(playlistSummaries.length) +
+          subscriptionFeedEstimate,
         usedQuotaUnits: YOUTUBE_QUOTA_COSTS["playlists.list"],
       });
 
@@ -2620,7 +2620,8 @@ export const startQuotaSafeSync = action({
           try {
             await ctx.runAction(youtubeApi.fetchSubscriptionFeed, {
               maxChannels: SUBSCRIPTION_FEED_SYNC_MAX_CHANNELS,
-              maxVideosPerChannel: SUBSCRIPTION_FEED_SYNC_MAX_VIDEOS_PER_CHANNEL,
+              maxVideosPerChannel:
+                SUBSCRIPTION_FEED_SYNC_MAX_VIDEOS_PER_CHANNEL,
             });
           } catch (error) {
             await ctx.runMutation(youtubeInternal.updateYoutubeSyncJob, {
@@ -2955,6 +2956,49 @@ export const removeVideoFromYoutubePlaylist = action({
       playlistId: args.playlistId,
       playlistItemId: args.playlistItemId,
     });
+  },
+});
+
+/**
+ * Remove a cached video from a ReplayGlowz playlist without calling YouTube.
+ *
+ * Used for URL-imported playlists or cached rows that cannot be mutated through
+ * playlistItems.delete. This only changes the ReplayGlowz cache.
+ */
+export const removeCachedVideoFromPlaylist = mutation({
+  args: {
+    playlistId: v.string(),
+    videoCacheId: v.id("youtubeVideosCache"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Unauthorized");
+
+    const video = await ctx.db.get(args.videoCacheId);
+    if (
+      !video ||
+      video.userId !== userId ||
+      video.youtubePlaylistId !== args.playlistId
+    ) {
+      throw new Error("Video not found in this playlist");
+    }
+
+    await ctx.db.delete(video._id);
+
+    const playlist = await ctx.db
+      .query("youtubePlaylistsCache")
+      .withIndex("by_user_and_youtube_id", (q) =>
+        q.eq("userId", userId).eq("youtubePlaylistId", args.playlistId),
+      )
+      .first();
+
+    if (playlist) {
+      await ctx.db.patch(playlist._id, {
+        videoCount: Math.max(0, playlist.videoCount - 1),
+      });
+    }
+
+    return { removed: true };
   },
 });
 

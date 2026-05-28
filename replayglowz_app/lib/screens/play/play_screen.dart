@@ -198,6 +198,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   bool _focusMode = false;
   double _playerDragOffset = 0;
   bool _isPlayerDragging = false;
+  int _lastHandledPlaybackToggleRequestId = 0;
 
   @override
   void initState() {
@@ -205,6 +206,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_syncActiveTab);
     _loadedVideoId = widget.videoId;
+    ref
+        .read(appPlaybackControllerProvider.notifier)
+        .setActiveVideo(widget.videoId.isNotEmpty);
     if (widget.videoId.isNotEmpty) {
       ref.read(activePlayVideoIdProvider.notifier).setVideoId(widget.videoId);
       ref.read(feedPlaybackQueueProvider.notifier).markCurrent(widget.videoId);
@@ -228,6 +232,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
 
     _loadedVideoId = widget.videoId;
+    ref
+        .read(appPlaybackControllerProvider.notifier)
+        .setActiveVideo(widget.videoId.isNotEmpty);
     if (widget.videoId.isNotEmpty) {
       ref.read(activePlayVideoIdProvider.notifier).setVideoId(widget.videoId);
       ref.read(feedPlaybackQueueProvider.notifier).markCurrent(widget.videoId);
@@ -239,6 +246,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _currentVideoCache = null;
     _webPlayerSnapshot = const WebYoutubePlayerSnapshot();
     _isPlaying = false;
+    ref.read(appPlaybackControllerProvider.notifier).setPlaying(false);
     _playerDragOffset = 0;
     _isPlayerDragging = false;
     if (kIsWeb) {
@@ -269,6 +277,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       return;
     }
     setState(() => _activeTabIndex = _tabController.index);
+  }
+
+  void _syncAppPlaybackState(bool isPlaying) {
+    ref.read(appPlaybackControllerProvider.notifier).setPlaying(isPlaying);
   }
 
   Future<void> _loadPrefs() async {
@@ -320,10 +332,22 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       _currentTimestamp = value.position.inMilliseconds / 1000;
       _isPlaying = playing;
     });
+    _syncAppPlaybackState(playing);
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AppPlaybackControllerState>(appPlaybackControllerProvider, (
+      previous,
+      next,
+    ) {
+      if (next.toggleRequestId == _lastHandledPlaybackToggleRequestId) {
+        return;
+      }
+      _lastHandledPlaybackToggleRequestId = next.toggleRequestId;
+      _togglePlayPause();
+    });
+
     final youtubeConnectionAsync = ref.watch(youtubeConnectionProvider);
     final youtubeConnected =
         youtubeConnectionAsync.asData?.value?['connected'] == true;
@@ -1155,6 +1179,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       } else {
         _playerController.pause();
       }
+      _syncAppPlaybackState(false);
       _saveProgress();
     } else {
       if (kIsWeb) {
@@ -1162,6 +1187,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       } else {
         _playerController.play();
       }
+      _syncAppPlaybackState(true);
     }
   }
 
@@ -1192,6 +1218,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       _currentTimestamp = currentSeconds.clamp(0, double.infinity).toDouble();
       _isPlaying = snapshot.isPlaying;
     });
+    _syncAppPlaybackState(snapshot.isPlaying);
 
     if (endedTransition) {
       _saveProgress();

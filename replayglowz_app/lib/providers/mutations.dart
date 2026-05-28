@@ -493,6 +493,24 @@ Future<dynamic> removeVideoFromYoutubePlaylist(
   return result;
 }
 
+/// Removes a cached video from a ReplayGlowz playlist without spending YouTube quota.
+Future<dynamic> removeCachedVideoFromPlaylist(
+  WidgetRef ref, {
+  required String playlistId,
+  required String videoCacheId,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>(
+    'youtube:removeCachedVideoFromPlaylist',
+    {'playlistId': playlistId, 'videoCacheId': videoCacheId},
+  );
+  ref
+    ..invalidate(playlistVideosProvider(playlistId))
+    ..invalidate(playlistsProvider)
+    ..invalidate(videosProvider(const VideosArgs()));
+  return result;
+}
+
 /// Moves a video within a YouTube playlist.
 Future<dynamic> moveVideoInYoutubePlaylist(
   WidgetRef ref, {
