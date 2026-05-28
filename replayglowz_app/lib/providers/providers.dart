@@ -20,6 +20,79 @@ import 'package:replayglowz_app/utils/app_logger.dart';
 // * FutureProvider  — backed by ConvexService.query   (one-shot).
 // =============================================================================
 
+/// Last video opened in the Play tab during the current app session.
+class ActivePlayVideoIdNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void setVideoId(String videoId) {
+    if (videoId.isEmpty) return;
+    state = videoId;
+  }
+}
+
+/// The bottom navigation can route to `/play` without query parameters. Keeping
+/// this state lets the shell return to the active player instead of replacing it
+/// with an empty Play screen.
+final activePlayVideoIdProvider =
+    NotifierProvider<ActivePlayVideoIdNotifier, String?>(
+      ActivePlayVideoIdNotifier.new,
+    );
+
+class FeedPlaybackQueue {
+  const FeedPlaybackQueue({
+    this.videoIds = const <String>[],
+    this.currentIndex = 0,
+  });
+
+  final List<String> videoIds;
+  final int currentIndex;
+
+  String? get currentVideoId =>
+      currentIndex >= 0 && currentIndex < videoIds.length
+      ? videoIds[currentIndex]
+      : null;
+
+  String? nextAfter(String videoId) {
+    final index = videoIds.indexOf(videoId);
+    if (index == -1 || index + 1 >= videoIds.length) {
+      return null;
+    }
+    return videoIds[index + 1];
+  }
+
+  String? previousBefore(String videoId) {
+    final index = videoIds.indexOf(videoId);
+    if (index <= 0) {
+      return null;
+    }
+    return videoIds[index - 1];
+  }
+}
+
+class FeedPlaybackQueueNotifier extends Notifier<FeedPlaybackQueue> {
+  @override
+  FeedPlaybackQueue build() => const FeedPlaybackQueue();
+
+  void start(List<String> videoIds) {
+    final cleanIds = videoIds
+        .where((id) => id.isNotEmpty)
+        .toList(growable: false);
+    state = FeedPlaybackQueue(videoIds: cleanIds);
+  }
+
+  void markCurrent(String videoId) {
+    final index = state.videoIds.indexOf(videoId);
+    if (index == -1 || index == state.currentIndex) return;
+    state = FeedPlaybackQueue(videoIds: state.videoIds, currentIndex: index);
+  }
+}
+
+final feedPlaybackQueueProvider =
+    NotifierProvider<FeedPlaybackQueueNotifier, FeedPlaybackQueue>(
+      FeedPlaybackQueueNotifier.new,
+    );
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

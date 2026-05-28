@@ -39,7 +39,7 @@ const Map<String, dynamic> fr = {
     'quotaThrottled': 'Actualisation désactivée — quota au-dessus de 90%',
   },
   'videosPage': {
-    'title': 'Vidéos',
+    'title': 'Feed',
     'cardView': 'Vue carte',
     'listView': 'Vue liste',
     'summaryView': 'Vue résumé',

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,10 +47,16 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   final _cardScrollController = ScrollController();
   final _listScrollController = ScrollController();
   final _summaryScrollController = ScrollController();
+  List<YouTubeVideo> _visibleFeedQueue = const <YouTubeVideo>[];
+  Offset _feedActionDragDelta = Offset.zero;
   String _sortOrder = 'desc';
   bool _includeWatched = true;
+  bool _feedActionRefreshMode = false;
   String? _playlistFilterId;
   bool _prefsLoaded = false;
+  String? _lastAutoScrolledVideoId;
+  int? _lastAutoScrolledTabIndex;
+  int _lastSyncedTabIndex = 0;
 
   VideosArgs get _videosArgs =>
       VideosArgs(sortOrder: _sortOrder, includeWatched: _includeWatched);
@@ -57,6 +65,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _lastSyncedTabIndex = _tabController.index;
     _tabController.addListener(_handleTabChanged);
     _loadLocalPrefs();
   }
@@ -72,6 +81,12 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   }
 
   void _handleTabChanged() {
+    final previousIndex = _lastSyncedTabIndex;
+    final nextIndex = _tabController.index;
+    if (previousIndex != nextIndex) {
+      _syncScrollPositionBetweenViewModes(previousIndex, nextIndex);
+      _lastSyncedTabIndex = nextIndex;
+    }
     _persistLocalPrefs();
     if (mounted) {
       setState(() {});
@@ -96,6 +111,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       _prefsLoaded = true;
     });
     _tabController.index = tab.clamp(0, 2);
+    _lastSyncedTabIndex = _tabController.index;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final controller = _activeScrollController();
       if (mounted && controller.hasClients) {
@@ -129,6 +145,99 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       default:
         return _cardScrollController;
     }
+  }
+
+  ScrollController _scrollControllerForTab(int index) {
+    switch (index) {
+      case 1:
+        return _listScrollController;
+      case 2:
+        return _summaryScrollController;
+      case 0:
+      default:
+        return _cardScrollController;
+    }
+  }
+
+  void _syncScrollPositionBetweenViewModes(int previousIndex, int nextIndex) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final previousController = _scrollControllerForTab(previousIndex);
+      final nextController = _scrollControllerForTab(nextIndex);
+      if (!previousController.hasClients || !nextController.hasClients) {
+        return;
+      }
+
+      final logicalIndex = _estimatedIndexForScrollOffset(
+        previousController.offset,
+        previousIndex,
+      );
+      final target = _estimatedScrollOffsetForIndexAndTab(
+        logicalIndex,
+        nextIndex,
+      ).clamp(0.0, nextController.position.maxScrollExtent);
+      nextController.jumpTo(target);
+    });
+  }
+
+  int _estimatedIndexForScrollOffset(double offset, int tabIndex) {
+    final topPadding = tabIndex == 1 ? 0.0 : 16.0;
+    final itemExtent = _estimatedItemExtentForTab(tabIndex);
+    return math.max(0, ((offset - topPadding + 24) / itemExtent).round());
+  }
+
+  double _estimatedItemExtentForTab(int tabIndex) {
+    return switch (tabIndex) {
+      1 => 88.0,
+      2 => 156.0,
+      _ => 324.0,
+    };
+  }
+
+  void _scheduleScrollToActiveFeedVideo(
+    List<YouTubeVideo> visibleVideos,
+    String? activeVideoId,
+  ) {
+    if (activeVideoId == null || activeVideoId.isEmpty) {
+      return;
+    }
+    if (_lastAutoScrolledVideoId == activeVideoId &&
+        _lastAutoScrolledTabIndex == _tabController.index) {
+      return;
+    }
+
+    final index = visibleVideos.indexWhere(
+      (video) => video.youtubeVideoId == activeVideoId,
+    );
+    if (index == -1) {
+      return;
+    }
+
+    _lastAutoScrolledVideoId = activeVideoId;
+    _lastAutoScrolledTabIndex = _tabController.index;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final controller = _activeScrollController();
+      if (!controller.hasClients) return;
+      final target = _estimatedScrollOffsetForIndex(
+        index,
+      ).clamp(0.0, controller.position.maxScrollExtent);
+      controller.animateTo(
+        target,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
+  double _estimatedScrollOffsetForIndex(int index) {
+    return _estimatedScrollOffsetForIndexAndTab(index, _tabController.index);
+  }
+
+  double _estimatedScrollOffsetForIndexAndTab(int index, int tabIndex) {
+    final topPadding = tabIndex == 1 ? 0.0 : 16.0;
+    final itemExtent = _estimatedItemExtentForTab(tabIndex);
+    return math.max(0, topPadding + (index * itemExtent) - 24);
   }
 
   AppLocale _locale(BuildContext context) =>
@@ -208,6 +317,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     final watchedAsync = youtubeConnected
         ? ref.watch(watchedVideosProvider)
         : const AsyncValue<List<WatchedVideo>>.data(<WatchedVideo>[]);
+    final activeFeedVideoId =
+        ref.watch(feedPlaybackQueueProvider).currentVideoId ??
+        ref.watch(activePlayVideoIdProvider);
     final l = _locale(context);
 
     return Scaffold(
@@ -307,6 +419,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
               });
 
               final visibleVideos = _applyLocalFilters(videos);
+              _visibleFeedQueue = visibleVideos;
+              if (_prefsLoaded) {
+                _scheduleScrollToActiveFeedVideo(
+                  visibleVideos,
+                  activeFeedVideoId,
+                );
+              }
               final watchedIds =
                   watchedAsync.asData?.value
                       .map((item) => item.youtubeVideoId)
@@ -406,14 +525,53 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
           onRetry: () => ref.invalidate(youtubeConnectionProvider),
         ),
       ),
-      floatingActionButton: youtubeConnected
-          ? FloatingActionButton(
-              onPressed: _refreshVideos,
-              tooltip:
-                  'Refresh videos (${youtubeQuotaCostLabel(YoutubeQuotaCost.syncAllPlaylists)})',
-              child: const Icon(Icons.refresh),
-            )
-          : null,
+      floatingActionButton: youtubeConnected ? _buildFeedActionButton() : null,
+    );
+  }
+
+  Widget _buildFeedActionButton() {
+    final refreshTooltip =
+        'Refresh feed (${youtubeQuotaCostLabel(YoutubeQuotaCost.syncAllPlaylists)})';
+    return GestureDetector(
+      onPanStart: (_) => _feedActionDragDelta = Offset.zero,
+      onPanUpdate: (details) {
+        _feedActionDragDelta += details.delta;
+      },
+      onPanEnd: (_) {
+        if (_feedActionDragDelta.dx < -20 || _feedActionDragDelta.dy < -20) {
+          setState(() => _feedActionRefreshMode = true);
+        }
+        _feedActionDragDelta = Offset.zero;
+      },
+      child: FloatingActionButton(
+        onPressed: _feedActionRefreshMode ? _refreshVideos : _playVisibleFeed,
+        tooltip: _feedActionRefreshMode ? refreshTooltip : 'Play feed',
+        child: Icon(
+          _feedActionRefreshMode ? Icons.refresh : Icons.play_arrow_rounded,
+        ),
+      ),
+    );
+  }
+
+  void _playVisibleFeed() {
+    final videoIds = _visibleFeedQueue
+        .map((video) => video.youtubeVideoId)
+        .where((id) => id.isNotEmpty)
+        .toList(growable: false);
+
+    if (videoIds.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No feed videos to play.')));
+      return;
+    }
+
+    ref.read(feedPlaybackQueueProvider.notifier).start(videoIds);
+    context.go(
+      Uri(
+        path: Routes.play,
+        queryParameters: {'videoId': videoIds.first, 'autoPlay': '1'},
+      ).toString(),
     );
   }
 
@@ -439,6 +597,10 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     } catch (e) {
       if (!mounted) return;
       showErrorSnackBar(context, error: e, prefix: 'Refresh failed');
+    } finally {
+      if (mounted && _feedActionRefreshMode) {
+        setState(() => _feedActionRefreshMode = false);
+      }
     }
   }
 
@@ -599,6 +761,15 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
         prefix: 'Cannot open video',
       );
       return;
+    }
+
+    final queueIds = _visibleFeedQueue
+        .map((video) => video.youtubeVideoId)
+        .where((id) => id.isNotEmpty)
+        .toList(growable: false);
+    if (queueIds.contains(youtubeVideoId)) {
+      ref.read(feedPlaybackQueueProvider.notifier).start(queueIds);
+      ref.read(feedPlaybackQueueProvider.notifier).markCurrent(youtubeVideoId);
     }
 
     context.go(

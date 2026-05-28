@@ -26,7 +26,8 @@ import 'package:replayglowz_app/widgets/app_shell.dart';
 abstract final class Routes {
   static const signIn = '/sign-in';
   static const ssoCallback = '/sso-callback';
-  static const videos = '/videos';
+  static const videos = '/feed';
+  static const legacyVideos = '/videos';
   static const play = '/play';
   static const playlists = '/playlists';
   static const playlistCreate = '/playlists/create';
@@ -125,76 +126,101 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.feedbackAdmin,
         builder: (context, state) => const FeedbackAdminScreen(),
       ),
+      GoRoute(
+        path: Routes.legacyVideos,
+        redirect: (context, state) => Routes.videos,
+      ),
 
       // Main app with shell navigation
-      ShellRoute(
-        builder: (context, state, child) =>
-            AppShell(shellState: state, child: child),
-        routes: [
-          GoRoute(
-            path: Routes.videos,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const VideosScreen(),
-            ),
-          ),
-          GoRoute(
-            path: Routes.play,
-            pageBuilder: (context, state) {
-              final videoId = state.uri.queryParameters['videoId'] ?? '';
-              return NoTransitionPage(
-                key: state.pageKey,
-                child: PlayScreen(videoId: videoId),
-              );
-            },
-          ),
-          GoRoute(
-            path: Routes.playlists,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const PlaylistsScreen(),
-            ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            AppShell(shellState: state, navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
             routes: [
               GoRoute(
-                path: 'create',
-                builder: (context, state) => const CreatePlaylistScreen(),
-              ),
-              GoRoute(
-                path: ':id',
-                builder: (context, state) =>
-                    PlaylistDetailScreen(id: state.pathParameters['id']!),
+                path: Routes.videos,
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const VideosScreen(),
+                ),
               ),
             ],
           ),
-          GoRoute(
-            path: Routes.notes,
-            pageBuilder: (context, state) => NoTransitionPage(
-              key: state.pageKey,
-              child: const NotesScreen(),
-            ),
+          StatefulShellBranch(
             routes: [
               GoRoute(
-                path: ':slug',
-                builder: (context, state) =>
-                    NoteDetailScreen(slug: state.pathParameters['slug']!),
+                path: Routes.play,
+                pageBuilder: (context, state) {
+                  final videoId = state.uri.queryParameters['videoId'] ?? '';
+                  final autoPlay = state.uri.queryParameters['autoPlay'] == '1';
+                  return NoTransitionPage(
+                    key: state.pageKey,
+                    child: PlayScreen(videoId: videoId, autoPlay: autoPlay),
+                  );
+                },
               ),
             ],
           ),
-          GoRoute(
-            path: Routes.notifications,
-            builder: (context, state) => const NotificationsScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.playlists,
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const PlaylistsScreen(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'create',
+                    builder: (context, state) => const CreatePlaylistScreen(),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) =>
+                        PlaylistDetailScreen(id: state.pathParameters['id']!),
+                  ),
+                ],
+              ),
+            ],
           ),
-          GoRoute(
-            path: Routes.preferences,
-            builder: (context, state) => const PreferencesScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.notes,
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const NotesScreen(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: ':slug',
+                    builder: (context, state) =>
+                        NoteDetailScreen(slug: state.pathParameters['slug']!),
+                  ),
+                ],
+              ),
+            ],
           ),
-          GoRoute(
-            path: Routes.hidden,
-            builder: (context, state) => const HiddenScreen(),
-          ),
-          GoRoute(
-            path: Routes.stats,
-            builder: (context, state) => const StatsScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.notifications,
+                builder: (context, state) => const NotificationsScreen(),
+              ),
+              GoRoute(
+                path: Routes.preferences,
+                builder: (context, state) => const PreferencesScreen(),
+              ),
+              GoRoute(
+                path: Routes.hidden,
+                builder: (context, state) => const HiddenScreen(),
+              ),
+              GoRoute(
+                path: Routes.stats,
+                builder: (context, state) => const StatsScreen(),
+              ),
+            ],
           ),
         ],
       ),

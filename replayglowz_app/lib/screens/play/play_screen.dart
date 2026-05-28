@@ -19,6 +19,7 @@ import 'package:replayglowz_app/utils/duration_utils.dart';
 import 'package:replayglowz_app/widgets/app_states.dart';
 import 'package:replayglowz_app/widgets/common_app_bar_actions.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
+import 'package:replayglowz_app/widgets/media/media_thumbnail.dart';
 import 'package:replayglowz_app/widgets/notes/note_tile.dart';
 import 'package:replayglowz_app/widgets/play/comments_placeholder.dart';
 import 'package:replayglowz_app/widgets/play/playback_controls.dart';
@@ -165,8 +166,9 @@ class _TranscriptControlHeader extends StatelessWidget {
 class PlayScreen extends ConsumerStatefulWidget {
   /// YouTube video ID of the video to play.
   final String videoId;
+  final bool autoPlay;
 
-  const PlayScreen({super.key, required this.videoId});
+  const PlayScreen({super.key, required this.videoId, this.autoPlay = false});
 
   @override
   ConsumerState<PlayScreen> createState() => _PlayScreenState();
@@ -194,6 +196,8 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   WebYoutubePlayerSnapshot _webPlayerSnapshot =
       const WebYoutubePlayerSnapshot();
   bool _focusMode = false;
+  double _playerDragOffset = 0;
+  bool _isPlayerDragging = false;
 
   @override
   void initState() {
@@ -201,10 +205,14 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_syncActiveTab);
     _loadedVideoId = widget.videoId;
+    if (widget.videoId.isNotEmpty) {
+      ref.read(activePlayVideoIdProvider.notifier).setVideoId(widget.videoId);
+      ref.read(feedPlaybackQueueProvider.notifier).markCurrent(widget.videoId);
+    }
     _playerController = YoutubePlayerController(
       initialVideoId: _initialPlayerVideoId(widget.videoId),
-      flags: const YoutubePlayerFlags(
-        autoPlay: false,
+      flags: YoutubePlayerFlags(
+        autoPlay: widget.autoPlay,
         enableCaption: true,
         captionLanguage: 'en',
       ),
@@ -220,6 +228,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
 
     _loadedVideoId = widget.videoId;
+    if (widget.videoId.isNotEmpty) {
+      ref.read(activePlayVideoIdProvider.notifier).setVideoId(widget.videoId);
+      ref.read(feedPlaybackQueueProvider.notifier).markCurrent(widget.videoId);
+    }
     _progressRestored = false;
     _currentTimestamp = 0;
     _pendingSeekSeconds = null;
@@ -227,12 +239,17 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _currentVideoCache = null;
     _webPlayerSnapshot = const WebYoutubePlayerSnapshot();
     _isPlaying = false;
+    _playerDragOffset = 0;
+    _isPlayerDragging = false;
     if (kIsWeb) {
       _isPlayerReady = false;
     }
 
     if (_isPlayerReady && _loadedVideoId.isNotEmpty && !kIsWeb) {
       _playerController.load(_loadedVideoId);
+      if (widget.autoPlay) {
+        _playerController.play();
+      }
     }
   }
 
@@ -318,6 +335,13 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     final progressAsync = youtubeConnected && hasVideoId
         ? ref.watch(videoProgressProvider(widget.videoId))
         : const AsyncValue<VideoProgress?>.data(null);
+    final libraryVideosAsync = youtubeConnected && hasVideoId
+        ? ref.watch(
+            videosProvider(
+              const VideosArgs(sortOrder: 'newest', includeWatched: true),
+            ),
+          )
+        : const AsyncValue<List<YouTubeVideo>>.data(<YouTubeVideo>[]);
 
     final settings = ref.watch(settingsProvider).asData?.value;
     final transcriptLanguage = _effectiveTranscriptLanguage(settings);
@@ -431,7 +455,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Open Videos or Playlists, then select a synced YouTube video to unlock playback, transcript, and notes.',
+                        'Open Feed or Playlists, then select a synced YouTube video to unlock playback, transcript, and notes.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.grey[600],
                         ),
@@ -450,7 +474,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
               autofocus: true,
               child: Column(
                 children: [
-                  _buildPlayerArea(),
+                  _buildSwipeablePlayerArea(libraryVideosAsync),
                   if (!kIsWeb) _buildPlaybackControls(currentVideo),
                   if (!_focusMode)
                     UiHintCard(
@@ -558,6 +582,220 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     );
   }
 
+  Widget _buildSwipeablePlayerArea(
+    AsyncValue<List<YouTubeVideo>> libraryVideosAsync,
+  ) {
+    final queue = ref.watch(feedPlaybackQueueProvider);
+    final previousVideoId = queue.previousBefore(widget.videoId);
+    final nextVideoId = queue.nextAfter(widget.videoId);
+    final libraryVideos =
+        libraryVideosAsync.asData?.value ?? const <YouTubeVideo>[];
+    final previousVideo = _findLibraryVideo(libraryVideos, previousVideoId);
+    final nextVideo = _findLibraryVideo(libraryVideos, nextVideoId);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = math.max(constraints.maxWidth, 1.0);
+        return ClipRect(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onHorizontalDragStart: (_) {
+              setState(() => _isPlayerDragging = true);
+            },
+            onHorizontalDragUpdate: (details) => _handlePlayerDragUpdate(
+              details,
+              width: width,
+              hasPrevious: previousVideoId != null,
+              hasNext: nextVideoId != null,
+            ),
+            onHorizontalDragEnd: (details) => _handlePlayerDragEnd(
+              details,
+              width: width,
+              previousVideoId: previousVideoId,
+              nextVideoId: nextVideoId,
+            ),
+            onHorizontalDragCancel: _cancelPlayerDrag,
+            child: Stack(
+              children: [
+                if (previousVideoId != null)
+                  Transform.translate(
+                    offset: Offset(_playerDragOffset - width, 0),
+                    child: _buildSwipePreviewPanel(
+                      videoId: previousVideoId,
+                      video: previousVideo,
+                      icon: Icons.skip_previous_rounded,
+                      label: 'Previous',
+                    ),
+                  ),
+                if (nextVideoId != null)
+                  Transform.translate(
+                    offset: Offset(_playerDragOffset + width, 0),
+                    child: _buildSwipePreviewPanel(
+                      videoId: nextVideoId,
+                      video: nextVideo,
+                      icon: Icons.skip_next_rounded,
+                      label: 'Next',
+                    ),
+                  ),
+                AnimatedContainer(
+                  duration: _isPlayerDragging
+                      ? Duration.zero
+                      : const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  transform: Matrix4.translationValues(_playerDragOffset, 0, 0),
+                  child: _buildPlayerArea(),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  YouTubeVideo? _findLibraryVideo(List<YouTubeVideo> videos, String? videoId) {
+    if (videoId == null || videoId.isEmpty) return null;
+    for (final video in videos) {
+      if (video.youtubeVideoId == videoId) {
+        return video;
+      }
+    }
+    return null;
+  }
+
+  Widget _buildSwipePreviewPanel({
+    required String videoId,
+    required YouTubeVideo? video,
+    required IconData icon,
+    required String label,
+  }) {
+    final theme = Theme.of(context);
+    final title = video?.title ?? 'Queued video';
+    final thumbnailUrl =
+        video?.thumbnailUrl ??
+        'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
+
+    return AspectRatio(
+      aspectRatio: 16 / 9,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          MediaThumbnail(
+            imageUrl: thumbnailUrl,
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.38),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Icon(icon, color: Colors.white, size: 32),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          label,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handlePlayerDragUpdate(
+    DragUpdateDetails details, {
+    required double width,
+    required bool hasPrevious,
+    required bool hasNext,
+  }) {
+    final rawOffset = _playerDragOffset + details.delta.dx;
+    final maxForward = hasPrevious ? width : width * 0.12;
+    final maxBackward = hasNext ? width : width * 0.12;
+    final clamped = rawOffset.clamp(-maxBackward, maxForward).toDouble();
+    setState(() => _playerDragOffset = clamped);
+  }
+
+  void _handlePlayerDragEnd(
+    DragEndDetails details, {
+    required double width,
+    required String? previousVideoId,
+    required String? nextVideoId,
+  }) {
+    final velocity = details.primaryVelocity ?? 0;
+    final threshold = width * 0.32;
+    final goPrevious =
+        previousVideoId != null &&
+        (_playerDragOffset > threshold || velocity > 620);
+    final goNext =
+        nextVideoId != null &&
+        (_playerDragOffset < -threshold || velocity < -620);
+
+    if (goPrevious) {
+      _finishPlayerDrag(previousVideoId);
+      return;
+    }
+    if (goNext) {
+      _finishPlayerDrag(nextVideoId);
+      return;
+    }
+
+    _cancelPlayerDrag();
+  }
+
+  void _finishPlayerDrag(String videoId) {
+    setState(() {
+      _playerDragOffset = 0;
+      _isPlayerDragging = false;
+    });
+    _saveProgress();
+    context.go(
+      Uri(
+        path: Routes.play,
+        queryParameters: {'videoId': videoId, 'autoPlay': '1'},
+      ).toString(),
+    );
+  }
+
+  void _cancelPlayerDrag() {
+    if (!mounted) return;
+    setState(() {
+      _playerDragOffset = 0;
+      _isPlayerDragging = false;
+    });
+  }
+
   Widget _buildPlayerArea() {
     return PlayerPanel(
       videoId: _loadedVideoId,
@@ -579,6 +817,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
           _pendingSeekSeconds = null;
           _seekToSeconds(pendingSeek);
         }
+        if (widget.autoPlay && kIsWeb && _loadedVideoId.isNotEmpty) {
+          _webPlayerController.play();
+        }
       },
       onEnded: () {
         if (kIsWeb) return;
@@ -589,6 +830,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
           _currentTimestamp = playerDuration;
         });
         _saveProgress();
+        _playNextFeedVideo();
       },
     );
   }
@@ -953,7 +1195,24 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
 
     if (endedTransition) {
       _saveProgress();
+      _playNextFeedVideo();
     }
+  }
+
+  void _playNextFeedVideo() {
+    final nextVideoId = ref
+        .read(feedPlaybackQueueProvider)
+        .nextAfter(widget.videoId);
+    if (nextVideoId == null || nextVideoId.isEmpty) {
+      return;
+    }
+
+    context.go(
+      Uri(
+        path: Routes.play,
+        queryParameters: {'videoId': nextVideoId, 'autoPlay': '1'},
+      ).toString(),
+    );
   }
 
   List<_TranscriptEntry> _parseTranscriptEntries(

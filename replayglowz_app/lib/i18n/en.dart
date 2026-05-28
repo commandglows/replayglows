@@ -40,7 +40,7 @@ const Map<String, dynamic> en = {
     'quotaThrottled': 'Refresh disabled - quota usage above 90%',
   },
   'videosPage': {
-    'title': 'Videos',
+    'title': 'Feed',
     'cardView': 'Card view',
     'listView': 'List view',
     'summaryView': 'Summary view',

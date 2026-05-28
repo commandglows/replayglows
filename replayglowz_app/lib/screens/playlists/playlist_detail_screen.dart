@@ -40,6 +40,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
   bool _isReorderMode = false;
   bool _isSavingOrder = false;
   List<YouTubeVideo> _reorderList = [];
+  List<YouTubeVideo> _currentPlaylistQueue = const <YouTubeVideo>[];
 
   AppLocale _locale(BuildContext context) =>
       Localizations.localeOf(context).languageCode == 'fr'
@@ -100,6 +101,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
           // Video list (reorderable when in edit mode)
           videosAsync.when(
             data: (videos) {
+              _currentPlaylistQueue = videos;
               if (_isReorderMode) {
                 if (_reorderList.isEmpty ||
                     _reorderList.length != videos.length) {
@@ -799,6 +801,18 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
         prefix: 'Cannot open video',
       );
       return;
+    }
+
+    final sourceQueue = _isReorderMode && _reorderList.isNotEmpty
+        ? _reorderList
+        : _currentPlaylistQueue;
+    final queueIds = sourceQueue
+        .map((video) => video.youtubeVideoId)
+        .where((id) => id.isNotEmpty)
+        .toList(growable: false);
+    if (queueIds.contains(youtubeVideoId)) {
+      ref.read(feedPlaybackQueueProvider.notifier).start(queueIds);
+      ref.read(feedPlaybackQueueProvider.notifier).markCurrent(youtubeVideoId);
     }
 
     context.go(

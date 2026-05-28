@@ -15,10 +15,14 @@ import 'package:replayglowz_app/widgets/youtube_connect.dart';
 /// Used as the builder for the [ShellRoute] in [router.dart]. The [child]
 /// parameter is the currently active route widget injected by GoRouter.
 class AppShell extends ConsumerWidget {
-  const AppShell({super.key, required this.shellState, required this.child});
+  const AppShell({
+    super.key,
+    required this.shellState,
+    required this.navigationShell,
+  });
 
-  /// The routed page content.
-  final Widget child;
+  /// The stateful routed page content.
+  final StatefulNavigationShell navigationShell;
   final GoRouterState shellState;
 
   // ---------------------------------------------------------------------------
@@ -27,9 +31,9 @@ class AppShell extends ConsumerWidget {
 
   static const _destinations = <_NavDestination>[
     _NavDestination(
-      label: 'Videos',
-      icon: Icons.video_library_outlined,
-      selectedIcon: Icons.video_library,
+      label: 'Feed',
+      icon: Icons.dynamic_feed_outlined,
+      selectedIcon: Icons.dynamic_feed,
       path: Routes.videos,
     ),
     _NavDestination(
@@ -54,16 +58,6 @@ class AppShell extends ConsumerWidget {
 
   /// Returns the index of the currently selected destination based on the
   /// active route location, or 0 if no match is found.
-  int _selectedIndex(String location) {
-    for (var i = 0; i < _destinations.length; i++) {
-      final path = _destinations[i].path;
-      if (location == path || location.startsWith('$path/')) {
-        return i;
-      }
-    }
-    return 0;
-  }
-
   bool _showYoutubeStatusChrome(String location) {
     return location.startsWith(Routes.videos) ||
         location.startsWith(Routes.play) ||
@@ -71,8 +65,26 @@ class AppShell extends ConsumerWidget {
         location.startsWith(Routes.notes);
   }
 
-  void _onDestinationSelected(BuildContext context, int index) {
-    context.go(_destinations[index].path);
+  void _onDestinationSelected(BuildContext context, WidgetRef ref, int index) {
+    if (index == navigationShell.currentIndex) {
+      return;
+    }
+
+    final destination = _destinations[index];
+    if (destination.path == Routes.play) {
+      final activeVideoId = ref.read(activePlayVideoIdProvider);
+      if (activeVideoId != null && activeVideoId.isNotEmpty) {
+        context.go(
+          Uri(
+            path: Routes.play,
+            queryParameters: {'videoId': activeVideoId},
+          ).toString(),
+        );
+        return;
+      }
+    }
+
+    navigationShell.goBranch(index);
   }
 
   // ---------------------------------------------------------------------------
@@ -88,7 +100,10 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final width = MediaQuery.sizeOf(context).width;
     final location = shellState.uri.path;
-    final selected = _selectedIndex(location);
+    final selected = navigationShell.currentIndex.clamp(
+      0,
+      _destinations.length - 1,
+    );
     final authState = ref.watch(authStateProvider);
     final accessAsync = ref.watch(productAccessStatusProvider);
     final shouldGate =
@@ -99,7 +114,7 @@ class AppShell extends ConsumerWidget {
         );
     final routedChild = shouldGate
         ? _ProductAccessInactiveView(statusAsync: accessAsync)
-        : child;
+        : navigationShell;
 
     if (width >= _railBreakpoint) {
       return _buildWithRail(context, ref, selected, routedChild, location);
@@ -130,7 +145,7 @@ class AppShell extends ConsumerWidget {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: selected,
-        onDestinationSelected: (i) => _onDestinationSelected(context, i),
+        onDestinationSelected: (i) => _onDestinationSelected(context, ref, i),
         destinations: [
           for (final dest in _destinations)
             NavigationDestination(
@@ -162,7 +177,8 @@ class AppShell extends ConsumerWidget {
         children: [
           NavigationRail(
             selectedIndex: selected,
-            onDestinationSelected: (i) => _onDestinationSelected(context, i),
+            onDestinationSelected: (i) =>
+                _onDestinationSelected(context, ref, i),
             labelType: NavigationRailLabelType.all,
             leading: Column(
               mainAxisSize: MainAxisSize.min,
