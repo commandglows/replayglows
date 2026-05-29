@@ -13,6 +13,7 @@ import 'package:replayglowz_app/screens/notifications/notifications_screen.dart'
 import 'package:replayglowz_app/screens/play/play_screen.dart';
 import 'package:replayglowz_app/screens/playlists/create_playlist_screen.dart';
 import 'package:replayglowz_app/screens/playlists/playlist_detail_screen.dart';
+import 'package:replayglowz_app/screens/playlists/virtual_feed_detail_screen.dart';
 import 'package:replayglowz_app/screens/playlists/playlists_screen.dart';
 import 'package:replayglowz_app/screens/preferences/preferences_screen.dart';
 import 'package:replayglowz_app/screens/stats/stats_screen.dart';
@@ -32,6 +33,8 @@ abstract final class Routes {
   static const playlists = '/playlists';
   static const playlistCreate = '/playlists/create';
   static String playlistDetail(String id) => '/playlists/$id';
+  static String virtualFeedDetail(String id) => '/playlists/feeds/$id';
+  static String legacyVirtualFeed(String id) => '/playlists/feed/$id';
   static const notes = '/notes';
   static String noteDetail(String slug) => '/notes/$slug';
   static const notifications = '/notifications';
@@ -179,6 +182,17 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: ':id',
                     builder: (context, state) =>
                         PlaylistDetailScreen(id: state.pathParameters['id']!),
+                  ),
+                  GoRoute(
+                    path: 'feeds/:id',
+                    builder: (context, state) => VirtualFeedDetailScreen(
+                      feedId: state.pathParameters['id']!,
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'feed/:id',
+                    redirect: (context, state) =>
+                        Routes.virtualFeedDetail(state.pathParameters['id']!),
                   ),
                 ],
               ),

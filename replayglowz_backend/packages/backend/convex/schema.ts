@@ -239,6 +239,43 @@ export default defineSchema({
     .index("by_user_id", ["userId"])
     .index("by_public", ["isPublic"]),
 
+  virtualFeeds: defineTable({
+    userId: v.string(),
+    title: v.string(),
+    description: v.optional(v.string()),
+    includeWatched: v.optional(v.boolean()),
+    sortOrder: v.optional(
+      v.union(v.literal("newest"), v.literal("oldest"), v.literal("default")),
+    ),
+    color: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    isActive: v.optional(v.boolean()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_active", ["userId", "isActive"]),
+
+  virtualFeedSources: defineTable({
+    userId: v.string(),
+    virtualFeedId: v.id("virtualFeeds"),
+    sourceType: v.union(
+      v.literal("channel"),
+      v.literal("playlist"),
+      v.literal("subscriptions"),
+    ),
+    sourceId: v.string(),
+    sourceTitle: v.string(),
+    isActive: v.optional(v.boolean()),
+    position: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_feed", ["virtualFeedId"])
+    .index("by_feed_position", ["virtualFeedId", "position"])
+    .index("by_user_source", ["userId", "sourceType", "sourceId"]),
+
   // =============================================================================
   // SOCIAL FEATURES
   // =============================================================================

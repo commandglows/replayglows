@@ -45,7 +45,7 @@ class AppShell extends ConsumerWidget {
       path: Routes.play,
     ),
     _NavDestination(
-      label: 'Playlists',
+      label: 'Lists',
       icon: Icons.queue_music_outlined,
       selectedIcon: Icons.queue_music,
       path: Routes.playlists,

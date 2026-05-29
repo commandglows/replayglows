@@ -482,6 +482,104 @@ final playlistsProvider = StreamProvider<List<YouTubePlaylist>>((ref) async* {
 });
 
 // ---------------------------------------------------------------------------
+// 3b. virtualFeedsProvider
+// ---------------------------------------------------------------------------
+
+/// Loads local ReplayGlowz Feeds owned by the current user.
+final virtualFeedsProvider = FutureProvider<List<VirtualFeed>>((ref) async {
+  final authState = ref.watch(authStateProvider);
+  if (authState is! AuthAuthenticated) {
+    return const <VirtualFeed>[];
+  }
+
+  if (!await _waitForConvexAuthReady(ref, consumer: 'virtualFeedsProvider')) {
+    return const <VirtualFeed>[];
+  }
+
+  final service = ref.watch(convexServiceProvider);
+  final raw = await service.query<dynamic>('virtualFeeds:listFeeds', {
+    'includeInactive': true,
+  });
+  return _decodeList(
+    raw,
+  ).map((json) => VirtualFeed.fromJson(json)).toList(growable: false);
+});
+
+class VirtualFeedDetailsArgs {
+  const VirtualFeedDetailsArgs({
+    required this.feedId,
+    this.includeHidden = false,
+    this.includeWatched = false,
+    this.sortOrder = 'default',
+    this.cursor,
+    this.pageSize,
+  });
+
+  final String feedId;
+  final bool includeHidden;
+  final bool includeWatched;
+  final String sortOrder;
+  final String? cursor;
+  final int? pageSize;
+
+  @override
+  bool operator ==(Object other) {
+    return other is VirtualFeedDetailsArgs &&
+        feedId == other.feedId &&
+        includeHidden == other.includeHidden &&
+        includeWatched == other.includeWatched &&
+        sortOrder == other.sortOrder &&
+        cursor == other.cursor &&
+        pageSize == other.pageSize;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    feedId,
+    includeHidden,
+    includeWatched,
+    sortOrder,
+    cursor,
+    pageSize,
+  );
+}
+
+/// Loads one virtual feed detail bundle (metadata + source projection + videos).
+final virtualFeedDetailsProvider =
+    FutureProvider.family<VirtualFeedDetails, VirtualFeedDetailsArgs>((
+      ref,
+      args,
+    ) async {
+      final authState = ref.watch(authStateProvider);
+      if (authState is! AuthAuthenticated) {
+        return VirtualFeedDetails.empty;
+      }
+
+      if (!await _waitForConvexAuthReady(
+        ref,
+        consumer: 'virtualFeedDetailsProvider',
+      )) {
+        return VirtualFeedDetails.empty;
+      }
+
+      final service = ref.watch(convexServiceProvider);
+      final raw = await service.query<dynamic>('virtualFeeds:getFeedDetails', {
+        'virtualFeedId': args.feedId,
+        'includeHidden': args.includeHidden,
+        'includeWatched': args.includeWatched,
+        'sortOrder': args.sortOrder,
+        if (args.cursor != null) 'cursor': args.cursor,
+        if (args.pageSize != null) 'pageSize': args.pageSize,
+      });
+
+      final map = _decodeMap(raw);
+      if (map == null) return VirtualFeedDetails.empty;
+      return VirtualFeedDetails.fromJson(map);
+    });
+
+// Authenticated is provided by auth_state.dart.
+
+// ---------------------------------------------------------------------------
 // 3. notesProvider
 // ---------------------------------------------------------------------------
 

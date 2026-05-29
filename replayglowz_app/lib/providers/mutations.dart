@@ -1,3 +1,5 @@
+// ignore_for_file: use_null_aware_elements
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:replayglowz_app/convex/convex_client.dart';
@@ -54,8 +56,8 @@ Future<dynamic> createNote(
   return service.mutate<dynamic>('notes:createNote', {
     'youtubeVideoId': videoId,
     'content': content,
-    'timestamp': ?timestamp,
-    'title': ?title,
+    if (timestamp != null) 'timestamp': timestamp,
+    if (title != null) 'title': title,
   });
 }
 
@@ -188,7 +190,7 @@ Future<Map<String, dynamic>> generateTranscript(
         'youtubeVideoId': youtubeVideoId,
         'language': language,
         'activate': true,
-        'provider': ?provider,
+        if (provider != null) 'provider': provider,
       });
 
   if (raw is Map<String, dynamic>) {
@@ -559,14 +561,12 @@ Future<dynamic> createPlaylist(
   String? color,
 }) async {
   final service = ref.read(convexServiceProvider);
-  final result = await service.action<dynamic>(
-    'youtube:createYoutubePlaylist',
-    {
-      'title': title,
-      'description': ?description,
-      'privacyStatus': privacyStatus,
-    },
-  );
+  final result = await service
+      .action<dynamic>('youtube:createYoutubePlaylist', {
+        'title': title,
+        if (description != null) 'description': description,
+        'privacyStatus': privacyStatus,
+      });
   await service.action<dynamic>('youtube:fetchYoutubePlaylists', {});
   final playlistId = result is Map ? result['id']?.toString() : null;
   if (playlistId != null && playlistId.isNotEmpty && color != null) {
@@ -581,6 +581,149 @@ Future<dynamic> createPlaylist(
   return result;
 }
 
+// ---------------------------------------------------------------------------
+// Virtual Feeds (local, cache-first)
+// ---------------------------------------------------------------------------
+
+void _invalidateVirtualFeedProviders(WidgetRef ref, String feedId) {
+  ref.invalidate(virtualFeedsProvider);
+  ref.invalidate(
+    virtualFeedDetailsProvider(
+      VirtualFeedDetailsArgs(
+        feedId: feedId,
+        includeHidden: false,
+        includeWatched: false,
+        sortOrder: 'default',
+      ),
+    ),
+  );
+}
+
+Future<dynamic> createVirtualFeed(
+  WidgetRef ref, {
+  required String title,
+  String? description,
+  bool includeWatched = false,
+  String sortOrder = 'default',
+  String? color,
+  String? icon,
+  bool isActive = true,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>('virtualFeeds:createFeed', {
+    'title': title,
+    if (description != null) 'description': description,
+    'includeWatched': includeWatched,
+    'sortOrder': sortOrder,
+    if (color != null) 'color': color,
+    if (icon != null) 'icon': icon,
+    'isActive': isActive,
+  });
+  ref.invalidate(virtualFeedsProvider);
+  return result;
+}
+
+Future<dynamic> updateVirtualFeed(
+  WidgetRef ref, {
+  required String feedId,
+  String? title,
+  String? description,
+  bool? includeWatched,
+  String? sortOrder,
+  String? color,
+  String? icon,
+  bool? isActive,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>('virtualFeeds:updateFeed', {
+    'virtualFeedId': feedId,
+    if (title != null) 'title': title,
+    if (description != null) 'description': description,
+    'includeWatched': includeWatched,
+    if (sortOrder != null) 'sortOrder': sortOrder,
+    if (color != null) 'color': color,
+    if (icon != null) 'icon': icon,
+    'isActive': isActive,
+  });
+  _invalidateVirtualFeedProviders(ref, feedId);
+  return result;
+}
+
+Future<dynamic> deleteVirtualFeed(WidgetRef ref, String feedId) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>('virtualFeeds:deleteFeed', {
+    'virtualFeedId': feedId,
+  });
+  ref.invalidate(virtualFeedsProvider);
+  return result;
+}
+
+Future<dynamic> addVirtualFeedSource(
+  WidgetRef ref, {
+  required String feedId,
+  required String sourceType,
+  required String sourceId,
+  required String sourceTitle,
+  bool isActive = true,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>('virtualFeeds:addFeedSource', {
+    'virtualFeedId': feedId,
+    'sourceType': sourceType,
+    'sourceId': sourceId,
+    'sourceTitle': sourceTitle,
+    'isActive': isActive,
+  });
+  _invalidateVirtualFeedProviders(ref, feedId);
+  return result;
+}
+
+Future<dynamic> removeVirtualFeedSource(
+  WidgetRef ref,
+  String feedId,
+  String sourceId,
+) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>(
+    'virtualFeeds:removeFeedSource',
+    {'virtualFeedSourceId': sourceId},
+  );
+  _invalidateVirtualFeedProviders(ref, feedId);
+  return result;
+}
+
+Future<dynamic> reorderVirtualFeedSources(
+  WidgetRef ref, {
+  required String feedId,
+  required List<String> sourceIds,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>(
+    'virtualFeeds:reorderFeedSources',
+    {'virtualFeedId': feedId, 'sourceIds': sourceIds},
+  );
+  _invalidateVirtualFeedProviders(ref, feedId);
+  return result;
+}
+
+Future<dynamic> toggleVirtualFeedSource(
+  WidgetRef ref, {
+  required String feedId,
+  required String sourceId,
+  bool? isActive,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>(
+    'virtualFeeds:toggleFeedSource',
+    {
+      'virtualFeedSourceId': sourceId,
+      if (isActive != null) 'isActive': isActive,
+    },
+  );
+  _invalidateVirtualFeedProviders(ref, feedId);
+  return result;
+}
+
 /// Updates a YouTube playlist title, description, and local display color.
 Future<dynamic> updateYoutubePlaylistDetails(
   WidgetRef ref, {
@@ -590,10 +733,12 @@ Future<dynamic> updateYoutubePlaylistDetails(
   String? color,
 }) async {
   final service = ref.read(convexServiceProvider);
-  final result = await service.action<dynamic>(
-    'youtube:updateYoutubePlaylist',
-    {'playlistId': playlistId, 'title': title, 'description': ?description},
-  );
+  final result = await service
+      .action<dynamic>('youtube:updateYoutubePlaylist', {
+        'playlistId': playlistId,
+        'title': title,
+        if (description != null) 'description': description,
+      });
   if (color != null) {
     await service.mutate<dynamic>('youtube:updatePlaylistDetails', {
       'playlistId': playlistId,
@@ -728,9 +873,9 @@ Future<dynamic> createFeedbackText(
     'message': message,
     'platform': platform,
     'locale': locale,
-    'buildCommitSha': ?buildCommitSha,
-    'buildEnvironment': ?buildEnvironment,
-    'buildTimestamp': ?buildTimestamp,
+    if (buildCommitSha != null) 'buildCommitSha': buildCommitSha,
+    if (buildEnvironment != null) 'buildEnvironment': buildEnvironment,
+    if (buildTimestamp != null) 'buildTimestamp': buildTimestamp,
   });
 }
 
@@ -752,10 +897,10 @@ Future<dynamic> createFeedbackAudio(
     'audioDurationMs': audioDurationMs,
     'platform': platform,
     'locale': locale,
-    'message': ?message,
-    'buildCommitSha': ?buildCommitSha,
-    'buildEnvironment': ?buildEnvironment,
-    'buildTimestamp': ?buildTimestamp,
+    if (message != null) 'message': message,
+    if (buildCommitSha != null) 'buildCommitSha': buildCommitSha,
+    if (buildEnvironment != null) 'buildEnvironment': buildEnvironment,
+    if (buildTimestamp != null) 'buildTimestamp': buildTimestamp,
   });
 }
 

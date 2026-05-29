@@ -1,19 +1,24 @@
+// ignore_for_file: use_null_aware_elements
+
 import 'package:flutter/material.dart';
 
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/utils/color_utils.dart';
 import 'package:replayglowz_app/utils/date_utils.dart';
 import 'package:replayglowz_app/widgets/media/media_thumbnail.dart';
+import 'package:replayglowz_app/i18n/translations.dart';
 
 class PlaylistCard extends StatelessWidget {
   const PlaylistCard({
     super.key,
     required this.playlist,
     required this.onTap,
+    this.locale,
     this.trailing,
   });
 
   final YouTubePlaylist playlist;
+  final AppLocale? locale;
   final VoidCallback onTap;
   final Widget? trailing;
 
@@ -23,6 +28,10 @@ class PlaylistCard extends StatelessWidget {
         ? parseHexColor(playlist.color!)
         : Theme.of(context).colorScheme.primary;
     final theme = Theme.of(context);
+    final l = locale ??
+        (Localizations.localeOf(context).languageCode == 'fr'
+            ? AppLocale.fr
+            : AppLocale.en);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -73,7 +82,7 @@ class PlaylistCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       playlist.cachedAt > 0
-                          ? 'Updated ${formatDate(playlist.cachedAt)}'
+                          ? '${t('playlistsPage.updated', locale: l)} ${formatDate(playlist.cachedAt)}'
                           : '',
                       style: theme.textTheme.labelSmall,
                     ),
@@ -81,7 +90,7 @@ class PlaylistCard extends StatelessWidget {
                 ),
               ),
             ),
-            ?trailing,
+            if (trailing != null) trailing!,
           ],
         ),
       ),

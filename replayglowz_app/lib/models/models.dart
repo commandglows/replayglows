@@ -16,6 +16,7 @@ export 'note.dart';
 export 'playlist.dart';
 export 'settings.dart';
 export 'subscription.dart';
+export 'virtual_feed.dart';
 export 'transcript.dart';
 export 'user.dart';
 export 'video.dart';

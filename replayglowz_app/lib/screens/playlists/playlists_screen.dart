@@ -148,6 +148,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
     final playlistsAsync = youtubeConnected
         ? ref.watch(playlistsProvider)
         : null;
+    final virtualFeedsAsync = youtubeConnected
+        ? ref.watch(virtualFeedsProvider)
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -174,16 +177,16 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                 await syncAllPlaylists(ref);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Sync complete. If this YouTube account is new, create a YouTube playlist or channel, then refresh again.',
-                      ),
-                    ),
+                    SnackBar(content: Text(t('playlistsPage.syncComplete', locale: l))),
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  showErrorSnackBar(context, error: e, prefix: 'Sync failed');
+                  showErrorSnackBar(
+                    context,
+                    error: e,
+                    prefix: t('playlistsPage.syncFailed', locale: l),
+                  );
                 }
               }
             },
@@ -194,75 +197,158 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
       body: youtubeConnectionAsync.when(
         data: (status) {
           if (status?['connected'] != true) {
-            return const YoutubeConnectRequiredState(
-              title: 'Connect YouTube to import playlists',
-              description:
-                  'Playlists, channel imports, and automatic refresh all depend on your YouTube connection.',
+            return YoutubeConnectRequiredState(
+              title: t('playlistsPage.connectionRequiredTitle', locale: l),
+              description: t(
+                'playlistsPage.connectionRequiredDescription',
+                locale: l,
+              ),
               returnTo: Routes.playlists,
             );
           }
 
           return playlistsAsync!.when(
             data: (playlists) {
-              if (playlists.isEmpty) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _setFabToRestingState();
-                });
-                return ListView(
-                  padding: const EdgeInsets.only(bottom: 96),
-                  children: [
-                    YouTubeChannelOnboardingCard(
-                      onImported: () => ref.invalidate(playlistsProvider),
-                    ),
-                    SizedBox(
-                      height: 360,
-                      child: YoutubeAwareEmptyState(
-                        fallbackIcon: Icons.playlist_play,
-                        fallbackTitle: 'No YouTube playlists yet',
-                        fallbackDescription:
-                            'ReplayGlowz is connected, but this YouTube account has no playlists to import yet. New Google accounts may need a YouTube channel before YouTube returns library data.',
-                        onRefresh: () => syncAllPlaylists(ref),
+              return virtualFeedsAsync!.when(
+                data: (virtualFeeds) {
+                  if (playlists.isEmpty && virtualFeeds.isEmpty) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _setFabToRestingState();
+                    });
+                    return ListView(
+                      padding: const EdgeInsets.only(bottom: 96),
+                      children: [
+                        YouTubeChannelOnboardingCard(
+                          onImported: () {
+                            ref.invalidate(playlistsProvider);
+                            ref.invalidate(virtualFeedsProvider);
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                          child: _buildCreateSectionHint(context, l),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 360,
+                          child: YoutubeAwareEmptyState(
+                            fallbackIcon: Icons.dynamic_feed_outlined,
+                            fallbackTitle: t(
+                              'playlistsPage.noListsYetTitle',
+                              locale: l,
+                            ),
+                            fallbackDescription: t(
+                              'playlistsPage.noListsYetDescription',
+                              locale: l,
+                            ),
+                            onRefresh: () {
+                              syncAllPlaylists(ref);
+                              ref.invalidate(virtualFeedsProvider);
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _restoreScroll();
+                  });
+
+                  return Column(
+                    children: [
+                      UiHintCard(
+                        hintId: 'playlists-onboarding',
+                        icon: Icons.playlist_add_check_circle_outlined,
+                        title: t('p3.playlists.hintTitle', locale: l),
+                        message: _playlistsHintMessage(playlists, l),
                       ),
-                    ),
-                  ],
-                );
-              }
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _restoreScroll();
-              });
-              return Column(
-                children: [
-                  UiHintCard(
-                    hintId: 'playlists-onboarding',
-                    icon: Icons.playlist_add_check_circle_outlined,
-                    title: t('p3.playlists.hintTitle', locale: l),
-                    message: _playlistsHintMessage(playlists, l),
-                  ),
-                  Expanded(
-                    child: NotificationListener<ScrollNotification>(
-                      onNotification: (notification) {
-                        if (notification.metrics.axis == Axis.vertical) {
-                          _showFabForScroll(
-                            currentOffset: notification.metrics.pixels,
-                          );
-                        }
-                        return false;
-                      },
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                        itemCount: playlists.length,
-                        itemBuilder: (context, index) {
-                          return _buildPlaylistCard(
-                            context,
-                            ref,
-                            playlists[index],
-                          );
-                        },
+                      Expanded(
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: (notification) {
+                            if (notification.metrics.axis == Axis.vertical) {
+                              _showFabForScroll(
+                                currentOffset: notification.metrics.pixels,
+                              );
+                            }
+                            return false;
+                          },
+                          child: ListView(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                            children: [
+                              if (virtualFeeds.isNotEmpty) ...[
+                                _buildSectionTitle(
+                                  context,
+                                  t('playlistsPage.replayFeedsSection', locale: l),
+                                  Icons.layers,
+                                ),
+                                ...virtualFeeds.map(
+                                  (feed) =>
+                                      _buildVirtualFeedCard(context, ref, feed),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                              _buildSectionTitle(
+                                context,
+                                t(
+                                  'playlistsPage.youtubePlaylistsSection',
+                                  locale: l,
+                                ),
+                                Icons.queue_music,
+                              ),
+                              ...playlists.map(
+                                (playlist) =>
+                                    _buildPlaylistCard(context, ref, playlist),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
+                    ],
+                  );
+                },
+                loading: () => AppLoadingListSkeleton(
+                  itemCount: 8,
+                  itemBuilder: (context, index) => Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 90,
+                          color: Theme.of(context).colorScheme.surface,
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  height: 14,
+                                  width: 100,
+                                  color: Theme.of(context).colorScheme.surface,
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  height: 10,
+                                  width: 60,
+                                  color: Theme.of(context).colorScheme.surface,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
+                error: (error, stack) => ErrorStateView(
+                  error: error,
+                  prefix: t('playlistsPage.failedToLoadFeeds', locale: l),
+                  onRetry: () => ref.invalidate(virtualFeedsProvider),
+                ),
               );
             },
             loading: () => AppLoadingListSkeleton(
@@ -303,19 +389,21 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
             ),
             error: (error, stack) => ErrorStateView(
               error: error,
-              prefix: 'Failed to load playlists',
+              prefix: t('playlistsPage.failedToLoadPlaylists', locale: l),
               onRetry: () => ref.invalidate(playlistsProvider),
             ),
           );
         },
-        loading: () => const YoutubeConnectionLoadingState(
-          title: 'Checking your YouTube playlists',
-          description:
-              'ReplayGlowz is confirming your YouTube connection before loading playlist data.',
+        loading: () => YoutubeConnectionLoadingState(
+          title: t('playlistsPage.playlistSyncTitle', locale: l),
+          description: t(
+            'playlistsPage.playlistSyncDescription',
+            locale: l,
+          ),
         ),
         error: (error, stack) => ErrorStateView(
           error: error,
-          prefix: 'Failed to check YouTube connection',
+          prefix: t('playlistsPage.connectionErrorPrefix', locale: l),
           onRetry: () => ref.invalidate(youtubeConnectionProvider),
         ),
       ),
@@ -332,7 +420,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                           ? _scrollController.offset
                           : 0,
                     );
-                    _showCreatePlaylistDialog(context, ref, l);
+                    _showCreateListDialog(context, ref, l);
                   }
                 : null,
             tooltip: t('playlistCreate.title', locale: l),
@@ -343,15 +431,93 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
     );
   }
 
+  Widget _buildCreateSectionHint(BuildContext context, AppLocale l) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              t('playlistsPage.createDialogTitle', locale: l),
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              t('playlistsPage.createDialogDescription', locale: l),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => _showCreateListDialog(context, ref, l),
+              child: Text(t('playlistsPage.createSectionAction', locale: l)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(BuildContext context, String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 10),
+      child: Row(
+        children: [
+          Icon(icon, size: 18),
+          const SizedBox(width: 8),
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVirtualFeedCard(
+    BuildContext context,
+    WidgetRef ref,
+    VirtualFeed feed,
+  ) {
+    final color = feed.color != null
+        ? parseHexColor(feed.color!)
+        : Theme.of(context).colorScheme.primary;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(Icons.layers, color: color),
+        ),
+        title: Text(feed.title),
+        subtitle: Text(
+          '${feed.sourceCount} '
+          '${feed.sourceCount == 1 ? t('playlistsPage.virtualFeedSourceCountSingular', locale: _locale(context)) : t('playlistsPage.virtualFeedSourceCountPlural', locale: _locale(context))} • '
+          '${feed.activeSourceCount} '
+          '${feed.activeSourceCount == 1 ? t('playlistsPage.virtualFeedActiveSourcesSingular', locale: _locale(context)) : t('playlistsPage.virtualFeedActiveSourcesPlural', locale: _locale(context))}',
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          _persistScroll();
+          context.go(Routes.virtualFeedDetail(feed.id));
+        },
+      ),
+    );
+  }
+
   Widget _buildPlaylistCard(
     BuildContext context,
     WidgetRef ref,
     YouTubePlaylist playlist,
   ) {
+    final l = _locale(context);
     final canMutateOnYoutube =
         playlist.source == null || playlist.source == 'owned';
     return PlaylistCard(
       playlist: playlist,
+      locale: l,
       onTap: () {
         _persistScroll();
         context.go(Routes.playlistDetail(playlist.youtubePlaylistId));
@@ -367,12 +533,18 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                 await hidePlaylist(ref, playlist.youtubePlaylistId);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Playlist hidden.')),
+                    SnackBar(
+                      content: Text(t('playlistsPage.playlistHidden', locale: l)),
+                    ),
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  showErrorSnackBar(context, error: e, prefix: 'Error');
+                  showErrorSnackBar(
+                    context,
+                    error: e,
+                    prefix: t('playlistsPage.actionError', locale: l),
+                  );
                 }
               }
               break;
@@ -383,13 +555,57 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
         },
         itemBuilder: (context) => [
           if (canMutateOnYoutube)
-            const PopupMenuItem(value: 'edit', child: Text('Edit')),
-          const PopupMenuItem(value: 'hide', child: Text('Hide')),
+            PopupMenuItem(value: 'edit', child: Text(t('common.edit', locale: l))),
+          PopupMenuItem(value: 'hide', child: Text(t('common.hide', locale: l))),
           if (canMutateOnYoutube)
-            const PopupMenuItem(value: 'delete', child: Text('Delete')),
+            PopupMenuItem(
+              value: 'delete',
+              child: Text(t('common.delete', locale: l)),
+            ),
         ],
       ),
     );
+  }
+
+  Future<void> _showCreateListDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocale l,
+  ) async {
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(t('playlistsPage.createDialogTitle', locale: l)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.queue_music),
+              title: Text(t('playlistsPage.youtubePlaylistOptionTitle', locale: l)),
+              subtitle: Text(
+                t('playlistsPage.youtubePlaylistOptionDescription', locale: l),
+              ),
+              onTap: () => Navigator.of(dialogContext).pop('youtubePlaylist'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.layers),
+              title: Text(t('playlistsPage.replayFeedOptionTitle', locale: l)),
+              subtitle: Text(
+                t('playlistsPage.replayFeedOptionDescription', locale: l),
+              ),
+              onTap: () => Navigator.of(dialogContext).pop('virtualFeed'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (!context.mounted || selected == null) return;
+    if (selected == 'youtubePlaylist') {
+      await _showCreatePlaylistDialog(context, ref, l);
+    } else {
+      await _showCreateVirtualFeedDialog(context, ref, l);
+    }
   }
 
   Future<void> _showEditPlaylistDialog(
@@ -406,13 +622,15 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
         : Theme.of(context).colorScheme.primary;
     var saving = false;
 
+    final l = _locale(context);
+
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Edit playlist'),
+              title: Text(t('playlistsPage.editPlaylistTitle', locale: l)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -421,24 +639,27 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                     TextField(
                       controller: titleController,
                       autofocus: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Name',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: t('playlistCreate.titleLabel', locale: l),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: descriptionController,
-                      decoration: const InputDecoration(
-                        labelText: 'Description',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: t(
+                          'playlistCreate.descriptionLabel',
+                          locale: l,
+                        ),
+                        border: const OutlineInputBorder(),
                       ),
                       minLines: 2,
                       maxLines: 4,
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Color',
+                      t('playlistCreate.colorLabel', locale: l),
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                     const SizedBox(height: 10),
@@ -467,7 +688,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                   onPressed: saving
                       ? null
                       : () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Cancel'),
+                  child: Text(t('common.cancel', locale: l)),
                 ),
                 FilledButton.icon(
                   onPressed: saving
@@ -491,8 +712,8 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                             Navigator.of(dialogContext).pop();
                             if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Playlist updated.'),
+                              SnackBar(
+                                content: Text(t('playlistsPage.playlistUpdated', locale: l)),
                               ),
                             );
                           } catch (e) {
@@ -500,7 +721,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                               showErrorSnackBar(
                                 dialogContext,
                                 error: e,
-                                prefix: 'Update failed',
+                                prefix: t('playlistsPage.updateFailed', locale: l),
                               );
                             }
                             setDialogState(() => saving = false);
@@ -512,7 +733,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.check),
-                  label: const Text('Save'),
+                  label: Text(t('common.save', locale: l)),
                 ),
               ],
             );
@@ -693,26 +914,182 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
     descriptionController.dispose();
   }
 
+  Future<void> _showCreateVirtualFeedDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocale l,
+  ) async {
+    final formKey = GlobalKey<FormState>();
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+    var saving = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return AlertDialog(
+              title: Text(t('virtualFeedDetail.replayFeedFormTitle', locale: l)),
+              content: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: nameController,
+                        autofocus: true,
+                        decoration: InputDecoration(
+                          labelText: t(
+                            'virtualFeedDetail.replayFeedNameLabel',
+                            locale: l,
+                          ),
+                          hintText: t(
+                            'virtualFeedDetail.replayFeedNameHint',
+                            locale: l,
+                          ),
+                          border: const OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          final name = value?.trim() ?? '';
+                          if (name.isEmpty) {
+                            return t(
+                              'virtualFeedDetail.replayFeedNameErrorEmpty',
+                              locale: l,
+                            );
+                          }
+                          if (name.length < 2) {
+                            return t(
+                              'virtualFeedDetail.replayFeedNameErrorShort',
+                              locale: l,
+                            );
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: descriptionController,
+                        decoration: InputDecoration(
+                          labelText: t(
+                            'virtualFeedDetail.replayFeedDescriptionLabel',
+                            locale: l,
+                          ),
+                          hintText: t(
+                            'virtualFeedDetail.replayFeedDescriptionHint',
+                            locale: l,
+                          ),
+                          border: const OutlineInputBorder(),
+                          alignLabelWithHint: true,
+                        ),
+                        maxLines: 3,
+                        textInputAction: TextInputAction.done,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        t('virtualFeedDetail.sourceDescriptionTitle', locale: l),
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: saving
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: Text(t('common.cancel', locale: l)),
+                ),
+                FilledButton.icon(
+                  onPressed: saving
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setDialogState(() => saving = true);
+                          try {
+                            await createVirtualFeed(
+                              ref,
+                              title: nameController.text.trim(),
+                              description:
+                                  descriptionController.text.trim().isEmpty
+                                  ? null
+                                  : descriptionController.text.trim(),
+                            );
+                            if (!dialogContext.mounted) return;
+                            Navigator.of(dialogContext).pop();
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  t(
+                                    'virtualFeedDetail.replayFeedCreateSuccess',
+                                    locale: l,
+                                  ),
+                                ),
+                              ),
+                            );
+                            ref.invalidate(virtualFeedsProvider);
+                          } catch (e) {
+                            if (dialogContext.mounted) {
+                              showErrorSnackBar(
+                                dialogContext,
+                                error: e,
+                                prefix: t(
+                                  'virtualFeedDetail.replayFeedCreateError',
+                                  locale: l,
+                                ),
+                              );
+                            }
+                            setDialogState(() => saving = false);
+                          }
+                        },
+                  icon: saving
+                      ? const SizedBox.square(
+                          dimension: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.check),
+                  label: Text(t('virtualFeedDetail.replayFeedCreateAction', locale: l)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    nameController.dispose();
+    descriptionController.dispose();
+  }
+
   Future<void> _confirmDeletePlaylist(
     BuildContext context,
     WidgetRef ref,
     YouTubePlaylist playlist,
   ) async {
+    final l = _locale(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete playlist?'),
+        title: Text(t('playlistsPage.confirmDelete', locale: l)),
         content: Text(
-          'This deletes "${playlist.title}" from YouTube and refreshes ReplayGlowz.',
+          tr(
+            'playlistsPage.confirmDeleteBody',
+            params: {'title': playlist.title},
+            locale: l,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+            child: Text(t('common.cancel', locale: l)),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Delete'),
+            child: Text(t('common.delete', locale: l)),
           ),
         ],
       ),
@@ -725,10 +1102,16 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
       if (!context.mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Playlist deleted.')));
+      ).showSnackBar(
+        SnackBar(content: Text(t('playlistsPage.playlistDeleted', locale: l))),
+      );
     } catch (e) {
       if (context.mounted) {
-        showErrorSnackBar(context, error: e, prefix: 'Delete failed');
+        showErrorSnackBar(
+          context,
+          error: e,
+          prefix: t('playlistsPage.deleteFailed', locale: l),
+        );
       }
     }
   }
