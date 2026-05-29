@@ -35,6 +35,7 @@ import type * as users from "../users.js";
 import type * as utils from "../utils.js";
 import type * as videoOrder from "../videoOrder.js";
 import type * as videos from "../videos.js";
+import type * as virtualFeeds from "../virtualFeeds.js";
 import type * as watched from "../watched.js";
 import type * as webhooks from "../webhooks.js";
 import type * as youtube from "../youtube.js";
@@ -74,6 +75,7 @@ declare const fullApi: ApiFromModules<{
   utils: typeof utils;
   videoOrder: typeof videoOrder;
   videos: typeof videos;
+  virtualFeeds: typeof virtualFeeds;
   watched: typeof watched;
   webhooks: typeof webhooks;
   youtube: typeof youtube;
