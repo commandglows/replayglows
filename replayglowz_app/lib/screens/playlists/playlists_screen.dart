@@ -177,7 +177,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                 await syncAllPlaylists(ref);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(t('playlistsPage.syncComplete', locale: l))),
+                    SnackBar(
+                      content: Text(t('playlistsPage.syncComplete', locale: l)),
+                    ),
                   );
                 }
               } catch (e) {
@@ -280,7 +282,10 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                               if (virtualFeeds.isNotEmpty) ...[
                                 _buildSectionTitle(
                                   context,
-                                  t('playlistsPage.replayFeedsSection', locale: l),
+                                  t(
+                                    'playlistsPage.replayFeedsSection',
+                                    locale: l,
+                                  ),
                                   Icons.layers,
                                 ),
                                 ...virtualFeeds.map(
@@ -396,10 +401,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
         },
         loading: () => YoutubeConnectionLoadingState(
           title: t('playlistsPage.playlistSyncTitle', locale: l),
-          description: t(
-            'playlistsPage.playlistSyncDescription',
-            locale: l,
-          ),
+          description: t('playlistsPage.playlistSyncDescription', locale: l),
         ),
         error: (error, stack) => ErrorStateView(
           error: error,
@@ -443,9 +445,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 4),
-            Text(
-              t('playlistsPage.createDialogDescription', locale: l),
-            ),
+            Text(t('playlistsPage.createDialogDescription', locale: l)),
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => _showCreateListDialog(context, ref, l),
@@ -534,7 +534,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(t('playlistsPage.playlistHidden', locale: l)),
+                      content: Text(
+                        t('playlistsPage.playlistHidden', locale: l),
+                      ),
                     ),
                   );
                 }
@@ -555,8 +557,14 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
         },
         itemBuilder: (context) => [
           if (canMutateOnYoutube)
-            PopupMenuItem(value: 'edit', child: Text(t('common.edit', locale: l))),
-          PopupMenuItem(value: 'hide', child: Text(t('common.hide', locale: l))),
+            PopupMenuItem(
+              value: 'edit',
+              child: Text(t('common.edit', locale: l)),
+            ),
+          PopupMenuItem(
+            value: 'hide',
+            child: Text(t('common.hide', locale: l)),
+          ),
           if (canMutateOnYoutube)
             PopupMenuItem(
               value: 'delete',
@@ -581,7 +589,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.queue_music),
-              title: Text(t('playlistsPage.youtubePlaylistOptionTitle', locale: l)),
+              title: Text(
+                t('playlistsPage.youtubePlaylistOptionTitle', locale: l),
+              ),
               subtitle: Text(
                 t('playlistsPage.youtubePlaylistOptionDescription', locale: l),
               ),
@@ -713,7 +723,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                             if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(t('playlistsPage.playlistUpdated', locale: l)),
+                                content: Text(
+                                  t('playlistsPage.playlistUpdated', locale: l),
+                                ),
                               ),
                             );
                           } catch (e) {
@@ -721,7 +733,10 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                               showErrorSnackBar(
                                 dialogContext,
                                 error: e,
-                                prefix: t('playlistsPage.updateFailed', locale: l),
+                                prefix: t(
+                                  'playlistsPage.updateFailed',
+                                  locale: l,
+                                ),
                               );
                             }
                             setDialogState(() => saving = false);
@@ -930,7 +945,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
             return AlertDialog(
-              title: Text(t('virtualFeedDetail.replayFeedFormTitle', locale: l)),
+              title: Text(t('playlistsPage.replayFeedFormTitle', locale: l)),
               content: Form(
                 key: formKey,
                 child: SingleChildScrollView(
@@ -943,11 +958,11 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                         autofocus: true,
                         decoration: InputDecoration(
                           labelText: t(
-                            'virtualFeedDetail.replayFeedNameLabel',
+                            'playlistsPage.replayFeedNameLabel',
                             locale: l,
                           ),
                           hintText: t(
-                            'virtualFeedDetail.replayFeedNameHint',
+                            'playlistsPage.replayFeedNameHint',
                             locale: l,
                           ),
                           border: const OutlineInputBorder(),
@@ -956,13 +971,13 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                           final name = value?.trim() ?? '';
                           if (name.isEmpty) {
                             return t(
-                              'virtualFeedDetail.replayFeedNameErrorEmpty',
+                              'playlistsPage.replayFeedNameErrorEmpty',
                               locale: l,
                             );
                           }
                           if (name.length < 2) {
                             return t(
-                              'virtualFeedDetail.replayFeedNameErrorShort',
+                              'playlistsPage.replayFeedNameErrorShort',
                               locale: l,
                             );
                           }
@@ -974,11 +989,11 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                         controller: descriptionController,
                         decoration: InputDecoration(
                           labelText: t(
-                            'virtualFeedDetail.replayFeedDescriptionLabel',
+                            'playlistsPage.replayFeedDescriptionLabel',
                             locale: l,
                           ),
                           hintText: t(
-                            'virtualFeedDetail.replayFeedDescriptionHint',
+                            'playlistsPage.replayFeedDescriptionHint',
                             locale: l,
                           ),
                           border: const OutlineInputBorder(),
@@ -989,7 +1004,10 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        t('virtualFeedDetail.sourceDescriptionTitle', locale: l),
+                        t(
+                          'virtualFeedDetail.sourceDescriptionTitle',
+                          locale: l,
+                        ),
                         style: Theme.of(context).textTheme.labelSmall,
                       ),
                     ],
@@ -1025,7 +1043,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                               SnackBar(
                                 content: Text(
                                   t(
-                                    'virtualFeedDetail.replayFeedCreateSuccess',
+                                    'playlistsPage.replayFeedCreateSuccess',
                                     locale: l,
                                   ),
                                 ),
@@ -1038,7 +1056,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                                 dialogContext,
                                 error: e,
                                 prefix: t(
-                                  'virtualFeedDetail.replayFeedCreateError',
+                                  'playlistsPage.replayFeedCreateError',
                                   locale: l,
                                 ),
                               );
@@ -1052,7 +1070,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.check),
-                  label: Text(t('virtualFeedDetail.replayFeedCreateAction', locale: l)),
+                  label: Text(
+                    t('playlistsPage.replayFeedCreateAction', locale: l),
+                  ),
                 ),
               ],
             );
@@ -1100,9 +1120,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
     try {
       await deleteYoutubePlaylist(ref, playlist.youtubePlaylistId);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(t('playlistsPage.playlistDeleted', locale: l))),
       );
     } catch (e) {

@@ -6,7 +6,7 @@ project: "replayglowz"
 created: "2026-05-28"
 created_at: "2026-05-28 17:52:05 UTC"
 updated: "2026-05-29"
-updated_at: "2026-05-29 03:21:50 UTC"
+updated_at: "2026-05-29 23:53:49 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -349,6 +349,7 @@ None.
 | 2026-05-29 13:01:18 UTC | sf-browser | GPT-5 Codex | Confirmed no authenticated browser verification was performed with the test account; development mode still requires shipping to Vercel preview before browser/manual proof can be authoritative. | needs-deploy | `sf-ship -> sf-prod -> sf-test --preview with test account` |
 | 2026-05-29 14:37:58 UTC | sf-prod | GPT-5 Codex | Updated git origin to the moved repository, confirmed push was up to date, waited for Vercel deployment `dpl_GeaGpGQBNJYEkUTUFKDgohEhaeTZ` for commit `e064a0f`, verified status READY, build logs completed, and public alias `https://app.replayglowz.com/` returned 200; raw deployment URL is protected with Vercel SSO 401. | partial | `sf-test --preview https://app.replayglowz.com with test account` |
 | 2026-05-29 14:54:55 UTC | sf-browser | GPT-5 Codex | Used existing authenticated Playwright state for the test account on `https://app.replayglowz.com/`; found `Lists` stuck on skeleton until Convex prod functions were deployed, then verified `Lists` renders the existing YouTube playlist, the create dialog exposes `YouTube Playlist` and `ReplayGlowz Feed`, playlist detail opens, Play All routes to `/play?videoId=vSCF6pTxqJ8`, and Feed -> Play preserves the active video. | partial | `sf-test with explicit approval for creating a test ReplayGlowz Feed and adding a source` |
+| 2026-05-29 23:53:49 UTC | sf-browser | GPT-5 Codex | With explicit production-test approval, created `QA Feed 2026-05-29`, added existing playlist `Fun` as a source, verified counters/video aggregation and Play all enablement, removed the source, then deleted the test Feed; found visible raw i18n keys in the create/source-picker flow and applied a narrow Flutter fix. | partial | `sf-ship -> sf-prod -> sf-browser recheck i18n on https://app.replayglowz.com` |
 
 ## Current Chantier Flow
 
@@ -357,6 +358,6 @@ None.
 | sf-spec | complete | Draft created from operator product decision and YouTube quota evidence. |
 | sf-ready | complete | Navigation decision resolved: virtual Feeds live in `Lists`; spec has no blocking open questions. |
 | sf-start | complete | Virtual Feed source picker (channels/subscriptions/playlists), add/remove/toggle/reorder, cache-empty/stale affordances, quota-aware refresh actions, play queue launch from Feed detail, return-to-active scroll, and EN/FR Lists/Feed copy are implemented with passing local typecheck/analyze/tests and targeted quota-safety scans. |
-| sf-verify | partial | Local verification passes and authenticated browser smoke now passes for `Lists`, create-dialog visibility, playlist detail, Play All, and Feed -> Play active-video preservation. Full mutation QA for creating a ReplayGlowz Feed and adding/removing sources still needs explicit approval because it writes test-account production data. |
+| sf-verify | partial | Local verification passes; authenticated browser smoke passes for `Lists`, create-dialog visibility, playlist detail, Play All, Feed -> Play active-video preservation, and production test-account Feed create/add-source/remove-source/delete cleanup. A narrow i18n fix is pending ship/redeploy/recheck because browser QA exposed raw translation keys. |
 | sf-end | pending | Close trackers/docs after verification. |
-| sf-ship | complete | Operator shipped commit `e064a0f` to `main`; local origin was updated to `https://github.com/diane-defores/replayglowz.git` and push now reports up to date. |
+| sf-ship | pending | Operator shipped commit `e064a0f`, then trace commit `a2edeea`; i18n repair from production browser QA now needs a new commit, push, deploy, and browser recheck. |

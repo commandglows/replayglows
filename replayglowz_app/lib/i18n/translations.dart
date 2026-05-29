@@ -21,9 +21,17 @@ String t(String key, {AppLocale locale = AppLocale.en}) {
   final parts = key.split('.');
   dynamic current = translations;
 
-  for (final part in parts) {
+  for (var i = 0; i < parts.length; i += 1) {
+    final part = parts[i];
     if (current is Map<String, dynamic> && current.containsKey(part)) {
       current = current[part];
+    } else if (current is Map<String, dynamic>) {
+      final remainder = parts.sublist(i).join('.');
+      if (current.containsKey(remainder)) {
+        current = current[remainder];
+        break;
+      }
+      return key; // Return key as fallback
     } else {
       return key; // Return key as fallback
     }
