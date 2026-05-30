@@ -147,10 +147,14 @@ const Map<String, dynamic> en = {
     'feedNotFound': 'Feed not found',
     'feedUnavailable': 'This ReplayGlowz Feed is not available.',
     'sourceSectionTitle': 'Sources',
+    'sourceSectionHelp':
+        'Each source feeds this Feed. A playlist adds all of its known videos; a channel or your subscriptions add new videos when the YouTube cache refreshes.',
     'addSource': 'Add source',
+    'addSourceHelp':
+        'Choose what should feed this Feed. ReplayGlowz then groups videos from every active source into one play session.',
     'emptySources': 'No source added yet',
     'emptySourcesDesc':
-        'Add channels, playlists, or subscriptions to create a real live playlist that fills itself automatically.',
+        'Add a playlist to bring all of its videos into this Feed, or add channels and subscriptions to build a live playlist that fills itself automatically.',
     'activeVideoHint':
         'Open a video from this Feed in Play to keep your position in sync.',
     'sourceType.channel': 'YouTube channel',
@@ -207,7 +211,7 @@ const Map<String, dynamic> en = {
     'deleteConfirmBody': 'This deletes the ReplayGlowz Feed from your account.',
     'refreshing': 'Refreshing cache...',
     'refreshDone': 'YouTube cache refresh complete.',
-    'sourceAdded': 'Source added to Feed.',
+    'sourceAdded': 'Source added. Its videos now feed this ReplayGlowz Feed.',
     'sourceRemoved': 'Source removed from Feed.',
     'sourceUpdated': 'Source updated.',
     'sourceReordered': 'Sources reordered.',

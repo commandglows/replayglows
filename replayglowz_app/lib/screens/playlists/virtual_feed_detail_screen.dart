@@ -111,7 +111,8 @@ class _VirtualFeedDetailScreenState
     String sourceId,
   ) {
     return sources.any(
-      (source) => source.sourceType == sourceType && source.sourceId == sourceId,
+      (source) =>
+          source.sourceType == sourceType && source.sourceId == sourceId,
     );
   }
 
@@ -133,9 +134,7 @@ class _VirtualFeedDetailScreenState
   }
 
   String _queueActiveVideoId() {
-    return ref
-            .watch(feedPlaybackQueueProvider)
-            .currentVideoId ??
+    return ref.watch(feedPlaybackQueueProvider).currentVideoId ??
         ref.watch(activePlayVideoIdProvider) ??
         '';
   }
@@ -223,17 +222,17 @@ class _VirtualFeedDetailScreenState
   Future<void> _startPlayback(List<YouTubeVideo> videos) async {
     final firstVideoId = videos
         .map((video) => video.youtubeVideoId)
-        .firstWhere(
-          (id) => id.isNotEmpty,
-          orElse: () => '',
-        );
+        .firstWhere((id) => id.isNotEmpty, orElse: () => '');
     if (firstVideoId.isEmpty) {
       return;
     }
     await _openVideo(firstVideoId, videos);
   }
 
-  Future<void> _scrollToActiveVideo(List<YouTubeVideo> videos, String videoId) async {
+  Future<void> _scrollToActiveVideo(
+    List<YouTubeVideo> videos,
+    String videoId,
+  ) async {
     if (videoId.isEmpty) return;
 
     final video = videos.firstWhere(
@@ -281,9 +280,7 @@ class _VirtualFeedDetailScreenState
       );
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(t('virtualFeedDetail.sourceAdded', locale: l)),
-        ),
+        SnackBar(content: Text(t('virtualFeedDetail.sourceAdded', locale: l))),
       );
       _invalidateFeedDetails();
     } catch (e) {
@@ -336,7 +333,11 @@ class _VirtualFeedDetailScreenState
     VirtualFeedSource source,
     AppLocale l,
   ) async {
-    final confirmed = await _confirmRemoveSource(context, source.sourceTitle, l);
+    final confirmed = await _confirmRemoveSource(
+      context,
+      source.sourceTitle,
+      l,
+    );
     if (!confirmed) return;
 
     try {
@@ -376,7 +377,9 @@ class _VirtualFeedDetailScreenState
     final item = reordered.removeAt(oldIndex);
     reordered.insert(newIndex, item);
 
-    final sourceIds = reordered.map((source) => source.id).toList(growable: false);
+    final sourceIds = reordered
+        .map((source) => source.id)
+        .toList(growable: false);
     if (_sameSourceOrderIds(sourceIds, current)) {
       return;
     }
@@ -473,20 +476,31 @@ class _VirtualFeedDetailScreenState
     final candidates = <_VirtualFeedSourceCandidate>[];
 
     if (channels.isNotEmpty &&
-        !_isSourceAlreadyAdded(existing, 'subscriptions', _subscriptionsSourceId)) {
+        !_isSourceAlreadyAdded(
+          existing,
+          'subscriptions',
+          _subscriptionsSourceId,
+        )) {
       candidates.add(
         _VirtualFeedSourceCandidate(
           sourceType: 'subscriptions',
           sourceId: _subscriptionsSourceId,
           title: t('virtualFeedDetail.sourceType.subscriptions', locale: l),
-          subtitle: t('virtualFeedDetail.sourceType.subscriptionsHint', locale: l),
+          subtitle: t(
+            'virtualFeedDetail.sourceType.subscriptionsHint',
+            locale: l,
+          ),
           icon: Icons.rss_feed,
         ),
       );
     }
 
     for (final channel in channels) {
-      if (_isSourceAlreadyAdded(existing, 'channel', channel.youtubeChannelId)) {
+      if (_isSourceAlreadyAdded(
+        existing,
+        'channel',
+        channel.youtubeChannelId,
+      )) {
         continue;
       }
       candidates.add(
@@ -537,6 +551,13 @@ class _VirtualFeedDetailScreenState
                 t('virtualFeedDetail.addSource', locale: l),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
+              const SizedBox(height: 6),
+              Text(
+                t('virtualFeedDetail.addSourceHelp', locale: l),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 12),
               if (candidates.isEmpty)
                 Column(
@@ -547,7 +568,10 @@ class _VirtualFeedDetailScreenState
                           ? Icons.warning_amber_outlined
                           : Icons.hourglass_empty,
                       title: hasCacheError
-                          ? t('virtualFeedDetail.emptySourcePickerError', locale: l)
+                          ? t(
+                              'virtualFeedDetail.emptySourcePickerError',
+                              locale: l,
+                            )
                           : isLoadingCache
                           ? t(
                               'virtualFeedDetail.emptySourcePickerLoading',
@@ -577,7 +601,9 @@ class _VirtualFeedDetailScreenState
                         await _refreshYoutubeCache(context, l);
                       },
                       icon: const Icon(Icons.refresh),
-                      label: Text(t('virtualFeedDetail.sourcePickerRefresh', locale: l)),
+                      label: Text(
+                        t('virtualFeedDetail.sourcePickerRefresh', locale: l),
+                      ),
                     ),
                   ],
                 )
@@ -595,10 +621,9 @@ class _VirtualFeedDetailScreenState
                         subtitle: candidate.subtitle == null
                             ? null
                             : Text(candidate.subtitle!),
-                        onTap: () =>
-                            Navigator.of(dialogContext).pop<_VirtualFeedSourceCandidate>(
-                              candidate,
-                            ),
+                        onTap: () => Navigator.of(
+                          dialogContext,
+                        ).pop<_VirtualFeedSourceCandidate>(candidate),
                       );
                     },
                   ),
@@ -609,7 +634,12 @@ class _VirtualFeedDetailScreenState
       ),
     );
 
-    if (!mounted || !context.mounted || selected == null || feedDetails.feed == null) return;
+    if (!mounted ||
+        !context.mounted ||
+        selected == null ||
+        feedDetails.feed == null) {
+      return;
+    }
     await _addSourceFromCandidate(context, feedDetails.feed!, selected, l);
   }
 
@@ -649,7 +679,9 @@ class _VirtualFeedDetailScreenState
         final feed = detailsData.feed;
         if (feed == null) {
           return Scaffold(
-            appBar: AppBar(title: Text(t('virtualFeedDetail.feedNotFound', locale: l))),
+            appBar: AppBar(
+              title: Text(t('virtualFeedDetail.feedNotFound', locale: l)),
+            ),
             body: ErrorStateView(
               error: t('virtualFeedDetail.feedUnavailable', locale: l),
               onRetry: () => ref.invalidate(
@@ -794,7 +826,9 @@ class _VirtualFeedDetailScreenState
                                   children: [
                                     const Icon(Icons.play_arrow, size: 18),
                                     const SizedBox(width: 6),
-                                    Text(t('virtualFeedDetail.playAll', locale: l)),
+                                    Text(
+                                      t('virtualFeedDetail.playAll', locale: l),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -809,7 +843,9 @@ class _VirtualFeedDetailScreenState
                                 playlistsAsync,
                               ),
                               icon: const Icon(Icons.add),
-                              label: Text(t('virtualFeedDetail.addSource', locale: l)),
+                              label: Text(
+                                t('virtualFeedDetail.addSource', locale: l),
+                              ),
                             ),
                           ],
                         ),
@@ -823,19 +859,25 @@ class _VirtualFeedDetailScreenState
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                     child: Card(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .errorContainer
-                          .withValues(alpha: 0.35),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.errorContainer.withValues(alpha: 0.35),
                       child: ListTile(
                         leading: const Icon(Icons.warning_amber_outlined),
-                        title: Text(t('virtualFeedDetail.sourceUnavailable', locale: l)),
+                        title: Text(
+                          t('virtualFeedDetail.sourceUnavailable', locale: l),
+                        ),
                         subtitle: Text(
-                          t('virtualFeedDetail.sourceUnavailableDesc', locale: l),
+                          t(
+                            'virtualFeedDetail.sourceUnavailableDesc',
+                            locale: l,
+                          ),
                         ),
                         trailing: TextButton(
                           onPressed: () => _refreshYoutubeCache(context, l),
-                          child: Text(t('virtualFeedDetail.refreshYoutube', locale: l)),
+                          child: Text(
+                            t('virtualFeedDetail.refreshYoutube', locale: l),
+                          ),
                         ),
                       ),
                     ),
@@ -844,9 +886,21 @@ class _VirtualFeedDetailScreenState
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 4, 16, 4),
-                  child: Text(
-                    t('virtualFeedDetail.sourceSectionTitle', locale: l),
-                    style: Theme.of(context).textTheme.titleSmall,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        t('virtualFeedDetail.sourceSectionTitle', locale: l),
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        t('virtualFeedDetail.sourceSectionHelp', locale: l),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -856,7 +910,10 @@ class _VirtualFeedDetailScreenState
                   child: AppEmptyState(
                     icon: Icons.source,
                     title: t('virtualFeedDetail.emptySources', locale: l),
-                    description: t('virtualFeedDetail.emptySourcesDesc', locale: l),
+                    description: t(
+                      'virtualFeedDetail.emptySourcesDesc',
+                      locale: l,
+                    ),
                   ),
                 )
               else
@@ -891,8 +948,8 @@ class _VirtualFeedDetailScreenState
                             source.isSubscriptionSource
                                 ? Icons.rss_feed
                                 : source.isChannelSource
-                                    ? Icons.person_search
-                                    : Icons.playlist_play,
+                                ? Icons.person_search
+                                : Icons.playlist_play,
                             color: source.isActive ? color : Colors.grey,
                           ),
                           title: Text(source.sourceTitle),
@@ -953,7 +1010,9 @@ class _VirtualFeedDetailScreenState
                       action: playlistIds.isNotEmpty
                           ? FilledButton(
                               onPressed: () => _startPlayback(videos),
-                              child: Text(t('virtualFeedDetail.play', locale: l)),
+                              child: Text(
+                                t('virtualFeedDetail.play', locale: l),
+                              ),
                             )
                           : null,
                     ),
@@ -1004,7 +1063,9 @@ class _VirtualFeedDetailScreenState
         ),
       ),
       error: (error, stack) => Scaffold(
-        appBar: AppBar(title: Text(t('virtualFeedDetail.feedUnavailable', locale: l))),
+        appBar: AppBar(
+          title: Text(t('virtualFeedDetail.feedUnavailable', locale: l)),
+        ),
         body: ErrorStateView(
           error: error,
           prefix: t('virtualFeedDetail.feedUnavailable', locale: l),

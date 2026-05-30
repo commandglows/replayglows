@@ -147,10 +147,14 @@ const Map<String, dynamic> fr = {
     'feedNotFound': 'Feed introuvable',
     'feedUnavailable': 'Ce Feed ReplayGlowz n’est pas disponible.',
     'sourceSectionTitle': 'Sources',
+    'sourceSectionHelp':
+        'Chaque source alimente ce Feed. Une playlist ajoute toutes ses vidéos connues ; une chaîne ou vos abonnements ajoutent leurs nouvelles vidéos quand le cache YouTube est actualisé.',
     'addSource': 'Ajouter une source',
+    'addSourceHelp':
+        'Choisissez ce qui doit nourrir ce Feed. ReplayGlowz regroupe ensuite les vidéos de toutes les sources actives dans une seule lecture.',
     'emptySources': 'Aucune source ajoutée',
     'emptySourcesDesc':
-        'Ajoutez des chaînes, des playlists ou vos abonnements pour créer une vraie playlist live qui se remplit automatiquement.',
+        'Ajoutez une playlist pour importer toutes ses vidéos dans ce Feed, ou ajoutez des chaînes et abonnements pour construire une playlist live qui se remplit automatiquement.',
     'activeVideoHint':
         'Ouvrez une vidéo depuis ce Feed dans Lire pour garder la position synchronisée.',
     'sourceType.channel': 'Chaîne YouTube',
@@ -207,7 +211,7 @@ const Map<String, dynamic> fr = {
     'deleteConfirmBody': 'Supprime ce Feed ReplayGlowz de votre compte.',
     'refreshing': 'Actualisation du cache...',
     'refreshDone': 'Actualisation du cache YouTube terminée.',
-    'sourceAdded': 'Source ajoutée au Feed.',
+    'sourceAdded': 'Source ajoutée. Ses vidéos alimentent maintenant ce Feed.',
     'sourceRemoved': 'Source supprimée du Feed.',
     'sourceUpdated': 'Source mise à jour.',
     'sourceReordered': 'Sources réordonnées.',
