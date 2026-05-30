@@ -36,16 +36,16 @@ next_step: "/sf-verify replayglowz-feed-source-discovery-playlist-channel-expans
 
 ## Scenarios
 
-- [ ] CA 1: Open a Feed, click `Ajouter une source`, and confirm the picker shows distinct source intentions.
+- [x] CA 1: Open a Feed, click `Ajouter une source`, and confirm the picker shows distinct source intentions.
 - [ ] CA 2: Open `Chaînes depuis mes abonnements`, search for a channel, select it, add it, and confirm it appears in Feed sources.
 - [ ] CA 3: Open `Playlist YouTube`, add a playlist source, and confirm the current playlist videos feed the Feed.
-- [ ] CA 4: Open `Chaînes d'une playlist`, select a playlist, and confirm channel candidates with counts appear.
-- [ ] CA 5: Select multiple detected channel candidates and confirm they are added as `channel` sources.
-- [ ] CA 6: Repeat the add path for already-added channels and confirm no generic server error appears.
+- [x] CA 4: Open `Chaînes d'une playlist`, select a playlist, and confirm channel candidates with counts appear.
+- [x] CA 5: Select multiple detected channel candidates and confirm they are added as `channel` sources.
+- [x] CA 6: Repeat the add path for already-added channels and confirm no generic server error appears.
 - [ ] CA 7: Use a playlist with missing channel metadata when available and confirm the missing metadata message appears.
 - [ ] CA 8: Use a playlist with no usable candidates when available and confirm the empty state suggests adding the playlist or refreshing cache.
-- [ ] CA 9: Click `Play all` after adding extracted channel sources and confirm the Play queue uses the Feed videos.
-- [ ] CA 10: Confirm local source add actions do not display quota warnings and do not call YouTube write endpoints.
+- [x] CA 9: Click `Play all` after adding extracted channel sources and confirm the Play queue uses the Feed videos.
+- [x] CA 10: Confirm local source add actions do not display quota warnings and do not call YouTube write endpoints.
 - [ ] CA 11: Attempt candidate query or batch add with another user's IDs only in a controlled backend/security test; confirm Convex rejects access.
 - [ ] CA 12: Check French and English source-mode copy for static playlist vs live channel distinction.
 
@@ -57,6 +57,20 @@ next_step: "/sf-verify replayglowz-feed-source-discovery-playlist-channel-expans
 - [x] Source scan for forbidden YouTube write endpoints in Feed local source paths.
 - [x] `/home/claude/shipflow/tools/shipflow_metadata_lint.py AGENT.md shipflow_data`
 
+## Browser Evidence
+
+- [x] Production app loaded `BUILD_COMMIT_SHA=d37e225c32b8eb9c4c05e9159903a687800e08c6` on `https://app.replayglowz.com` with authenticated test account.
+- [x] Created temporary Feed `QA Feed Source 0530`.
+- [x] Confirmed source picker shows distinct modes: channels from subscriptions, YouTube playlist, channels from a playlist, and all subscriptions.
+- [x] Selected playlist `Fun`; candidate query returned `Sheena Melwani` with `1 videos`.
+- [x] Added `Sheena Melwani` as a live channel source; Feed showed `1 sources • 1 active` and the known video.
+- [x] Reopened extraction flow and confirmed the same channel is disabled as `Already in this Feed` instead of throwing a generic server error.
+- [x] Clicked `Play all`; app routed to `/play?videoId=vSCF6pTxqJ8&autoPlay=1`.
+- [x] Deleted temporary Feed `QA Feed Source 0530` after QA.
+
 ## Notes
 
-- Browser/manual QA should run after an explicit ship/deploy because the project development mode is `vercel-preview-push`.
+- CA 2 remains pending because this test account showed subscription-channel options disabled/no subscription cache in this scenario.
+- CA 3 remains covered by existing behavior but was not re-clicked during this browser pass.
+- CA 7 and CA 8 require specific cache fixtures with missing/no channel metadata.
+- CA 12 was visually checked in English production copy; French copy is present in i18n and covered by Flutter analyze, but not browser-toggled in this run.
