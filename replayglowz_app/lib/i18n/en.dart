@@ -78,15 +78,14 @@ const Map<String, dynamic> en = {
     'createPlaylist': 'Create playlist',
     'createDialogTitle': 'Create in Lists',
     'createDialogDescription':
-        'Create either a YouTube playlist (writes to YouTube) or a ReplayGlowz Feed (local cache-only, no quota write cost).',
+        'Create a classic YouTube playlist or a ReplayGlowz Feed: a live playlist that groups channels and playlists around one theme.',
     'createSectionAction': 'Create',
     'syncComplete':
         'Sync complete. If this YouTube account is new, create a YouTube playlist or channel, then refresh again.',
     'syncFailed': 'Sync failed',
-    'connectionRequiredTitle':
-        'Connect YouTube to import playlists',
+    'connectionRequiredTitle': 'Connect YouTube to create your Lists',
     'connectionRequiredDescription':
-        'Playlists, channel imports, and automatic refresh all depend on your YouTube connection.',
+        'ReplayGlowz can import your playlists, aggregate your subscriptions, and keep your Feeds updated from your YouTube library.',
     'noListsYetTitle': 'No Lists yet',
     'noListsYetDescription':
         'You are connected to YouTube, but there are no YouTube playlists or ReplayGlowz Feeds yet.',
@@ -109,20 +108,20 @@ const Map<String, dynamic> en = {
     'createPlaylistDescription': 'Creates an actual playlist on YouTube.',
     'createFeed': 'ReplayGlowz Feed',
     'createFeedDescription':
-        'Creates a local cache-only feed with no YouTube write cost.',
+        'Group a theme’s videos and launch them in one continuous play session.',
     'youtubePlaylistOptionTitle': 'YouTube Playlist',
     'youtubePlaylistOptionDescription':
         'Creates an actual playlist on YouTube.',
     'replayFeedOptionTitle': 'ReplayGlowz Feed',
     'replayFeedOptionDescription':
-        'Creates a local cache-only Feed with no YouTube write cost.',
+        'Create a live playlist that auto-updates from your channels, subscriptions, and playlists.',
     'replayFeedFormTitle': 'Create ReplayGlowz Feed',
     'replayFeedNameLabel': 'Feed name',
     'replayFeedNameHint': 'e.g. Cuisine',
     'replayFeedDescriptionLabel': 'Description',
     'replayFeedDescriptionHint': 'Optional',
     'replayFeedDescriptionHelp':
-        'ReplayGlowz Feeds are local aggregates from your cached data.',
+        'A Feed brings every video for one theme together. Add cooking, tech, or music channels, then play the whole flow with one Play button.',
     'replayFeedNameErrorEmpty': 'Please enter a feed name',
     'replayFeedNameErrorShort': 'Name must be at least 2 characters',
     'replayFeedCreateAction': 'Save Feed',
@@ -151,20 +150,22 @@ const Map<String, dynamic> en = {
     'addSource': 'Add source',
     'emptySources': 'No source added yet',
     'emptySourcesDesc':
-        'Add a channel, playlist, or all subscriptions to build this Feed.',
+        'Add channels, playlists, or subscriptions to create a real live playlist that fills itself automatically.',
     'activeVideoHint':
         'Open a video from this Feed in Play to keep your position in sync.',
     'sourceType.channel': 'YouTube channel',
     'sourceType.playlist': 'YouTube playlist',
     'sourceType.subscriptions': 'All subscriptions',
-    'sourceType.subscriptionsHint': 'Cached channels this account follows on YouTube',
+    'sourceType.subscriptionsHint':
+        'Cached channels this account follows on YouTube',
     'untitledChannel': 'Untitled channel',
     'sourceCountSingular': 'source',
     'sourceCountPlural': 'sources',
     'videoCount': 'videos',
     'sourceStale': 'Source unavailable in cache',
     'sourceUnavailable': 'Some source data is unavailable',
-    'sourceUnavailableDesc': 'Some sources are not currently in cache and need a refresh.',
+    'sourceUnavailableDesc':
+        'Some sources are not currently in cache and need a refresh.',
     'sourceUnavailableHint':
         'Refresh YouTube libraries if you want more videos in this Feed.',
     'removeSource': 'Remove source',
@@ -198,7 +199,8 @@ const Map<String, dynamic> en = {
     'emptySourcePickerErrorDescription':
         'Refresh YouTube cache to update channels and playlists before adding sources.',
     'sourcePickerRefresh': 'Refresh cache',
-    'sourceDescriptionTitle': 'ReplayGlowz Feeds are local aggregates from your cached data.',
+    'sourceDescriptionTitle':
+        'ReplayGlowz Feeds are local aggregates from your cached data.',
     'feedDescriptionFallback': 'No description yet',
     'delete': 'Delete Feed',
     'deleteConfirmTitle': 'Delete Feed?',
@@ -351,13 +353,13 @@ const Map<String, dynamic> en = {
       'hintAction': 'Refresh now',
     },
     'playlists': {
-      'hintTitle': 'Playlist onboarding',
+      'hintTitle': 'Create your Lists',
       'hintMessage':
-          'Create one playlist first, then refresh to import new YouTube changes.',
+          'Use YouTube playlists when you want to publish on YouTube, or create a ReplayGlowz Feed to group one theme’s videos and watch everything with one Play button.',
       'hintMessageImported':
-          'Your imported playlists are ready. Use + to create a YouTube playlist only if you want to publish or sync changes back to YouTube.',
+          'Your imported playlists are ready. Use + to create a ReplayGlowz Feed that aggregates your channels, subscriptions, and playlists into one live playlist.',
       'hintMessageOwned':
-          'Use + for a new playlist, or refresh when you want to pull your latest YouTube updates.',
+          'Use + to create a thematic Feed that refreshes from YouTube, or a YouTube playlist only when you want to write back to YouTube.',
     },
     'playlistDetail': {
       'hintTitle': 'Quick actions',

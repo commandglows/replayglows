@@ -78,15 +78,14 @@ const Map<String, dynamic> fr = {
     'createPlaylist': 'Créer une playlist',
     'createDialogTitle': 'Créer dans Lists',
     'createDialogDescription':
-        'Créer soit une playlist YouTube (écriture sur YouTube), soit un Feed ReplayGlowz (cache local, sans coût d’écriture de quota).',
+        'Créez une playlist YouTube classique ou un Feed ReplayGlowz : une playlist live qui regroupe des chaînes et des playlists autour d’un thème.',
     'createSectionAction': 'Créer',
     'syncComplete':
         'Synchronisation terminée. Si ce compte YouTube est nouveau, créez une playlist ou une chaîne YouTube, puis actualisez.',
     'syncFailed': 'La synchronisation a échoué',
-    'connectionRequiredTitle':
-        'Connectez YouTube pour importer les playlists',
+    'connectionRequiredTitle': 'Connectez YouTube pour créer vos Lists',
     'connectionRequiredDescription':
-        'Les playlists, les imports de chaînes et les actualisations automatiques dépendent de votre connexion YouTube.',
+        'ReplayGlowz peut importer vos playlists, agréger vos abonnements et maintenir vos Feeds à jour depuis votre bibliothèque YouTube.',
     'noListsYetTitle': 'Aucune liste pour le moment',
     'noListsYetDescription':
         'Vous êtes connecté à YouTube, mais il n’y a encore aucune playlist YouTube ou Feed ReplayGlowz.',
@@ -94,19 +93,19 @@ const Map<String, dynamic> fr = {
     'createPlaylistDescription': 'Crée une playlist réelle sur YouTube.',
     'createFeed': 'Feed ReplayGlowz',
     'createFeedDescription':
-        'Crée un feed local cache-only sans coût d’écriture YouTube.',
+        'Regroupe les vidéos d’un thème et lance-les en une seule lecture.',
     'youtubePlaylistOptionTitle': 'Playlist YouTube',
     'youtubePlaylistOptionDescription': 'Crée une playlist réelle sur YouTube.',
     'replayFeedOptionTitle': 'Feed ReplayGlowz',
     'replayFeedOptionDescription':
-        'Crée un feed local cache-only sans coût d’écriture YouTube.',
+        'Créez une playlist live qui s’auto-met à jour depuis vos chaînes, abonnements et playlists.',
     'replayFeedFormTitle': 'Créer un Feed ReplayGlowz',
     'replayFeedNameLabel': 'Nom du feed',
     'replayFeedNameHint': 'ex. Cuisine',
     'replayFeedDescriptionLabel': 'Description',
     'replayFeedDescriptionHint': 'Optionnel',
     'replayFeedDescriptionHelp':
-        'Les Feeds ReplayGlowz sont des agrégateurs locaux à partir de vos données en cache.',
+        'Un Feed réunit toutes les vidéos d’un thème. Ajoutez vos chaînes cuisine, tech ou musique, puis lancez tout le flux avec un seul bouton Play.',
     'replayFeedNameErrorEmpty': 'Veuillez saisir le nom du feed',
     'replayFeedNameErrorShort': 'Le nom doit contenir au moins 2 caractères',
     'replayFeedCreateAction': 'Enregistrer',
@@ -151,7 +150,7 @@ const Map<String, dynamic> fr = {
     'addSource': 'Ajouter une source',
     'emptySources': 'Aucune source ajoutée',
     'emptySourcesDesc':
-        'Ajoutez une chaîne, une playlist ou toutes les abonnements pour construire ce Feed.',
+        'Ajoutez des chaînes, des playlists ou vos abonnements pour créer une vraie playlist live qui se remplit automatiquement.',
     'activeVideoHint':
         'Ouvrez une vidéo depuis ce Feed dans Lire pour garder la position synchronisée.',
     'sourceType.channel': 'Chaîne YouTube',
@@ -367,13 +366,13 @@ const Map<String, dynamic> fr = {
       'hintAction': 'Actualiser',
     },
     'playlists': {
-      'hintTitle': 'Démarrage playlists',
+      'hintTitle': 'Créez vos Lists',
       'hintMessage':
-          'Créez une playlist puis actualisez pour importer les changements YouTube.',
+          'Utilisez les playlists YouTube pour publier sur YouTube, ou créez un Feed ReplayGlowz pour regrouper les vidéos d’un thème et tout regarder avec un seul bouton Play.',
       'hintMessageImported':
-          'Vos playlists importées sont prêtes. Utilisez + pour créer une playlist YouTube seulement si vous voulez publier ou resynchroniser vers YouTube.',
+          'Vos playlists importées sont prêtes. Utilisez + pour créer un Feed ReplayGlowz qui agrège vos chaînes, abonnements et playlists en une playlist live.',
       'hintMessageOwned':
-          'Utilisez + pour créer une playlist, ou actualisez quand vous voulez récupérer vos dernières mises à jour YouTube.',
+          'Utilisez + pour créer un Feed thématique qui s’actualise depuis YouTube, ou une playlist YouTube seulement si vous voulez écrire sur YouTube.',
     },
     'playlistDetail': {
       'hintTitle': 'Actions rapides',
