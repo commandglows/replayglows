@@ -683,7 +683,7 @@ export const addFeedSource = mutation({
       .first();
 
     if (existing) {
-      throw new Error("This source is already part of the Feed.");
+      return args.virtualFeedId;
     }
 
     const sources = await getSourcesByFeed(ctx, args.virtualFeedId);
