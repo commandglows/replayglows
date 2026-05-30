@@ -48,6 +48,12 @@ next_step: "/sf-verify replayglowz-feed-source-discovery-playlist-channel-expans
 - [x] CA 10: Confirm local source add actions do not display quota warnings and do not call YouTube write endpoints.
 - [ ] CA 11: Attempt candidate query or batch add with another user's IDs only in a controlled backend/security test; confirm Convex rejects access.
 - [ ] CA 12: Check French and English source-mode copy for static playlist vs live channel distinction.
+- [ ] CA 13: With empty subscription channel cache, open Feed source picker and confirm subscription channel mode offers import instead of being disabled.
+- [ ] CA 14: Trigger subscription import from Feed source picker and confirm cached channels refresh.
+- [ ] CA 15: Trigger aggregate subscriptions source with empty cache and confirm import happens before adding the source when channels are returned.
+- [ ] CA 16: Use a playlist with cached videos missing `youtubeChannelId` and confirm candidate sheet offers missing-channel detection.
+- [ ] CA 17: Trigger missing-channel detection and confirm cached playlist videos are patched with `youtubeChannelId`.
+- [x] CA 18: Confirm normal playlist-channel candidate query remains cache-only and YouTube calls are isolated to explicit refresh/import actions.
 
 ## Automated Evidence
 
@@ -56,6 +62,7 @@ next_step: "/sf-verify replayglowz-feed-source-discovery-playlist-channel-expans
 - [x] `(cd replayglowz_app && flutter test)`
 - [x] Source scan for forbidden YouTube write endpoints in Feed local source paths.
 - [x] `/home/claude/shipflow/tools/shipflow_metadata_lint.py AGENT.md shipflow_data`
+- [x] Extension local checks 2026-05-30: backend typecheck, Flutter analyze/test, metadata lint, and diff scan showing new YouTube usage limited to `subscriptions.list` and `videos.list`.
 
 ## Browser Evidence
 

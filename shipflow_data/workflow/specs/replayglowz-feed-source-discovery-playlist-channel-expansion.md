@@ -283,6 +283,50 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
 - [ ] CA 11: Given another user guesses a Feed or playlist ID, when they call the candidate query or batch add mutation, then Convex rejects access.
 - [ ] CA 12: Given the app is in French or English, when the user uses the flow, then copy distinguishes static playlist content from live channel following.
 
+## Extension: Subscription Import and Playlist Channel Metadata Backfill
+
+User feedback on 2026-05-30 clarified that both branches are important:
+subscription-based Feed creation and playlist-derived channel Feed creation. The
+subscription branch must expose its YouTube API import explicitly from the Feed
+source picker when `youtubeChannelsCache` is empty. The playlist-derived branch
+must not depend on subscription cache and must be able to recover older cached
+playlist videos that predate `youtubeChannelId` storage.
+
+### Extension Scope
+
+- In the Feed source picker, if no subscription channels are cached, `Chaînes
+  depuis mes abonnements` should invite the user to import YouTube subscriptions
+  and call the existing `youtube:fetchYoutubeSubscriptions` action after quota
+  confirmation.
+- In the `Tous les abonnements` source path, if no subscription cache exists,
+  import subscriptions first and then add the aggregate subscription source when
+  the import returns channels.
+- Add a user-triggered backend action to backfill missing `youtubeChannelId` and
+  `channelTitle` onto existing cached playlist videos using `videos.list`, with
+  ownership validation and quota metrics.
+- In the `Chaînes d'une playlist` flow, when candidate extraction reports
+  missing metadata, offer a button to detect missing channels and refresh the
+  candidate query.
+- Keep the normal playlist-channel candidate query cache-only. Only the explicit
+  missing-channel detection button may spend YouTube quota.
+
+### Extension Acceptance Criteria
+
+- [x] CA 13: If subscription channel cache is empty, the Feed source picker lets
+  the user import YouTube subscriptions instead of silently disabling the branch.
+- [x] CA 14: Importing subscriptions from the Feed picker uses the existing
+  YouTube `subscriptions.list` path and refreshes the cached channel providers.
+- [x] CA 15: If the user chooses the aggregate `Tous les abonnements` source with
+  an empty subscription cache, ReplayGlowz imports subscriptions and then adds
+  the aggregate source when channels are available.
+- [x] CA 16: If cached playlist videos lack `youtubeChannelId`, the playlist
+  channel extraction sheet offers an explicit metadata backfill action.
+- [x] CA 17: The metadata backfill validates playlist ownership, calls
+  `videos.list` only for cached videos missing channel metadata, logs quota, and
+  patches cached videos for the user.
+- [x] CA 18: The normal playlist-channel extraction query remains cache-only and
+  does not call YouTube.
+
 ## Test Strategy
 
 - Backend:
@@ -341,6 +385,7 @@ None.
 | 2026-05-30 20:36:41 UTC | sf-ready | GPT-5 Codex | Reviewed readiness, tightened Test Contract, resolved batch-add ambiguity, clarified channel validation from cached playlist videos, and marked the spec ready. | ready | `/sf-start replayglowz-feed-source-discovery-playlist-channel-expansion` |
 | 2026-05-30 21:02:00 UTC | sf-build | GPT-5 Codex | Implemented backend playlist-channel candidate extraction, idempotent batch channel-source add, intention-first Flutter source picker, subscription search, playlist-channel extraction UI, i18n copy, and checklist evidence. | implemented | `/sf-verify replayglowz-feed-source-discovery-playlist-channel-expansion` |
 | 2026-05-30 21:10:04 UTC | sf-build | GPT-5 Codex | Verified local checks, deployed Convex and Vercel production, ran authenticated browser QA on the test account, and cleaned the temporary QA Feed. | shipped | done |
+| 2026-05-30 22:22:51 UTC | sf-build | GPT-5 Codex | Added explicit subscription import from the Feed source picker and a quota-explicit playlist video channel metadata backfill for older cached videos missing `youtubeChannelId`. | implemented | `/sf-verify replayglowz-feed-source-discovery-playlist-channel-expansion` |
 
 ## Current Chantier Flow
 
@@ -348,7 +393,7 @@ None.
 |-------|--------|-------|
 | sf-spec | complete | Draft created from user testing feedback and exploration; no implementation performed. |
 | sf-ready | complete | Ready after tightening proof contract, backend source validation semantics, batch mutation decision, and language clarity for user-facing source modes. |
-| sf-start | complete | Implemented source discovery expansion across Convex, Flutter providers/models/UI, i18n, and QA checklist. |
-| sf-verify | complete | Backend typecheck, Flutter analyze/test, metadata lint, quota-safe source scan, and authenticated production browser proof completed. |
-| sf-end | complete | Checklist updated with automated and browser evidence; temporary QA Feed cleaned from the test account. |
-| sf-ship | complete | Convex deployed to production and `main` pushed to GitHub; Vercel production deployment is Ready on `app.replayglowz.com`. |
+| sf-start | complete | Implemented source discovery expansion plus subscription import and playlist channel-metadata backfill extension. |
+| sf-verify | in_progress | Local backend/Flutter checks passed; production/browser proof remains for the extension. |
+| sf-end | pending | Pending extension verification evidence. |
+| sf-ship | pending | Pending extension verification and bounded ship. |

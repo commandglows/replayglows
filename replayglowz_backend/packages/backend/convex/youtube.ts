@@ -20,6 +20,7 @@ const SUBSCRIPTION_FEED_SYNC_MAX_CHANNELS = 20;
 const SUBSCRIPTION_FEED_SYNC_MAX_VIDEOS_PER_CHANNEL = 5;
 const SUBSCRIPTION_PLAYLIST_ID = "__subscriptions__";
 const PLAYLIST_URL_IMPORT_MAX_ITEMS = 500;
+const PLAYLIST_CHANNEL_METADATA_BACKFILL_MAX_VIDEOS = 500;
 type PlaylistSource = "owned" | "url_import" | "subscriptions";
 const PLAYLIST_SOURCE_OWNED: PlaylistSource = "owned";
 const PLAYLIST_SOURCE_URL_IMPORT: PlaylistSource = "url_import";
@@ -369,6 +370,58 @@ export const getCachedVideoDetailsByIds = internalQuery({
       description: entry.description,
       cachedAt: entry.cachedAt,
     }));
+  },
+});
+
+/**
+ * Internal query for cached playlist videos that predate channel metadata.
+ */
+export const getPlaylistVideosMissingChannelMetadata = internalQuery({
+  args: {
+    userId: v.string(),
+    playlistId: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const playlist = await ctx.db
+      .query("youtubePlaylistsCache")
+      .withIndex("by_user_and_youtube_id", (q) =>
+        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId),
+      )
+      .first();
+
+    if (!playlist) {
+      return { playlist: null, videos: [] };
+    }
+
+    const limit = Math.min(
+      Math.max(args.limit ?? PLAYLIST_CHANNEL_METADATA_BACKFILL_MAX_VIDEOS, 1),
+      PLAYLIST_CHANNEL_METADATA_BACKFILL_MAX_VIDEOS,
+    );
+    const videos = await ctx.db
+      .query("youtubeVideosCache")
+      .withIndex("by_user_and_playlist", (q) =>
+        q.eq("userId", args.userId).eq("youtubePlaylistId", args.playlistId),
+      )
+      .collect();
+
+    const missing = videos
+      .filter((video) => !video.youtubeChannelId)
+      .slice(0, limit)
+      .map((video) => ({
+        youtubeVideoId: video.youtubeVideoId,
+        title: video.title,
+      }));
+
+    return {
+      playlist: {
+        youtubePlaylistId: playlist.youtubePlaylistId,
+        title: playlist.title,
+      },
+      videos: missing,
+      totalMissingCount: videos.filter((video) => !video.youtubeChannelId)
+        .length,
+    };
   },
 });
 
@@ -1580,6 +1633,49 @@ export const updateVideosCache = mutation({
     for (const video of Array.from(existingMap.values())) {
       await ctx.db.delete(video._id);
     }
+  },
+});
+
+/**
+ * Patch channel metadata onto cached videos already owned by this user.
+ */
+export const updateCachedVideoChannelMetadata = internalMutation({
+  args: {
+    userId: v.string(),
+    videos: v.array(
+      v.object({
+        youtubeVideoId: v.string(),
+        channelTitle: v.string(),
+        youtubeChannelId: v.string(),
+        thumbnailUrl: v.optional(v.string()),
+        duration: v.optional(v.string()),
+        publishedAt: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    let updatedCount = 0;
+    for (const video of args.videos) {
+      const entries = await ctx.db
+        .query("youtubeVideosCache")
+        .withIndex("by_user_and_video", (q) =>
+          q.eq("userId", args.userId).eq("youtubeVideoId", video.youtubeVideoId),
+        )
+        .collect();
+
+      for (const entry of entries) {
+        await ctx.db.patch(entry._id, {
+          channelTitle: video.channelTitle,
+          youtubeChannelId: video.youtubeChannelId,
+          thumbnailUrl: entry.thumbnailUrl || video.thumbnailUrl,
+          duration: entry.duration || video.duration,
+          publishedAt: entry.publishedAt || video.publishedAt,
+          cachedAt: Date.now(),
+        });
+        updatedCount += 1;
+      }
+    }
+    return { updatedCount };
   },
 });
 
@@ -3515,6 +3611,129 @@ export const fetchYoutubeSubscriptions = action({
     });
 
     return allChannels;
+  },
+});
+
+/**
+ * Backfill missing channel IDs/titles on cached playlist videos.
+ *
+ * This is explicitly user-triggered because it spends YouTube videos.list quota.
+ */
+export const backfillPlaylistVideoChannelMetadata = action({
+  args: { playlistId: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const userId = identity.subject;
+    const accessToken = await getValidAccessToken(ctx, userId);
+    const plan = await ctx.runQuery(
+      youtubeInternal.getPlaylistVideosMissingChannelMetadata,
+      {
+        userId,
+        playlistId: args.playlistId,
+        limit: PLAYLIST_CHANNEL_METADATA_BACKFILL_MAX_VIDEOS,
+      },
+    );
+
+    if (!plan.playlist) {
+      throw new Error("Playlist not found in your cache.");
+    }
+
+    const videoIds = [...new Set(plan.videos.map((video: { youtubeVideoId: string }) => video.youtubeVideoId))]
+      .filter(Boolean);
+
+    if (videoIds.length === 0) {
+      return {
+        playlistId: args.playlistId,
+        updatedCount: 0,
+        requestedVideoCount: 0,
+        unresolvedCount: 0,
+        remainingMissingCount: 0,
+        quotaUnits: 0,
+      };
+    }
+
+    const updates: Array<{
+      youtubeVideoId: string;
+      channelTitle: string;
+      youtubeChannelId: string;
+      thumbnailUrl?: string;
+      duration?: string;
+      publishedAt?: string;
+    }> = [];
+    let quotaUnits = 0;
+
+    for (let index = 0; index < videoIds.length; index += 50) {
+      const batch = videoIds.slice(index, index + 50);
+      const startTime = Date.now();
+      const response = await fetch(
+        "https://www.googleapis.com/youtube/v3/videos?" +
+          new URLSearchParams({
+            part: "snippet,contentDetails",
+            id: batch.join(","),
+          }),
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      );
+      const responseTimeMs = Date.now() - startTime;
+      quotaUnits += YOUTUBE_QUOTA_COSTS["videos.list"];
+
+      await ctx.runMutation(metricsInternal.logApiCallInternal, {
+        userId,
+        endpoint: "videos.list",
+        quotaUnits: YOUTUBE_QUOTA_COSTS["videos.list"],
+        success: response.ok,
+        errorMessage: response.ok ? undefined : await response.clone().text(),
+        responseTimeMs,
+      });
+
+      if (!response.ok) {
+        const error = await parseYoutubeErrorResponse(response);
+        throw new Error(`Failed to enrich playlist videos: ${error.message}`);
+      }
+
+      const data = await response.json();
+      for (const item of data.items || []) {
+        const youtubeChannelId = item.snippet?.channelId;
+        if (!item.id || !youtubeChannelId) continue;
+        updates.push({
+          youtubeVideoId: item.id,
+          channelTitle: item.snippet?.channelTitle || "Untitled channel",
+          youtubeChannelId,
+          thumbnailUrl:
+            item.snippet?.thumbnails?.high?.url ||
+            item.snippet?.thumbnails?.medium?.url ||
+            item.snippet?.thumbnails?.default?.url,
+          duration: parseDuration(item.contentDetails?.duration),
+          publishedAt: item.snippet?.publishedAt,
+        });
+      }
+    }
+
+    const patchResult = await ctx.runMutation(
+      youtubeInternal.updateCachedVideoChannelMetadata,
+      {
+        userId,
+        videos: updates,
+      },
+    );
+
+    const unresolvedCount = Math.max(videoIds.length - updates.length, 0);
+    const remainingMissingCount = Math.max(
+      (plan.totalMissingCount ?? videoIds.length) - updates.length,
+      0,
+    );
+
+    return {
+      playlistId: args.playlistId,
+      updatedCount: patchResult.updatedCount,
+      requestedVideoCount: videoIds.length,
+      unresolvedCount,
+      remainingMissingCount,
+      quotaUnits,
+    };
   },
 });
 

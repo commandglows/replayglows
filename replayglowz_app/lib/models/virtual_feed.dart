@@ -393,6 +393,34 @@ class AddVirtualFeedSourcesResult {
   }
 }
 
+class PlaylistChannelMetadataBackfillResult {
+  const PlaylistChannelMetadataBackfillResult({
+    required this.updatedCount,
+    required this.requestedVideoCount,
+    required this.unresolvedCount,
+    required this.remainingMissingCount,
+    required this.quotaUnits,
+  });
+
+  final int updatedCount;
+  final int requestedVideoCount;
+  final int unresolvedCount;
+  final int remainingMissingCount;
+  final int quotaUnits;
+
+  factory PlaylistChannelMetadataBackfillResult.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return PlaylistChannelMetadataBackfillResult(
+      updatedCount: _intValue(json['updatedCount']),
+      requestedVideoCount: _intValue(json['requestedVideoCount']),
+      unresolvedCount: _intValue(json['unresolvedCount']),
+      remainingMissingCount: _intValue(json['remainingMissingCount']),
+      quotaUnits: _intValue(json['quotaUnits']),
+    );
+  }
+}
+
 String? _optionalString(Object? value) {
   if (value == null) return null;
   final text = value.toString();

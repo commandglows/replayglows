@@ -497,6 +497,108 @@ class _VirtualFeedDetailScreenState
     }
   }
 
+  Future<int?> _refreshSubscriptionsCache(
+    BuildContext context,
+    AppLocale l,
+  ) async {
+    if (_isRefreshing) return null;
+
+    final confirmed = await confirmYoutubeQuotaRisk(
+      context: context,
+      ref: ref,
+      cost: YoutubeQuotaCost.syncSubscriptions,
+      actionLabel: t('virtualFeedDetail.importSubscriptions', locale: l),
+    );
+
+    if (!confirmed) return null;
+
+    try {
+      setState(() => _isRefreshing = true);
+      final result = await refreshYoutubeSubscriptions(ref);
+      if (!mounted || !context.mounted) return null;
+      final count = result is List ? result.length : 0;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            tr(
+              'virtualFeedDetail.subscriptionsImported',
+              locale: l,
+              params: {'count': count.toString()},
+            ),
+          ),
+        ),
+      );
+      return count;
+    } catch (e) {
+      if (!mounted || !context.mounted) return null;
+      showErrorSnackBar(
+        context,
+        error: e,
+        prefix: t('virtualFeedDetail.subscriptionsImportFailed', locale: l),
+      );
+      return null;
+    } finally {
+      if (mounted) {
+        setState(() => _isRefreshing = false);
+      }
+    }
+  }
+
+  Future<bool> _backfillPlaylistChannelMetadata(
+    BuildContext context,
+    YouTubePlaylist playlist,
+    PlaylistChannelCandidatesArgs args,
+    AppLocale l,
+  ) async {
+    if (_isRefreshing) return false;
+
+    final confirmed = await confirmYoutubeQuotaRisk(
+      context: context,
+      ref: ref,
+      cost: YoutubeQuotaCost.syncPlaylist,
+      actionLabel: t('virtualFeedDetail.enrichPlaylistChannels', locale: l),
+    );
+
+    if (!confirmed) return false;
+
+    try {
+      setState(() => _isRefreshing = true);
+      final result = await backfillPlaylistChannelMetadata(
+        ref,
+        youtubePlaylistId: playlist.youtubePlaylistId,
+      );
+      ref.invalidate(playlistChannelCandidatesProvider(args));
+      if (!mounted || !context.mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            tr(
+              'virtualFeedDetail.playlistChannelsEnriched',
+              locale: l,
+              params: {
+                'updated': result.updatedCount.toString(),
+                'remaining': result.remainingMissingCount.toString(),
+              },
+            ),
+          ),
+        ),
+      );
+      return true;
+    } catch (e) {
+      if (!mounted || !context.mounted) return false;
+      showErrorSnackBar(
+        context,
+        error: e,
+        prefix: t('virtualFeedDetail.playlistChannelsEnrichFailed', locale: l),
+      );
+      return false;
+    } finally {
+      if (mounted) {
+        setState(() => _isRefreshing = false);
+      }
+    }
+  }
+
   Future<void> _showSourcePicker(
     BuildContext context,
     VirtualFeedDetails feedDetails,
@@ -592,15 +694,19 @@ class _VirtualFeedDetailScreenState
                         t('virtualFeedDetail.sourceModeChannels', locale: l),
                       ),
                       subtitle: Text(
-                        t(
-                          'virtualFeedDetail.sourceModeChannelsDescription',
-                          locale: l,
-                        ),
+                        channels.isEmpty
+                            ? t(
+                                'virtualFeedDetail.sourceModeChannelsEmptyDescription',
+                                locale: l,
+                              )
+                            : t(
+                                'virtualFeedDetail.sourceModeChannelsDescription',
+                                locale: l,
+                              ),
                       ),
-                      enabled: channels.isNotEmpty,
-                      onTap: channels.isEmpty
-                          ? null
-                          : () => Navigator.of(dialogContext).pop('channels'),
+                      onTap: () => Navigator.of(dialogContext).pop(
+                        channels.isEmpty ? 'importSubscriptions' : 'channels',
+                      ),
                     ),
                     ListTile(
                       leading: const Icon(Icons.playlist_play),
@@ -653,17 +759,21 @@ class _VirtualFeedDetailScreenState
                           ),
                         ),
                         subtitle: Text(
-                          t(
-                            'virtualFeedDetail.sourceType.subscriptionsHint',
-                            locale: l,
-                          ),
+                          channels.isEmpty
+                              ? t(
+                                  'virtualFeedDetail.sourceType.subscriptionsEmptyHint',
+                                  locale: l,
+                                )
+                              : t(
+                                  'virtualFeedDetail.sourceType.subscriptionsHint',
+                                  locale: l,
+                                ),
                         ),
-                        enabled: channels.isNotEmpty,
-                        onTap: channels.isEmpty
-                            ? null
-                            : () => Navigator.of(
-                                dialogContext,
-                              ).pop('subscriptions'),
+                        onTap: () => Navigator.of(dialogContext).pop(
+                          channels.isEmpty
+                              ? 'importSubscriptionsForAll'
+                              : 'subscriptions',
+                        ),
                       ),
                   ],
                 ),
@@ -681,6 +791,28 @@ class _VirtualFeedDetailScreenState
           feed,
           feedDetails.sources,
           channels,
+          l,
+        );
+      case 'importSubscriptions':
+        await _refreshSubscriptionsCache(context, l);
+      case 'importSubscriptionsForAll':
+        final count = await _refreshSubscriptionsCache(context, l);
+        if (!mounted || !context.mounted || count == null || count == 0) {
+          return;
+        }
+        await _addSourceFromCandidate(
+          context,
+          feed,
+          _VirtualFeedSourceCandidate(
+            sourceType: 'subscriptions',
+            sourceId: _subscriptionsSourceId,
+            title: t('virtualFeedDetail.sourceType.subscriptions', locale: l),
+            subtitle: t(
+              'virtualFeedDetail.sourceType.subscriptionsHint',
+              locale: l,
+            ),
+            icon: Icons.rss_feed,
+          ),
           l,
         );
       case 'playlist':
@@ -1062,6 +1194,31 @@ class _VirtualFeedDetailScreenState
                               ),
                         ),
                         const SizedBox(height: 12),
+                        if (result.missingMetadataCount > 0) ...[
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: _isRefreshing
+                                  ? null
+                                  : () async {
+                                      await _backfillPlaylistChannelMetadata(
+                                        context,
+                                        playlist,
+                                        args,
+                                        l,
+                                      );
+                                    },
+                              icon: const Icon(Icons.manage_search),
+                              label: Text(
+                                t(
+                                  'virtualFeedDetail.enrichPlaylistChannels',
+                                  locale: l,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
                         if (result.candidates.isEmpty)
                           AppEmptyState(
                             icon: Icons.hub_outlined,

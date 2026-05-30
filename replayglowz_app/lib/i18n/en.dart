@@ -155,6 +155,11 @@ const Map<String, dynamic> en = {
     'sourceModeChannels': 'Channels from my subscriptions',
     'sourceModeChannelsDescription':
         'Add channels you already follow to create a live Feed.',
+    'sourceModeChannelsEmptyDescription':
+        'Import your YouTube subscriptions first, then choose the channels to follow.',
+    'importSubscriptions': 'Import YouTube subscriptions',
+    'subscriptionsImported': '{count} subscription channel(s) imported.',
+    'subscriptionsImportFailed': 'Subscriptions import failed',
     'sourceModePlaylist': 'YouTube playlist',
     'sourceModePlaylistDescription':
         'Add this playlist’s current videos to the Feed.',
@@ -174,6 +179,10 @@ const Map<String, dynamic> en = {
         'Select the channels to follow as live sources.',
     'playlistChannelMissingMetadata':
         '{count} video(s) do not have detectable channel metadata in cache yet.',
+    'enrichPlaylistChannels': 'Detect missing channels',
+    'playlistChannelsEnriched':
+        '{updated} cached video(s) updated. {remaining} still missing channel metadata.',
+    'playlistChannelsEnrichFailed': 'Could not detect playlist channels',
     'batchSourceAdded':
         '{added} source(s) added, {already} already present, {rejected} rejected.',
     'emptySources': 'No source added yet',
@@ -186,6 +195,8 @@ const Map<String, dynamic> en = {
     'sourceType.subscriptions': 'All subscriptions',
     'sourceType.subscriptionsHint':
         'Cached channels this account follows on YouTube',
+    'sourceType.subscriptionsEmptyHint':
+        'Import the YouTube subscriptions cache before adding this live source.',
     'untitledChannel': 'Untitled channel',
     'sourceCountSingular': 'source',
     'sourceCountPlural': 'sources',

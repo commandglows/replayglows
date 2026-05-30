@@ -8,6 +8,7 @@ class YoutubeQuotaCost {
 
   static const syncPlaylist = 1;
   static const syncAllPlaylists = 1;
+  static const syncSubscriptions = 1;
   static const addPlaylistItem = 50;
   static const removePlaylistItem = 50;
   static const movePlaylistItem = 50;

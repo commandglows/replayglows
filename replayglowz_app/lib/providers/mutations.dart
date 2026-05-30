@@ -293,6 +293,25 @@ Future<dynamic> refreshYoutubeSubscriptions(WidgetRef ref) async {
   return result;
 }
 
+Future<PlaylistChannelMetadataBackfillResult> backfillPlaylistChannelMetadata(
+  WidgetRef ref, {
+  required String youtubePlaylistId,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.action<dynamic>(
+    'youtube:backfillPlaylistVideoChannelMetadata',
+    {'playlistId': youtubePlaylistId},
+  );
+  ref
+    ..invalidate(quotaUsageProvider)
+    ..invalidate(videosProvider)
+    ..invalidate(playlistsProvider);
+  final json = result is Map
+      ? Map<String, dynamic>.from(result)
+      : <String, dynamic>{};
+  return PlaylistChannelMetadataBackfillResult.fromJson(json);
+}
+
 Future<dynamic> linkChannelToPlaylist(
   WidgetRef ref, {
   required String youtubeChannelId,

@@ -155,6 +155,11 @@ const Map<String, dynamic> fr = {
     'sourceModeChannels': 'Chaînes depuis mes abonnements',
     'sourceModeChannelsDescription':
         'Ajoutez des chaînes que vous suivez déjà pour créer un Feed live.',
+    'sourceModeChannelsEmptyDescription':
+        'Importez d’abord vos abonnements YouTube, puis choisissez les chaînes à suivre.',
+    'importSubscriptions': 'Importer les abonnements YouTube',
+    'subscriptionsImported': '{count} chaîne(s) d’abonnement importée(s).',
+    'subscriptionsImportFailed': 'Import des abonnements échoué',
     'sourceModePlaylist': 'Playlist YouTube',
     'sourceModePlaylistDescription':
         'Ajoute les vidéos actuelles de cette playlist au Feed.',
@@ -174,6 +179,11 @@ const Map<String, dynamic> fr = {
         'Sélectionnez les chaînes à suivre comme sources live.',
     'playlistChannelMissingMetadata':
         '{count} vidéo(s) n’ont pas encore de chaîne détectable dans le cache.',
+    'enrichPlaylistChannels': 'Détecter les chaînes manquantes',
+    'playlistChannelsEnriched':
+        '{updated} vidéo(s) en cache mise(s) à jour. {remaining} sans chaîne restante(s).',
+    'playlistChannelsEnrichFailed':
+        'Impossible de détecter les chaînes de cette playlist',
     'batchSourceAdded':
         '{added} source(s) ajoutée(s), {already} déjà présente(s), {rejected} rejetée(s).',
     'emptySources': 'Aucune source ajoutée',
@@ -183,9 +193,11 @@ const Map<String, dynamic> fr = {
         'Ouvrez une vidéo depuis ce Feed dans Lire pour garder la position synchronisée.',
     'sourceType.channel': 'Chaîne YouTube',
     'sourceType.playlist': 'Playlist YouTube',
-    'sourceType.subscriptions': 'Toutes les abonnements',
+    'sourceType.subscriptions': 'Tous les abonnements',
     'sourceType.subscriptionsHint':
         'Chaînes en cache suivies sur ce compte YouTube',
+    'sourceType.subscriptionsEmptyHint':
+        'Importez le cache des abonnements YouTube avant d’ajouter cette source live.',
     'untitledChannel': 'Chaîne sans titre',
     'sourceCountSingular': 'source',
     'sourceCountPlural': 'sources',
