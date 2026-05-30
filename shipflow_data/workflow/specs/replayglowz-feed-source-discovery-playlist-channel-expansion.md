@@ -386,6 +386,7 @@ None.
 | 2026-05-30 21:02:00 UTC | sf-build | GPT-5 Codex | Implemented backend playlist-channel candidate extraction, idempotent batch channel-source add, intention-first Flutter source picker, subscription search, playlist-channel extraction UI, i18n copy, and checklist evidence. | implemented | `/sf-verify replayglowz-feed-source-discovery-playlist-channel-expansion` |
 | 2026-05-30 21:10:04 UTC | sf-build | GPT-5 Codex | Verified local checks, deployed Convex and Vercel production, ran authenticated browser QA on the test account, and cleaned the temporary QA Feed. | shipped | done |
 | 2026-05-30 22:22:51 UTC | sf-build | GPT-5 Codex | Added explicit subscription import from the Feed source picker and a quota-explicit playlist video channel metadata backfill for older cached videos missing `youtubeChannelId`. | implemented | `/sf-verify replayglowz-feed-source-discovery-playlist-channel-expansion` |
+| 2026-05-30 22:33:06 UTC | sf-build | GPT-5 Codex | Verified extension locally, deployed Convex and Vercel production, confirmed production build SHA, tested subscription import UI on the authenticated test account, and cleaned the temporary QA Feed. | shipped | done |
 
 ## Current Chantier Flow
 
@@ -394,6 +395,6 @@ None.
 | sf-spec | complete | Draft created from user testing feedback and exploration; no implementation performed. |
 | sf-ready | complete | Ready after tightening proof contract, backend source validation semantics, batch mutation decision, and language clarity for user-facing source modes. |
 | sf-start | complete | Implemented source discovery expansion plus subscription import and playlist channel-metadata backfill extension. |
-| sf-verify | in_progress | Local backend/Flutter checks passed; production/browser proof remains for the extension. |
-| sf-end | pending | Pending extension verification evidence. |
-| sf-ship | pending | Pending extension verification and bounded ship. |
+| sf-verify | complete | Backend typecheck, Flutter analyze/test, metadata lint, diff quota scan, Convex deploy proof, Vercel production proof, and authenticated browser proof completed for the extension. |
+| sf-end | complete | Checklist updated with extension evidence and fixture limits; temporary QA Feed cleaned from the test account. |
+| sf-ship | complete | Convex deployed to production and `main` pushed to GitHub; Vercel production deployment is Ready on `app.replayglowz.com`. |
