@@ -152,6 +152,30 @@ const Map<String, dynamic> en = {
     'addSource': 'Add source',
     'addSourceHelp':
         'Choose what should feed this Feed. ReplayGlowz then groups videos from every active source into one play session.',
+    'sourceModeChannels': 'Channels from my subscriptions',
+    'sourceModeChannelsDescription':
+        'Add channels you already follow to create a live Feed.',
+    'sourceModePlaylist': 'YouTube playlist',
+    'sourceModePlaylistDescription':
+        'Add this playlist’s current videos to the Feed.',
+    'sourceModePlaylistChannels': 'Channels from a playlist',
+    'sourceModePlaylistChannelsDescription':
+        'Detect the channels present in a playlist and add them as live sources.',
+    'searchChannels': 'Search channels',
+    'addSelectedSources': 'Add selected sources',
+    'sourceAlreadyAdded': 'Already in this Feed',
+    'noPlaylistSources': 'No playlist to add',
+    'noPlaylistSourcesDescription':
+        'Every available playlist is already in this Feed.',
+    'noPlaylistChannels': 'No channel detected',
+    'noPlaylistChannelsDescription':
+        'ReplayGlowz cannot find usable channel metadata in this playlist cache. Add the playlist itself or refresh the cache.',
+    'playlistChannelSelectHelp':
+        'Select the channels to follow as live sources.',
+    'playlistChannelMissingMetadata':
+        '{count} video(s) do not have detectable channel metadata in cache yet.',
+    'batchSourceAdded':
+        '{added} source(s) added, {already} already present, {rejected} rejected.',
     'emptySources': 'No source added yet',
     'emptySourcesDesc':
         'Add a playlist to bring all of its videos into this Feed, or add channels and subscriptions to build a live playlist that fills itself automatically.',

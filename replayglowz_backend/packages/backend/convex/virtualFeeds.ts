@@ -8,6 +8,7 @@ const DEFAULT_FEED_PAGE_SIZE = 100;
 
 type VirtualFeedSourceType = "channel" | "playlist" | "subscriptions";
 type VirtualFeedSortOrder = "default" | "newest" | "oldest";
+type AddSourceOutcome = "added" | "alreadyAdded" | "rejected";
 
 type CachedVideo = Doc<"youtubeVideosCache">;
 type CachedPlaylist = Doc<"youtubePlaylistsCache">;
@@ -23,6 +24,12 @@ interface SourceWithState extends VirtualFeedSource {
   isAvailable: boolean;
   isStale: boolean;
   staleReason: string | null;
+}
+
+interface SourceValidationResult {
+  title: string;
+  valid: boolean;
+  error?: string;
 }
 
 function normalizeSortOrder(
@@ -190,18 +197,14 @@ async function getSourceAvailability(
   userId: string,
   source: VirtualFeedSource,
   channelIds: Set<string>,
+  videoChannelIds: Set<string>,
   playlistIds: Set<string>,
 ): Promise<{ isAvailable: boolean; reason: string | null }> {
   if (source.sourceType === "channel") {
-    const channel = await ctx.db
-      .query("youtubeChannelsCache")
-      .withIndex("by_user_and_channel", (q: any) =>
-        q.eq("userId", userId).eq("youtubeChannelId", source.sourceId),
-      )
-      .first();
+    const hasChannel = channelIds.has(source.sourceId) || videoChannelIds.has(source.sourceId);
     return {
-      isAvailable: !!channel,
-      reason: channel ? null : "Channel is no longer available in your cache.",
+      isAvailable: hasChannel,
+      reason: hasChannel ? null : "Channel is no longer available in your cache.",
     };
   }
 
@@ -239,6 +242,83 @@ function withUpdatedTimestamps(data: { feed: FeedDoc; updatedAt: number }): Feed
     ...data.feed,
     updatedAt: data.updatedAt,
   };
+}
+
+async function validateFeedSource(
+  ctx: MutationCtx,
+  userId: string,
+  sourceType: VirtualFeedSourceType,
+  sourceId: string,
+  fallbackTitle: string,
+): Promise<SourceValidationResult> {
+  if (sourceType === "subscriptions") {
+    if (sourceId !== SUBSCRIPTIONS_SOURCE_ID) {
+      return { title: fallbackTitle, valid: false, error: "Invalid subscriptions source identifier." };
+    }
+    const channels = await ctx.db
+      .query("youtubeChannelsCache")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    if (channels.length === 0) {
+      return {
+        title: fallbackTitle,
+        valid: false,
+        error: "Cannot add subscriptions source: no subscribed channels available.",
+      };
+    }
+    return { title: fallbackTitle, valid: true };
+  }
+
+  if (sourceType === "playlist") {
+    const playlist = await ctx.db
+      .query("youtubePlaylistsCache")
+      .withIndex("by_user_and_youtube_id", (q) =>
+        q.eq("userId", userId).eq("youtubePlaylistId", sourceId),
+      )
+      .first();
+    if (!playlist) {
+      return { title: fallbackTitle, valid: false, error: "Playlist not found in your cache." };
+    }
+    return { title: playlist.title, valid: true };
+  }
+
+  const channel = await ctx.db
+    .query("youtubeChannelsCache")
+    .withIndex("by_user_and_channel", (q) =>
+      q.eq("userId", userId).eq("youtubeChannelId", sourceId),
+    )
+    .first();
+  if (channel) {
+    return { title: channel.title, valid: true };
+  }
+
+  const videos = await ctx.db
+    .query("youtubeVideosCache")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect();
+  const video = videos.find((entry) => entry.youtubeChannelId === sourceId);
+  if (!video) {
+    return { title: fallbackTitle, valid: false, error: "Channel not found in your cache." };
+  }
+  return { title: video.channelTitle || fallbackTitle, valid: true };
+}
+
+async function findExistingSource(
+  ctx: MutationCtx,
+  virtualFeedId: Id<"virtualFeeds">,
+  sourceType: VirtualFeedSourceType,
+  sourceId: string,
+): Promise<VirtualFeedSource | null> {
+  return await ctx.db
+    .query("virtualFeedSources")
+    .withIndex("by_feed", (q) => q.eq("virtualFeedId", virtualFeedId))
+    .filter((q) =>
+      q.and(
+        q.eq(q.field("sourceType"), sourceType),
+        q.eq(q.field("sourceId"), sourceId),
+      ),
+    )
+    .first();
 }
 
 // -----------------------------------------------------------------------------
@@ -387,6 +467,11 @@ export const getFeedDetails = query({
     );
     const watchedIds = new Set<string>(watchedVideos.map((item) => item.youtubeVideoId));
     const channelIds = new Set<string>(cachedChannels.map((channel) => channel.youtubeChannelId));
+    const videoChannelIds = new Set<string>(
+      allVideos
+        .map((video) => video.youtubeChannelId)
+        .filter((channelId): channelId is string => typeof channelId === "string" && channelId.length > 0),
+    );
     const playlistIds = new Set<string>(
       cachedPlaylists.map((playlist) => playlist.youtubePlaylistId),
     );
@@ -452,6 +537,7 @@ export const getFeedDetails = query({
           userId,
           source,
           channelIds,
+          videoChannelIds,
           playlistIds,
         );
 
@@ -492,6 +578,101 @@ export const getFeed = query({
     if (!userId) return null;
 
     return getUserOwnedFeed(ctx, userId, args.virtualFeedId);
+  },
+});
+
+export const listPlaylistChannelCandidates = query({
+  args: {
+    virtualFeedId: v.id("virtualFeeds"),
+    youtubePlaylistId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    const feed = await getUserOwnedFeed(ctx, userId, args.virtualFeedId);
+    if (!feed) throw new Error("Unauthorized");
+
+    const youtubePlaylistId = args.youtubePlaylistId.trim();
+    const playlist = await ctx.db
+      .query("youtubePlaylistsCache")
+      .withIndex("by_user_and_youtube_id", (q) =>
+        q.eq("userId", userId).eq("youtubePlaylistId", youtubePlaylistId),
+      )
+      .first();
+    if (!playlist) {
+      throw new Error("Playlist not found in your cache.");
+    }
+
+    const [videos, channels, sources] = await Promise.all([
+      ctx.db
+        .query("youtubeVideosCache")
+        .withIndex("by_user_and_playlist", (q) =>
+          q.eq("userId", userId).eq("youtubePlaylistId", youtubePlaylistId),
+        )
+        .collect(),
+      ctx.db
+        .query("youtubeChannelsCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+      getSourcesByFeed(ctx, args.virtualFeedId),
+    ]);
+
+    const channelCache = new Map(channels.map((channel) => [channel.youtubeChannelId, channel]));
+    const alreadyAddedChannelIds = new Set(
+      sources
+        .filter((source) => source.sourceType === "channel")
+        .map((source) => source.sourceId),
+    );
+    const groups = new Map<string, { title: string; count: number }>();
+    let missingMetadataCount = 0;
+
+    for (const video of videos) {
+      const channelId = video.youtubeChannelId;
+      if (!channelId) {
+        missingMetadataCount += 1;
+        continue;
+      }
+      const current = groups.get(channelId);
+      if (current) {
+        current.count += 1;
+        if (!current.title && video.channelTitle) current.title = video.channelTitle;
+      } else {
+        groups.set(channelId, {
+          title: video.channelTitle || channelCache.get(channelId)?.title || "Untitled channel",
+          count: 1,
+        });
+      }
+    }
+
+    const candidates = [...groups.entries()]
+      .map(([youtubeChannelId, group]) => {
+        const cachedChannel = channelCache.get(youtubeChannelId);
+        return {
+          youtubeChannelId,
+          title: cachedChannel?.title || group.title,
+          thumbnailUrl: cachedChannel?.thumbnailUrl,
+          videoCount: group.count,
+          alreadyAdded: alreadyAddedChannelIds.has(youtubeChannelId),
+          isSubscribed: !!cachedChannel,
+        };
+      })
+      .sort((a, b) => {
+        if (a.alreadyAdded !== b.alreadyAdded) return a.alreadyAdded ? 1 : -1;
+        if (a.videoCount !== b.videoCount) return b.videoCount - a.videoCount;
+        return a.title.localeCompare(b.title);
+      });
+
+    return {
+      playlist: {
+        youtubePlaylistId: playlist.youtubePlaylistId,
+        title: playlist.title,
+        videoCount: playlist.videoCount,
+      },
+      candidates,
+      missingMetadataCount,
+      totalVideoCount: videos.length,
+    };
   },
 });
 
@@ -632,55 +813,23 @@ export const addFeedSource = mutation({
     if (!sourceTitle) throw new Error("Source title is required.");
     if (!sourceId) throw new Error("Source id is required.");
 
-    if (args.sourceType === "subscriptions") {
-      if (sourceId !== SUBSCRIPTIONS_SOURCE_ID) {
-        throw new Error("Invalid subscriptions source identifier.");
-      }
-      const channels = await ctx.db
-        .query("youtubeChannelsCache")
-        .withIndex("by_user", (q) => q.eq("userId", userId))
-        .collect();
-      if (channels.length === 0) {
-        throw new Error(
-          "Cannot add subscriptions source: no subscribed channels available.",
-        );
-      }
+    const validation = await validateFeedSource(
+      ctx,
+      userId,
+      args.sourceType,
+      sourceId,
+      sourceTitle,
+    );
+    if (!validation.valid) {
+      throw new Error(validation.error ?? "Source is not available in your cache.");
     }
 
-    if (args.sourceType === "channel") {
-      const channel = await ctx.db
-        .query("youtubeChannelsCache")
-        .withIndex("by_user_and_channel", (q) =>
-          q.eq("userId", userId).eq("youtubeChannelId", sourceId),
-        )
-        .first();
-      if (!channel) {
-        throw new Error("Channel not found in your cache.");
-      }
-    }
-
-    if (args.sourceType === "playlist") {
-      const playlist = await ctx.db
-        .query("youtubePlaylistsCache")
-        .withIndex("by_user_and_youtube_id", (q) =>
-          q.eq("userId", userId).eq("youtubePlaylistId", sourceId),
-        )
-        .first();
-      if (!playlist) {
-        throw new Error("Playlist not found in your cache.");
-      }
-    }
-
-    const existing = await ctx.db
-      .query("virtualFeedSources")
-      .withIndex("by_feed", (q) => q.eq("virtualFeedId", args.virtualFeedId))
-      .filter((q) =>
-        q.and(
-          q.eq(q.field("sourceType"), args.sourceType),
-          q.eq(q.field("sourceId"), sourceId),
-        ),
-      )
-      .first();
+    const existing = await findExistingSource(
+      ctx,
+      args.virtualFeedId,
+      args.sourceType,
+      sourceId,
+    );
 
     if (existing) {
       return args.virtualFeedId;
@@ -698,7 +847,7 @@ export const addFeedSource = mutation({
       virtualFeedId: args.virtualFeedId,
       sourceType: args.sourceType,
       sourceId,
-      sourceTitle,
+      sourceTitle: validation.title,
       isActive: args.isActive ?? true,
       position: maxPosition + 1,
       createdAt: now,
@@ -710,6 +859,145 @@ export const addFeedSource = mutation({
     });
 
     return args.virtualFeedId;
+  },
+});
+
+export const addFeedSources = mutation({
+  args: {
+    virtualFeedId: v.id("virtualFeeds"),
+    sources: v.array(
+      v.object({
+        sourceType: v.literal("channel"),
+        sourceId: v.string(),
+        sourceTitle: v.string(),
+        isActive: v.optional(v.boolean()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Unauthorized");
+
+    const feed = await getUserOwnedFeed(ctx, userId, args.virtualFeedId);
+    if (!feed) throw new Error("Unauthorized");
+
+    const existingSources = await getSourcesByFeed(ctx, args.virtualFeedId);
+    let nextPosition = existingSources.reduce(
+      (max, source) => Math.max(max, source.position),
+      -1,
+    ) + 1;
+    const seenInRequest = new Set<string>();
+    const now = Date.now();
+    let addedCount = 0;
+    const [cachedChannels, cachedVideos] = await Promise.all([
+      ctx.db
+        .query("youtubeChannelsCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("youtubeVideosCache")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .collect(),
+    ]);
+    const channelTitleById = new Map<string, string>();
+    for (const channel of cachedChannels) {
+      channelTitleById.set(channel.youtubeChannelId, channel.title);
+    }
+    for (const video of cachedVideos) {
+      if (video.youtubeChannelId && !channelTitleById.has(video.youtubeChannelId)) {
+        channelTitleById.set(video.youtubeChannelId, video.channelTitle);
+      }
+    }
+
+    const results: Array<{
+      sourceId: string;
+      sourceTitle: string;
+      status: AddSourceOutcome;
+      reason?: string;
+    }> = [];
+
+    for (const candidate of args.sources) {
+      const sourceId = candidate.sourceId.trim();
+      const sourceTitle = candidate.sourceTitle.trim();
+
+      if (!sourceId || !sourceTitle) {
+        results.push({
+          sourceId,
+          sourceTitle,
+          status: "rejected",
+          reason: "Source id and title are required.",
+        });
+        continue;
+      }
+
+      if (seenInRequest.has(sourceId)) {
+        results.push({
+          sourceId,
+          sourceTitle,
+          status: "alreadyAdded",
+          reason: "Duplicate in this request.",
+        });
+        continue;
+      }
+      seenInRequest.add(sourceId);
+
+      const validatedTitle = channelTitleById.get(sourceId);
+      if (!validatedTitle) {
+        results.push({
+          sourceId,
+          sourceTitle,
+          status: "rejected",
+          reason: "Channel not found in your cache.",
+        });
+        continue;
+      }
+
+      const existing = await findExistingSource(
+        ctx,
+        args.virtualFeedId,
+        "channel",
+        sourceId,
+      );
+      if (existing) {
+        results.push({
+          sourceId,
+          sourceTitle: existing.sourceTitle,
+          status: "alreadyAdded",
+        });
+        continue;
+      }
+
+      await ctx.db.insert("virtualFeedSources", {
+        userId,
+        virtualFeedId: args.virtualFeedId,
+        sourceType: "channel",
+        sourceId,
+        sourceTitle: validatedTitle,
+        isActive: candidate.isActive ?? true,
+        position: nextPosition,
+        createdAt: now,
+        updatedAt: now,
+      });
+      nextPosition += 1;
+      addedCount += 1;
+      results.push({
+        sourceId,
+        sourceTitle: validatedTitle,
+        status: "added",
+      });
+    }
+
+    if (addedCount > 0) {
+      await ctx.db.patch(feed._id, { updatedAt: now });
+    }
+
+    return {
+      virtualFeedId: args.virtualFeedId,
+      addedCount,
+      alreadyAddedCount: results.filter((result) => result.status === "alreadyAdded").length,
+      rejectedCount: results.filter((result) => result.status === "rejected").length,
+      results,
+    };
   },
 });
 

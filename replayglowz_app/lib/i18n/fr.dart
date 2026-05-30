@@ -152,6 +152,30 @@ const Map<String, dynamic> fr = {
     'addSource': 'Ajouter une source',
     'addSourceHelp':
         'Choisissez ce qui doit nourrir ce Feed. ReplayGlowz regroupe ensuite les vidéos de toutes les sources actives dans une seule lecture.',
+    'sourceModeChannels': 'Chaînes depuis mes abonnements',
+    'sourceModeChannelsDescription':
+        'Ajoutez des chaînes que vous suivez déjà pour créer un Feed live.',
+    'sourceModePlaylist': 'Playlist YouTube',
+    'sourceModePlaylistDescription':
+        'Ajoute les vidéos actuelles de cette playlist au Feed.',
+    'sourceModePlaylistChannels': 'Chaînes d’une playlist',
+    'sourceModePlaylistChannelsDescription':
+        'Détecte les chaînes présentes dans une playlist et les ajoute comme sources live.',
+    'searchChannels': 'Chercher une chaîne',
+    'addSelectedSources': 'Ajouter les sources sélectionnées',
+    'sourceAlreadyAdded': 'Déjà dans ce Feed',
+    'noPlaylistSources': 'Aucune playlist à ajouter',
+    'noPlaylistSourcesDescription':
+        'Toutes les playlists disponibles sont déjà dans ce Feed.',
+    'noPlaylistChannels': 'Aucune chaîne détectée',
+    'noPlaylistChannelsDescription':
+        'ReplayGlowz ne trouve pas de chaîne exploitable dans les vidéos cachées de cette playlist. Ajoutez la playlist elle-même ou actualisez le cache.',
+    'playlistChannelSelectHelp':
+        'Sélectionnez les chaînes à suivre comme sources live.',
+    'playlistChannelMissingMetadata':
+        '{count} vidéo(s) n’ont pas encore de chaîne détectable dans le cache.',
+    'batchSourceAdded':
+        '{added} source(s) ajoutée(s), {already} déjà présente(s), {rejected} rejetée(s).',
     'emptySources': 'Aucune source ajoutée',
     'emptySourcesDesc':
         'Ajoutez une playlist pour importer toutes ses vidéos dans ce Feed, ou ajoutez des chaînes et abonnements pour construire une playlist live qui se remplit automatiquement.',

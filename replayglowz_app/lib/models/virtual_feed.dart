@@ -292,6 +292,107 @@ class VirtualFeedDetails {
   bool get hasFeed => feed != null;
 }
 
+class PlaylistChannelCandidate {
+  const PlaylistChannelCandidate({
+    required this.youtubeChannelId,
+    required this.title,
+    this.thumbnailUrl,
+    required this.videoCount,
+    required this.alreadyAdded,
+    required this.isSubscribed,
+  });
+
+  final String youtubeChannelId;
+  final String title;
+  final String? thumbnailUrl;
+  final int videoCount;
+  final bool alreadyAdded;
+  final bool isSubscribed;
+
+  factory PlaylistChannelCandidate.fromJson(Map<String, dynamic> json) {
+    return PlaylistChannelCandidate(
+      youtubeChannelId: _optionalString(json['youtubeChannelId']) ?? '',
+      title: _optionalString(json['title']) ?? 'Untitled channel',
+      thumbnailUrl: _optionalString(json['thumbnailUrl']),
+      videoCount: _intValue(json['videoCount']),
+      alreadyAdded: json['alreadyAdded'] as bool? ?? false,
+      isSubscribed: json['isSubscribed'] as bool? ?? false,
+    );
+  }
+}
+
+class PlaylistChannelCandidatesResult {
+  const PlaylistChannelCandidatesResult({
+    required this.youtubePlaylistId,
+    required this.playlistTitle,
+    required this.playlistVideoCount,
+    required this.candidates,
+    required this.missingMetadataCount,
+    required this.totalVideoCount,
+  });
+
+  final String youtubePlaylistId;
+  final String playlistTitle;
+  final int playlistVideoCount;
+  final List<PlaylistChannelCandidate> candidates;
+  final int missingMetadataCount;
+  final int totalVideoCount;
+
+  static const empty = PlaylistChannelCandidatesResult(
+    youtubePlaylistId: '',
+    playlistTitle: '',
+    playlistVideoCount: 0,
+    candidates: <PlaylistChannelCandidate>[],
+    missingMetadataCount: 0,
+    totalVideoCount: 0,
+  );
+
+  factory PlaylistChannelCandidatesResult.fromJson(Map<String, dynamic> json) {
+    final playlistRaw = json['playlist'];
+    final playlist = playlistRaw is Map
+        ? _asMap(playlistRaw)
+        : <String, dynamic>{};
+    final candidates = <PlaylistChannelCandidate>[];
+    final rawCandidates = json['candidates'];
+    if (rawCandidates is List) {
+      for (final entry in rawCandidates) {
+        if (entry is Map) {
+          candidates.add(PlaylistChannelCandidate.fromJson(_asMap(entry)));
+        }
+      }
+    }
+
+    return PlaylistChannelCandidatesResult(
+      youtubePlaylistId: _optionalString(playlist['youtubePlaylistId']) ?? '',
+      playlistTitle: _optionalString(playlist['title']) ?? '',
+      playlistVideoCount: _intValue(playlist['videoCount']),
+      candidates: candidates,
+      missingMetadataCount: _intValue(json['missingMetadataCount']),
+      totalVideoCount: _intValue(json['totalVideoCount']),
+    );
+  }
+}
+
+class AddVirtualFeedSourcesResult {
+  const AddVirtualFeedSourcesResult({
+    required this.addedCount,
+    required this.alreadyAddedCount,
+    required this.rejectedCount,
+  });
+
+  final int addedCount;
+  final int alreadyAddedCount;
+  final int rejectedCount;
+
+  factory AddVirtualFeedSourcesResult.fromJson(Map<String, dynamic> json) {
+    return AddVirtualFeedSourcesResult(
+      addedCount: _intValue(json['addedCount']),
+      alreadyAddedCount: _intValue(json['alreadyAddedCount']),
+      rejectedCount: _intValue(json['rejectedCount']),
+    );
+  }
+}
+
 String? _optionalString(Object? value) {
   if (value == null) return null;
   final text = value.toString();

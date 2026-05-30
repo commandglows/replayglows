@@ -214,7 +214,7 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
 
 ## Implementation Tasks
 
-- [ ] Task 1: Add backend candidate query for playlist-to-channel extraction.
+- [x] Task 1: Add backend candidate query for playlist-to-channel extraction.
   - File: `replayglowz_backend/packages/backend/convex/virtualFeeds.ts`
   - Action: Add a query that accepts `virtualFeedId` and `youtubePlaylistId`, validates ownership, reads cached videos for that playlist, groups by `youtubeChannelId`, joins/marks known channel cache entries when available, and returns candidates with counts, title from cached video/channel data, thumbnail when known, `alreadyAdded`, and `missingMetadataCount`.
   - User story link: Enables turning a static playlist into live channel sources.
@@ -222,7 +222,7 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
   - Validate with: `(cd replayglowz_backend/packages/backend && npm run typecheck)`
   - Notes: Do not call YouTube; use cache only.
 
-- [ ] Task 2: Add backend batch add path.
+- [x] Task 2: Add backend batch add path.
   - File: `replayglowz_backend/packages/backend/convex/virtualFeeds.ts`
   - Action: Add `addFeedSources` for multiple channel sources with per-source outcome reporting (`added`, `alreadyAdded`, `rejected`) and the same ownership/cache validation as single-source add.
   - User story link: Lets user add several detected channels without repetitive manual taps.
@@ -230,7 +230,7 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
   - Validate with: backend typecheck and duplicate-source sanity proof.
   - Notes: Use one batch mutation to avoid ambiguous partial UI state and to produce a clear summary snackbar/result.
 
-- [ ] Task 3: Refactor source picker into source-mode flow.
+- [x] Task 3: Refactor source picker into source-mode flow.
   - File: `replayglowz_app/lib/screens/playlists/virtual_feed_detail_screen.dart`
   - Action: Replace the flat candidate list with mode choices for subscription channels, playlist source, playlist channel extraction, and all subscriptions when available.
   - User story link: Makes the user understand what source type they are adding.
@@ -238,7 +238,7 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
   - Validate with: `(cd replayglowz_app && flutter analyze)`
   - Notes: Keep layout mobile-friendly; avoid nested card-heavy UI.
 
-- [ ] Task 4: Add searchable channel subscription picker.
+- [x] Task 4: Add searchable channel subscription picker.
   - File: `replayglowz_app/lib/screens/playlists/virtual_feed_detail_screen.dart`
   - Action: Add search/filter and already-added indicators for cached subscription channels; let the user add one or multiple channel sources.
   - User story link: User can build a theme directly from subscriptions.
@@ -246,7 +246,7 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
   - Validate with: Flutter analyze and manual QA with cached subscriptions.
   - Notes: If batch selection is added here, reuse the same result handling as playlist extraction.
 
-- [ ] Task 5: Add playlist-to-channel extraction UI.
+- [x] Task 5: Add playlist-to-channel extraction UI.
   - File: `replayglowz_app/lib/screens/playlists/virtual_feed_detail_screen.dart`
   - Action: Let user choose a playlist, load candidate channels, show counts/already-added/missing metadata, select candidates, and add them as channel sources.
   - User story link: User can transform an existing playlist into a live Feed.
@@ -254,14 +254,14 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
   - Validate with: Flutter analyze and manual QA on playlist with multiple channels.
   - Notes: Make the copy explicit: this follows the channels for future videos; it does not copy videos into YouTube.
 
-- [ ] Task 6: Add i18n and result copy.
+- [x] Task 6: Add i18n and result copy.
   - File: `replayglowz_app/lib/i18n/en.dart`, `replayglowz_app/lib/i18n/fr.dart`
   - Action: Add labels and messages for source modes, static-vs-live explanation, already added channels, partial metadata, no candidates, successful batch add, and no-op success.
   - User story link: Reduces confusion during Feed creation.
   - Depends on: Tasks 3-5.
   - Validate with: Flutter analyze and visual/browser copy review after ship.
 
-- [ ] Task 7: Add verification/source scans.
+- [x] Task 7: Add verification/source scans.
   - File: `shipflow_data/workflow/test-checklists/replayglowz-feed-source-discovery-playlist-channel-expansion.md` or implementation QA notes if checklist style is not used.
   - Action: Record manual scenarios and run source scan for forbidden YouTube write endpoints in Feed local source code paths.
   - User story link: Proves the new source discovery flow stays quota-safe.
@@ -339,6 +339,7 @@ None.
 |----------|-------|-------|--------|--------|-----------|
 | 2026-05-30 20:22:49 UTC | sf-spec | GPT-5 Codex | Created dedicated spec for Feed source discovery, subscription-channel selection, and playlist-to-channel expansion based on the user's testing feedback and sf-explore discussion. | draft spec created | `/sf-ready replayglowz-feed-source-discovery-playlist-channel-expansion` |
 | 2026-05-30 20:36:41 UTC | sf-ready | GPT-5 Codex | Reviewed readiness, tightened Test Contract, resolved batch-add ambiguity, clarified channel validation from cached playlist videos, and marked the spec ready. | ready | `/sf-start replayglowz-feed-source-discovery-playlist-channel-expansion` |
+| 2026-05-30 21:12:00 UTC | sf-build | GPT-5 Codex | Implemented backend playlist-channel candidate extraction, idempotent batch channel-source add, intention-first Flutter source picker, subscription search, playlist-channel extraction UI, i18n copy, and checklist evidence. | implemented | `/sf-verify replayglowz-feed-source-discovery-playlist-channel-expansion` |
 
 ## Current Chantier Flow
 
@@ -346,7 +347,7 @@ None.
 |-------|--------|-------|
 | sf-spec | complete | Draft created from user testing feedback and exploration; no implementation performed. |
 | sf-ready | complete | Ready after tightening proof contract, backend source validation semantics, batch mutation decision, and language clarity for user-facing source modes. |
-| sf-start | pending | Not started. |
-| sf-verify | pending | Not started. |
+| sf-start | complete | Implemented source discovery expansion across Convex, Flutter providers/models/UI, i18n, and QA checklist. |
+| sf-verify | in_progress | Local checks passed; production/browser proof remains before final closure. |
 | sf-end | pending | Not started. |
-| sf-ship | pending | Not started; user asked not to ship until explicitly requested. |
+| sf-ship | pending | Not started. Latest user asked sf-build to finish autonomously through the chantier. |

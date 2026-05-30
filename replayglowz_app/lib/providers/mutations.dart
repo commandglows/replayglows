@@ -678,6 +678,32 @@ Future<dynamic> addVirtualFeedSource(
   return result;
 }
 
+Future<AddVirtualFeedSourcesResult> addVirtualFeedChannelSources(
+  WidgetRef ref, {
+  required String feedId,
+  required List<PlaylistChannelCandidate> channels,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  final result = await service.mutate<dynamic>('virtualFeeds:addFeedSources', {
+    'virtualFeedId': feedId,
+    'sources': channels
+        .map(
+          (channel) => {
+            'sourceType': 'channel',
+            'sourceId': channel.youtubeChannelId,
+            'sourceTitle': channel.title,
+            'isActive': true,
+          },
+        )
+        .toList(growable: false),
+  });
+  _invalidateVirtualFeedProviders(ref, feedId);
+  final json = result is Map
+      ? Map<String, dynamic>.from(result)
+      : <String, dynamic>{};
+  return AddVirtualFeedSourcesResult.fromJson(json);
+}
+
 Future<dynamic> removeVirtualFeedSource(
   WidgetRef ref,
   String feedId,

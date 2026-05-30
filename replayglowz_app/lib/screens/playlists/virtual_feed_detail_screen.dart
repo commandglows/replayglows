@@ -293,6 +293,43 @@ class _VirtualFeedDetailScreenState
     }
   }
 
+  Future<void> _addChannelSources(
+    BuildContext context,
+    String feedId,
+    List<PlaylistChannelCandidate> channels,
+    AppLocale l,
+  ) async {
+    if (channels.isEmpty) return;
+    try {
+      final result = await addVirtualFeedChannelSources(
+        ref,
+        feedId: feedId,
+        channels: channels,
+      );
+      if (!mounted || !context.mounted) return;
+      final message = tr(
+        'virtualFeedDetail.batchSourceAdded',
+        locale: l,
+        params: {
+          'added': result.addedCount.toString(),
+          'already': result.alreadyAddedCount.toString(),
+          'rejected': result.rejectedCount.toString(),
+        },
+      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+      _invalidateFeedDetails();
+    } catch (e) {
+      if (!mounted || !context.mounted) return;
+      showErrorSnackBar(
+        context,
+        error: e,
+        prefix: t('virtualFeedDetail.sourceAddFailed', locale: l),
+      );
+    }
+  }
+
   Future<void> _toggleSource({
     required BuildContext context,
     required String feedId,
@@ -471,73 +508,11 @@ class _VirtualFeedDetailScreenState
     final playlists = playlistsAsync.asData?.value ?? [];
     final isLoadingCache = channelsAsync.isLoading || playlistsAsync.isLoading;
     final hasCacheError = channelsAsync.hasError || playlistsAsync.hasError;
-    final existing = feedDetails.sources;
-
-    final candidates = <_VirtualFeedSourceCandidate>[];
-
-    if (channels.isNotEmpty &&
-        !_isSourceAlreadyAdded(
-          existing,
-          'subscriptions',
-          _subscriptionsSourceId,
-        )) {
-      candidates.add(
-        _VirtualFeedSourceCandidate(
-          sourceType: 'subscriptions',
-          sourceId: _subscriptionsSourceId,
-          title: t('virtualFeedDetail.sourceType.subscriptions', locale: l),
-          subtitle: t(
-            'virtualFeedDetail.sourceType.subscriptionsHint',
-            locale: l,
-          ),
-          icon: Icons.rss_feed,
-        ),
-      );
-    }
-
-    for (final channel in channels) {
-      if (_isSourceAlreadyAdded(
-        existing,
-        'channel',
-        channel.youtubeChannelId,
-      )) {
-        continue;
-      }
-      candidates.add(
-        _VirtualFeedSourceCandidate(
-          sourceType: 'channel',
-          sourceId: channel.youtubeChannelId,
-          title: channel.title.isNotEmpty
-              ? channel.title
-              : t('virtualFeedDetail.untitledChannel', locale: l),
-          subtitle: t('virtualFeedDetail.sourceType.channel', locale: l),
-          icon: Icons.person_search,
-        ),
-      );
-    }
-
-    for (final playlist in playlists) {
-      if (_isSourceAlreadyAdded(
-        existing,
-        'playlist',
-        playlist.youtubePlaylistId,
-      )) {
-        continue;
-      }
-      candidates.add(
-        _VirtualFeedSourceCandidate(
-          sourceType: 'playlist',
-          sourceId: playlist.youtubePlaylistId,
-          title: playlist.title,
-          subtitle:
-              '${t('virtualFeedDetail.sourceType.playlist', locale: l)} • ${playlist.videoCount} ${t('virtualFeedDetail.videoCount', locale: l)}',
-          icon: Icons.playlist_play,
-        ),
-      );
-    }
+    final feed = feedDetails.feed;
+    if (feed == null) return;
 
     if (!mounted) return;
-    final selected = await showModalBottomSheet<_VirtualFeedSourceCandidate>(
+    final selected = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       builder: (dialogContext) => SafeArea(
@@ -559,7 +534,7 @@ class _VirtualFeedDetailScreenState
                 ),
               ),
               const SizedBox(height: 12),
-              if (candidates.isEmpty)
+              if (channels.isEmpty && playlists.isEmpty)
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -608,22 +583,204 @@ class _VirtualFeedDetailScreenState
                   ],
                 )
               else
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.person_search),
+                      title: Text(
+                        t('virtualFeedDetail.sourceModeChannels', locale: l),
+                      ),
+                      subtitle: Text(
+                        t(
+                          'virtualFeedDetail.sourceModeChannelsDescription',
+                          locale: l,
+                        ),
+                      ),
+                      enabled: channels.isNotEmpty,
+                      onTap: channels.isEmpty
+                          ? null
+                          : () => Navigator.of(dialogContext).pop('channels'),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.playlist_play),
+                      title: Text(
+                        t('virtualFeedDetail.sourceModePlaylist', locale: l),
+                      ),
+                      subtitle: Text(
+                        t(
+                          'virtualFeedDetail.sourceModePlaylistDescription',
+                          locale: l,
+                        ),
+                      ),
+                      enabled: playlists.isNotEmpty,
+                      onTap: playlists.isEmpty
+                          ? null
+                          : () => Navigator.of(dialogContext).pop('playlist'),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.hub_outlined),
+                      title: Text(
+                        t(
+                          'virtualFeedDetail.sourceModePlaylistChannels',
+                          locale: l,
+                        ),
+                      ),
+                      subtitle: Text(
+                        t(
+                          'virtualFeedDetail.sourceModePlaylistChannelsDescription',
+                          locale: l,
+                        ),
+                      ),
+                      enabled: playlists.isNotEmpty,
+                      onTap: playlists.isEmpty
+                          ? null
+                          : () => Navigator.of(
+                              dialogContext,
+                            ).pop('playlistChannels'),
+                    ),
+                    if (!_isSourceAlreadyAdded(
+                      feedDetails.sources,
+                      'subscriptions',
+                      _subscriptionsSourceId,
+                    ))
+                      ListTile(
+                        leading: const Icon(Icons.rss_feed),
+                        title: Text(
+                          t(
+                            'virtualFeedDetail.sourceType.subscriptions',
+                            locale: l,
+                          ),
+                        ),
+                        subtitle: Text(
+                          t(
+                            'virtualFeedDetail.sourceType.subscriptionsHint',
+                            locale: l,
+                          ),
+                        ),
+                        enabled: channels.isNotEmpty,
+                        onTap: channels.isEmpty
+                            ? null
+                            : () => Navigator.of(
+                                dialogContext,
+                              ).pop('subscriptions'),
+                      ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (!mounted || !context.mounted || selected == null) return;
+    switch (selected) {
+      case 'channels':
+        await _showChannelSourcePicker(
+          context,
+          feed,
+          feedDetails.sources,
+          channels,
+          l,
+        );
+      case 'playlist':
+        await _showPlaylistSourcePicker(
+          context,
+          feed,
+          feedDetails.sources,
+          playlists,
+          l,
+        );
+      case 'playlistChannels':
+        await _showPlaylistChannelSourcePicker(context, feed, playlists, l);
+      case 'subscriptions':
+        await _addSourceFromCandidate(
+          context,
+          feed,
+          _VirtualFeedSourceCandidate(
+            sourceType: 'subscriptions',
+            sourceId: _subscriptionsSourceId,
+            title: t('virtualFeedDetail.sourceType.subscriptions', locale: l),
+            subtitle: t(
+              'virtualFeedDetail.sourceType.subscriptionsHint',
+              locale: l,
+            ),
+            icon: Icons.rss_feed,
+          ),
+          l,
+        );
+    }
+  }
+
+  Future<void> _showPlaylistSourcePicker(
+    BuildContext context,
+    VirtualFeed feed,
+    List<VirtualFeedSource> existingSources,
+    List<YouTubePlaylist> playlists,
+    AppLocale l,
+  ) async {
+    final candidates = playlists
+        .where(
+          (playlist) => !_isSourceAlreadyAdded(
+            existingSources,
+            'playlist',
+            playlist.youtubePlaylistId,
+          ),
+        )
+        .toList(growable: false);
+    final selected = await showModalBottomSheet<_VirtualFeedSourceCandidate>(
+      context: context,
+      isScrollControlled: true,
+      builder: (dialogContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                t('virtualFeedDetail.sourceModePlaylist', locale: l),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                t('virtualFeedDetail.sourceModePlaylistDescription', locale: l),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (candidates.isEmpty)
+                AppEmptyState(
+                  icon: Icons.playlist_add_check,
+                  title: t('virtualFeedDetail.noPlaylistSources', locale: l),
+                  description: t(
+                    'virtualFeedDetail.noPlaylistSourcesDescription',
+                    locale: l,
+                  ),
+                )
+              else
                 Flexible(
                   child: ListView.separated(
                     shrinkWrap: true,
                     itemCount: candidates.length,
                     separatorBuilder: (context, index) => const Divider(),
                     itemBuilder: (context, index) {
-                      final candidate = candidates[index];
+                      final playlist = candidates[index];
                       return ListTile(
-                        leading: Icon(candidate.icon),
-                        title: Text(candidate.title),
-                        subtitle: candidate.subtitle == null
-                            ? null
-                            : Text(candidate.subtitle!),
-                        onTap: () => Navigator.of(
-                          dialogContext,
-                        ).pop<_VirtualFeedSourceCandidate>(candidate),
+                        leading: const Icon(Icons.playlist_play),
+                        title: Text(playlist.title),
+                        subtitle: Text(
+                          '${playlist.videoCount} ${t('virtualFeedDetail.videoCount', locale: l)}',
+                        ),
+                        onTap: () => Navigator.of(dialogContext).pop(
+                          _VirtualFeedSourceCandidate(
+                            sourceType: 'playlist',
+                            sourceId: playlist.youtubePlaylistId,
+                            title: playlist.title,
+                            icon: Icons.playlist_play,
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -633,14 +790,368 @@ class _VirtualFeedDetailScreenState
         ),
       ),
     );
+    if (!mounted || !context.mounted || selected == null) return;
+    await _addSourceFromCandidate(context, feed, selected, l);
+  }
 
-    if (!mounted ||
-        !context.mounted ||
-        selected == null ||
-        feedDetails.feed == null) {
+  Future<void> _showChannelSourcePicker(
+    BuildContext context,
+    VirtualFeed feed,
+    List<VirtualFeedSource> existingSources,
+    List<YouTubeChannel> channels,
+    AppLocale l,
+  ) async {
+    final selectedIds = <String>{};
+    var query = '';
+    final selected = await showModalBottomSheet<List<YouTubeChannel>>(
+      context: context,
+      isScrollControlled: true,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          final normalizedQuery = query.trim().toLowerCase();
+          final filtered = channels
+              .where((channel) {
+                final haystack = '${channel.title} ${channel.youtubeChannelId}'
+                    .toLowerCase();
+                return haystack.contains(normalizedQuery);
+              })
+              .toList(growable: false);
+          return SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                8,
+                16,
+                24 + MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    t('virtualFeedDetail.sourceModeChannels', locale: l),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search),
+                      hintText: t(
+                        'virtualFeedDetail.searchChannels',
+                        locale: l,
+                      ),
+                    ),
+                    onChanged: (value) => setSheetState(() => query = value),
+                  ),
+                  const SizedBox(height: 12),
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: filtered.length,
+                      separatorBuilder: (context, index) => const Divider(),
+                      itemBuilder: (context, index) {
+                        final channel = filtered[index];
+                        final alreadyAdded = _isSourceAlreadyAdded(
+                          existingSources,
+                          'channel',
+                          channel.youtubeChannelId,
+                        );
+                        final isSelected = selectedIds.contains(
+                          channel.youtubeChannelId,
+                        );
+                        return CheckboxListTile(
+                          secondary: const Icon(Icons.person_search),
+                          value: isSelected || alreadyAdded,
+                          onChanged: alreadyAdded
+                              ? null
+                              : (value) => setSheetState(() {
+                                  if (value == true) {
+                                    selectedIds.add(channel.youtubeChannelId);
+                                  } else {
+                                    selectedIds.remove(
+                                      channel.youtubeChannelId,
+                                    );
+                                  }
+                                }),
+                          title: Text(channel.title),
+                          subtitle: alreadyAdded
+                              ? Text(
+                                  t(
+                                    'virtualFeedDetail.sourceAlreadyAdded',
+                                    locale: l,
+                                  ),
+                                )
+                              : null,
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: selectedIds.isEmpty
+                          ? null
+                          : () => Navigator.of(dialogContext).pop(
+                              channels
+                                  .where(
+                                    (channel) => selectedIds.contains(
+                                      channel.youtubeChannelId,
+                                    ),
+                                  )
+                                  .toList(growable: false),
+                            ),
+                      child: Text(
+                        t('virtualFeedDetail.addSelectedSources', locale: l),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    if (!mounted || !context.mounted || selected == null || selected.isEmpty) {
       return;
     }
-    await _addSourceFromCandidate(context, feedDetails.feed!, selected, l);
+    await _addChannelSources(
+      context,
+      feed.id,
+      selected
+          .map(
+            (channel) => PlaylistChannelCandidate(
+              youtubeChannelId: channel.youtubeChannelId,
+              title: channel.title,
+              thumbnailUrl: channel.thumbnailUrl,
+              videoCount: 0,
+              alreadyAdded: false,
+              isSubscribed: true,
+            ),
+          )
+          .toList(growable: false),
+      l,
+    );
+  }
+
+  Future<void> _showPlaylistChannelSourcePicker(
+    BuildContext context,
+    VirtualFeed feed,
+    List<YouTubePlaylist> playlists,
+    AppLocale l,
+  ) async {
+    final selectedPlaylist = await showModalBottomSheet<YouTubePlaylist>(
+      context: context,
+      isScrollControlled: true,
+      builder: (dialogContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                t('virtualFeedDetail.sourceModePlaylistChannels', locale: l),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                t(
+                  'virtualFeedDetail.sourceModePlaylistChannelsDescription',
+                  locale: l,
+                ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: playlists.length,
+                  separatorBuilder: (context, index) => const Divider(),
+                  itemBuilder: (context, index) {
+                    final playlist = playlists[index];
+                    return ListTile(
+                      leading: const Icon(Icons.hub_outlined),
+                      title: Text(playlist.title),
+                      subtitle: Text(
+                        '${playlist.videoCount} ${t('virtualFeedDetail.videoCount', locale: l)}',
+                      ),
+                      onTap: () => Navigator.of(dialogContext).pop(playlist),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (!mounted || !context.mounted || selectedPlaylist == null) return;
+    await _showPlaylistChannelCandidates(context, feed, selectedPlaylist, l);
+  }
+
+  Future<void> _showPlaylistChannelCandidates(
+    BuildContext context,
+    VirtualFeed feed,
+    YouTubePlaylist playlist,
+    AppLocale l,
+  ) async {
+    final selectedIds = <String>{};
+    final args = PlaylistChannelCandidatesArgs(
+      feedId: feed.id,
+      youtubePlaylistId: playlist.youtubePlaylistId,
+    );
+    final selected = await showModalBottomSheet<List<PlaylistChannelCandidate>>(
+      context: context,
+      isScrollControlled: true,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setSheetState) => Consumer(
+          builder: (context, ref, child) {
+            final candidatesAsync = ref.watch(
+              playlistChannelCandidatesProvider(args),
+            );
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                child: candidatesAsync.when(
+                  loading: () => const SizedBox(
+                    height: 220,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (error, stack) => ErrorStateView(
+                    error: error,
+                    prefix: t('virtualFeedDetail.sourceAddFailed', locale: l),
+                    onRetry: () =>
+                        ref.invalidate(playlistChannelCandidatesProvider(args)),
+                  ),
+                  data: (result) {
+                    final available = result.candidates
+                        .where((candidate) => !candidate.alreadyAdded)
+                        .toList(growable: false);
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          playlist.title,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          result.missingMetadataCount > 0
+                              ? tr(
+                                  'virtualFeedDetail.playlistChannelMissingMetadata',
+                                  locale: l,
+                                  params: {
+                                    'count': result.missingMetadataCount
+                                        .toString(),
+                                  },
+                                )
+                              : t(
+                                  'virtualFeedDetail.playlistChannelSelectHelp',
+                                  locale: l,
+                                ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                        const SizedBox(height: 12),
+                        if (result.candidates.isEmpty)
+                          AppEmptyState(
+                            icon: Icons.hub_outlined,
+                            title: t(
+                              'virtualFeedDetail.noPlaylistChannels',
+                              locale: l,
+                            ),
+                            description: t(
+                              'virtualFeedDetail.noPlaylistChannelsDescription',
+                              locale: l,
+                            ),
+                          )
+                        else
+                          Flexible(
+                            child: ListView.separated(
+                              shrinkWrap: true,
+                              itemCount: result.candidates.length,
+                              separatorBuilder: (context, index) =>
+                                  const Divider(),
+                              itemBuilder: (context, index) {
+                                final candidate = result.candidates[index];
+                                final isSelected = selectedIds.contains(
+                                  candidate.youtubeChannelId,
+                                );
+                                return CheckboxListTile(
+                                  secondary: const Icon(Icons.person_search),
+                                  value: isSelected || candidate.alreadyAdded,
+                                  onChanged: candidate.alreadyAdded
+                                      ? null
+                                      : (value) => setSheetState(() {
+                                          if (value == true) {
+                                            selectedIds.add(
+                                              candidate.youtubeChannelId,
+                                            );
+                                          } else {
+                                            selectedIds.remove(
+                                              candidate.youtubeChannelId,
+                                            );
+                                          }
+                                        }),
+                                  title: Text(candidate.title),
+                                  subtitle: Text(
+                                    candidate.alreadyAdded
+                                        ? t(
+                                            'virtualFeedDetail.sourceAlreadyAdded',
+                                            locale: l,
+                                          )
+                                        : '${candidate.videoCount} ${t('virtualFeedDetail.videoCount', locale: l)}',
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            onPressed: selectedIds.isEmpty
+                                ? null
+                                : () => Navigator.of(dialogContext).pop(
+                                    available
+                                        .where(
+                                          (candidate) => selectedIds.contains(
+                                            candidate.youtubeChannelId,
+                                          ),
+                                        )
+                                        .toList(growable: false),
+                                  ),
+                            child: Text(
+                              t(
+                                'virtualFeedDetail.addSelectedSources',
+                                locale: l,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+    if (!mounted || !context.mounted || selected == null || selected.isEmpty) {
+      return;
+    }
+    await _addChannelSources(context, feed.id, selected, l);
   }
 
   @override

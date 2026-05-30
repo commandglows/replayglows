@@ -577,6 +577,57 @@ final virtualFeedDetailsProvider =
       return VirtualFeedDetails.fromJson(map);
     });
 
+class PlaylistChannelCandidatesArgs {
+  const PlaylistChannelCandidatesArgs({
+    required this.feedId,
+    required this.youtubePlaylistId,
+  });
+
+  final String feedId;
+  final String youtubePlaylistId;
+
+  @override
+  bool operator ==(Object other) {
+    return other is PlaylistChannelCandidatesArgs &&
+        feedId == other.feedId &&
+        youtubePlaylistId == other.youtubePlaylistId;
+  }
+
+  @override
+  int get hashCode => Object.hash(feedId, youtubePlaylistId);
+}
+
+/// Loads channel candidates detected from cached videos in one playlist.
+final playlistChannelCandidatesProvider =
+    FutureProvider.family<
+      PlaylistChannelCandidatesResult,
+      PlaylistChannelCandidatesArgs
+    >((ref, args) async {
+      final authState = ref.watch(authStateProvider);
+      if (authState is! AuthAuthenticated || args.youtubePlaylistId.isEmpty) {
+        return PlaylistChannelCandidatesResult.empty;
+      }
+
+      if (!await _waitForConvexAuthReady(
+        ref,
+        consumer: 'playlistChannelCandidatesProvider',
+      )) {
+        return PlaylistChannelCandidatesResult.empty;
+      }
+
+      final service = ref.watch(convexServiceProvider);
+      final raw = await service.query<dynamic>(
+        'virtualFeeds:listPlaylistChannelCandidates',
+        {
+          'virtualFeedId': args.feedId,
+          'youtubePlaylistId': args.youtubePlaylistId,
+        },
+      );
+      final map = _decodeMap(raw);
+      if (map == null) return PlaylistChannelCandidatesResult.empty;
+      return PlaylistChannelCandidatesResult.fromJson(map);
+    });
+
 // Authenticated is provided by auth_state.dart.
 
 // ---------------------------------------------------------------------------
