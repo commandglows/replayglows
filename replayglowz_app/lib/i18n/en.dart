@@ -386,13 +386,12 @@ const Map<String, dynamic> en = {
           'This account is connected but has no imported videos yet.',
       'noFilterMatchTitle': 'No videos match these filters',
       'noFilterMatchDesc': 'Clear filters or show watched videos.',
-      'filterByPlaylists': 'Filter by playlists',
-      'filterByPlaylistsDesc':
-          'Select one or more playlists. Feed and Play will only use those videos.',
-      'allPlaylists': 'All playlists',
-      'playlistVideoCount': '{count} videos',
-      'noPlaylistFilterOptions': 'No playlist is available in this feed yet.',
-      'selectedPlaylistFallback': 'Selected playlist',
+      'filterByFeeds': 'Filter by feeds',
+      'filterByFeedsDesc':
+          'Choose one or more ReplayGlowz feeds shown in Feed and Play.',
+      'allVideos': 'All videos',
+      'sourceCount': '{count} sources',
+      'noFeedFilterOptions': 'No ReplayGlowz feed is available yet.',
       'applyFilters': 'Apply',
       'hintTitle': 'Tip',
       'hintMessage':

@@ -43,6 +43,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   static const _prefsWatched = 'videos.pref.watched';
   static const _prefsPlaylist = 'videos.pref.playlist';
   static const _prefsPlaylists = 'videos.pref.playlists';
+  static const _prefsFeedFilter = 'videos.pref.feedFilter';
+  static const _prefsFeedFilters = 'videos.pref.feedFilters';
   static const _prefsScroll = 'videos.pref.scroll';
   late final TabController _tabController;
   final _cardScrollController = ScrollController();
@@ -53,7 +55,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   String _sortOrder = 'desc';
   bool _includeWatched = true;
   bool _feedActionRefreshMode = false;
-  final Set<String> _playlistFilterIds = <String>{};
+  final Set<String> _feedFilterIds = <String>{};
   bool _prefsLoaded = false;
   String? _lastAutoScrolledVideoId;
   int? _lastAutoScrolledTabIndex;
@@ -99,20 +101,20 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     final tab = prefs.getInt(_prefsTab) ?? 0;
     final sort = prefs.getString(_prefsSort) ?? 'desc';
     final watched = prefs.getBool(_prefsWatched) ?? true;
-    final playlist = prefs.getString(_prefsPlaylist);
-    final playlists = prefs.getStringList(_prefsPlaylists);
+    final feedFilter = prefs.getString(_prefsFeedFilter);
+    final feedFilters = prefs.getStringList(_prefsFeedFilters);
     final scroll = prefs.getDouble(_prefsScroll) ?? 0;
-    final playlistFilters = playlists == null
-        ? <String>{if (playlist != null && playlist.isNotEmpty) playlist}
-        : playlists.where((id) => id.isNotEmpty).toSet();
+    final selectedFeeds = feedFilters == null
+        ? <String>{if (feedFilter != null && feedFilter.isNotEmpty) feedFilter}
+        : feedFilters.where((id) => id.isNotEmpty).toSet();
 
     if (!mounted) return;
     setState(() {
       _sortOrder = sort;
       _includeWatched = watched;
-      _playlistFilterIds
+      _feedFilterIds
         ..clear()
-        ..addAll(playlistFilters);
+        ..addAll(selectedFeeds);
       _prefsLoaded = true;
     });
     _tabController.index = tab.clamp(0, 2);
@@ -130,12 +132,14 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     await prefs.setInt(_prefsTab, _tabController.index);
     await prefs.setString(_prefsSort, _sortOrder);
     await prefs.setBool(_prefsWatched, _includeWatched);
-    final playlistIds = _playlistFilterIds.toList()..sort();
-    await prefs.setStringList(_prefsPlaylists, playlistIds);
+    final feedIds = _feedFilterIds.toList()..sort();
+    await prefs.setStringList(_prefsFeedFilters, feedIds);
     await prefs.setString(
-      _prefsPlaylist,
-      playlistIds.isEmpty ? '' : playlistIds.first,
+      _prefsFeedFilter,
+      feedIds.isEmpty ? '' : feedIds.first,
     );
+    await prefs.setStringList(_prefsPlaylists, const <String>[]);
+    await prefs.setString(_prefsPlaylist, '');
   }
 
   Future<void> _persistScroll() async {
@@ -157,7 +161,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     }
   }
 
-  bool get _hasPlaylistFilters => _playlistFilterIds.isNotEmpty;
+  bool get _hasFeedFilters => _feedFilterIds.isNotEmpty;
 
   void _jumpFeedViewsToTop() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -338,6 +342,25 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     final videosAsync = youtubeConnected
         ? ref.watch(videosProvider(_videosArgs))
         : null;
+    final virtualFeedsAsync = youtubeConnected
+        ? ref.watch(virtualFeedsProvider)
+        : const AsyncValue<List<VirtualFeed>>.data(<VirtualFeed>[]);
+    final selectedFeedIds = _feedFilterIds.toList()..sort();
+    final selectedFeedDetails = youtubeConnected
+        ? [
+            for (final feedId in selectedFeedIds)
+              ref.watch(
+                virtualFeedDetailsProvider(
+                  VirtualFeedDetailsArgs(
+                    feedId: feedId,
+                    includeWatched: _includeWatched,
+                    sortOrder: _sortOrder,
+                    pageSize: 500,
+                  ),
+                ),
+              ),
+          ]
+        : const <AsyncValue<VirtualFeedDetails>>[];
     final notesAsync = youtubeConnected && isNotesView
         ? ref.watch(notesProvider)
         : null;
@@ -347,7 +370,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     final activeFeedVideoId =
         ref.watch(feedPlaybackQueueProvider).currentVideoId ??
         ref.watch(activePlayVideoIdProvider);
-    final playlistFilterVideos = videosAsync?.asData?.value;
+    final filterFeeds = virtualFeedsAsync.asData?.value;
     final l = _locale(context);
 
     return Scaffold(
@@ -397,12 +420,12 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
           ),
           IconButton(
             icon: Icon(
-              _hasPlaylistFilters ? Icons.filter_list_alt : Icons.filter_list,
+              _hasFeedFilters ? Icons.filter_list_alt : Icons.filter_list,
             ),
-            tooltip: t('p3.videos.filterByPlaylists', locale: l),
-            onPressed: playlistFilterVideos == null
+            tooltip: t('p3.videos.filterByFeeds', locale: l),
+            onPressed: filterFeeds == null
                 ? null
-                : () => _showPlaylistFilterSheet(context, playlistFilterVideos),
+                : () => _showFeedFilterSheet(context, feeds: filterFeeds),
           ),
           IconButton(
             icon: const Icon(Icons.sync),
@@ -441,7 +464,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 }
               });
 
-              final visibleVideos = _applyLocalFilters(videos);
+              if (selectedFeedDetails.any((details) => details.isLoading)) {
+                return _buildShimmerLoading();
+              }
+
+              final visibleVideos = _feedFilterIds.isEmpty
+                  ? videos
+                  : _mergeFeedVideos(selectedFeedDetails);
               _visibleFeedQueue = visibleVideos;
               if (_prefsLoaded) {
                 _scheduleScrollToActiveFeedVideo(
@@ -491,7 +520,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                       action: FilledButton.tonalIcon(
                         onPressed: () {
                           setState(() {
-                            _playlistFilterIds.clear();
+                            _feedFilterIds.clear();
                             _includeWatched = true;
                           });
                           _jumpFeedViewsToTop();
@@ -661,13 +690,40 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     );
   }
 
-  List<YouTubeVideo> _applyLocalFilters(List<YouTubeVideo> videos) {
-    if (_playlistFilterIds.isEmpty) {
-      return videos;
+  List<YouTubeVideo> _mergeFeedVideos(
+    List<AsyncValue<VirtualFeedDetails>> feedDetails,
+  ) {
+    final videosById = <String, YouTubeVideo>{};
+    for (final detailsAsync in feedDetails) {
+      detailsAsync.whenData((details) {
+        for (final video in details.videos) {
+          final key = video.youtubeVideoId.isNotEmpty
+              ? video.youtubeVideoId
+              : video.id;
+          videosById.putIfAbsent(key, () => video);
+        }
+      });
     }
-    return videos
-        .where((video) => _playlistFilterIds.contains(video.playlistId))
-        .toList(growable: false);
+    final videos = videosById.values.toList(growable: false);
+    videos.sort((a, b) {
+      final aTime = _videoSortTimestamp(a);
+      final bTime = _videoSortTimestamp(b);
+      return _sortOrder == 'asc'
+          ? aTime.compareTo(bTime)
+          : bTime.compareTo(aTime);
+    });
+    return videos;
+  }
+
+  int _videoSortTimestamp(YouTubeVideo video) {
+    final publishedAt = video.publishedAt;
+    if (publishedAt != null) {
+      final parsed = DateTime.tryParse(publishedAt);
+      if (parsed != null) {
+        return parsed.millisecondsSinceEpoch;
+      }
+    }
+    return video.cachedAt;
   }
 
   Widget _buildCardView(List<YouTubeVideo> videos, Set<String> watchedIds) {
@@ -1026,29 +1082,14 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     }
   }
 
-  Future<void> _showPlaylistFilterSheet(
-    BuildContext context,
-    List<YouTubeVideo> videos,
-  ) async {
+  Future<void> _showFeedFilterSheet(
+    BuildContext context, {
+    required List<VirtualFeed> feeds,
+  }) async {
     final l = _locale(context);
-    final playlists = <String, String>{};
-    final playlistCounts = <String, int>{};
-    for (final video in videos) {
-      if (video.playlistId.isEmpty) continue;
-      playlists[video.playlistId] = video.playlistTitle ?? 'Untitled playlist';
-      playlistCounts[video.playlistId] =
-          (playlistCounts[video.playlistId] ?? 0) + 1;
-    }
-    for (final playlistId in _playlistFilterIds) {
-      playlists.putIfAbsent(
-        playlistId,
-        () => t('p3.videos.selectedPlaylistFallback', locale: l),
-      );
-      playlistCounts.putIfAbsent(playlistId, () => 0);
-    }
-    final entries = playlists.entries.toList()
-      ..sort((a, b) => a.value.toLowerCase().compareTo(b.value.toLowerCase()));
-    final draftFilterIds = Set<String>.of(_playlistFilterIds);
+    final sortedFeeds = feeds.where((feed) => feed.isActive).toList()
+      ..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+    final draftFeedIds = Set<String>.of(_feedFilterIds);
 
     await showModalBottomSheet<void>(
       context: context,
@@ -1067,9 +1108,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.filter_list_alt),
-                      title: Text(t('p3.videos.filterByPlaylists', locale: l)),
+                      title: Text(t('p3.videos.filterByFeeds', locale: l)),
                       subtitle: Text(
-                        t('p3.videos.filterByPlaylistsDesc', locale: l),
+                        t('p3.videos.filterByFeedsDesc', locale: l),
                       ),
                     ),
                     ConstrainedBox(
@@ -1081,61 +1122,49 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                         children: [
                           CheckboxListTile(
                             contentPadding: EdgeInsets.zero,
-                            secondary: const Icon(Icons.video_library_outlined),
-                            title: Text(t('p3.videos.allPlaylists', locale: l)),
-                            subtitle: Text(
-                              tr(
-                                'p3.videos.playlistVideoCount',
-                                locale: l,
-                                params: {'count': videos.length.toString()},
-                              ),
-                            ),
-                            value: draftFilterIds.isEmpty,
+                            secondary: const Icon(Icons.public),
+                            title: Text(t('p3.videos.allVideos', locale: l)),
+                            value: draftFeedIds.isEmpty,
                             onChanged: (_) {
-                              setSheetState(draftFilterIds.clear);
+                              setSheetState(draftFeedIds.clear);
                             },
                           ),
-                          const Divider(height: 1),
-                          if (entries.isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              child: Text(
-                                t(
-                                  'p3.videos.noPlaylistFilterOptions',
-                                  locale: l,
-                                ),
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                            ),
-                          for (final entry in entries)
+                          for (final feed in sortedFeeds)
                             CheckboxListTile(
                               contentPadding: EdgeInsets.zero,
-                              secondary: const Icon(Icons.playlist_play),
+                              secondary: const Icon(Icons.dynamic_feed),
                               title: Text(
-                                entry.value,
+                                feed.title,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               subtitle: Text(
                                 tr(
-                                  'p3.videos.playlistVideoCount',
+                                  'p3.videos.sourceCount',
                                   locale: l,
                                   params: {
-                                    'count':
-                                        '${playlistCounts[entry.key] ?? 0}',
+                                    'count': '${feed.activeSourceCount}',
                                   },
                                 ),
                               ),
-                              value: draftFilterIds.contains(entry.key),
+                              value: draftFeedIds.contains(feed.id),
                               onChanged: (selected) {
                                 setSheetState(() {
                                   if (selected == true) {
-                                    draftFilterIds.add(entry.key);
+                                    draftFeedIds.add(feed.id);
                                   } else {
-                                    draftFilterIds.remove(entry.key);
+                                    draftFeedIds.remove(feed.id);
                                   }
                                 });
                               },
+                            ),
+                          if (sortedFeeds.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              child: Text(
+                                t('p3.videos.noFeedFilterOptions', locale: l),
+                                style: theme.textTheme.bodyMedium,
+                              ),
                             ),
                         ],
                       ),
@@ -1145,9 +1174,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: draftFilterIds.isEmpty
+                            onPressed: draftFeedIds.isEmpty
                                 ? null
-                                : () => setSheetState(draftFilterIds.clear),
+                                : () => setSheetState(draftFeedIds.clear),
                             icon: const Icon(Icons.clear),
                             label: Text(t('p3.common.clearFilters', locale: l)),
                           ),
@@ -1157,9 +1186,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                           child: FilledButton.icon(
                             onPressed: () {
                               setState(() {
-                                _playlistFilterIds
+                                _feedFilterIds
                                   ..clear()
-                                  ..addAll(draftFilterIds);
+                                  ..addAll(draftFeedIds);
                               });
                               _jumpFeedViewsToTop();
                               _persistLocalPrefs();

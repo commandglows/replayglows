@@ -48,6 +48,11 @@ class YouTubeVideo {
   /// Title of the parent playlist (denormalized for display).
   final String? playlistTitle;
 
+  /// Virtual feed source metadata, present on virtual feed detail responses.
+  final String? feedSourceType;
+  final String? feedSourceId;
+  final String? feedSourceTitle;
+
   const YouTubeVideo({
     required this.id,
     required this.youtubeVideoId,
@@ -64,6 +69,9 @@ class YouTubeVideo {
     required this.cachedAt,
     this.playlistColor,
     this.playlistTitle,
+    this.feedSourceType,
+    this.feedSourceId,
+    this.feedSourceTitle,
   });
 
   factory YouTubeVideo.fromJson(Map<String, dynamic> json) {
@@ -94,6 +102,9 @@ class YouTubeVideo {
       cachedAt: _intValue(json['cachedAt']),
       playlistColor: _optionalString(json['playlistColor']),
       playlistTitle: _optionalString(json['playlistTitle']),
+      feedSourceType: _optionalString(json['feedSourceType']),
+      feedSourceId: _optionalString(json['feedSourceId']),
+      feedSourceTitle: _optionalString(json['feedSourceTitle']),
     );
   }
 
@@ -115,6 +126,9 @@ class YouTubeVideo {
       'cachedAt': cachedAt,
       if (playlistColor != null) 'playlistColor': playlistColor,
       if (playlistTitle != null) 'playlistTitle': playlistTitle,
+      if (feedSourceType != null) 'feedSourceType': feedSourceType,
+      if (feedSourceId != null) 'feedSourceId': feedSourceId,
+      if (feedSourceTitle != null) 'feedSourceTitle': feedSourceTitle,
     };
   }
 
@@ -134,6 +148,9 @@ class YouTubeVideo {
     int? cachedAt,
     String? playlistColor,
     String? playlistTitle,
+    String? feedSourceType,
+    String? feedSourceId,
+    String? feedSourceTitle,
   }) {
     return YouTubeVideo(
       id: id ?? this.id,
@@ -151,6 +168,9 @@ class YouTubeVideo {
       cachedAt: cachedAt ?? this.cachedAt,
       playlistColor: playlistColor ?? this.playlistColor,
       playlistTitle: playlistTitle ?? this.playlistTitle,
+      feedSourceType: feedSourceType ?? this.feedSourceType,
+      feedSourceId: feedSourceId ?? this.feedSourceId,
+      feedSourceTitle: feedSourceTitle ?? this.feedSourceTitle,
     );
   }
 

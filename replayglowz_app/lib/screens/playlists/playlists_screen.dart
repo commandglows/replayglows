@@ -123,6 +123,14 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
     return playlist.source ?? 'owned';
   }
 
+  List<YouTubePlaylist> _visibleYoutubePlaylists(
+    List<YouTubePlaylist> playlists,
+  ) {
+    return playlists
+        .where((playlist) => _playlistSource(playlist) != 'subscriptions')
+        .toList(growable: false);
+  }
+
   String _playlistsHintMessage(List<YouTubePlaylist> playlists, AppLocale l) {
     final hasImported = playlists.any(
       (playlist) => _playlistSource(playlist) == 'url_import',
@@ -213,7 +221,8 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
             data: (playlists) {
               return virtualFeedsAsync!.when(
                 data: (virtualFeeds) {
-                  if (playlists.isEmpty && virtualFeeds.isEmpty) {
+                  final visiblePlaylists = _visibleYoutubePlaylists(playlists);
+                  if (visiblePlaylists.isEmpty && virtualFeeds.isEmpty) {
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       _setFabToRestingState();
                     });
@@ -263,7 +272,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                         hintId: 'playlists-onboarding',
                         icon: Icons.playlist_add_check_circle_outlined,
                         title: t('p3.playlists.hintTitle', locale: l),
-                        message: _playlistsHintMessage(playlists, l),
+                        message: _playlistsHintMessage(visiblePlaylists, l),
                       ),
                       Expanded(
                         child: NotificationListener<ScrollNotification>(
@@ -302,7 +311,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                                 ),
                                 Icons.queue_music,
                               ),
-                              ...playlists.map(
+                              ...visiblePlaylists.map(
                                 (playlist) =>
                                     _buildPlaylistCard(context, ref, playlist),
                               ),

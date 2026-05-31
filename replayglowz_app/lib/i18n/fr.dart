@@ -400,14 +400,13 @@ const Map<String, dynamic> fr = {
       'noFilterMatchTitle': 'Aucune vidéo ne correspond à ces filtres',
       'noFilterMatchDesc':
           'Effacez les filtres ou affichez les vidéos déjà vues.',
-      'filterByPlaylists': 'Filtrer par playlists',
-      'filterByPlaylistsDesc':
-          'Sélectionnez une ou plusieurs playlists. Le Feed et Play utiliseront uniquement ces vidéos.',
-      'allPlaylists': 'Toutes les playlists',
-      'playlistVideoCount': '{count} vidéos',
-      'noPlaylistFilterOptions':
-          'Aucune playlist n’est disponible dans ce feed pour le moment.',
-      'selectedPlaylistFallback': 'Playlist sélectionnée',
+      'filterByFeeds': 'Filtrer par feeds',
+      'filterByFeedsDesc':
+          'Choisissez un ou plusieurs feeds ReplayGlowz affichés dans Feed et Play.',
+      'allVideos': 'Toutes les vidéos',
+      'sourceCount': '{count} sources',
+      'noFeedFilterOptions':
+          'Aucun feed ReplayGlowz n’est disponible pour le moment.',
       'applyFilters': 'Appliquer',
       'hintTitle': 'Astuce',
       'hintMessage':

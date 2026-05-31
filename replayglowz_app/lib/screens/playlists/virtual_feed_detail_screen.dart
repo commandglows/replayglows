@@ -133,6 +133,22 @@ class _VirtualFeedDetailScreenState
     return '$prefix • $suffix';
   }
 
+  List<YouTubeVideo> _videosForSources(
+    List<YouTubeVideo> videos,
+    List<VirtualFeedSource> sources,
+  ) {
+    final sourceKeys = sources
+        .map((source) => '${source.sourceType}:${source.sourceId}')
+        .toSet();
+
+    return videos.where((video) {
+      final sourceType = video.feedSourceType;
+      final sourceId = video.feedSourceId;
+      if (sourceType == null || sourceId == null) return true;
+      return sourceKeys.contains('$sourceType:$sourceId');
+    }).toList(growable: false);
+  }
+
   String _queueActiveVideoId() {
     return ref.watch(feedPlaybackQueueProvider).currentVideoId ??
         ref.watch(activePlayVideoIdProvider) ??
@@ -377,7 +393,13 @@ class _VirtualFeedDetailScreenState
     );
     if (!confirmed) return;
 
+    final previousSources = _editableSources.toList(growable: false);
     try {
+      setState(() {
+        _clearSourceOrderCache();
+        _editableSources.removeWhere((entry) => entry.id == source.id);
+        _sourceTileKeys.remove(source.id);
+      });
       await removeVirtualFeedSource(ref, feedId, source.id);
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -385,10 +407,13 @@ class _VirtualFeedDetailScreenState
           content: Text(t('virtualFeedDetail.sourceRemoved', locale: l)),
         ),
       );
-      _clearSourceOrderCache();
-      _editableSources.clear();
     } catch (e) {
       if (!mounted || !context.mounted) return;
+      setState(() {
+        _editableSources
+          ..clear()
+          ..addAll(previousSources);
+      });
       showErrorSnackBar(
         context,
         error: e,
@@ -1366,8 +1391,8 @@ class _VirtualFeedDetailScreenState
         final color = feed.color != null
             ? parseHexColor(feed.color!)
             : Theme.of(context).colorScheme.primary;
-        final videos = detailsData.videos;
         final sources = _editableSources.toList(growable: false);
+        final videos = _videosForSources(detailsData.videos, sources);
         final feedStats = detailsData.stats;
 
         final hasCacheError = sources.any((source) => source.isStale);

@@ -1,5 +1,7 @@
 // ignore_for_file: use_null_aware_elements
 
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:replayglowz_app/convex/convex_client.dart';
@@ -606,16 +608,12 @@ Future<dynamic> createPlaylist(
 
 void _invalidateVirtualFeedProviders(WidgetRef ref, String feedId) {
   ref.invalidate(virtualFeedsProvider);
-  ref.invalidate(
-    virtualFeedDetailsProvider(
-      VirtualFeedDetailsArgs(
-        feedId: feedId,
-        includeHidden: false,
-        includeWatched: false,
-        sortOrder: 'default',
-      ),
-    ),
-  );
+  for (final args in [
+    VirtualFeedDetailsArgs(feedId: feedId),
+    VirtualFeedDetailsArgs(feedId: feedId, pageSize: 100),
+  ]) {
+    ref.invalidate(virtualFeedDetailsProvider(args));
+  }
 }
 
 Future<dynamic> createVirtualFeed(
@@ -717,8 +715,9 @@ Future<AddVirtualFeedSourcesResult> addVirtualFeedChannelSources(
         .toList(growable: false),
   });
   _invalidateVirtualFeedProviders(ref, feedId);
-  final json = result is Map
-      ? Map<String, dynamic>.from(result)
+  final decoded = result is String ? jsonDecode(result) : result;
+  final json = decoded is Map
+      ? Map<String, dynamic>.from(decoded)
       : <String, dynamic>{};
   return AddVirtualFeedSourcesResult.fromJson(json);
 }

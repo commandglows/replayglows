@@ -1012,23 +1012,35 @@ export const removeFeedSource = mutation({
       throw new Error("Source not found");
     }
 
-    await ctx.db.delete(args.virtualFeedSourceId);
+    const feed = await getUserOwnedFeed(ctx, userId, source.virtualFeedId);
+    if (!feed) throw new Error("Feed not found");
 
-    const remaining = await getSourcesByFeed(ctx, source.virtualFeedId);
-    const patchPromises = remaining
-      .filter((entry, index) => entry.position !== index)
-      .map((entry, index) =>
-        ctx.db.patch(entry._id, {
-          position: index,
-          updatedAt: Date.now(),
-        }),
-      );
+    const now = Date.now();
+    const remaining = (await getSourcesByFeed(ctx, source.virtualFeedId)).filter(
+      (entry) => entry._id !== args.virtualFeedSourceId,
+    );
 
-    await Promise.all(patchPromises);
+    await Promise.all(
+      remaining.map((entry, index) =>
+        entry.position === index
+          ? Promise.resolve()
+          : ctx.db.patch(entry._id, {
+              position: index,
+              updatedAt: now,
+            }),
+      ),
+    );
 
     await ctx.db.patch(source.virtualFeedId, {
-      updatedAt: Date.now(),
+      updatedAt: now,
     });
+    await ctx.db.delete(args.virtualFeedSourceId);
+
+    return {
+      virtualFeedId: source.virtualFeedId,
+      removedSourceId: args.virtualFeedSourceId,
+      remainingCount: remaining.length,
+    };
   },
 });
 
