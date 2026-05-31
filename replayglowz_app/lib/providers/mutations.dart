@@ -85,10 +85,14 @@ Future<dynamic> deleteNote(WidgetRef ref, String noteId) async {
 /// Hides a video from the user's feed.
 Future<dynamic> hideVideo(WidgetRef ref, String videoId) async {
   final service = ref.read(convexServiceProvider);
-  return service.mutate<dynamic>('hidden:hideItem', {
+  final result = await service.mutate<dynamic>('hidden:hideItem', {
     'youtubeId': videoId,
     'itemType': 'video',
   });
+  ref
+    ..invalidate(hiddenItemsProvider)
+    ..invalidate(videosProvider);
+  return result;
 }
 
 /// Hides a playlist from the user's feed.

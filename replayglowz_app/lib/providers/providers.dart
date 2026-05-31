@@ -29,6 +29,10 @@ class ActivePlayVideoIdNotifier extends Notifier<String?> {
     if (videoId.isEmpty) return;
     state = videoId;
   }
+
+  void clear() {
+    state = null;
+  }
 }
 
 /// The bottom navigation can route to `/play` without query parameters. Keeping
@@ -45,24 +49,59 @@ class AppPlaybackControllerState {
     this.hasActiveVideo = false,
     this.controllerMode = false,
     this.toggleRequestId = 0,
+    this.previousRequestId = 0,
+    this.nextRequestId = 0,
+    this.loopEnabled = false,
+    this.hideCurrentVideoRequestId = 0,
+    this.markCurrentVideoWatchedRequestId = 0,
+    this.speedUpRequestId = 0,
+    this.speedDownRequestId = 0,
+    this.playbackRate = 1,
   });
 
   final bool isPlaying;
   final bool hasActiveVideo;
   final bool controllerMode;
   final int toggleRequestId;
+  final int previousRequestId;
+  final int nextRequestId;
+  final bool loopEnabled;
+  final int hideCurrentVideoRequestId;
+  final int markCurrentVideoWatchedRequestId;
+  final int speedUpRequestId;
+  final int speedDownRequestId;
+  final double playbackRate;
 
   AppPlaybackControllerState copyWith({
     bool? isPlaying,
     bool? hasActiveVideo,
     bool? controllerMode,
     int? toggleRequestId,
+    int? previousRequestId,
+    int? nextRequestId,
+    bool? loopEnabled,
+    int? hideCurrentVideoRequestId,
+    int? markCurrentVideoWatchedRequestId,
+    int? speedUpRequestId,
+    int? speedDownRequestId,
+    double? playbackRate,
   }) {
     return AppPlaybackControllerState(
       isPlaying: isPlaying ?? this.isPlaying,
       hasActiveVideo: hasActiveVideo ?? this.hasActiveVideo,
       controllerMode: controllerMode ?? this.controllerMode,
       toggleRequestId: toggleRequestId ?? this.toggleRequestId,
+      previousRequestId: previousRequestId ?? this.previousRequestId,
+      nextRequestId: nextRequestId ?? this.nextRequestId,
+      loopEnabled: loopEnabled ?? this.loopEnabled,
+      hideCurrentVideoRequestId:
+          hideCurrentVideoRequestId ?? this.hideCurrentVideoRequestId,
+      markCurrentVideoWatchedRequestId:
+          markCurrentVideoWatchedRequestId ??
+          this.markCurrentVideoWatchedRequestId,
+      speedUpRequestId: speedUpRequestId ?? this.speedUpRequestId,
+      speedDownRequestId: speedDownRequestId ?? this.speedDownRequestId,
+      playbackRate: playbackRate ?? this.playbackRate,
     );
   }
 }
@@ -88,6 +127,68 @@ class AppPlaybackControllerNotifier
       controllerMode: true,
       toggleRequestId: state.toggleRequestId + 1,
     );
+  }
+
+  void requestPrevious() {
+    if (!state.hasActiveVideo) return;
+    state = state.copyWith(
+      controllerMode: true,
+      previousRequestId: state.previousRequestId + 1,
+    );
+  }
+
+  void requestNext() {
+    if (!state.hasActiveVideo) return;
+    state = state.copyWith(
+      controllerMode: true,
+      nextRequestId: state.nextRequestId + 1,
+    );
+  }
+
+  void toggleLoop() {
+    state = state.copyWith(
+      controllerMode: true,
+      loopEnabled: !state.loopEnabled,
+    );
+  }
+
+  void requestHideCurrentVideo() {
+    if (!state.hasActiveVideo) return;
+    state = state.copyWith(
+      controllerMode: true,
+      hideCurrentVideoRequestId: state.hideCurrentVideoRequestId + 1,
+    );
+  }
+
+  void requestMarkCurrentVideoWatched() {
+    if (!state.hasActiveVideo) return;
+    state = state.copyWith(
+      controllerMode: true,
+      markCurrentVideoWatchedRequestId:
+          state.markCurrentVideoWatchedRequestId + 1,
+    );
+  }
+
+  void requestSpeedUp() {
+    if (!state.hasActiveVideo) return;
+    state = state.copyWith(
+      controllerMode: true,
+      speedUpRequestId: state.speedUpRequestId + 1,
+    );
+  }
+
+  void requestSpeedDown() {
+    if (!state.hasActiveVideo) return;
+    state = state.copyWith(
+      controllerMode: true,
+      speedDownRequestId: state.speedDownRequestId + 1,
+    );
+  }
+
+  void setPlaybackRate(double playbackRate) {
+    if (!playbackRate.isFinite || playbackRate <= 0) return;
+    if ((state.playbackRate - playbackRate).abs() < 0.001) return;
+    state = state.copyWith(playbackRate: playbackRate);
   }
 }
 

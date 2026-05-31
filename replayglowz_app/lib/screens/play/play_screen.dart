@@ -178,6 +178,7 @@ class PlayScreen extends ConsumerStatefulWidget {
 class _PlayScreenState extends ConsumerState<PlayScreen>
     with SingleTickerProviderStateMixin {
   static const _prefsFocusMode = 'play.pref.focusMode';
+  static const _playbackRates = <double>[0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
   late final TabController _tabController;
   late final YoutubePlayerController _playerController;
   StreamSubscription<YoutubePlayerValue>? _playerValueSubscription;
@@ -202,6 +203,12 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   double _playerDragOffset = 0;
   bool _isPlayerDragging = false;
   int _lastHandledPlaybackToggleRequestId = 0;
+  int _lastHandledPlaybackPreviousRequestId = 0;
+  int _lastHandledPlaybackNextRequestId = 0;
+  int _lastHandledHideCurrentVideoRequestId = 0;
+  int _lastHandledMarkCurrentVideoWatchedRequestId = 0;
+  int _lastHandledSpeedUpRequestId = 0;
+  int _lastHandledSpeedDownRequestId = 0;
 
   @override
   void initState() {
@@ -336,6 +343,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
 
     final playing = value.playerState == PlayerState.playing;
+    ref
+        .read(appPlaybackControllerProvider.notifier)
+        .setPlaybackRate(value.playbackRate);
 
     if (value.playerState == PlayerState.ended) {
       final playerDuration = value.metaData.duration.inSeconds.toDouble();
@@ -343,8 +353,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         _isPlaying = false;
         _currentTimestamp = playerDuration;
       });
-      _saveProgress();
-      _playNextFeedVideo();
+      _handlePlaybackEnded();
       return;
     }
 
@@ -380,11 +389,37 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       previous,
       next,
     ) {
-      if (next.toggleRequestId == _lastHandledPlaybackToggleRequestId) {
-        return;
+      if (next.toggleRequestId != _lastHandledPlaybackToggleRequestId) {
+        _lastHandledPlaybackToggleRequestId = next.toggleRequestId;
+        _togglePlayPause();
       }
-      _lastHandledPlaybackToggleRequestId = next.toggleRequestId;
-      _togglePlayPause();
+      if (next.previousRequestId != _lastHandledPlaybackPreviousRequestId) {
+        _lastHandledPlaybackPreviousRequestId = next.previousRequestId;
+        _playPreviousFeedVideo();
+      }
+      if (next.nextRequestId != _lastHandledPlaybackNextRequestId) {
+        _lastHandledPlaybackNextRequestId = next.nextRequestId;
+        _playNextFeedVideo();
+      }
+      if (next.hideCurrentVideoRequestId !=
+          _lastHandledHideCurrentVideoRequestId) {
+        _lastHandledHideCurrentVideoRequestId = next.hideCurrentVideoRequestId;
+        _hideCurrentVideoFromPlaybackBar();
+      }
+      if (next.markCurrentVideoWatchedRequestId !=
+          _lastHandledMarkCurrentVideoWatchedRequestId) {
+        _lastHandledMarkCurrentVideoWatchedRequestId =
+            next.markCurrentVideoWatchedRequestId;
+        _markCurrentVideoWatchedFromPlaybackBar();
+      }
+      if (next.speedUpRequestId != _lastHandledSpeedUpRequestId) {
+        _lastHandledSpeedUpRequestId = next.speedUpRequestId;
+        _changePlaybackRate(forward: true);
+      }
+      if (next.speedDownRequestId != _lastHandledSpeedDownRequestId) {
+        _lastHandledSpeedDownRequestId = next.speedDownRequestId;
+        _changePlaybackRate(forward: false);
+      }
     });
 
     final youtubeConnectionAsync = ref.watch(youtubeConnectionProvider);
@@ -892,8 +927,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
           _isPlaying = false;
           _currentTimestamp = playerDuration;
         });
-        _saveProgress();
-        _playNextFeedVideo();
+        _handlePlaybackEnded();
       },
     );
   }
@@ -1230,6 +1264,88 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
   }
 
+  double get _currentPlaybackRate {
+    final rate = kIsWeb
+        ? _webPlayerSnapshot.playbackRate
+        : _playerController.value.playbackRate;
+    if (!rate.isFinite || rate <= 0) {
+      return 1;
+    }
+    return rate;
+  }
+
+  void _changePlaybackRate({required bool forward}) {
+    if (!_isPlayerReady) {
+      return;
+    }
+
+    final current = _currentPlaybackRate;
+    final nextRate = forward
+        ? _playbackRates.firstWhere(
+            (rate) => rate > current + 0.01,
+            orElse: () => _playbackRates.last,
+          )
+        : _playbackRates.lastWhere(
+            (rate) => rate < current - 0.01,
+            orElse: () => _playbackRates.first,
+          );
+
+    if ((nextRate - current).abs() < 0.001) {
+      return;
+    }
+
+    if (kIsWeb) {
+      _webPlayerController.setPlaybackRate(nextRate);
+    } else {
+      _playerController.setPlaybackRate(nextRate);
+    }
+    ref.read(appPlaybackControllerProvider.notifier).setPlaybackRate(nextRate);
+  }
+
+  Future<void> _hideCurrentVideoFromPlaybackBar() async {
+    final videoId = widget.videoId;
+    if (videoId.isEmpty) return;
+
+    try {
+      await hideVideo(ref, videoId);
+      ref
+        ..invalidate(hiddenItemsProvider)
+        ..invalidate(videosProvider);
+      if (!mounted) return;
+      ref.read(activePlayVideoIdProvider.notifier).clear();
+      final playbackNotifier = ref.read(appPlaybackControllerProvider.notifier);
+      playbackNotifier
+        ..setPlaying(false)
+        ..setActiveVideo(false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video hidden from library.')),
+      );
+      context.go(Routes.videos);
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Could not hide video');
+    }
+  }
+
+  Future<void> _markCurrentVideoWatchedFromPlaybackBar() async {
+    final videoId = widget.videoId;
+    if (videoId.isEmpty) return;
+
+    try {
+      await markWatched(ref, videoId);
+      ref
+        ..invalidate(watchedVideosProvider)
+        ..invalidate(videosProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Marked watched.')));
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Could not mark watched');
+    }
+  }
+
   void _handleWebPlayerSnapshot(WebYoutubePlayerSnapshot snapshot) {
     if (!mounted) return;
 
@@ -1242,12 +1358,15 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     final hasDurationChanged =
         snapshot.durationSeconds.round() !=
         _webPlayerSnapshot.durationSeconds.round();
+    final hasRateChanged =
+        (snapshot.playbackRate - _webPlayerSnapshot.playbackRate).abs() > 0.001;
     final endedTransition = snapshot.hasEnded && !_webPlayerSnapshot.hasEnded;
 
     _webPlayerSnapshot = snapshot;
     if (!hasTimeChanged &&
         !hasPlayStateChanged &&
         !hasDurationChanged &&
+        !hasRateChanged &&
         !endedTransition) {
       return;
     }
@@ -1258,14 +1377,50 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       _isPlaying = snapshot.isPlaying;
     });
     _syncAppPlaybackState(snapshot.isPlaying);
+    ref
+        .read(appPlaybackControllerProvider.notifier)
+        .setPlaybackRate(snapshot.playbackRate);
 
     if (endedTransition) {
-      _saveProgress();
-      _playNextFeedVideo();
+      _handlePlaybackEnded();
     }
   }
 
+  void _handlePlaybackEnded() {
+    final loopEnabled = ref.read(appPlaybackControllerProvider).loopEnabled;
+    if (loopEnabled) {
+      _seekToSeconds(0);
+      if (kIsWeb) {
+        _webPlayerController.play();
+      } else {
+        _playerController.playVideo();
+      }
+      _syncAppPlaybackState(true);
+      return;
+    }
+
+    _playNextFeedVideo();
+  }
+
+  void _playPreviousFeedVideo() {
+    final previousVideoId = ref
+        .read(feedPlaybackQueueProvider)
+        .previousBefore(widget.videoId);
+    if (previousVideoId == null || previousVideoId.isEmpty) {
+      return;
+    }
+
+    _saveProgress();
+    context.go(
+      Uri(
+        path: Routes.play,
+        queryParameters: {'videoId': previousVideoId, 'autoPlay': '1'},
+      ).toString(),
+    );
+  }
+
   void _playNextFeedVideo() {
+    _saveProgress();
     final nextVideoId = ref
         .read(feedPlaybackQueueProvider)
         .nextAfter(widget.videoId);
@@ -1529,6 +1684,13 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                   try {
                     await hideVideo(ref, videoId);
                     if (!mounted) return;
+                    ref.read(activePlayVideoIdProvider.notifier).clear();
+                    final playbackNotifier = ref.read(
+                      appPlaybackControllerProvider.notifier,
+                    );
+                    playbackNotifier
+                      ..setPlaying(false)
+                      ..setActiveVideo(false);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Video hidden from library.'),

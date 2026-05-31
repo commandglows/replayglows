@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,18 +16,37 @@ import 'package:replayglowz_app/widgets/youtube_connect.dart';
 ///
 /// Used as the builder for the [ShellRoute] in [router.dart]. The [child]
 /// parameter is the currently active route widget injected by GoRouter.
-class AppShell extends ConsumerWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({
     super.key,
     required this.shellState,
     required this.navigationShell,
   });
 
-  static const _bottomNavIconSize = 28.0;
-
   /// The stateful routed page content.
   final StatefulNavigationShell navigationShell;
   final GoRouterState shellState;
+
+  @override
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> {
+  static const _bottomNavIconSize = 28.0;
+  static const _temporaryPlaybackControlsDuration = Duration(seconds: 5);
+  Timer? _temporaryPlaybackControlsTimer;
+  bool _persistentPlaybackControls = false;
+  bool _temporaryPlaybackControls = false;
+  bool _videoActionControlsVisible = false;
+
+  StatefulNavigationShell get navigationShell => widget.navigationShell;
+  GoRouterState get shellState => widget.shellState;
+
+  @override
+  void dispose() {
+    _temporaryPlaybackControlsTimer?.cancel();
+    super.dispose();
+  }
 
   // ---------------------------------------------------------------------------
   // Navigation destinations
@@ -68,14 +89,23 @@ class AppShell extends ConsumerWidget {
   }
 
   void _onDestinationSelected(BuildContext context, WidgetRef ref, int index) {
+    final destination = _destinations[index];
+    final playbackController = ref.read(appPlaybackControllerProvider);
+    if (destination.path == Routes.play &&
+        navigationShell.currentIndex == index &&
+        playbackController.hasActiveVideo) {
+      _showTemporaryPlaybackControls();
+      return;
+    }
+
     if (index == navigationShell.currentIndex) {
       return;
     }
 
-    final destination = _destinations[index];
     if (destination.path == Routes.play) {
       final activeVideoId = ref.read(activePlayVideoIdProvider);
       if (activeVideoId != null && activeVideoId.isNotEmpty) {
+        _showTemporaryPlaybackControls();
         context.go(
           Uri(
             path: Routes.play,
@@ -89,6 +119,51 @@ class AppShell extends ConsumerWidget {
     navigationShell.goBranch(index);
   }
 
+  void _showTemporaryPlaybackControls() {
+    _temporaryPlaybackControlsTimer?.cancel();
+    if (!mounted) return;
+    setState(() => _temporaryPlaybackControls = true);
+    _temporaryPlaybackControlsTimer = Timer(
+      _temporaryPlaybackControlsDuration,
+      () {
+        if (!mounted || _persistentPlaybackControls) return;
+        setState(() => _temporaryPlaybackControls = false);
+      },
+    );
+  }
+
+  void _togglePersistentPlaybackControls() {
+    _temporaryPlaybackControlsTimer?.cancel();
+    setState(() {
+      _persistentPlaybackControls = !_persistentPlaybackControls;
+      _temporaryPlaybackControls = false;
+    });
+  }
+
+  void _handlePlaybackControl(VoidCallback action) {
+    action();
+    if (!_persistentPlaybackControls) {
+      _showTemporaryPlaybackControls();
+    }
+  }
+
+  void _showVideoActionControls() {
+    if (!mounted || _videoActionControlsVisible) return;
+    setState(() => _videoActionControlsVisible = true);
+  }
+
+  void _hideVideoActionControls() {
+    if (!mounted || !_videoActionControlsVisible) return;
+    setState(() => _videoActionControlsVisible = false);
+  }
+
+  void _handleVideoActionControl(VoidCallback action, {bool close = false}) {
+    action();
+    if (close) {
+      _hideVideoActionControls();
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Build
   // ---------------------------------------------------------------------------
@@ -99,7 +174,7 @@ class AppShell extends ConsumerWidget {
   static const _railBreakpoint = 600.0;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     final location = shellState.uri.path;
     final selected = navigationShell.currentIndex.clamp(
@@ -137,6 +212,42 @@ class AppShell extends ConsumerWidget {
   ) {
     final showYoutubeStatusChrome = _showYoutubeStatusChrome(location);
     final playbackController = ref.watch(appPlaybackControllerProvider);
+    final showPlaybackControls =
+        location.startsWith(Routes.play) &&
+        playbackController.hasActiveVideo &&
+        (_persistentPlaybackControls || _temporaryPlaybackControls);
+    final showVideoActionControls =
+        location.startsWith(Routes.play) &&
+        playbackController.hasActiveVideo &&
+        _videoActionControlsVisible;
+    final primaryBottomBar = showPlaybackControls
+        ? _buildPlaybackBottomBar(context, ref, playbackController)
+        : NavigationBar(
+            selectedIndex: selected,
+            onDestinationSelected: (i) =>
+                _onDestinationSelected(context, ref, i),
+            destinations: [
+              for (final dest in _destinations)
+                NavigationDestination(
+                  icon: _buildBottomNavIcon(
+                    context,
+                    ref,
+                    dest,
+                    selected: false,
+                    playbackController: playbackController,
+                  ),
+                  selectedIcon: _buildBottomNavIcon(
+                    context,
+                    ref,
+                    dest,
+                    selected: true,
+                    playbackController: playbackController,
+                  ),
+                  label: dest.label,
+                ),
+            ],
+          );
+
     return Scaffold(
       body: Column(
         children: [
@@ -146,29 +257,168 @@ class AppShell extends ConsumerWidget {
           Expanded(child: routedChild),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: selected,
-        onDestinationSelected: (i) => _onDestinationSelected(context, ref, i),
-        destinations: [
-          for (final dest in _destinations)
-            NavigationDestination(
-              icon: _buildBottomNavIcon(
-                context,
-                ref,
-                dest,
-                selected: false,
-                playbackController: playbackController,
-              ),
-              selectedIcon: _buildBottomNavIcon(
-                context,
-                ref,
-                dest,
-                selected: true,
-                playbackController: playbackController,
-              ),
-              label: dest.label,
-            ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            reverseDuration: const Duration(milliseconds: 160),
+            transitionBuilder: (child, animation) {
+              return SizeTransition(
+                sizeFactor: animation,
+                axisAlignment: 1,
+                child: SlideTransition(
+                  position:
+                      Tween<Offset>(
+                        begin: const Offset(0, 0.45),
+                        end: Offset.zero,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        ),
+                      ),
+                  child: child,
+                ),
+              );
+            },
+            child: showVideoActionControls
+                ? _buildVideoActionBottomBar(context, ref, playbackController)
+                : const SizedBox.shrink(),
+          ),
+          primaryBottomBar,
         ],
+      ),
+    );
+  }
+
+  Widget _buildVideoActionBottomBar(
+    BuildContext context,
+    WidgetRef ref,
+    AppPlaybackControllerState playbackController,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final rate = playbackController.playbackRate;
+    return GestureDetector(
+      key: const ValueKey('video-action-bottom-bar'),
+      behavior: HitTestBehavior.opaque,
+      onVerticalDragEnd: (details) {
+        final velocity = details.primaryVelocity ?? 0;
+        if (velocity > 220) {
+          _hideVideoActionControls();
+        }
+      },
+      child: Container(
+        height: 72,
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest,
+          border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
+        ),
+        child: Row(
+          children: [
+            _PlaybackBarButton(
+              icon: Icons.visibility_off_outlined,
+              label: 'Hide',
+              onPressed: () => _handleVideoActionControl(
+                ref
+                    .read(appPlaybackControllerProvider.notifier)
+                    .requestHideCurrentVideo,
+                close: true,
+              ),
+            ),
+            _PlaybackBarButton(
+              icon: Icons.done_all_rounded,
+              label: 'Watched',
+              onPressed: () => _handleVideoActionControl(
+                ref
+                    .read(appPlaybackControllerProvider.notifier)
+                    .requestMarkCurrentVideoWatched,
+                close: true,
+              ),
+            ),
+            _PlaybackBarButton(
+              icon: Icons.remove_rounded,
+              label: 'Slower',
+              onPressed: () => _handleVideoActionControl(
+                ref
+                    .read(appPlaybackControllerProvider.notifier)
+                    .requestSpeedDown,
+              ),
+            ),
+            _PlaybackBarButton(
+              icon: Icons.add_rounded,
+              label: rate == rate.truncateToDouble()
+                  ? '${rate.toInt()}x'
+                  : '${rate.toStringAsFixed(2)}x',
+              selected: rate != 1,
+              onPressed: () => _handleVideoActionControl(
+                ref.read(appPlaybackControllerProvider.notifier).requestSpeedUp,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaybackBottomBar(
+    BuildContext context,
+    WidgetRef ref,
+    AppPlaybackControllerState playbackController,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: 80,
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
+        ),
+        child: Row(
+          children: [
+            _PlaybackBarButton(
+              icon: Icons.skip_previous_rounded,
+              label: 'Previous',
+              onPressed: () => _handlePlaybackControl(
+                ref
+                    .read(appPlaybackControllerProvider.notifier)
+                    .requestPrevious,
+              ),
+            ),
+            _PlaybackBarButton(
+              icon: playbackController.isPlaying
+                  ? Icons.pause_circle_filled_rounded
+                  : Icons.play_circle_filled_rounded,
+              label: playbackController.isPlaying ? 'Pause' : 'Play',
+              selected: true,
+              onPressed: () => _handlePlaybackControl(
+                ref.read(appPlaybackControllerProvider.notifier).requestToggle,
+              ),
+              onLongPress: _togglePersistentPlaybackControls,
+              onSwipeUp: _showVideoActionControls,
+            ),
+            _PlaybackBarButton(
+              icon: Icons.skip_next_rounded,
+              label: 'Next',
+              onPressed: () => _handlePlaybackControl(
+                ref.read(appPlaybackControllerProvider.notifier).requestNext,
+              ),
+            ),
+            _PlaybackBarButton(
+              icon: playbackController.loopEnabled
+                  ? Icons.repeat_one_rounded
+                  : Icons.repeat_rounded,
+              label: playbackController.loopEnabled ? 'Loop on' : 'Loop',
+              selected: playbackController.loopEnabled,
+              onPressed: () => _handlePlaybackControl(
+                ref.read(appPlaybackControllerProvider.notifier).toggleLoop,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -205,6 +455,17 @@ class AppShell extends ConsumerWidget {
             ? () => ref
                   .read(appPlaybackControllerProvider.notifier)
                   .requestToggle()
+            : null,
+        onLongPress: playbackController.hasActiveVideo
+            ? _togglePersistentPlaybackControls
+            : null,
+        onVerticalDragEnd: playbackController.hasActiveVideo
+            ? (details) {
+                final velocity = details.primaryVelocity ?? 0;
+                if (velocity < -220) {
+                  _showVideoActionControls();
+                }
+              }
             : null,
         child: Icon(icon, size: _bottomNavIconSize),
       ),
@@ -286,6 +547,70 @@ class _NavDestination {
   final IconData icon;
   final IconData selectedIcon;
   final String path;
+}
+
+class _PlaybackBarButton extends StatelessWidget {
+  const _PlaybackBarButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.onLongPress,
+    this.onSwipeUp,
+    this.selected = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onSwipeUp;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final color = selected ? colorScheme.primary : colorScheme.onSurfaceVariant;
+    return Expanded(
+      child: Tooltip(
+        message: label,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onVerticalDragEnd: onSwipeUp == null
+              ? null
+              : (details) {
+                  final velocity = details.primaryVelocity ?? 0;
+                  if (velocity < -220) {
+                    onSwipeUp!();
+                  }
+                },
+          child: InkResponse(
+            onTap: onPressed,
+            onLongPress: onLongPress,
+            radius: 32,
+            child: SizedBox.expand(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: selected ? 34 : 28, color: color),
+                  const SizedBox(height: 4),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: color,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _YoutubeQuotaSyncStrip extends ConsumerWidget {
