@@ -35,14 +35,10 @@ class PlayerPanel extends StatelessWidget {
             )
           : YoutubePlayer(
               controller: controller,
-              showVideoProgressIndicator: true,
-              progressIndicatorColor: Theme.of(context).colorScheme.primary,
-              progressColors: ProgressBarColors(
-                playedColor: Theme.of(context).colorScheme.primary,
-                handleColor: Theme.of(context).colorScheme.primary,
-              ),
-              onReady: onReady,
-              onEnded: (_) => onEnded(),
+              builder: (context, player, controller) {
+                WidgetsBinding.instance.addPostFrameCallback((_) => onReady());
+                return player;
+              },
             ),
     );
   }

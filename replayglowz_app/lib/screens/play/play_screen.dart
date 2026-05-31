@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 
@@ -179,6 +180,8 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   static const _prefsFocusMode = 'play.pref.focusMode';
   late final TabController _tabController;
   late final YoutubePlayerController _playerController;
+  StreamSubscription<YoutubePlayerValue>? _playerValueSubscription;
+  StreamSubscription<YoutubeVideoState>? _videoStateSubscription;
   final WebYoutubePlayerController _webPlayerController =
       WebYoutubePlayerController();
   final TextEditingController _noteController = TextEditingController();
@@ -213,14 +216,20 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       ref.read(activePlayVideoIdProvider.notifier).setVideoId(widget.videoId);
       ref.read(feedPlaybackQueueProvider.notifier).markCurrent(widget.videoId);
     }
-    _playerController = YoutubePlayerController(
-      initialVideoId: _initialPlayerVideoId(widget.videoId),
-      flags: YoutubePlayerFlags(
-        autoPlay: widget.autoPlay,
+    _playerController = YoutubePlayerController.fromVideoId(
+      videoId: _initialPlayerVideoId(widget.videoId),
+      autoPlay: widget.autoPlay,
+      params: const YoutubePlayerParams(
         enableCaption: true,
         captionLanguage: 'en',
       ),
-    )..addListener(_syncPlayerState);
+    );
+    _playerValueSubscription = _playerController.stream.listen(
+      _syncPlayerValue,
+    );
+    _videoStateSubscription = _playerController.videoStateStream.listen(
+      _syncVideoState,
+    );
     _loadPrefs();
   }
 
@@ -254,9 +263,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
 
     if (_isPlayerReady && _loadedVideoId.isNotEmpty && !kIsWeb) {
-      _playerController.load(_loadedVideoId);
+      _playerController.loadVideoById(videoId: _loadedVideoId);
       if (widget.autoPlay) {
-        _playerController.play();
+        _playerController.playVideo();
       }
     }
   }
@@ -265,8 +274,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   void dispose() {
     _saveProgress();
     _tabController.removeListener(_syncActiveTab);
-    _playerController.removeListener(_syncPlayerState);
-    _playerController.dispose();
+    _playerValueSubscription?.cancel();
+    _videoStateSubscription?.cancel();
+    _playerController.close();
     _tabController.dispose();
     _noteController.dispose();
     super.dispose();
@@ -312,27 +322,56 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
   }
 
-  void _syncPlayerState() {
+  void _syncPlayerValue(YoutubePlayerValue value) {
     if (kIsWeb) {
       return;
     }
     if (!mounted) return;
-    final value = _playerController.value;
-    if (!value.isReady) return;
 
-    final second = value.position.inSeconds;
-    final playing = value.isPlaying;
+    if (!_isPlayerReady &&
+        (value.playerState == PlayerState.cued ||
+            value.playerState == PlayerState.playing ||
+            value.playerState == PlayerState.paused)) {
+      setState(() => _isPlayerReady = true);
+    }
 
-    if (second == _lastSyncedSecond && playing == _isPlaying) {
+    final playing = value.playerState == PlayerState.playing;
+
+    if (value.playerState == PlayerState.ended) {
+      final playerDuration = value.metaData.duration.inSeconds.toDouble();
+      setState(() {
+        _isPlaying = false;
+        _currentTimestamp = playerDuration;
+      });
+      _saveProgress();
+      _playNextFeedVideo();
+      return;
+    }
+
+    if (playing == _isPlaying) {
+      return;
+    }
+
+    setState(() {
+      _isPlaying = playing;
+    });
+    _syncAppPlaybackState(playing);
+  }
+
+  void _syncVideoState(YoutubeVideoState state) {
+    if (kIsWeb || !mounted) {
+      return;
+    }
+
+    final second = state.position.inSeconds;
+    if (second == _lastSyncedSecond) {
       return;
     }
 
     _lastSyncedSecond = second;
     setState(() {
-      _currentTimestamp = value.position.inMilliseconds / 1000;
-      _isPlaying = playing;
+      _currentTimestamp = state.position.inMilliseconds / 1000;
     });
-    _syncAppPlaybackState(playing);
   }
 
   @override
@@ -834,7 +873,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         if (!kIsWeb &&
             _loadedVideoId.isNotEmpty &&
             _playerController.metadata.videoId != _loadedVideoId) {
-          _playerController.load(_loadedVideoId);
+          _playerController.loadVideoById(videoId: _loadedVideoId);
         }
         final pendingSeek = _pendingSeekSeconds;
         if (pendingSeek != null) {
@@ -1166,7 +1205,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       return;
     }
 
-    _playerController.seekTo(Duration(milliseconds: (clamped * 1000).round()));
+    _playerController.seekTo(seconds: clamped, allowSeekAhead: true);
   }
 
   void _togglePlayPause() {
@@ -1177,7 +1216,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       if (kIsWeb) {
         _webPlayerController.pause();
       } else {
-        _playerController.pause();
+        _playerController.pauseVideo();
       }
       _syncAppPlaybackState(false);
       _saveProgress();
@@ -1185,7 +1224,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       if (kIsWeb) {
         _webPlayerController.play();
       } else {
-        _playerController.play();
+        _playerController.playVideo();
       }
       _syncAppPlaybackState(true);
     }
