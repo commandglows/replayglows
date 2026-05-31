@@ -42,6 +42,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   static const _prefsSort = 'videos.pref.sort';
   static const _prefsWatched = 'videos.pref.watched';
   static const _prefsPlaylist = 'videos.pref.playlist';
+  static const _prefsPlaylists = 'videos.pref.playlists';
   static const _prefsScroll = 'videos.pref.scroll';
   late final TabController _tabController;
   final _cardScrollController = ScrollController();
@@ -52,7 +53,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   String _sortOrder = 'desc';
   bool _includeWatched = true;
   bool _feedActionRefreshMode = false;
-  String? _playlistFilterId;
+  final Set<String> _playlistFilterIds = <String>{};
   bool _prefsLoaded = false;
   String? _lastAutoScrolledVideoId;
   int? _lastAutoScrolledTabIndex;
@@ -99,15 +100,19 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     final sort = prefs.getString(_prefsSort) ?? 'desc';
     final watched = prefs.getBool(_prefsWatched) ?? true;
     final playlist = prefs.getString(_prefsPlaylist);
+    final playlists = prefs.getStringList(_prefsPlaylists);
     final scroll = prefs.getDouble(_prefsScroll) ?? 0;
+    final playlistFilters = playlists == null
+        ? <String>{if (playlist != null && playlist.isNotEmpty) playlist}
+        : playlists.where((id) => id.isNotEmpty).toSet();
 
     if (!mounted) return;
     setState(() {
       _sortOrder = sort;
       _includeWatched = watched;
-      _playlistFilterId = (playlist == null || playlist.isEmpty)
-          ? null
-          : playlist;
+      _playlistFilterIds
+        ..clear()
+        ..addAll(playlistFilters);
       _prefsLoaded = true;
     });
     _tabController.index = tab.clamp(0, 2);
@@ -125,7 +130,12 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     await prefs.setInt(_prefsTab, _tabController.index);
     await prefs.setString(_prefsSort, _sortOrder);
     await prefs.setBool(_prefsWatched, _includeWatched);
-    await prefs.setString(_prefsPlaylist, _playlistFilterId ?? '');
+    final playlistIds = _playlistFilterIds.toList()..sort();
+    await prefs.setStringList(_prefsPlaylists, playlistIds);
+    await prefs.setString(
+      _prefsPlaylist,
+      playlistIds.isEmpty ? '' : playlistIds.first,
+    );
   }
 
   Future<void> _persistScroll() async {
@@ -145,6 +155,23 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       default:
         return _cardScrollController;
     }
+  }
+
+  bool get _hasPlaylistFilters => _playlistFilterIds.isNotEmpty;
+
+  void _jumpFeedViewsToTop() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      for (final controller in [
+        _cardScrollController,
+        _listScrollController,
+        _summaryScrollController,
+      ]) {
+        if (controller.hasClients) {
+          controller.jumpTo(0);
+        }
+      }
+    });
   }
 
   ScrollController _scrollControllerForTab(int index) {
@@ -320,6 +347,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     final activeFeedVideoId =
         ref.watch(feedPlaybackQueueProvider).currentVideoId ??
         ref.watch(activePlayVideoIdProvider);
+    final playlistFilterVideos = videosAsync?.asData?.value;
     final l = _locale(context);
 
     return Scaffold(
@@ -369,17 +397,12 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
           ),
           IconButton(
             icon: Icon(
-              _playlistFilterId == null
-                  ? Icons.filter_list
-                  : Icons.filter_list_alt,
+              _hasPlaylistFilters ? Icons.filter_list_alt : Icons.filter_list,
             ),
-            tooltip: 'Filter by playlist',
-            onPressed: videosAsync == null
+            tooltip: t('p3.videos.filterByPlaylists', locale: l),
+            onPressed: playlistFilterVideos == null
                 ? null
-                : () => _showPlaylistFilterSheet(
-                    context,
-                    videosAsync.asData?.value ?? const [],
-                  ),
+                : () => _showPlaylistFilterSheet(context, playlistFilterVideos),
           ),
           IconButton(
             icon: const Icon(Icons.sync),
@@ -436,12 +459,6 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 return _buildShimmerLoading();
               }
 
-              if (_playlistFilterId != null &&
-                  !videos.any((v) => v.playlistId == _playlistFilterId)) {
-                _playlistFilterId = null;
-                _persistLocalPrefs();
-              }
-
               final body = videos.isEmpty
                   ? ListView(
                       padding: const EdgeInsets.only(bottom: 24),
@@ -474,9 +491,10 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                       action: FilledButton.tonalIcon(
                         onPressed: () {
                           setState(() {
-                            _playlistFilterId = null;
+                            _playlistFilterIds.clear();
                             _includeWatched = true;
                           });
+                          _jumpFeedViewsToTop();
                           _persistLocalPrefs();
                         },
                         icon: const Icon(Icons.clear),
@@ -644,12 +662,11 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   }
 
   List<YouTubeVideo> _applyLocalFilters(List<YouTubeVideo> videos) {
-    final playlistFilterId = _playlistFilterId;
-    if (playlistFilterId == null) {
+    if (_playlistFilterIds.isEmpty) {
       return videos;
     }
     return videos
-        .where((video) => video.playlistId == playlistFilterId)
+        .where((video) => _playlistFilterIds.contains(video.playlistId))
         .toList(growable: false);
   }
 
@@ -894,6 +911,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       builder: (sheetContext) {
         return Consumer(
           builder: (context, ref, child) {
@@ -1012,48 +1030,151 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     BuildContext context,
     List<YouTubeVideo> videos,
   ) async {
+    final l = _locale(context);
     final playlists = <String, String>{};
+    final playlistCounts = <String, int>{};
     for (final video in videos) {
       if (video.playlistId.isEmpty) continue;
       playlists[video.playlistId] = video.playlistTitle ?? 'Untitled playlist';
+      playlistCounts[video.playlistId] =
+          (playlistCounts[video.playlistId] ?? 0) + 1;
+    }
+    for (final playlistId in _playlistFilterIds) {
+      playlists.putIfAbsent(
+        playlistId,
+        () => t('p3.videos.selectedPlaylistFallback', locale: l),
+      );
+      playlistCounts.putIfAbsent(playlistId, () => 0);
     }
     final entries = playlists.entries.toList()
       ..sort((a, b) => a.value.toLowerCase().compareTo(b.value.toLowerCase()));
+    final draftFilterIds = Set<String>.of(_playlistFilterIds);
 
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
       builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+
         return SafeArea(
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.video_library_outlined),
-                title: const Text('All playlists'),
-                trailing: _playlistFilterId == null
-                    ? const Icon(Icons.check)
-                    : null,
-                onTap: () {
-                  setState(() => _playlistFilterId = null);
-                  _persistLocalPrefs();
-                  Navigator.of(sheetContext).pop();
-                },
-              ),
-              for (final entry in entries)
-                ListTile(
-                  leading: const Icon(Icons.playlist_play),
-                  title: Text(entry.value),
-                  trailing: _playlistFilterId == entry.key
-                      ? const Icon(Icons.check)
-                      : null,
-                  onTap: () {
-                    setState(() => _playlistFilterId = entry.key);
-                    _persistLocalPrefs();
-                    Navigator.of(sheetContext).pop();
-                  },
+          child: StatefulBuilder(
+            builder: (context, setSheetState) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.filter_list_alt),
+                      title: Text(t('p3.videos.filterByPlaylists', locale: l)),
+                      subtitle: Text(
+                        t('p3.videos.filterByPlaylistsDesc', locale: l),
+                      ),
+                    ),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.6,
+                      ),
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: [
+                          CheckboxListTile(
+                            contentPadding: EdgeInsets.zero,
+                            secondary: const Icon(Icons.video_library_outlined),
+                            title: Text(t('p3.videos.allPlaylists', locale: l)),
+                            subtitle: Text(
+                              tr(
+                                'p3.videos.playlistVideoCount',
+                                locale: l,
+                                params: {'count': videos.length.toString()},
+                              ),
+                            ),
+                            value: draftFilterIds.isEmpty,
+                            onChanged: (_) {
+                              setSheetState(draftFilterIds.clear);
+                            },
+                          ),
+                          const Divider(height: 1),
+                          if (entries.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              child: Text(
+                                t(
+                                  'p3.videos.noPlaylistFilterOptions',
+                                  locale: l,
+                                ),
+                                style: theme.textTheme.bodyMedium,
+                              ),
+                            ),
+                          for (final entry in entries)
+                            CheckboxListTile(
+                              contentPadding: EdgeInsets.zero,
+                              secondary: const Icon(Icons.playlist_play),
+                              title: Text(
+                                entry.value,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Text(
+                                tr(
+                                  'p3.videos.playlistVideoCount',
+                                  locale: l,
+                                  params: {
+                                    'count':
+                                        '${playlistCounts[entry.key] ?? 0}',
+                                  },
+                                ),
+                              ),
+                              value: draftFilterIds.contains(entry.key),
+                              onChanged: (selected) {
+                                setSheetState(() {
+                                  if (selected == true) {
+                                    draftFilterIds.add(entry.key);
+                                  } else {
+                                    draftFilterIds.remove(entry.key);
+                                  }
+                                });
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: draftFilterIds.isEmpty
+                                ? null
+                                : () => setSheetState(draftFilterIds.clear),
+                            icon: const Icon(Icons.clear),
+                            label: Text(t('p3.common.clearFilters', locale: l)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _playlistFilterIds
+                                  ..clear()
+                                  ..addAll(draftFilterIds);
+                              });
+                              _jumpFeedViewsToTop();
+                              _persistLocalPrefs();
+                              Navigator.of(sheetContext).pop();
+                            },
+                            icon: const Icon(Icons.check),
+                            label: Text(t('p3.videos.applyFilters', locale: l)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-            ],
+              );
+            },
           ),
         );
       },

@@ -386,6 +386,14 @@ const Map<String, dynamic> en = {
           'This account is connected but has no imported videos yet.',
       'noFilterMatchTitle': 'No videos match these filters',
       'noFilterMatchDesc': 'Clear filters or show watched videos.',
+      'filterByPlaylists': 'Filter by playlists',
+      'filterByPlaylistsDesc':
+          'Select one or more playlists. Feed and Play will only use those videos.',
+      'allPlaylists': 'All playlists',
+      'playlistVideoCount': '{count} videos',
+      'noPlaylistFilterOptions': 'No playlist is available in this feed yet.',
+      'selectedPlaylistFallback': 'Selected playlist',
+      'applyFilters': 'Apply',
       'hintTitle': 'Tip',
       'hintMessage':
           'Use filters and playlist actions to quickly triage your queue.',
