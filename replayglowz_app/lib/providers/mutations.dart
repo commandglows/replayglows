@@ -44,7 +44,7 @@ import 'package:replayglowz_app/providers/providers.dart';
 // Notes
 // ---------------------------------------------------------------------------
 
-/// Creates a new note, optionally linked to a video at a timestamp.
+/// Creates a new timestamped note linked to a YouTube video.
 ///
 /// Returns the Convex document ID of the created note.
 Future<dynamic> createNote(
@@ -52,14 +52,12 @@ Future<dynamic> createNote(
   required String videoId,
   required String content,
   double? timestamp,
-  String? title,
 }) async {
   final service = ref.read(convexServiceProvider);
-  return service.mutate<dynamic>('notes:createNote', {
+  return service.mutate<dynamic>('notes:createNoteForYoutubeVideo', {
     'youtubeVideoId': videoId,
     'content': content,
     if (timestamp != null) 'timestamp': timestamp,
-    if (title != null) 'title': title,
   });
 }
 
@@ -67,7 +65,7 @@ Future<dynamic> createNote(
 Future<dynamic> updateNote(WidgetRef ref, String noteId, String content) async {
   final service = ref.read(convexServiceProvider);
   return service.mutate<dynamic>('notes:updateNote', {
-    'noteId': noteId,
+    'id': noteId,
     'content': content,
   });
 }

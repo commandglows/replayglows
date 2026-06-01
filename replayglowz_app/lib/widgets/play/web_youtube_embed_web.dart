@@ -123,6 +123,7 @@ class _WebYoutubeEmbedState extends State<WebYoutubeEmbed> {
     _playerId = 'replayglowz-player-$nonce';
     _iframe = web.HTMLIFrameElement()
       ..id = _playerId
+      ..tabIndex = -1
       ..allow =
           'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
       ..allowFullscreen = true;
@@ -179,6 +180,7 @@ class _WebYoutubeEmbedState extends State<WebYoutubeEmbed> {
     _iframe.src =
         'https://www.youtube.com/embed/$safeVideoId'
         '?enablejsapi=1'
+        '&disablekb=1'
         '&playsinline=1'
         '&rel=0'
         '&modestbranding=1'

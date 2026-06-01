@@ -700,9 +700,19 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
 
   bool _isTypingInInput() {
     final focused = FocusManager.instance.primaryFocus;
-    final context = focused?.context;
-    if (context == null) return false;
-    return context.widget is EditableText;
+    final focusContext = focused?.context;
+    if (focusContext == null) return false;
+    if (focusContext.widget is EditableText) return true;
+
+    var hasEditableAncestor = false;
+    focusContext.visitAncestorElements((element) {
+      if (element.widget is EditableText) {
+        hasEditableAncestor = true;
+        return false;
+      }
+      return true;
+    });
+    return hasEditableAncestor;
   }
 
   Map<ShortcutActivator, VoidCallback> _shortcutBindings(AppLocale l) {
@@ -1055,9 +1065,6 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                       videoId: widget.videoId,
                       content: content,
                       timestamp: _currentTimestamp,
-                      title: content.length > 50
-                          ? '${content.substring(0, 50)}...'
-                          : content,
                     );
                     _noteController.clear();
                   } catch (e) {
