@@ -140,7 +140,7 @@ Renommer la surface Playlists en `Lists`, puis y ajouter une couche produit Repl
 
 - Runtime: Flutter web, Riverpod, go_router, Convex queries/mutations/actions, Clerk-authenticated Convex context.
 - Backend contracts: `youtubePlaylistsCache`, `youtubeVideosCache`, `youtubeChannelsCache`, `hiddenItems`, `watchedVideos`, `youtubeSyncJobs`, `channelPlaylistLinks`.
-- Existing app contracts: Feed screen, Play screen, `feedPlaybackQueueProvider`, quota guard, current Playlists/playlist detail surface to be renamed `Lists`, Preferences subscription cache.
+- Existing app contracts: Feed screen, Play screen, `playbackSessionProvider`, quota guard, current Playlists/playlist detail surface to be renamed `Lists`, Preferences subscription cache.
 - Official external docs checked 2026-05-28:
   - YouTube Data API quota calculator: `https://developers.google.com/youtube/v3/determine_quota_cost`
   - YouTube Data API getting started/quota: `https://developers.google.com/youtube/v3/getting-started#quota`
@@ -241,7 +241,7 @@ Renommer la surface Playlists en `Lists`, puis y ajouter une couche produit Repl
 
 - [ ] Task 7: Wire Feed playback queue and return-to-active scroll.
   - File: `replayglowz_app/lib/screens/playlists/`, `replayglowz_app/lib/screens/play/play_screen.dart`, `replayglowz_app/lib/providers/providers.dart`
-  - Action: Start `feedPlaybackQueueProvider` from virtual Feed detail order, preserve previous/next swipe, and scroll the Feed detail to active video when returning from Play.
+  - Action: Start `playbackSessionProvider` from virtual Feed detail order, preserve previous/next swipe, and scroll the Feed detail to active video when returning from Play.
   - User story link: User can launch all videos from a thematic Feed and stay oriented.
   - Depends on: Task 5
   - Validate with: `cd replayglowz_app && flutter analyze && flutter test`

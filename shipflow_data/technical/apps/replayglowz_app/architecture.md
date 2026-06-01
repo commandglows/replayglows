@@ -202,7 +202,8 @@ Feed-specific behavior:
 
 - `AppPlaybackController` is a Riverpod command bridge between shell controls and `PlayScreen`.
 - Shell playback controls emit request counters for play/pause, previous, next, loop, hide current video, mark current video watched, speed up, and slow down.
-- `PlayScreen` owns player execution, progress persistence, feed queue navigation, loop handling, and current-video mutations.
+- `PlaybackSession` is the in-memory source of truth for the active "Up next" context. Feed, playlist, and ReplayGlowz feed entry points create typed sessions with source metadata and ordered queue items before routing to `PlayScreen`; direct links fall back to a one-video direct session.
+- `PlayScreen` owns player execution, progress persistence, playback-session previous/next navigation, loop handling, current-video mutations, and the "Up next" drawer.
 - Web playback uses YouTube iframe/player state snapshots; native/non-web playback uses the package controller path already present in the screen.
 - Web background playback is treated as an external browser/YouTube iframe behavior. The app observes lifecycle transitions and player snapshots, then shows guidance only when playback appears to have been interrupted while the app was backgrounded. Native playback behavior is a separate future product surface and should not inherit web iframe constraints by default.
 

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 /// Model representing a YouTube video cached from a user's playlist.
 ///
 /// Maps to the `youtubeVideosCache` table in Convex, with additional
@@ -199,4 +201,34 @@ int _intValue(Object? value) {
   if (value is num) return value.toInt();
   if (value is String) return int.tryParse(value) ?? 0;
   return 0;
+}
+
+/// Decodes video responses from Convex queries.
+///
+/// Some query projections return a raw list, while paginated projections return
+/// `{ page, isDone, continueCursor }`. Keeping both shapes here prevents callers
+/// from treating a loaded paginated response as missing metadata.
+List<YouTubeVideo> decodeYouTubeVideoList(dynamic raw) {
+  final decoded = raw is String ? _decodeJsonOrNull(raw) : raw;
+  final items = _extractVideoItems(decoded);
+  return items.map(YouTubeVideo.fromJson).toList(growable: false);
+}
+
+Object? _decodeJsonOrNull(String raw) {
+  if (raw.isEmpty || raw == 'null') return null;
+  return jsonDecode(raw);
+}
+
+List<Map<String, dynamic>> _extractVideoItems(Object? decoded) {
+  final list = switch (decoded) {
+    final List<dynamic> items => items,
+    final Map<dynamic, dynamic> map when map['page'] is List<dynamic> =>
+      map['page'] as List<dynamic>,
+    _ => const <dynamic>[],
+  };
+
+  return list
+      .whereType<Map<dynamic, dynamic>>()
+      .map((item) => item.map((key, value) => MapEntry(key.toString(), value)))
+      .toList(growable: false);
 }

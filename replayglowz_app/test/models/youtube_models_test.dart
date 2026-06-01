@@ -112,6 +112,47 @@ void main() {
     });
   });
 
+  group('decodeYouTubeVideoList', () {
+    test('accepts paginated getAllVideos response objects', () {
+      final videos = decodeYouTubeVideoList({
+        'page': [
+          {
+            'id': 'vid123',
+            'youtubeVideoId': 'vid123',
+            'playlistId': 'PL123',
+            'title': 'Queued video',
+            'cachedAt': 1760000000000,
+          },
+        ],
+        'isDone': true,
+        'continueCursor': null,
+      });
+
+      expect(videos, hasLength(1));
+      expect(videos.single.youtubeVideoId, 'vid123');
+      expect(videos.single.playlistId, 'PL123');
+      expect(videos.single.title, 'Queued video');
+    });
+
+    test('accepts legacy raw list JSON strings', () {
+      final videos = decodeYouTubeVideoList('''
+[
+  {
+    "id": "vid456",
+    "youtubeVideoId": "vid456",
+    "youtubePlaylistId": "PL456",
+    "title": "Legacy video",
+    "cachedAt": 1760000000000
+  }
+]
+''');
+
+      expect(videos, hasLength(1));
+      expect(videos.single.youtubeVideoId, 'vid456');
+      expect(videos.single.playlistId, 'PL456');
+    });
+  });
+
   group('YouTubeChannel.fromJson', () {
     test('accepts cached subscription projection fields', () {
       final channel = YouTubeChannel.fromJson({

@@ -141,16 +141,18 @@ class _VirtualFeedDetailScreenState
         .map((source) => '${source.sourceType}:${source.sourceId}')
         .toSet();
 
-    return videos.where((video) {
-      final sourceType = video.feedSourceType;
-      final sourceId = video.feedSourceId;
-      if (sourceType == null || sourceId == null) return true;
-      return sourceKeys.contains('$sourceType:$sourceId');
-    }).toList(growable: false);
+    return videos
+        .where((video) {
+          final sourceType = video.feedSourceType;
+          final sourceId = video.feedSourceId;
+          if (sourceType == null || sourceId == null) return true;
+          return sourceKeys.contains('$sourceType:$sourceId');
+        })
+        .toList(growable: false);
   }
 
   String _queueActiveVideoId() {
-    return ref.watch(feedPlaybackQueueProvider).currentVideoId ??
+    return ref.watch(playbackSessionProvider).currentVideoId ??
         ref.watch(activePlayVideoIdProvider) ??
         '';
   }
@@ -213,16 +215,27 @@ class _VirtualFeedDetailScreenState
     return result == true;
   }
 
-  Future<void> _openVideo(String videoId, List<YouTubeVideo> videos) async {
+  Future<void> _openVideo(
+    String videoId,
+    List<YouTubeVideo> videos, {
+    String? sourceTitle,
+  }) async {
     if (videoId.isEmpty) return;
 
-    final queueIds = videos
-        .map((video) => video.youtubeVideoId)
-        .where((id) => id.isNotEmpty)
+    final queueItems = videos
+        .map(PlaybackQueueItem.fromVideo)
+        .where((item) => item.youtubeVideoId.isNotEmpty)
         .toList(growable: false);
-    if (queueIds.isNotEmpty) {
-      ref.read(feedPlaybackQueueProvider.notifier).start(queueIds);
-      ref.read(feedPlaybackQueueProvider.notifier).markCurrent(videoId);
+    if (queueItems.isNotEmpty) {
+      ref
+          .read(playbackSessionProvider.notifier)
+          .start(
+            sourceType: PlaybackSourceType.virtualFeed,
+            sourceId: widget.feedId,
+            sourceTitle: sourceTitle ?? 'ReplayGlowz feed',
+            items: queueItems,
+            currentVideoId: videoId,
+          );
     }
 
     if (mounted) {
@@ -235,14 +248,17 @@ class _VirtualFeedDetailScreenState
     }
   }
 
-  Future<void> _startPlayback(List<YouTubeVideo> videos) async {
+  Future<void> _startPlayback(
+    List<YouTubeVideo> videos, {
+    String? sourceTitle,
+  }) async {
     final firstVideoId = videos
         .map((video) => video.youtubeVideoId)
         .firstWhere((id) => id.isNotEmpty, orElse: () => '');
     if (firstVideoId.isEmpty) {
       return;
     }
-    await _openVideo(firstVideoId, videos);
+    await _openVideo(firstVideoId, videos, sourceTitle: sourceTitle);
   }
 
   Future<void> _scrollToActiveVideo(
@@ -1512,7 +1528,10 @@ class _VirtualFeedDetailScreenState
                             Expanded(
                               child: FilledButton.tonal(
                                 onPressed: videos.isNotEmpty
-                                    ? () => _startPlayback(videos)
+                                    ? () => _startPlayback(
+                                        videos,
+                                        sourceTitle: feed.title,
+                                      )
                                     : null,
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -1702,7 +1721,10 @@ class _VirtualFeedDetailScreenState
                       ),
                       action: playlistIds.isNotEmpty
                           ? FilledButton(
-                              onPressed: () => _startPlayback(videos),
+                              onPressed: () => _startPlayback(
+                                videos,
+                                sourceTitle: feed.title,
+                              ),
                               child: Text(
                                 t('virtualFeedDetail.play', locale: l),
                               ),
@@ -1722,7 +1744,11 @@ class _VirtualFeedDetailScreenState
                       margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
                       child: VideoListTile(
                         video: video,
-                        onTap: () => _openVideo(video.youtubeVideoId, videos),
+                        onTap: () => _openVideo(
+                          video.youtubeVideoId,
+                          videos,
+                          sourceTitle: feed.title,
+                        ),
                         trailing: activeVideoId == video.youtubeVideoId
                             ? Icon(
                                 Icons.play_arrow,

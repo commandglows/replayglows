@@ -807,7 +807,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
         ? ref.watch(watchedVideosProvider)
         : const AsyncValue<List<WatchedVideo>>.data(<WatchedVideo>[]);
     final activeFeedVideoId =
-        ref.watch(feedPlaybackQueueProvider).currentVideoId ??
+        ref.watch(playbackSessionProvider).currentVideoId ??
         ref.watch(activePlayVideoIdProvider);
     final filterFeeds = virtualFeedsAsync.asData?.value;
     final l = _locale(context);
@@ -1054,7 +1054,14 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       return;
     }
 
-    ref.read(feedPlaybackQueueProvider.notifier).start(videoIds);
+    ref
+        .read(playbackSessionProvider.notifier)
+        .start(
+          sourceType: PlaybackSourceType.feed,
+          sourceTitle: 'Feed',
+          items: _visibleFeedQueue.map(PlaybackQueueItem.fromVideo).toList(),
+          currentVideoId: videoIds.first,
+        );
     context.go(
       Uri(
         path: Routes.play,
@@ -1295,13 +1302,22 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       return;
     }
 
-    final queueIds = _visibleFeedQueue
-        .map((video) => video.youtubeVideoId)
-        .where((id) => id.isNotEmpty)
+    final queueItems = _visibleFeedQueue
+        .map(PlaybackQueueItem.fromVideo)
+        .where((item) => item.youtubeVideoId.isNotEmpty)
+        .toList(growable: false);
+    final queueIds = queueItems
+        .map((item) => item.youtubeVideoId)
         .toList(growable: false);
     if (queueIds.contains(youtubeVideoId)) {
-      ref.read(feedPlaybackQueueProvider.notifier).start(queueIds);
-      ref.read(feedPlaybackQueueProvider.notifier).markCurrent(youtubeVideoId);
+      ref
+          .read(playbackSessionProvider.notifier)
+          .start(
+            sourceType: PlaybackSourceType.feed,
+            sourceTitle: 'Feed',
+            items: queueItems,
+            currentVideoId: youtubeVideoId,
+          );
     }
 
     context.go(

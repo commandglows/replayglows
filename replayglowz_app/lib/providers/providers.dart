@@ -197,26 +197,72 @@ final appPlaybackControllerProvider =
       AppPlaybackControllerNotifier.new,
     );
 
-class FeedPlaybackQueue {
-  const FeedPlaybackQueue({
-    this.videoIds = const <String>[],
+enum PlaybackSourceType { feed, playlist, virtualFeed, direct }
+
+class PlaybackQueueItem {
+  const PlaybackQueueItem({
+    required this.youtubeVideoId,
+    this.title,
+    this.thumbnailUrl,
+    this.duration,
+  });
+
+  final String youtubeVideoId;
+  final String? title;
+  final String? thumbnailUrl;
+  final String? duration;
+
+  factory PlaybackQueueItem.fromVideo(YouTubeVideo video) {
+    return PlaybackQueueItem(
+      youtubeVideoId: video.youtubeVideoId,
+      title: video.title,
+      thumbnailUrl: video.thumbnailUrl,
+      duration: video.duration,
+    );
+  }
+}
+
+class PlaybackSession {
+  const PlaybackSession({
+    this.sourceType = PlaybackSourceType.direct,
+    this.sourceId,
+    this.sourceTitle,
+    this.items = const <PlaybackQueueItem>[],
     this.currentIndex = 0,
   });
 
-  final List<String> videoIds;
+  final PlaybackSourceType sourceType;
+  final String? sourceId;
+  final String? sourceTitle;
+  final List<PlaybackQueueItem> items;
   final int currentIndex;
 
-  String? get currentVideoId =>
-      currentIndex >= 0 && currentIndex < videoIds.length
-      ? videoIds[currentIndex]
+  List<String> get videoIds =>
+      items.map((item) => item.youtubeVideoId).toList(growable: false);
+
+  String? get currentVideoId => currentIndex >= 0 && currentIndex < items.length
+      ? items[currentIndex].youtubeVideoId
       : null;
+
+  bool get hasQueue => items.length > 1;
+
+  String get displayTitle {
+    final title = sourceTitle?.trim();
+    if (title != null && title.isNotEmpty) return title;
+    return switch (sourceType) {
+      PlaybackSourceType.feed => 'Feed',
+      PlaybackSourceType.playlist => 'Playlist',
+      PlaybackSourceType.virtualFeed => 'ReplayGlowz feed',
+      PlaybackSourceType.direct => 'Direct video',
+    };
+  }
 
   String? nextAfter(String videoId) {
     final index = videoIds.indexOf(videoId);
-    if (index == -1 || index + 1 >= videoIds.length) {
+    if (index == -1 || index + 1 >= items.length) {
       return null;
     }
-    return videoIds[index + 1];
+    return items[index + 1].youtubeVideoId;
   }
 
   String? previousBefore(String videoId) {
@@ -224,31 +270,78 @@ class FeedPlaybackQueue {
     if (index <= 0) {
       return null;
     }
-    return videoIds[index - 1];
+    return items[index - 1].youtubeVideoId;
+  }
+
+  PlaybackQueueItem? itemFor(String videoId) {
+    for (final item in items) {
+      if (item.youtubeVideoId == videoId) return item;
+    }
+    return null;
   }
 }
 
-class FeedPlaybackQueueNotifier extends Notifier<FeedPlaybackQueue> {
+class PlaybackSessionNotifier extends Notifier<PlaybackSession> {
   @override
-  FeedPlaybackQueue build() => const FeedPlaybackQueue();
+  PlaybackSession build() => const PlaybackSession();
 
-  void start(List<String> videoIds) {
-    final cleanIds = videoIds
-        .where((id) => id.isNotEmpty)
-        .toList(growable: false);
-    state = FeedPlaybackQueue(videoIds: cleanIds);
+  void start({
+    required PlaybackSourceType sourceType,
+    String? sourceId,
+    String? sourceTitle,
+    required List<PlaybackQueueItem> items,
+    String? currentVideoId,
+  }) {
+    final seen = <String>{};
+    final cleanItems = <PlaybackQueueItem>[];
+    for (final item in items) {
+      final id = item.youtubeVideoId.trim();
+      if (id.isEmpty || seen.contains(id)) continue;
+      seen.add(id);
+      cleanItems.add(item);
+    }
+
+    var currentIndex = 0;
+    if (currentVideoId != null && currentVideoId.isNotEmpty) {
+      final index = cleanItems.indexWhere(
+        (item) => item.youtubeVideoId == currentVideoId,
+      );
+      if (index >= 0) {
+        currentIndex = index;
+      }
+    }
+
+    state = PlaybackSession(
+      sourceType: sourceType,
+      sourceId: sourceId,
+      sourceTitle: sourceTitle,
+      items: cleanItems,
+      currentIndex: currentIndex,
+    );
   }
 
   void markCurrent(String videoId) {
     final index = state.videoIds.indexOf(videoId);
-    if (index == -1 || index == state.currentIndex) return;
-    state = FeedPlaybackQueue(videoIds: state.videoIds, currentIndex: index);
+    if (index == -1) {
+      state = PlaybackSession(
+        items: <PlaybackQueueItem>[PlaybackQueueItem(youtubeVideoId: videoId)],
+      );
+      return;
+    }
+    if (index == state.currentIndex) return;
+    state = PlaybackSession(
+      sourceType: state.sourceType,
+      sourceId: state.sourceId,
+      sourceTitle: state.sourceTitle,
+      items: state.items,
+      currentIndex: index,
+    );
   }
 }
 
-final feedPlaybackQueueProvider =
-    NotifierProvider<FeedPlaybackQueueNotifier, FeedPlaybackQueue>(
-      FeedPlaybackQueueNotifier.new,
+final playbackSessionProvider =
+    NotifierProvider<PlaybackSessionNotifier, PlaybackSession>(
+      PlaybackSessionNotifier.new,
     );
 
 // ---------------------------------------------------------------------------

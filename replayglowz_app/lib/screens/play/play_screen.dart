@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -11,7 +10,6 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/convex/convex_provider.dart';
 import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
@@ -199,7 +197,6 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   double _currentTimestamp = 0.0;
   double? _pendingSeekSeconds;
   int _activeTabIndex = 0;
-  YouTubeVideo? _currentVideoCache;
   WebYoutubePlayerSnapshot _webPlayerSnapshot =
       const WebYoutubePlayerSnapshot();
   bool _focusMode = false;
@@ -231,7 +228,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         .setActiveVideo(widget.videoId.isNotEmpty);
     if (widget.videoId.isNotEmpty) {
       ref.read(activePlayVideoIdProvider.notifier).setVideoId(widget.videoId);
-      ref.read(feedPlaybackQueueProvider.notifier).markCurrent(widget.videoId);
+      ref.read(playbackSessionProvider.notifier).markCurrent(widget.videoId);
     }
     _playerController = YoutubePlayerController.fromVideoId(
       videoId: _initialPlayerVideoId(widget.videoId),
@@ -263,13 +260,12 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         .setActiveVideo(widget.videoId.isNotEmpty);
     if (widget.videoId.isNotEmpty) {
       ref.read(activePlayVideoIdProvider.notifier).setVideoId(widget.videoId);
-      ref.read(feedPlaybackQueueProvider.notifier).markCurrent(widget.videoId);
+      ref.read(playbackSessionProvider.notifier).markCurrent(widget.videoId);
     }
     _progressRestored = false;
     _currentTimestamp = 0;
     _pendingSeekSeconds = null;
     _lastSyncedSecond = -1;
-    _currentVideoCache = null;
     _webPlayerSnapshot = const WebYoutubePlayerSnapshot();
     _isPlaying = false;
     ref.read(appPlaybackControllerProvider.notifier).setPlaying(false);
@@ -534,7 +530,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       });
     });
 
-    final currentVideo = _currentVideoCache;
+    final libraryVideos =
+        libraryVideosAsync.asData?.value ?? const <YouTubeVideo>[];
+    final currentVideo = _findLibraryVideo(libraryVideos, widget.videoId);
     final playerTitle = _playerController.metadata.title.trim();
     final title =
         currentVideo?.title ??
@@ -564,7 +562,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
           ),
           IconButton(
             icon: const Icon(Icons.playlist_play),
-            tooltip: 'Playlist queue',
+            tooltip: 'Up next',
             onPressed: () async {
               if (!youtubeConnected) {
                 await startYoutubeConnectFlow(context, returnTo: Routes.play);
@@ -755,7 +753,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   Widget _buildSwipeablePlayerArea(
     AsyncValue<List<YouTubeVideo>> libraryVideosAsync,
   ) {
-    final queue = ref.watch(feedPlaybackQueueProvider);
+    final queue = ref.watch(playbackSessionProvider);
     final previousVideoId = queue.previousBefore(widget.videoId);
     final nextVideoId = queue.nextAfter(widget.videoId);
     final libraryVideos =
@@ -1237,43 +1235,6 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     return 'M7lc1UVf-VE';
   }
 
-  Future<YouTubeVideo?> _loadCurrentVideoFromLibrary() async {
-    if (widget.videoId.isEmpty) {
-      return null;
-    }
-
-    final cached = _currentVideoCache;
-    if (cached?.youtubeVideoId == widget.videoId) {
-      return cached;
-    }
-
-    final service = ref.read(convexServiceProvider);
-    final raw = await service.query<dynamic>('youtube:getAllVideos', {
-      'sortOrder': 'newest',
-      'includeWatched': true,
-    });
-
-    final decoded = raw is String ? jsonDecode(raw) : raw;
-    if (decoded is! List) {
-      return null;
-    }
-
-    for (final item in decoded) {
-      if (item is Map<String, dynamic>) {
-        final video = YouTubeVideo.fromJson(item);
-        if (video.youtubeVideoId == widget.videoId) {
-          if (mounted) {
-            setState(() => _currentVideoCache = video);
-          } else {
-            _currentVideoCache = video;
-          }
-          return video;
-        }
-      }
-    }
-    return null;
-  }
-
   int _resolvedDurationSeconds(YouTubeVideo? currentVideo) {
     if (kIsWeb) {
       final webDuration = _webPlayerSnapshot.durationSeconds.round();
@@ -1542,7 +1503,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
 
   void _playPreviousFeedVideo() {
     final previousVideoId = ref
-        .read(feedPlaybackQueueProvider)
+        .read(playbackSessionProvider)
         .previousBefore(widget.videoId);
     if (previousVideoId == null || previousVideoId.isEmpty) {
       return;
@@ -1560,7 +1521,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   void _playNextFeedVideo() {
     _saveProgress();
     final nextVideoId = ref
-        .read(feedPlaybackQueueProvider)
+        .read(playbackSessionProvider)
         .nextAfter(widget.videoId);
     if (nextVideoId == null || nextVideoId.isEmpty) {
       return;
@@ -1658,51 +1619,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
   }
 
-  Future<List<YouTubeVideo>> _loadPlaylistQueue(String playlistId) async {
-    final service = ref.read(convexServiceProvider);
-    final raw = await service.query<dynamic>('youtube:getPlaylistVideos', {
-      'playlistId': playlistId,
-    });
-
-    final decoded = raw is String ? jsonDecode(raw) : raw;
-    if (decoded is! List) {
-      return const <YouTubeVideo>[];
-    }
-
-    final videos = <YouTubeVideo>[];
-    for (final item in decoded) {
-      if (item is Map<String, dynamic>) {
-        videos.add(YouTubeVideo.fromJson(item));
-      }
-    }
-    return videos;
-  }
-
   Future<void> _showQueueDrawer() async {
-    late final YouTubeVideo? currentVideo;
-    try {
-      currentVideo = await _loadCurrentVideoFromLibrary();
-    } catch (e) {
-      if (!mounted) return;
-      showErrorSnackBar(context, error: e, prefix: 'Queue unavailable');
-      return;
-    }
-
-    if (!mounted) {
-      return;
-    }
-
-    if (currentVideo == null) {
-      showErrorSnackBar(
-        context,
-        error: 'Current video metadata is not ready yet.',
-        prefix: 'Queue unavailable',
-      );
-      return;
-    }
-
+    final session = ref.read(playbackSessionProvider);
+    final queue = session.items;
     final currentVideoId = widget.videoId;
-    final playlistId = currentVideo.playlistId;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -1712,69 +1632,95 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         return SafeArea(
           child: SizedBox(
             height: MediaQuery.sizeOf(sheetContext).height * 0.65,
-            child: FutureBuilder<List<YouTubeVideo>>(
-              future: _loadPlaylistQueue(playlistId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: InlineErrorCard(
-                        error: '${snapshot.error}',
-                        prefix: 'Failed to load queue',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Up next',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${session.displayTitle} · ${queue.length} video${queue.length == 1 ? '' : 's'}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (queue.isEmpty || !session.hasQueue)
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          'No active queue. Start playback from Feed, a playlist, or a ReplayGlowz feed to build Up next.',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
                       ),
                     ),
-                  );
-                }
+                  )
+                else
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: queue.length,
+                      itemBuilder: (context, index) {
+                        final item = queue[index];
+                        final isCurrent = item.youtubeVideoId == currentVideoId;
+                        final durationSec = parseDuration(item.duration);
 
-                final queue = snapshot.data ?? const <YouTubeVideo>[];
-                if (queue.isEmpty) {
-                  return const Center(
-                    child: Text('No videos in this playlist.'),
-                  );
-                }
-
-                return ListView.builder(
-                  itemCount: queue.length,
-                  itemBuilder: (context, index) {
-                    final video = queue[index];
-                    final isCurrent = video.youtubeVideoId == currentVideoId;
-                    final durationSec = parseDuration(video.duration);
-
-                    return ListTile(
-                      leading: Icon(
-                        isCurrent
-                            ? Icons.play_circle_filled
-                            : Icons.play_circle,
-                        color: isCurrent
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.grey,
-                      ),
-                      title: Text(
-                        video.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: Text(
-                        durationSec != null ? formatDuration(durationSec) : '',
-                      ),
-                      onTap: () {
-                        Navigator.of(sheetContext).pop();
-                        if (!mounted) return;
-                        this.context.go(
-                          Uri(
-                            path: Routes.play,
-                            queryParameters: {'videoId': video.youtubeVideoId},
-                          ).toString(),
+                        return ListTile(
+                          leading: Icon(
+                            isCurrent
+                                ? Icons.play_circle_filled
+                                : Icons.play_circle,
+                            color: isCurrent
+                                ? Theme.of(context).colorScheme.primary
+                                : Colors.grey,
+                          ),
+                          title: Text(
+                            item.title ?? 'Queued video',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            durationSec != null
+                                ? formatDuration(durationSec)
+                                : '',
+                          ),
+                          onTap: () {
+                            Navigator.of(sheetContext).pop();
+                            if (!mounted) return;
+                            ref
+                                .read(playbackSessionProvider.notifier)
+                                .markCurrent(item.youtubeVideoId);
+                            this.context.go(
+                              Uri(
+                                path: Routes.play,
+                                queryParameters: {
+                                  'videoId': item.youtubeVideoId,
+                                },
+                              ).toString(),
+                            );
+                          },
                         );
                       },
-                    );
-                  },
-                );
-              },
+                    ),
+                  ),
+              ],
             ),
           ),
         );

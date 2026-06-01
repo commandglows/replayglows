@@ -130,6 +130,7 @@ The repo also contains Vercel Node handlers for YouTube OAuth under `api/auth/`.
 - The main feed filter is feed-scoped: selecting no feed shows all videos; selecting one or more ReplayGlowz feeds shows the merged, de-duplicated videos from those feeds.
 - YouTube playlists are not listed as direct filter choices in the main feed picker because playlists can already be represented inside ReplayGlowz feeds.
 - The technical YouTube subscriptions aggregate is hidden from the Lists page, but all subscriptions remain available as a feed source option.
+- Playback uses the active `PlaybackSession` as the "Up next" source: Feed, playlist, and ReplayGlowz feed launches each preserve their own ordered context, while direct links degrade to a one-video direct session.
 - On mobile, the Play tab supports a long press to switch the bottom navigation into playback controls, and a swipe up from Play to show current-video actions above the bottom bar.
 - Web background audio is browser- and YouTube-embed-dependent. The app detects likely browser-driven interruption after returning to the Play screen and shows a dismissible explanation rather than claiming to control background playback.
 - This web limitation is not a product ceiling: native ReplayGlowz apps are expected to support stronger playback experiences and should be documented separately when implementation starts.

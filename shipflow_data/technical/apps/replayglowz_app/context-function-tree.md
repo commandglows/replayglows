@@ -172,6 +172,7 @@ providers.dart
 ├── virtualFeedsProvider -> virtualFeeds:getVirtualFeeds
 ├── virtualFeedDetailsProvider -> virtualFeeds:getVirtualFeedDetails
 ├── appPlaybackControllerProvider -> shell-to-Play command state
+├── playbackSessionProvider -> active Feed/playlist/ReplayGlowz feed/direct Up next context
 ├── notesProvider -> notes:getNotes
 ├── settingsProvider -> settings:getSettings
 ├── subscriptionProvider -> subscriptions:getSubscription
@@ -252,7 +253,8 @@ AppShell mobile Play controls
 PlayScreen
 ├── ref.listen(appPlaybackControllerProvider)
 ├── play/pause request -> YouTube controller playVideo()/pauseVideo()
-├── previous/next request -> feed queue navigation and progress save
+├── previous/next request -> PlaybackSession navigation and progress save
+├── Up next drawer -> active PlaybackSession source/items
 ├── loop toggle -> repeat current video on playback end
 ├── hide current video -> hidden:hideItem, provider invalidation, route back to feed
 ├── mark watched -> watched:markWatched and watched/videos invalidation

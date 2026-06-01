@@ -819,13 +819,29 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     final sourceQueue = _isReorderMode && _reorderList.isNotEmpty
         ? _reorderList
         : _currentPlaylistQueue;
-    final queueIds = sourceQueue
-        .map((video) => video.youtubeVideoId)
-        .where((id) => id.isNotEmpty)
+    final queueItems = sourceQueue
+        .map(PlaybackQueueItem.fromVideo)
+        .where((item) => item.youtubeVideoId.isNotEmpty)
+        .toList(growable: false);
+    final queueIds = queueItems
+        .map((item) => item.youtubeVideoId)
         .toList(growable: false);
     if (queueIds.contains(youtubeVideoId)) {
-      ref.read(feedPlaybackQueueProvider.notifier).start(queueIds);
-      ref.read(feedPlaybackQueueProvider.notifier).markCurrent(youtubeVideoId);
+      final playlistTitle = sourceQueue
+          .map((video) => video.playlistTitle)
+          .firstWhere(
+            (title) => title != null && title.trim().isNotEmpty,
+            orElse: () => null,
+          );
+      ref
+          .read(playbackSessionProvider.notifier)
+          .start(
+            sourceType: PlaybackSourceType.playlist,
+            sourceId: widget.id,
+            sourceTitle: playlistTitle ?? 'Playlist',
+            items: queueItems,
+            currentVideoId: youtubeVideoId,
+          );
     }
 
     context.go(
