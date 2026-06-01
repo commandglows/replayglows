@@ -200,6 +200,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   WebYoutubePlayerSnapshot _webPlayerSnapshot =
       const WebYoutubePlayerSnapshot();
   bool _focusMode = false;
+  bool _showWebPosterOverlay = true;
   double _playerDragOffset = 0;
   bool _isPlayerDragging = false;
   bool _backgroundPlaybackHintDismissed = false;
@@ -223,6 +224,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_syncActiveTab);
     _loadedVideoId = widget.videoId;
+    _showWebPosterOverlay = !widget.autoPlay;
     ref
         .read(appPlaybackControllerProvider.notifier)
         .setActiveVideo(widget.videoId.isNotEmpty);
@@ -255,6 +257,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
 
     _loadedVideoId = widget.videoId;
+    _showWebPosterOverlay = !widget.autoPlay;
     ref
         .read(appPlaybackControllerProvider.notifier)
         .setActiveVideo(widget.videoId.isNotEmpty);
@@ -770,6 +773,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         libraryVideosAsync.asData?.value ?? const <YouTubeVideo>[];
     final previousVideo = _findLibraryVideo(libraryVideos, previousVideoId);
     final nextVideo = _findLibraryVideo(libraryVideos, nextVideoId);
+    final currentVideo = _findLibraryVideo(libraryVideos, widget.videoId);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -821,7 +825,12 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                       : const Duration(milliseconds: 180),
                   curve: Curves.easeOutCubic,
                   transform: Matrix4.translationValues(_playerDragOffset, 0, 0),
-                  child: _buildPlayerArea(),
+                  child: _buildPlayerArea(
+                    currentVideo,
+                    width: width,
+                    previousVideoId: previousVideoId,
+                    nextVideoId: nextVideoId,
+                  ),
                 ),
               ],
             ),
@@ -974,12 +983,44 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     });
   }
 
-  Widget _buildPlayerArea() {
+  Widget _buildPlayerArea(
+    YouTubeVideo? currentVideo, {
+    required double width,
+    required String? previousVideoId,
+    required String? nextVideoId,
+  }) {
     return PlayerPanel(
       videoId: _loadedVideoId,
       controller: _playerController,
       webController: _webPlayerController,
       onWebStateChanged: _handleWebPlayerSnapshot,
+      showPoster: kIsWeb && _showWebPosterOverlay,
+      posterThumbnailUrl:
+          currentVideo?.thumbnailUrl ??
+          (_loadedVideoId.isNotEmpty
+              ? 'https://img.youtube.com/vi/$_loadedVideoId/hqdefault.jpg'
+              : null),
+      posterTitle: currentVideo?.title,
+      posterChannelTitle: currentVideo?.channelTitle,
+      posterChannelThumbnailUrl: currentVideo?.channelThumbnailUrl,
+      onPosterPlay: _playFromPoster,
+      enableSwipeCapture: kIsWeb,
+      onSwipeCaptureStart: (_) {
+        setState(() => _isPlayerDragging = true);
+      },
+      onSwipeCaptureUpdate: (details) => _handlePlayerDragUpdate(
+        details,
+        width: width,
+        hasPrevious: previousVideoId != null,
+        hasNext: nextVideoId != null,
+      ),
+      onSwipeCaptureEnd: (details) => _handlePlayerDragEnd(
+        details,
+        width: width,
+        previousVideoId: previousVideoId,
+        nextVideoId: nextVideoId,
+      ),
+      onSwipeCaptureCancel: _cancelPlayerDrag,
       onReady: () {
         if (!mounted) return;
         if (!_isPlayerReady) {
@@ -996,6 +1037,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
           _seekToSeconds(pendingSeek);
         }
         if (widget.autoPlay && kIsWeb && _loadedVideoId.isNotEmpty) {
+          setState(() => _showWebPosterOverlay = false);
           _webPlayerController.play();
         }
       },
@@ -1296,12 +1338,26 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       _saveProgress();
     } else {
       if (kIsWeb) {
+        if (_showWebPosterOverlay) {
+          setState(() => _showWebPosterOverlay = false);
+        }
         _webPlayerController.play();
       } else {
         _playerController.playVideo();
       }
       _syncAppPlaybackState(true);
     }
+  }
+
+  void _playFromPoster() {
+    if (!_isPlayerReady || !kIsWeb) {
+      return;
+    }
+    if (_showWebPosterOverlay) {
+      setState(() => _showWebPosterOverlay = false);
+    }
+    _webPlayerController.play();
+    _syncAppPlaybackState(true);
   }
 
   double get _currentPlaybackRate {
@@ -1481,6 +1537,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     setState(() {
       _currentTimestamp = currentSeconds.clamp(0, double.infinity).toDouble();
       _isPlaying = snapshot.isPlaying;
+      if (snapshot.isPlaying) {
+        _showWebPosterOverlay = false;
+      }
     });
     _syncAppPlaybackState(snapshot.isPlaying);
     ref
@@ -1497,6 +1556,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     if (loopEnabled) {
       _seekToSeconds(0);
       if (kIsWeb) {
+        if (_showWebPosterOverlay) {
+          setState(() => _showWebPosterOverlay = false);
+        }
         _webPlayerController.play();
       } else {
         _playerController.playVideo();
