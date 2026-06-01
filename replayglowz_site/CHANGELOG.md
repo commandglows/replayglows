@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+- Updated public feature and FAQ copy to describe Feed sources accurately, distinguish current web background-playback limits, and preserve native `watch anywhere, anytime` as the product direction.
+
 ## [2026-05-15]
 
 ### Changed

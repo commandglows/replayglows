@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.1.0"
 project: "replayglowz-app"
 created: "2026-04-26"
-updated: "2026-05-23"
+updated: "2026-05-31"
 status: "reviewed"
 source_skill: sf-docs
 scope: "file"
@@ -35,11 +35,15 @@ evidence:
   - "lib/providers/providers.dart"
   - "lib/providers/mutations.dart"
   - "lib/widgets/app_shell.dart"
+  - "lib/utils/browser_environment.dart"
+  - "lib/screens/videos/videos_screen.dart"
+  - "lib/screens/play/play_screen.dart"
+  - "lib/screens/playlists/virtual_feed_detail_screen.dart"
   - "api/auth/_youtube.js"
   - "api/auth/youtube.js"
   - "api/auth/youtube/callback.js"
   - "tool/check_shared_backend_contract.dart"
-next_step: "Refresh when provider names, route graph, or OAuth handler flow changes."
+next_step: "Refresh when provider names, route graph, feed/source behavior, Play controls, or OAuth handler flow changes."
 ---
 
 # CONTEXT FUNCTION TREE
@@ -101,6 +105,9 @@ routerProvider -> GoRouter(initialLocation: /videos)
 AppShell
 ├── width >= 600 -> NavigationRail
 └── width < 600 -> NavigationBar
+    ├── active Play tap -> temporary playback controls when a video is active
+    ├── Play long press -> toggle persistent playback controls
+    └── Play swipe up -> show current-video action bar
 ```
 
 ## Auth tree
@@ -162,6 +169,9 @@ convexSubscriptionProvider
 providers.dart
 ├── videosProvider -> youtube:getAllVideos subscription
 ├── playlistsProvider -> youtube:getYoutubePlaylists
+├── virtualFeedsProvider -> virtualFeeds:getVirtualFeeds
+├── virtualFeedDetailsProvider -> virtualFeeds:getVirtualFeedDetails
+├── appPlaybackControllerProvider -> shell-to-Play command state
 ├── notesProvider -> notes:getNotes
 ├── settingsProvider -> settings:getSettings
 ├── subscriptionProvider -> subscriptions:getSubscription
@@ -200,12 +210,20 @@ mutations.dart
 │   ├── saveProgress() -> progress:saveProgress
 │   └── upsertProgress() -> progress:upsertProgress
 ├── Playlists / YouTube
-│   ├── syncAllPlaylists() -> youtube:fetchYoutubePlaylists + youtube:fetchPlaylistItems
+│   ├── syncAllPlaylists() -> youtube:startQuotaSafeSync
 │   ├── syncAllPlaylistsWithContainer()
-│   ├── syncPlaylist() -> youtube:fetchPlaylistItems
+│   ├── syncPlaylist() -> youtube:startQuotaSafeSync
 │   ├── disconnectYoutube() -> youtube:disconnectYoutube
 │   ├── removeVideoFromPlaylist() -> playlists:removeVideoFromPlaylist
 │   └── createPlaylist() -> playlists:createPlaylist
+├── ReplayGlowz feeds
+│   ├── createVirtualFeed() -> virtualFeeds:createVirtualFeed
+│   ├── updateVirtualFeed() -> virtualFeeds:updateVirtualFeed
+│   ├── deleteVirtualFeed() -> virtualFeeds:deleteVirtualFeed
+│   ├── addVirtualFeedSource() -> virtualFeeds:addFeedSource
+│   ├── addVirtualFeedChannelSources() -> virtualFeeds:addChannelSourcesFromPlaylist
+│   ├── removeVirtualFeedSource() -> virtualFeeds:removeFeedSource
+│   └── reorderVirtualFeedSources() -> virtualFeeds:reorderFeedSources
 ├── Likes
 │   └── toggleLike()
 ├── Comments
@@ -220,6 +238,38 @@ mutations.dart
     ├── createFeedbackText()
     ├── createFeedbackAudio()
     └── markFeedbackReviewed()
+```
+
+## Playback command flow
+
+```text
+AppShell mobile Play controls
+├── long press Play -> AppPlaybackController.toggle persistent controls
+├── swipe up Play -> current-video action bar
+├── previous/next/loop/play-pause buttons -> AppPlaybackController request counters
+└── hide/watched/speed buttons -> AppPlaybackController request counters
+
+PlayScreen
+├── ref.listen(appPlaybackControllerProvider)
+├── play/pause request -> YouTube controller playVideo()/pauseVideo()
+├── previous/next request -> feed queue navigation and progress save
+├── loop toggle -> repeat current video on playback end
+├── hide current video -> hidden:hideItem, provider invalidation, route back to feed
+├── mark watched -> watched:markWatched and watched/videos invalidation
+└── speed request -> set playback rate on web/native player controller
+```
+
+## Web background-playback guidance
+
+```text
+WidgetsBindingObserver.didChangeAppLifecycleState()
+├── background state -> remember whether the player was playing
+├── web player snapshot while backgrounded -> detect playing-to-paused transition
+└── resumed -> request web player sync, then show guidance if playback was interrupted
+
+browser_environment.dart
+├── non-web export -> BrowserEnvironment(isWeb: false)
+└── web export -> parse browser user agent for Firefox/Vivaldi-specific copy
 ```
 
 ## Feedback flow

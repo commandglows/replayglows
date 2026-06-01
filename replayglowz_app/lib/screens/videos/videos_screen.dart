@@ -1093,118 +1093,132 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
 
     await showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       showDragHandle: true,
+      useSafeArea: true,
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
 
-        return SafeArea(
-          child: StatefulBuilder(
-            builder: (context, setSheetState) {
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.filter_list_alt),
-                      title: Text(t('p3.videos.filterByFeeds', locale: l)),
-                      subtitle: Text(
-                        t('p3.videos.filterByFeedsDesc', locale: l),
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.72,
+          minChildSize: 0.42,
+          maxChildSize: 0.94,
+          builder: (context, scrollController) {
+            return StatefulBuilder(
+              builder: (context, setSheetState) {
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.filter_list_alt),
+                        title: Text(t('p3.videos.filterByFeeds', locale: l)),
+                        subtitle: Text(
+                          t('p3.videos.filterByFeedsDesc', locale: l),
+                        ),
                       ),
-                    ),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.6,
-                      ),
-                      child: ListView(
-                        shrinkWrap: true,
-                        children: [
-                          CheckboxListTile(
-                            contentPadding: EdgeInsets.zero,
-                            secondary: const Icon(Icons.public),
-                            title: Text(t('p3.videos.allVideos', locale: l)),
-                            value: draftFeedIds.isEmpty,
-                            onChanged: (_) {
-                              setSheetState(draftFeedIds.clear);
-                            },
-                          ),
-                          for (final feed in sortedFeeds)
+                      Expanded(
+                        child: ListView(
+                          controller: scrollController,
+                          children: [
                             CheckboxListTile(
+                              dense: true,
+                              visualDensity: VisualDensity.compact,
                               contentPadding: EdgeInsets.zero,
-                              secondary: const Icon(Icons.dynamic_feed),
-                              title: Text(
-                                feed.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: Text(
-                                tr(
-                                  'p3.videos.sourceCount',
-                                  locale: l,
-                                  params: {
-                                    'count': '${feed.activeSourceCount}',
-                                  },
-                                ),
-                              ),
-                              value: draftFeedIds.contains(feed.id),
-                              onChanged: (selected) {
-                                setSheetState(() {
-                                  if (selected == true) {
-                                    draftFeedIds.add(feed.id);
-                                  } else {
-                                    draftFeedIds.remove(feed.id);
-                                  }
-                                });
+                              secondary: const Icon(Icons.public),
+                              title: Text(t('p3.videos.allVideos', locale: l)),
+                              value: draftFeedIds.isEmpty,
+                              onChanged: (_) {
+                                setSheetState(draftFeedIds.clear);
                               },
                             ),
-                          if (sortedFeeds.isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              child: Text(
-                                t('p3.videos.noFeedFilterOptions', locale: l),
-                                style: theme.textTheme.bodyMedium,
+                            for (final feed in sortedFeeds)
+                              CheckboxListTile(
+                                dense: true,
+                                visualDensity: VisualDensity.compact,
+                                contentPadding: EdgeInsets.zero,
+                                secondary: const Icon(Icons.dynamic_feed),
+                                title: Text(
+                                  feed.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: Text(
+                                  tr(
+                                    'p3.videos.sourceCount',
+                                    locale: l,
+                                    params: {
+                                      'count': '${feed.activeSourceCount}',
+                                    },
+                                  ),
+                                ),
+                                value: draftFeedIds.contains(feed.id),
+                                onChanged: (selected) {
+                                  setSheetState(() {
+                                    if (selected == true) {
+                                      draftFeedIds.add(feed.id);
+                                    } else {
+                                      draftFeedIds.remove(feed.id);
+                                    }
+                                  });
+                                },
+                              ),
+                            if (sortedFeeds.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                child: Text(
+                                  t('p3.videos.noFeedFilterOptions', locale: l),
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: draftFeedIds.isEmpty
+                                  ? null
+                                  : () => setSheetState(draftFeedIds.clear),
+                              icon: const Icon(Icons.clear),
+                              label: Text(
+                                t('p3.common.clearFilters', locale: l),
                               ),
                             ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _feedFilterIds
+                                    ..clear()
+                                    ..addAll(draftFeedIds);
+                                });
+                                _jumpFeedViewsToTop();
+                                _persistLocalPrefs();
+                                Navigator.of(sheetContext).pop();
+                              },
+                              icon: const Icon(Icons.check),
+                              label: Text(
+                                t('p3.videos.applyFilters', locale: l),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: draftFeedIds.isEmpty
-                                ? null
-                                : () => setSheetState(draftFeedIds.clear),
-                            icon: const Icon(Icons.clear),
-                            label: Text(t('p3.common.clearFilters', locale: l)),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: () {
-                              setState(() {
-                                _feedFilterIds
-                                  ..clear()
-                                  ..addAll(draftFeedIds);
-                              });
-                              _jumpFeedViewsToTop();
-                              _persistLocalPrefs();
-                              Navigator.of(sheetContext).pop();
-                            },
-                            icon: const Icon(Icons.check),
-                            label: Text(t('p3.videos.applyFilters', locale: l)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
         );
       },
     );

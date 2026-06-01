@@ -1,10 +1,10 @@
 ---
 artifact: test_checklist
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.1.1"
 project: "replayglowz"
 created: "2026-05-30"
-updated: "2026-05-30"
+updated: "2026-05-31"
 status: draft
 source_skill: sf-build
 scope: "feed-source-discovery-playlist-channel-expansion"
@@ -48,6 +48,7 @@ next_step: "/sf-verify replayglowz-feed-source-discovery-playlist-channel-expans
 - [x] CA 10: Confirm local source add actions do not display quota warnings and do not call YouTube write endpoints.
 - [ ] CA 11: Attempt candidate query or batch add with another user's IDs only in a controlled backend/security test; confirm Convex rejects access.
 - [ ] CA 12: Check French and English source-mode copy for static playlist vs live channel distinction.
+- [ ] CA 12b: Add playlist channels and confirm the snackbar/result summary reports real added/already-added/rejected counts, not a false `0 added` result from serialized backend data.
 - [x] CA 13: With empty subscription channel cache, open Feed source picker and confirm subscription channel mode offers import instead of being disabled.
 - [x] CA 14: Trigger subscription import from Feed source picker and confirm the existing `subscriptions.list` path runs.
 - [x] CA 15: Trigger aggregate subscriptions source with empty cache and confirm code path imports before adding the source when channels are returned.
@@ -88,3 +89,4 @@ next_step: "/sf-verify replayglowz-feed-source-discovery-playlist-channel-expans
 - CA 7 and CA 8 require specific cache fixtures with missing/no channel metadata.
 - CA 16 and CA 17 are covered by implementation/typecheck against the new backfill action. Browser proof could not exercise the visible button on `Fun` because that fixture already has channel metadata.
 - CA 12 was visually checked in English production copy; French copy is present in i18n and covered by Flutter analyze, but not browser-toggled in this run.
+- 2026-05-31 docs alignment added a regression scenario for serialized Convex batch-add results after a false zero-count notification was reported during playlist-channel source import.

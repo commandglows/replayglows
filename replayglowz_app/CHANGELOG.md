@@ -5,8 +5,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- Added mobile Play guidance for long-press playback controls, swipe-up video actions, and browser background-playback interruptions.
+- Added a web background-playback interruption dialog that explains browser-driven pauses and lets users explicitly opt out of future notices.
+
+### Changed
+- Feed filtering now switches between all videos and one or more ReplayGlowz feeds, without exposing playlist-level filtering inside the main feed picker.
+- The Play mobile bottom bar can switch into playback controls, while a secondary action bar exposes current-video actions such as hide, mark watched, and playback speed changes.
+- The Lists page hides the technical YouTube `Subscriptions` aggregate playlist while keeping all subscriptions available as a source option for ReplayGlowz feeds.
+
 ### Fixed
 - Persisted theme preferences now drive the app runtime theme mode.
+- Removing a source from a ReplayGlowz feed now removes that source card and its videos from the visible feed state immediately.
+- Adding playlist channels as feed sources now reads the backend mutation result correctly before reporting added/rejected source counts.
 
 ## [2026-05-24]
 

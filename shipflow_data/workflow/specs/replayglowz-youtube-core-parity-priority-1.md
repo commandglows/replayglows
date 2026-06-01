@@ -215,12 +215,12 @@ Quand l'utilisateur ouvre Videos, Playlists ou Play, ReplayGlowz doit afficher l
   - Depends on: None.
   - Validation: `rg -n "syncAllPlaylists|addVideo|removeVideo|toggleLike|markWatched|hideVideo|VideosArgs|youtube:" replayglowz_app/lib replayglowz_backend/packages/backend/convex`.
 
-- [ ] Task 2: Implement feed filters, sort, and watched toggle.
+- [x] Task 2: Implement feed filters, sort, and watched toggle.
   - Files: `replayglowz_app/lib/screens/videos/videos_screen.dart`, `replayglowz_app/lib/providers/providers.dart`, `replayglowz_app/lib/widgets/media/video_card.dart`, `replayglowz_app/lib/widgets/media/video_list_tile.dart`.
-  - Action: Replace the current filter stubs with usable controls for playlist/channel/date filters where backend data supports them, sort order, and show/hide watched using existing watched providers.
+  - Action: Replace the current filter stubs with usable controls for the decided feed-level picker: `All videos` plus multi-select ReplayGlowz Feeds. Playlist/channel/date filters are intentionally not exposed in this picker because playlists and channels can be modeled as Feed sources.
   - Depends on: Task 1.
   - Validation: `cd replayglowz_app && flutter analyze`; manual filter QA with cached data.
-  - Acceptance: A user can reduce a large feed without triggering YouTube network calls; filters operate on cached data or dedicated Convex queries.
+  - Acceptance: A user can reduce a large feed to one or more ReplayGlowz Feeds without triggering YouTube network calls; selected Feed details are merged and deduped from cached/backend Feed data.
 
 - [ ] Task 3: Add video action menu parity on feed cards and rows.
   - Files: `replayglowz_app/lib/widgets/media/video_card.dart`, `replayglowz_app/lib/widgets/media/video_list_tile.dart`, `replayglowz_app/lib/screens/videos/videos_screen.dart`, `replayglowz_app/lib/providers/mutations.dart`.

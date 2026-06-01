@@ -233,11 +233,11 @@ Ajouter une couche P3 centree app UX: un modele persistant de preferences UX, de
 
 - [x] Task 6: Implement lightweight player focus/study mode and shortcuts overlay.
   - File: `replayglowz_app/lib/screens/play/play_screen.dart`, `replayglowz_app/lib/widgets/play/`, settings model/providers.
-  - Action: Add presentation-only mode controls, keyboard shortcuts for play/pause, seek, next/previous where supported, notes/transcript panel toggles, and a dismissible shortcuts help overlay.
+  - Action: Add presentation-only mode controls, keyboard shortcuts for play/pause, seek, next/previous where supported, notes/transcript panel toggles, a dismissible shortcuts help overlay, mobile bottom-bar playback mode, swipe-up current-video actions, and browser background-playback guidance.
   - User story link: Restores the efficient learning/review feel without building a separate study product.
   - Depends on: Task 1.
   - Validate with: Flutter analyze and manual player QA; verify text inputs do not trigger shortcuts.
-  - Notes: Advanced study workflows remain out of scope.
+  - Notes: Advanced study workflows remain out of scope. Background audio remains browser-dependent for embedded YouTube playback, so the app informs users instead of promising control.
 
 - [x] Task 7: Complete P3 i18n coverage.
   - File: `replayglowz_app/lib/i18n/en.dart`, `replayglowz_app/lib/i18n/fr.dart`, `replayglowz_app/lib/i18n/translations.dart`, touched screens/widgets.
@@ -263,6 +263,9 @@ Ajouter une couche P3 centree app UX: un modele persistant de preferences UX, de
 - [ ] Feed, playlist and notes view preferences survive reload and ignore invalid stale filters.
 - [ ] Returning from detail/play restores useful list position when the source list is still coherent.
 - [ ] Player focus/study mode changes presentation only and remains usable on desktop and mobile.
+- [ ] Long-pressing Play on mobile switches the bottom bar into playback controls, and a second long press can leave that mode.
+- [ ] Swiping up from Play on mobile reveals current-video actions for hide, mark watched, slower, and faster.
+- [ ] If web playback is interrupted after backgrounding, the app explains the browser/YouTube limitation and repeats the popup until the user chooses not to show it again.
 - [ ] Keyboard shortcuts work in the player but do not fire while typing.
 - [x] English and French strings exist for all newly added visible P3 copy.
 - [x] No new YouTube endpoint, OAuth scope, `search.list`, token handling or secret handling is introduced.

@@ -13,6 +13,8 @@ const Map<String, dynamic> fr = {
     'getStarted': 'Commencer',
     'loading': 'Chargement...',
     'cancel': 'Annuler',
+    'ok': 'OK',
+    'dontShowAgain': 'Ne plus afficher',
     'confirm': 'Confirmer ?',
     'yes': 'Oui',
     'no': 'Non',
@@ -72,6 +74,14 @@ const Map<String, dynamic> fr = {
     'speedUp': 'Accélérer',
     'slowDown': 'Ralentir',
     'resetSpeed': 'Vitesse normale',
+    'mobileControlsHintTitle': 'Contrôles de lecture mobile',
+    'mobileControlsHintMessage':
+        'Appuyez longuement sur Play pour transformer la bottom bar en contrôles de lecture. Glissez vers le haut depuis Play pour afficher les actions vidéo : masquer, marquer comme vue et vitesse.',
+    'backgroundPlaybackTitle': 'La lecture en arrière-plan a été interrompue',
+    'backgroundPlaybackFirefoxMessage':
+        'ReplayGlowz n’a pas mis la vidéo en pause. Firefox et YouTube peuvent arrêter une vidéo intégrée quand vous changez d’application. Pour un son en arrière-plan plus fiable, utilisez un navigateur qui l’autorise, comme Vivaldi.',
+    'backgroundPlaybackGenericMessage':
+        'ReplayGlowz n’a pas mis la vidéo en pause. Votre navigateur ou YouTube peut arrêter une vidéo intégrée quand vous changez d’application. Pour un son en arrière-plan plus fiable, utilisez un navigateur qui l’autorise, comme Vivaldi.',
   },
   'playlistsPage': {
     'title': 'Lists',

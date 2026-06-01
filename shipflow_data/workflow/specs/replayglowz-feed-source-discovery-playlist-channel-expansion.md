@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "replayglowz"
 created: "2026-05-30"
 created_at: "2026-05-30 20:22:49 UTC"
-updated: "2026-05-30"
-updated_at: "2026-05-30 20:36:41 UTC"
+updated: "2026-05-31"
+updated_at: "2026-05-31 21:01:44 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -57,7 +57,7 @@ En tant qu'utilisateur ReplayGlowz qui crée un Feed thématique, je veux ajoute
 
 ## Minimal Behavior Contract
 
-Dans le détail d'un Feed, l'action `Ajouter une source` doit aider l'utilisateur à choisir entre trois intentions distinctes: ajouter des chaînes depuis ses abonnements, ajouter une playlist comme contenu statique courant, ou utiliser une playlist comme point de départ pour ajouter les chaînes qui y apparaissent. Ajouter une playlist garde le comportement actuel: ses vidéos connues alimentent le Feed. Ajouter les chaînes d'une playlist crée des sources `channel` pour les chaînes détectées dans les vidéos cachées de cette playlist, sans modifier YouTube et sans appeler d'endpoint d'écriture YouTube. Si aucune chaîne exploitable n'est détectable, si les vidéos manquent de `youtubeChannelId`, ou si certaines chaînes sont déjà dans le Feed, l'UI doit expliquer le résultat partiel et laisser l'utilisateur récupérer par refresh cache ou choix manuel.
+Dans le détail d'un Feed, l'action `Ajouter une source` doit aider l'utilisateur à choisir entre quatre intentions distinctes: ajouter des chaînes depuis ses abonnements, ajouter une playlist comme contenu statique courant, utiliser une playlist comme point de départ pour ajouter les chaînes qui y apparaissent, ou ajouter l'agrégat `Tous les abonnements`. Ajouter une playlist garde le comportement actuel: ses vidéos connues alimentent le Feed. Ajouter les chaînes d'une playlist crée des sources `channel` pour les chaînes détectées dans les vidéos cachées de cette playlist, sans modifier YouTube et sans appeler d'endpoint d'écriture YouTube. Si aucune chaîne exploitable n'est détectable, si les vidéos manquent de `youtubeChannelId`, ou si certaines chaînes sont déjà dans le Feed, l'UI doit expliquer le résultat partiel et laisser l'utilisateur récupérer par refresh cache ou choix manuel. Les résultats d'ajout en lot doivent être lus depuis la réponse structurée du backend, même si Convex renvoie la charge utile sous forme de chaîne JSON, afin d'éviter les notifications faux zéro.
 
 ## Success Behavior
 
@@ -78,8 +78,9 @@ Dans le détail d'un Feed, l'action `Ajouter une source` doit aider l'utilisateu
 - If playlist videos lack `youtubeChannelId`: show a partial/unavailable metadata message rather than adding broken sources.
 - If some channels are already sources: skip them or mark them as already added, and still allow adding the remaining channels.
 - If all detected channels are already present: treat the operation as a successful no-op and explain that the Feed already follows these channels.
+- If the backend returns a serialized JSON mutation result: decode it before computing added/already-added/rejected counts.
 - If backend validation rejects a source because the channel is neither in `youtubeChannelsCache` nor in the user's cached playlist videos: do not create an invalid source; show a recoverable error and offer adding the playlist itself instead.
-- Must never happen: YouTube write endpoint calls, cross-user channel/playlist leakage, hidden token/log leakage, duplicate source rows, or a generic server error when the final state is a no-op success.
+- Must never happen: YouTube write endpoint calls, cross-user channel/playlist leakage, hidden token/log leakage, duplicate source rows, a generic server error when the final state is a no-op success, or a zero-added notification caused only by client-side result parsing latency.
 
 ## Problem
 
@@ -282,6 +283,7 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
 - [ ] CA 10: Given local Feed source discovery/add actions, when they run, then no YouTube write endpoint is called and no quota warning is shown unless the user explicitly refreshes cache.
 - [ ] CA 11: Given another user guesses a Feed or playlist ID, when they call the candidate query or batch add mutation, then Convex rejects access.
 - [ ] CA 12: Given the app is in French or English, when the user uses the flow, then copy distinguishes static playlist content from live channel following.
+- [ ] CA 12b: Given the backend returns a structured or serialized batch-add result, when the user adds playlist channels, then the notification reports the real added/already-added/rejected counts.
 
 ## Extension: Subscription Import and Playlist Channel Metadata Backfill
 

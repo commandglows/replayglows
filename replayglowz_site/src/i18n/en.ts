@@ -49,10 +49,10 @@ export default {
     title: "Everything You Need, Nothing You Don't",
     items: [
       { title: 'Smart Organization', desc: 'Organize videos by theme, topic, or mood. Build your own learning paths, entertainment queues, or inspiration libraries.', tag: 'Find what you need in seconds', wide: true },
-      { title: 'Subscription Dashboard', desc: 'A clean, organized view of all your subscriptions. Sort by upload frequency, last watched, or custom categories.', tag: 'Stay connected to what matters' },
+      { title: 'Feed Sources', desc: 'Build focused feeds from playlists, channels, or all subscriptions as a source, then switch the main feed to the views you actually want.', tag: 'Choose the sources that matter' },
       { title: 'Intelligent Search', desc: 'Search across all your saved content, playlists, and subscriptions. Filter by duration, date, channel, or custom tags.', tag: 'Your content library, searchable', kbd: true },
       { title: 'Distraction-Free Viewing', desc: 'No suggested videos pulling you away. No autoplay to random content. Just your curated playlists and intentional viewing.', tag: 'Reclaim your time and focus' },
-      { title: 'Cross-Device Sync', desc: 'Your playlists, watch history, and preferences sync seamlessly across all your devices. Pick up exactly where you left off.', tag: 'Watch anywhere, anytime', chart: true },
+      { title: 'Cross-Device Sync', desc: 'Your playlists, feeds, watch history, and preferences sync across devices. Web playback depends on the browser today; native apps are the path toward watching anywhere, anytime.', tag: 'Watch anywhere, anytime', chart: true },
       { title: 'Privacy-First', desc: "We don't track your viewing habits for advertising. No data selling. No creepy recommendations. Just a tool that works for you.", tag: 'Watch with peace of mind', badges: ['SOC2', 'GDPR', 'E2E'] },
     ],
   },

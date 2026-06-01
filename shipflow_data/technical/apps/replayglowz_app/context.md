@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.1.1"
 project: "replayglowz-app"
 created: "2026-04-26"
-updated: "2026-05-23"
+updated: "2026-06-01"
 status: "reviewed"
 source_skill: sf-docs
 scope: "file"
@@ -45,16 +45,20 @@ evidence:
   - "lib/convex/convex_provider.dart"
   - "lib/providers/providers.dart"
   - "lib/providers/mutations.dart"
+  - "lib/utils/browser_environment.dart"
   - "lib/widgets/app_shell.dart"
+  - "lib/screens/videos/videos_screen.dart"
+  - "lib/screens/play/play_screen.dart"
+  - "lib/screens/playlists/virtual_feed_detail_screen.dart"
   - "tool/check_shared_backend_contract.dart"
-next_step: "Revisit after route, provider, auth, or deployment changes."
+next_step: "Revisit after route, provider, auth, feed/source, playback, or deployment changes."
 ---
 
 # CONTEXT
 
 ## Project summary
 
-`replayglowz-app` is a Flutter web application deployed to Vercel. It lets users browse synced YouTube videos and playlists, watch videos, take timestamped notes, track watch progress, manage preferences, view notifications/stats/hidden items, and submit feedback. Authentication is handled by Clerk. App data and live updates are handled by a shared Convex backend.
+`replayglowz-app` is a Flutter web application deployed to Vercel. It lets users browse synced YouTube videos, filter the main feed by ReplayGlowz feeds, manage feed sources and playlists, watch videos, take timestamped notes, track watch progress, manage preferences, view notifications/stats/hidden items, and submit feedback. Authentication is handled by Clerk. App data and live updates are handled by a shared Convex backend.
 
 The repo also contains Vercel Node handlers for YouTube OAuth under `api/auth/`. Convex schema and server functions are not in this repo.
 
@@ -78,6 +82,7 @@ The repo also contains Vercel Node handlers for YouTube OAuth under `api/auth/`.
 - `lib/providers/`: typed read providers and centralized mutation/action helpers.
 - `lib/models/`: domain models for videos, notes, playlists, settings, subscriptions, notifications, feedback, hidden/watched/progress records.
 - `lib/screens/`: feature screens.
+- `lib/utils/browser_environment.dart`: conditional browser detection used for web-only playback guidance.
 - `lib/widgets/`: app shell, shared actions, error feedback, YouTube connection/OAuth banners.
 - `lib/i18n/`: English and French translations.
 - `api/auth/`: YouTube OAuth start/callback handlers and shared helper functions.
@@ -85,9 +90,9 @@ The repo also contains Vercel Node handlers for YouTube OAuth under `api/auth/`.
 
 ## User-facing feature areas
 
-- Videos feed: `VideosScreen`
-- Playback: `PlayScreen`
-- Playlists: list, detail, create, sync, remove video
+- Videos feed: `VideosScreen`, including all-videos mode and multi-feed filtering.
+- Playback: `PlayScreen`, including web YouTube playback, mobile playback controls, current-video action controls, speed changes, loop/previous/next requests, and background-playback guidance.
+- Playlists and ReplayGlowz feeds: YouTube playlist list/detail, ReplayGlowz feed source management, create, sync, source removal, and remove video.
 - Notes: list, detail, create/update/delete through mutation helpers
 - Notifications and unread count
 - Preferences/settings and subscription-derived data
@@ -118,6 +123,16 @@ The repo also contains Vercel Node handlers for YouTube OAuth under `api/auth/`.
 - Typed Riverpod providers convert raw backend payloads into Dart models.
 - Mutation helpers in `lib/providers/mutations.dart` are the expected write boundary for screens.
 - Several providers provide local defaults or empty fallbacks when auth is not ready or optional backend functions are missing.
+- Optimistic UI paths that mutate ReplayGlowz feeds or current-video state must invalidate both source/detail providers and visible video providers so cards and videos disappear without a page reload.
+
+## Feed and playback behavior
+
+- The main feed filter is feed-scoped: selecting no feed shows all videos; selecting one or more ReplayGlowz feeds shows the merged, de-duplicated videos from those feeds.
+- YouTube playlists are not listed as direct filter choices in the main feed picker because playlists can already be represented inside ReplayGlowz feeds.
+- The technical YouTube subscriptions aggregate is hidden from the Lists page, but all subscriptions remain available as a feed source option.
+- On mobile, the Play tab supports a long press to switch the bottom navigation into playback controls, and a swipe up from Play to show current-video actions above the bottom bar.
+- Web background audio is browser- and YouTube-embed-dependent. The app detects likely browser-driven interruption after returning to the Play screen and shows a dismissible explanation rather than claiming to control background playback.
+- This web limitation is not a product ceiling: native ReplayGlowz apps are expected to support stronger playback experiences and should be documented separately when implementation starts.
 
 ## Product backend contract
 
@@ -157,4 +172,4 @@ Compatibility fallbacks still exist for selected legacy Vercel-style names in `b
 
 ## Documentation confidence
 
-High confidence on bootstrap, routing, auth ownership, Convex integration, build/deployment, YouTube OAuth handler responsibilities, and provider/mutation boundaries. Feature behavior is documented at module level, not as a full product walkthrough.
+High confidence on bootstrap, routing, auth ownership, Convex integration, build/deployment, YouTube OAuth handler responsibilities, provider/mutation boundaries, feed filtering, and Play mobile controls. Browser background-playback behavior is documented as an external limitation, not an app guarantee.

@@ -16,6 +16,7 @@ import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
+import 'package:replayglowz_app/utils/browser_environment.dart';
 import 'package:replayglowz_app/utils/duration_utils.dart';
 import 'package:replayglowz_app/widgets/app_states.dart';
 import 'package:replayglowz_app/widgets/common_app_bar_actions.dart';
@@ -176,8 +177,10 @@ class PlayScreen extends ConsumerStatefulWidget {
 }
 
 class _PlayScreenState extends ConsumerState<PlayScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   static const _prefsFocusMode = 'play.pref.focusMode';
+  static const _prefsBackgroundPlaybackHintDismissed =
+      'play.pref.backgroundPlaybackHintDismissed';
   static const _playbackRates = <double>[0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
   late final TabController _tabController;
   late final YoutubePlayerController _playerController;
@@ -202,6 +205,12 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   bool _focusMode = false;
   double _playerDragOffset = 0;
   bool _isPlayerDragging = false;
+  bool _backgroundPlaybackHintDismissed = false;
+  bool _backgroundPlaybackHintVisible = false;
+  bool _isAppBackgrounded = false;
+  bool _wasPlayingBeforeBackground = false;
+  bool _playerPausedDuringBackground = false;
+  DateTime? _backgroundedAt;
   int _lastHandledPlaybackToggleRequestId = 0;
   int _lastHandledPlaybackPreviousRequestId = 0;
   int _lastHandledPlaybackNextRequestId = 0;
@@ -213,6 +222,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_syncActiveTab);
     _loadedVideoId = widget.videoId;
@@ -280,6 +290,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   @override
   void dispose() {
     _saveProgress();
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.removeListener(_syncActiveTab);
     _playerValueSubscription?.cancel();
     _videoStateSubscription?.cancel();
@@ -303,13 +314,64 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final focus = prefs.getBool(_prefsFocusMode) ?? false;
+    final backgroundHintDismissed =
+        prefs.getBool(_prefsBackgroundPlaybackHintDismissed) ?? false;
     if (!mounted) return;
-    setState(() => _focusMode = focus);
+    setState(() {
+      _focusMode = focus;
+      _backgroundPlaybackHintDismissed = backgroundHintDismissed;
+    });
   }
 
   Future<void> _persistPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefsFocusMode, _focusMode);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (!kIsWeb) {
+      return;
+    }
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _handleAppResumed();
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+        _handleAppBackgrounded();
+    }
+  }
+
+  void _handleAppBackgrounded() {
+    if (_isAppBackgrounded) {
+      return;
+    }
+    _isAppBackgrounded = true;
+    _wasPlayingBeforeBackground = _isPlaying;
+    _playerPausedDuringBackground = false;
+    _backgroundedAt = DateTime.now();
+  }
+
+  void _handleAppResumed() {
+    if (!_isAppBackgrounded) {
+      return;
+    }
+    _isAppBackgrounded = false;
+    _webPlayerController.requestSync();
+
+    Future<void>.delayed(const Duration(milliseconds: 700), () {
+      if (!mounted) {
+        return;
+      }
+      _maybeShowBackgroundPlaybackInterruptionHint();
+      _wasPlayingBeforeBackground = false;
+      _playerPausedDuringBackground = false;
+      _backgroundedAt = null;
+    });
   }
 
   AppLocale _locale(BuildContext context) =>
@@ -574,6 +636,16 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                 children: [
                   _buildSwipeablePlayerArea(libraryVideosAsync),
                   if (!kIsWeb) _buildPlaybackControls(currentVideo),
+                  if (!_focusMode && MediaQuery.sizeOf(context).width < 600)
+                    UiHintCard(
+                      hintId: 'play-mobile-bottom-bar-actions',
+                      icon: Icons.touch_app_outlined,
+                      title: t('playPage.mobileControlsHintTitle', locale: l),
+                      message: t(
+                        'playPage.mobileControlsHintMessage',
+                        locale: l,
+                      ),
+                    ),
                   if (!_focusMode)
                     UiHintCard(
                       hintId: 'play-shortcuts-hint',
@@ -1346,9 +1418,68 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
   }
 
+  Future<void> _maybeShowBackgroundPlaybackInterruptionHint() async {
+    if (!kIsWeb ||
+        _backgroundPlaybackHintDismissed ||
+        _backgroundPlaybackHintVisible ||
+        !_wasPlayingBeforeBackground ||
+        _isPlaying ||
+        widget.videoId.isEmpty) {
+      return;
+    }
+
+    final backgroundedAt = _backgroundedAt;
+    final wasAwayLongEnough =
+        backgroundedAt == null ||
+        DateTime.now().difference(backgroundedAt) >
+            const Duration(milliseconds: 900);
+    if (!_playerPausedDuringBackground && !wasAwayLongEnough) {
+      return;
+    }
+
+    _backgroundPlaybackHintVisible = true;
+
+    final l = _locale(context);
+    final browser = currentBrowserEnvironment();
+    final messageKey = browser.isFirefox
+        ? 'playPage.backgroundPlaybackFirefoxMessage'
+        : 'playPage.backgroundPlaybackGenericMessage';
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(t('playPage.backgroundPlaybackTitle', locale: l)),
+        content: Text(t(messageKey, locale: l)),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool(_prefsBackgroundPlaybackHintDismissed, true);
+              if (!mounted) {
+                return;
+              }
+              setState(() => _backgroundPlaybackHintDismissed = true);
+              if (dialogContext.mounted) {
+                Navigator.of(dialogContext).pop();
+              }
+            },
+            child: Text(t('common.dontShowAgain', locale: l)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(t('common.ok', locale: l)),
+          ),
+        ],
+      ),
+    );
+
+    _backgroundPlaybackHintVisible = false;
+  }
+
   void _handleWebPlayerSnapshot(WebYoutubePlayerSnapshot snapshot) {
     if (!mounted) return;
 
+    final wasPlaying = _webPlayerSnapshot.isPlaying;
     final currentSeconds = snapshot.currentSeconds.isFinite
         ? snapshot.currentSeconds
         : 0.0;
@@ -1361,6 +1492,13 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     final hasRateChanged =
         (snapshot.playbackRate - _webPlayerSnapshot.playbackRate).abs() > 0.001;
     final endedTransition = snapshot.hasEnded && !_webPlayerSnapshot.hasEnded;
+    if (_isAppBackgrounded &&
+        _wasPlayingBeforeBackground &&
+        wasPlaying &&
+        !snapshot.isPlaying &&
+        !snapshot.hasEnded) {
+      _playerPausedDuringBackground = true;
+    }
 
     _webPlayerSnapshot = snapshot;
     if (!hasTimeChanged &&

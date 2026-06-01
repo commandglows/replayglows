@@ -1,12 +1,12 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "replayglowz"
 created: "2026-05-28"
 created_at: "2026-05-28 17:52:05 UTC"
-updated: "2026-05-29"
-updated_at: "2026-05-29 23:53:49 UTC"
+updated: "2026-05-31"
+updated_at: "2026-05-31 21:01:44 UTC"
 status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
@@ -71,7 +71,7 @@ En tant qu'utilisateur ReplayGlowz connecte a YouTube, je veux creer des feeds v
 
 ## Minimal Behavior Contract
 
-ReplayGlowz doit permettre a l'utilisateur de creer un Feed interne depuis la surface `Lists`, par exemple `Cuisine`, d'y ajouter des chaines YouTube ou des playlists deja connues, puis d'afficher et lire les videos agregees depuis le cache ReplayGlowz. Ajouter, retirer ou reorganiser une source dans un Feed ne doit pas appeler d'endpoint d'ecriture YouTube et ne doit pas modifier les playlists YouTube de l'utilisateur; seules les actions explicites de synchronisation lisent YouTube via les garde-fous quota existants. Si une chaine, playlist ou video source devient indisponible, le Feed reste recuperable, montre les sources en erreur ou vides, et continue d'afficher les donnees cachees valides. L'edge case facile a rater est de confondre `Feed ReplayGlowz` et `playlist YouTube`: le Feed est une collection virtuelle locale dans `Lists`, pas une playlist distante writable.
+ReplayGlowz doit permettre a l'utilisateur de creer un Feed interne depuis la surface `Lists`, par exemple `Cuisine`, d'y ajouter des chaines YouTube ou des playlists deja connues, puis d'afficher et lire les videos agregees depuis le cache ReplayGlowz. Ajouter, retirer ou reorganiser une source dans un Feed ne doit pas appeler d'endpoint d'ecriture YouTube et ne doit pas modifier les playlists YouTube de l'utilisateur; seules les actions explicites de synchronisation lisent YouTube via les garde-fous quota existants. Si une chaine, playlist ou video source devient indisponible, le Feed reste recuperable, montre les sources en erreur ou vides, et continue d'afficher les donnees cachees valides. Quand l'utilisateur retire une source, la source et les videos uniquement attribuees a cette source doivent disparaitre de l'UI sans attendre un rechargement complet. L'edge case facile a rater est de confondre `Feed ReplayGlowz` et `playlist YouTube`: le Feed est une collection virtuelle locale dans `Lists`, pas une playlist distante writable.
 
 ## Success Behavior
 
@@ -80,6 +80,8 @@ ReplayGlowz doit permettre a l'utilisateur de creer un Feed interne depuis la su
 - User/operator result: l'app renomme la surface Playlists en `Lists`, puis y affiche les playlists YouTube et les Feeds ReplayGlowz comme deux types de listes clairement distingues.
 - User/operator result: l'app affiche un Feed nomme avec ses sources, ses videos agregees, son tri, son compteur de videos, ses etats vide/erreur, et un bouton Play qui lance la file dans l'ordre affiche.
 - User/operator result: ajouter ou retirer une chaine d'un Feed est immediat, reversible, et ne montre pas d'avertissement de cout YouTube tant que l'utilisateur ne lance pas de synchronisation externe.
+- User/operator result: le filtre de la page Feed principale propose `All videos` puis une selection multiple de Feeds ReplayGlowz; il ne recree pas une selection interne de sources ni un filtre direct par playlists YouTube.
+- User/operator result: la pseudo-playlist technique `Subscriptions` n'apparait pas dans la page `Lists`, mais la source `All subscriptions` reste disponible dans l'ajout de source d'un Feed.
 - User/operator result: l'utilisateur distingue clairement `Feeds ReplayGlowz` des `Playlists YouTube`, et les actions qui coutent du quota restent annoncees par les garde-fous existants.
 - System effect: Convex persiste les feeds, sources, ordre et preferences par userId; les requetes d'agregation lisent les caches `youtubeVideosCache`, `youtubeChannelsCache`, `youtubePlaylistsCache`, `hiddenItems` et `watchedVideos` sans side effect externe.
 - System effect: la lecture Play utilise la meme queue que le Feed courant, avec precedent/suivant, retour Feed sur la video active, et scroll synchronise entre modes d'affichage.
@@ -153,6 +155,8 @@ Renommer la surface Playlists en `Lists`, puis y ajouter une couche produit Repl
 - YouTube quota usage remains observable and guarded only for actions that actually call YouTube.
 - Hidden videos/playlists and watched state continue to apply consistently across global Feed, virtual Feeds, Play, and Lists views.
 - `Lists` contains both actual cached YouTube playlists/imported playlists/subscriptions source and ReplayGlowz virtual Feeds, but the UI must identify which actions are local ReplayGlowz actions and which actions touch YouTube.
+- The main Feed filter remains feed-level only: `All videos` or one or more selected ReplayGlowz Feeds.
+- The internal subscriptions aggregate is a Feed source option, not a YouTube playlist card in `Lists`.
 
 ## Links & Consequences
 
@@ -180,6 +184,7 @@ Renommer la surface Playlists en `Lists`, puis y ajouter une couche produit Repl
 - User excludes watched videos: Feed queue updates and active Play scroll only targets visible videos.
 - User changes source order: aggregation remains deterministic and does not rewrite YouTube order.
 - User deletes a source while Play is reading from that Feed: current queue remains stable for the session; next Feed open reflects deletion.
+- User deletes a source while viewing Feed detail: the source card and videos from that source are removed optimistically, then providers refresh the authoritative state.
 - User lacks subscription cache because YouTube is connected but no channel/subscriptions exist: show local Feed shell plus actionable refresh/connect state.
 - Old cached videos missing channel IDs: playlist-based Feeds still work; channel-based aggregation ignores missing channel metadata safely.
 - Multiple tabs edit the same Feed: backend ownership and updatedAt prevent corrupt state; UI refreshes from provider invalidation.
@@ -267,6 +272,10 @@ Renommer la surface Playlists en `Lists`, puis y ajouter une couche produit Repl
 - [ ] CA 13: Given another user guesses a Feed ID, when they query or mutate it, then the backend rejects access.
 - [ ] CA 14: Given a source is deleted or stale, when the Feed opens, then the app shows a recoverable source state and still renders valid cached videos.
 - [ ] CA 15: Given the app is in French, when the user manages Feeds, then labels and errors explain `Feed ReplayGlowz` vs `playlist YouTube` clearly.
+- [ ] CA 16: Given the user removes a Feed source, when the mutation succeeds, then the source card and videos from that source disappear without a page reload.
+- [ ] CA 17: Given the user opens the main Feed filter, when the picker appears, then it offers `All videos` and ReplayGlowz Feeds only, with multi-select Feed support.
+- [ ] CA 18: Given the user opens `Lists`, when YouTube playlists are shown, then the technical `Subscriptions` aggregate is hidden.
+- [ ] CA 19: Given the user adds a source to a Feed, when source choices are shown, then `All subscriptions` remains available as a source option.
 
 ## Test Contract
 

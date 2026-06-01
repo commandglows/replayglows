@@ -1,10 +1,10 @@
 ---
 artifact: "architecture_context"
 metadata_schema_version: "1.0"
-artifact_version: "1.0.1"
+artifact_version: "1.1.1"
 project: "replayglowz-app"
 created: "2026-04-26"
-updated: "2026-05-23"
+updated: "2026-06-01"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "architecture"
@@ -31,7 +31,11 @@ evidence:
   - "lib/convex/convex_provider.dart"
   - "lib/providers/providers.dart"
   - "lib/providers/mutations.dart"
+  - "lib/utils/browser_environment.dart"
   - "lib/widgets/app_shell.dart"
+  - "lib/screens/videos/videos_screen.dart"
+  - "lib/screens/play/play_screen.dart"
+  - "lib/screens/playlists/virtual_feed_detail_screen.dart"
   - "tool/check_shared_backend_contract.dart"
 linked_systems:
   - "lib/main.dart"
@@ -74,6 +78,7 @@ The repository also owns Vercel Node handlers for the YouTube OAuth browser flow
 Browser
   -> Flutter web app served from Vercel build/web
     -> Riverpod state graph
+      -> AppPlaybackController provider
       -> ClerkService
         -> Clerk web/session APIs
       -> ConvexService
@@ -107,6 +112,7 @@ Browser
 - `lib/convex/convex_provider.dart`: generic Riverpod providers for direct Convex query/subscription access.
 - `lib/providers/providers.dart`: typed feature-level read providers and fallback normalization.
 - `lib/providers/mutations.dart`: centralized write/action helpers for screens.
+- `lib/utils/browser_environment.dart`: conditional utility that isolates web browser detection from non-web builds.
 
 ### Presentation layer
 
@@ -177,12 +183,28 @@ Fallback behavior:
 - Some providers tolerate unavailable auth or missing optional backend functions by returning local defaults or empty lists.
 - This improves bootstrap resilience but can hide backend drift, so contract-sensitive changes should use the shared backend checker.
 
+Feed-specific behavior:
+
+- The global Videos screen can render either the all-videos provider or a merged union of selected ReplayGlowz feed details.
+- Feed selections are persisted locally as a set of feed ids; legacy single-feed and playlist-filter preferences are cleared during migration.
+- ReplayGlowz feed source mutations must invalidate matching detail providers and visible video providers. Source deletion also removes matching source/video rows optimistically so the UI does not wait for a full reload.
+- YouTube playlists are not direct main-feed filter entries; playlist/channel/subscription sources are managed from ReplayGlowz feed source flows.
+
 ## Navigation architecture
 
 - Public routes: `/sign-in`, `/feedback`, `/feedback/admin`.
 - Protected routes are mounted under `ShellRoute`.
 - `AppShell` uses a bottom `NavigationBar` below 600dp and a `NavigationRail` at 600dp and above.
+- On mobile Play, `AppShell` can replace the normal bottom navigation with playback controls after a long press or temporary Play activation, and can slide a current-video action bar above the bottom navigation after an upward swipe from Play.
 - YouTube connection and OAuth feedback banners are injected at shell level.
+
+## Playback architecture
+
+- `AppPlaybackController` is a Riverpod command bridge between shell controls and `PlayScreen`.
+- Shell playback controls emit request counters for play/pause, previous, next, loop, hide current video, mark current video watched, speed up, and slow down.
+- `PlayScreen` owns player execution, progress persistence, feed queue navigation, loop handling, and current-video mutations.
+- Web playback uses YouTube iframe/player state snapshots; native/non-web playback uses the package controller path already present in the screen.
+- Web background playback is treated as an external browser/YouTube iframe behavior. The app observes lifecycle transitions and player snapshots, then shows guidance only when playback appears to have been interrupted while the app was backgrounded. Native playback behavior is a separate future product surface and should not inherit web iframe constraints by default.
 
 ## Deployment architecture
 
@@ -225,10 +247,11 @@ The OAuth flow is split between Flutter UI and Vercel functions:
 - Convex backend source is not co-located here.
 - `ConvexService.instance` is treated as a process-wide singleton.
 - Missing required Flutter config causes skipped wiring/fallback UI rather than runtime env recovery.
+- Background playback cannot be guaranteed for embedded YouTube videos because browsers and the YouTube iframe/site behavior can pause media when the app or tab is hidden.
 - Current README states there is no automated test coverage, aside from maintenance scripts and the Vercel OAuth helper test file.
 
 ## Recommended maintenance checks
 
 - Run `dart run tool/check_shared_backend_contract.dart` before changing provider/mutation paths.
 - Recheck `build.sh`, `.env.example`, `vercel.json`, and `api/auth/**` when auth or deployment variables change.
-- Revisit this document when route graph, bootstrap ordering, auth ownership, Convex access patterns, or OAuth behavior changes.
+- Revisit this document when route graph, bootstrap ordering, auth ownership, Convex access patterns, feed/source behavior, Play shell controls, browser playback behavior, or OAuth behavior changes.

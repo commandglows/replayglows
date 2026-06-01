@@ -14,6 +14,8 @@ const Map<String, dynamic> en = {
     'getStarted': 'Get Started',
     'loading': 'Loading...',
     'cancel': 'Cancel',
+    'ok': 'OK',
+    'dontShowAgain': 'Don\'t show again',
     'confirm': 'Confirm?',
     'yes': 'Yes',
     'no': 'No',
@@ -72,6 +74,14 @@ const Map<String, dynamic> en = {
     'speedUp': 'Speed up',
     'slowDown': 'Slow down',
     'resetSpeed': 'Reset speed',
+    'mobileControlsHintTitle': 'Mobile playback controls',
+    'mobileControlsHintMessage':
+        'Long press the Play tab to switch the bottom bar to playback controls. Swipe up from Play to show video actions like hide, watched, and speed.',
+    'backgroundPlaybackTitle': 'Background playback was interrupted',
+    'backgroundPlaybackFirefoxMessage':
+        'ReplayGlowz did not pause the video. Firefox and YouTube can stop embedded playback when you switch apps. For more reliable background audio, use a browser that allows it, such as Vivaldi.',
+    'backgroundPlaybackGenericMessage':
+        'ReplayGlowz did not pause the video. Your browser or YouTube can stop embedded playback when you switch apps. For more reliable background audio, use a browser that allows it, such as Vivaldi.',
   },
   'playlistsPage': {
     'title': 'Lists',

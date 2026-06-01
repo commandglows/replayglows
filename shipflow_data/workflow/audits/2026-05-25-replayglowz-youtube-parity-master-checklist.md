@@ -94,7 +94,9 @@ Track the end-to-end parity checks still needed after P1, P2 and P3 implementati
 - [ ] Cards/list/notes view switch works.
 - [ ] View mode persists after reload.
 - [ ] Show/hide watched persists after reload.
-- [ ] Playlist filter works and clears itself when stale.
+- [ ] Feed filter offers `All videos` plus multi-select ReplayGlowz Feeds, and clears stale feed selections when needed.
+- [ ] Feed filter does not expose direct playlist/source selection inside the main Feed picker.
+- [ ] Removing a ReplayGlowz Feed source removes the source card and that source's videos without requiring page reload.
 - [ ] Scroll position restores after opening a video and returning.
 - [ ] Video actions work: play, share/copy, mark watched/unwatched, hide/delete where available, add to playlist.
 - [ ] No video state explains whether YouTube is disconnected, connected-empty, or filtered-empty.
@@ -102,6 +104,8 @@ Track the end-to-end parity checks still needed after P1, P2 and P3 implementati
 ## Playlists
 
 - [ ] Playlists page loads synced playlists.
+- [ ] Lists page hides the technical YouTube `Subscriptions` aggregate playlist.
+- [ ] ReplayGlowz Feed source picker still offers `All subscriptions` as a source option.
 - [ ] Add playlist button is visually low-emphasis and appears/fades as intended.
 - [ ] Create playlist works and refreshes the list.
 - [ ] Edit playlist modal works and refreshes the page/list.
@@ -135,6 +139,9 @@ Track the end-to-end parity checks still needed after P1, P2 and P3 implementati
 - [ ] Keyboard shortcuts work when not typing.
 - [ ] Keyboard shortcuts do not fire while typing in note/search/form fields.
 - [ ] Shortcuts help overlay is readable on desktop and mobile.
+- [ ] Mobile Play long press switches the bottom bar into playback controls.
+- [ ] Mobile Play swipe up opens current-video actions: hide, mark watched, slower, faster.
+- [ ] Browser-driven background playback interruption shows guidance and an explicit `do not show again` option.
 
 ## Transcripts
 
