@@ -50,6 +50,14 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   final _cardScrollController = ScrollController();
   final _listScrollController = ScrollController();
   final _summaryScrollController = ScrollController();
+  final List<Map<String, GlobalKey>> _feedItemKeysByTab = List.generate(
+    3,
+    (_) => <String, GlobalKey>{},
+  );
+  final List<GlobalKey> _feedViewportKeysByTab = List.generate(
+    3,
+    (_) => GlobalKey(),
+  );
   List<YouTubeVideo> _visibleFeedQueue = const <YouTubeVideo>[];
   Offset _feedActionDragDelta = Offset.zero;
   String _sortOrder = 'desc';
@@ -60,6 +68,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   String? _lastAutoScrolledVideoId;
   int? _lastAutoScrolledTabIndex;
   int _lastSyncedTabIndex = 0;
+  _FeedScrollAnchor? _lastFeedScrollAnchor;
+  _FeedScrollAnchor? _pendingFeedScrollAnchor;
+  bool _isAdjustingFeedScroll = false;
+  double _feedScrollVelocityPxPerSecond = 0;
+  double _feedScrollPeakVelocityPxPerSecond = 0;
+  DateTime? _lastFeedScrollSampleAt;
+  double? _lastFeedScrollSamplePixels;
 
   VideosArgs get _videosArgs =>
       VideosArgs(sortOrder: _sortOrder, includeWatched: _includeWatched);
@@ -164,6 +179,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   bool get _hasFeedFilters => _feedFilterIds.isNotEmpty;
 
   void _jumpFeedViewsToTop() {
+    _lastFeedScrollAnchor = null;
+    _pendingFeedScrollAnchor = null;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       for (final controller in [
@@ -191,23 +208,19 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   }
 
   void _syncScrollPositionBetweenViewModes(int previousIndex, int nextIndex) {
+    final anchor =
+        _anchorForVisibleVideo(previousIndex, snapToNearest: true) ??
+        _lastFeedScrollAnchor;
+    if (anchor == null) {
+      return;
+    }
+
+    _lastFeedScrollAnchor = anchor;
+    _pendingFeedScrollAnchor = anchor;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final previousController = _scrollControllerForTab(previousIndex);
-      final nextController = _scrollControllerForTab(nextIndex);
-      if (!previousController.hasClients || !nextController.hasClients) {
-        return;
-      }
-
-      final logicalIndex = _estimatedIndexForScrollOffset(
-        previousController.offset,
-        previousIndex,
-      );
-      final target = _estimatedScrollOffsetForIndexAndTab(
-        logicalIndex,
-        nextIndex,
-      ).clamp(0.0, nextController.position.maxScrollExtent);
-      nextController.jumpTo(target);
+      _scrollTabToAnchor(nextIndex, anchor, animated: false);
     });
   }
 
@@ -269,6 +282,432 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     final topPadding = tabIndex == 1 ? 0.0 : 16.0;
     final itemExtent = _estimatedItemExtentForTab(tabIndex);
     return math.max(0, topPadding + (index * itemExtent) - 24);
+  }
+
+  String _videoAnchorId(YouTubeVideo video) {
+    return video.id.isNotEmpty ? video.id : video.youtubeVideoId;
+  }
+
+  GlobalKey _feedItemKeyForTab(int tabIndex, YouTubeVideo video) {
+    final anchorId = _videoAnchorId(video);
+    return _feedItemKeysByTab[tabIndex].putIfAbsent(
+      anchorId,
+      () => GlobalKey(),
+    );
+  }
+
+  void _pruneFeedItemKeys(List<YouTubeVideo> videos) {
+    final visibleIds = videos.map(_videoAnchorId).toSet();
+    for (final keysById in _feedItemKeysByTab) {
+      keysById.removeWhere((id, _) => !visibleIds.contains(id));
+    }
+  }
+
+  _FeedScrollAnchor? _anchorForVisibleVideo(
+    int tabIndex, {
+    required bool snapToNearest,
+  }) {
+    if (_visibleFeedQueue.isEmpty) return null;
+
+    final viewportContext = _feedViewportKeysByTab[tabIndex].currentContext;
+    final viewportBox = viewportContext?.findRenderObject();
+    if (viewportBox is! RenderBox || !viewportBox.attached) {
+      return _estimatedAnchorForTab(tabIndex);
+    }
+
+    final viewportTop = viewportBox.localToGlobal(Offset.zero).dy;
+    final viewportBottom = viewportTop + viewportBox.size.height;
+    const tolerance = 2.0;
+    _FeedScrollAnchor? firstBelowTop;
+    double? firstBelowDistance;
+
+    for (var index = 0; index < _visibleFeedQueue.length; index++) {
+      final video = _visibleFeedQueue[index];
+      final anchorId = _videoAnchorId(video);
+      final itemContext =
+          _feedItemKeysByTab[tabIndex][anchorId]?.currentContext;
+      final itemBox = itemContext?.findRenderObject();
+      if (itemBox is! RenderBox || !itemBox.attached) {
+        continue;
+      }
+
+      final itemTop = itemBox.localToGlobal(Offset.zero).dy;
+      final itemBottom = itemTop + itemBox.size.height;
+      if (itemBottom <= viewportTop + tolerance ||
+          itemTop >= viewportBottom - tolerance) {
+        continue;
+      }
+
+      if (itemTop <= viewportTop + tolerance &&
+          itemBottom > viewportTop + tolerance) {
+        if (snapToNearest &&
+            viewportTop - itemTop > itemBox.size.height / 2 &&
+            index + 1 < _visibleFeedQueue.length) {
+          final nextVideo = _visibleFeedQueue[index + 1];
+          return _FeedScrollAnchor(
+            index: index + 1,
+            videoId: _videoAnchorId(nextVideo),
+          );
+        }
+        return _FeedScrollAnchor(index: index, videoId: anchorId);
+      }
+
+      if (itemTop > viewportTop) {
+        final distance = itemTop - viewportTop;
+        if (firstBelowDistance == null || distance < firstBelowDistance) {
+          firstBelowDistance = distance;
+          firstBelowTop = _FeedScrollAnchor(index: index, videoId: anchorId);
+        }
+      }
+    }
+
+    return firstBelowTop ?? _estimatedAnchorForTab(tabIndex);
+  }
+
+  _FeedScrollAnchor? _estimatedAnchorForTab(int tabIndex) {
+    if (_visibleFeedQueue.isEmpty) return null;
+    final controller = _scrollControllerForTab(tabIndex);
+    final offset = controller.hasClients ? controller.offset : 0.0;
+    final index = _estimatedIndexForScrollOffset(
+      offset,
+      tabIndex,
+    ).clamp(0, _visibleFeedQueue.length - 1);
+    final video = _visibleFeedQueue[index];
+    return _FeedScrollAnchor(index: index, videoId: _videoAnchorId(video));
+  }
+
+  int _anchorIndex(_FeedScrollAnchor anchor) {
+    final matchingIndex = _visibleFeedQueue.indexWhere(
+      (video) => _videoAnchorId(video) == anchor.videoId,
+    );
+    if (matchingIndex != -1) return matchingIndex;
+    if (_visibleFeedQueue.isEmpty) return 0;
+    return anchor.index.clamp(0, _visibleFeedQueue.length - 1);
+  }
+
+  double? _preciseScrollOffsetForAnchor(
+    int tabIndex,
+    _FeedScrollAnchor anchor,
+  ) {
+    final controller = _scrollControllerForTab(tabIndex);
+    if (!controller.hasClients) return null;
+
+    final viewportContext = _feedViewportKeysByTab[tabIndex].currentContext;
+    final viewportBox = viewportContext?.findRenderObject();
+    final itemContext =
+        _feedItemKeysByTab[tabIndex][anchor.videoId]?.currentContext;
+    final itemBox = itemContext?.findRenderObject();
+    if (viewportBox is! RenderBox ||
+        !viewportBox.attached ||
+        itemBox is! RenderBox ||
+        !itemBox.attached) {
+      return null;
+    }
+
+    final viewportTop = viewportBox.localToGlobal(Offset.zero).dy;
+    final itemTop = itemBox.localToGlobal(Offset.zero).dy;
+    return (controller.offset + itemTop - viewportTop).clamp(
+      0.0,
+      controller.position.maxScrollExtent,
+    );
+  }
+
+  void _scrollTabToAnchor(
+    int tabIndex,
+    _FeedScrollAnchor anchor, {
+    required bool animated,
+  }) {
+    final controller = _scrollControllerForTab(tabIndex);
+    if (!controller.hasClients || _visibleFeedQueue.isEmpty) {
+      _pendingFeedScrollAnchor = anchor;
+      return;
+    }
+
+    final index = _anchorIndex(anchor);
+    final resolvedAnchor = _FeedScrollAnchor(
+      index: index,
+      videoId: _videoAnchorId(_visibleFeedQueue[index]),
+    );
+    final target =
+        _preciseScrollOffsetForAnchor(tabIndex, resolvedAnchor) ??
+        _estimatedScrollOffsetForIndexAndTab(
+          index,
+          tabIndex,
+        ).clamp(0.0, controller.position.maxScrollExtent);
+
+    _isAdjustingFeedScroll = true;
+    if (animated) {
+      controller
+          .animateTo(
+            target,
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+          )
+          .whenComplete(_finishProgrammaticFeedScroll);
+    } else {
+      controller.jumpTo(target);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final preciseTarget = _preciseScrollOffsetForAnchor(
+          tabIndex,
+          resolvedAnchor,
+        );
+        if (preciseTarget != null && controller.hasClients) {
+          controller.jumpTo(preciseTarget);
+        }
+        _finishProgrammaticFeedScroll();
+      });
+    }
+
+    if (_pendingFeedScrollAnchor?.videoId == anchor.videoId) {
+      _pendingFeedScrollAnchor = null;
+    }
+    _lastFeedScrollAnchor = resolvedAnchor;
+  }
+
+  void _finishProgrammaticFeedScroll() {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _isAdjustingFeedScroll = false;
+      }
+    });
+  }
+
+  void _schedulePendingFeedScrollAnchor() {
+    final pendingAnchor = _pendingFeedScrollAnchor;
+    if (pendingAnchor == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          _pendingFeedScrollAnchor?.videoId != pendingAnchor.videoId) {
+        return;
+      }
+      _scrollTabToAnchor(_tabController.index, pendingAnchor, animated: false);
+    });
+  }
+
+  void _resetFeedScrollVelocityTracking(ScrollMetrics metrics) {
+    _feedScrollVelocityPxPerSecond = 0;
+    _feedScrollPeakVelocityPxPerSecond = 0;
+    _lastFeedScrollSampleAt = DateTime.now();
+    _lastFeedScrollSamplePixels = metrics.pixels;
+  }
+
+  void _recordFeedScrollVelocity(ScrollMetrics metrics) {
+    if (metrics.axis != Axis.vertical) return;
+
+    final now = DateTime.now();
+    final previousAt = _lastFeedScrollSampleAt;
+    final previousPixels = _lastFeedScrollSamplePixels;
+    _lastFeedScrollSampleAt = now;
+    _lastFeedScrollSamplePixels = metrics.pixels;
+
+    if (previousAt == null || previousPixels == null) return;
+
+    final elapsedSeconds =
+        now.difference(previousAt).inMicroseconds /
+        Duration.microsecondsPerSecond;
+    if (elapsedSeconds <= 0) return;
+
+    final sampleVelocity =
+        (metrics.pixels - previousPixels).abs() / elapsedSeconds;
+    _feedScrollVelocityPxPerSecond = _feedScrollVelocityPxPerSecond == 0
+        ? sampleVelocity
+        : (_feedScrollVelocityPxPerSecond * 0.65) + (sampleVelocity * 0.35);
+    _feedScrollPeakVelocityPxPerSecond = math.max(
+      _feedScrollPeakVelocityPxPerSecond,
+      sampleVelocity,
+    );
+  }
+
+  double _velocityForScrollEnd(ScrollEndNotification notification) {
+    final dragVelocity = notification.dragDetails?.primaryVelocity?.abs();
+    if (dragVelocity != null && dragVelocity > 0) {
+      return math.max(dragVelocity, _feedScrollVelocityPxPerSecond);
+    }
+    return math.max(
+      _feedScrollVelocityPxPerSecond,
+      _feedScrollPeakVelocityPxPerSecond,
+    );
+  }
+
+  _FeedScrollAnchor? _anchorForProgressiveSnap(
+    int tabIndex,
+    double velocityPxPerSecond,
+  ) {
+    const slowSnapVelocity = 180.0;
+    const disabledSnapVelocity = 1800.0;
+    const minimumSnapWindow = 0.14;
+    const maximumSnapWindow = 0.50;
+
+    if (_visibleFeedQueue.isEmpty ||
+        velocityPxPerSecond >= disabledSnapVelocity) {
+      return null;
+    }
+
+    final velocityRatio =
+        ((velocityPxPerSecond - slowSnapVelocity) /
+                (disabledSnapVelocity - slowSnapVelocity))
+            .clamp(0.0, 1.0);
+    final snapStrength = 1 - velocityRatio;
+    final snapWindow =
+        minimumSnapWindow +
+        ((maximumSnapWindow - minimumSnapWindow) * snapStrength);
+
+    final viewportContext = _feedViewportKeysByTab[tabIndex].currentContext;
+    final viewportBox = viewportContext?.findRenderObject();
+    if (viewportBox is! RenderBox || !viewportBox.attached) {
+      return snapStrength >= 0.65
+          ? _anchorForVisibleVideo(tabIndex, snapToNearest: true)
+          : null;
+    }
+
+    final viewportTop = viewportBox.localToGlobal(Offset.zero).dy;
+    final viewportBottom = viewportTop + viewportBox.size.height;
+    const tolerance = 2.0;
+    _FeedScrollAnchor? firstBelowTop;
+    double? firstBelowDistance;
+    double? firstBelowHeight;
+
+    for (var index = 0; index < _visibleFeedQueue.length; index++) {
+      final video = _visibleFeedQueue[index];
+      final anchorId = _videoAnchorId(video);
+      final itemContext =
+          _feedItemKeysByTab[tabIndex][anchorId]?.currentContext;
+      final itemBox = itemContext?.findRenderObject();
+      if (itemBox is! RenderBox || !itemBox.attached) {
+        continue;
+      }
+
+      final itemHeight = itemBox.size.height;
+      if (itemHeight <= 0) continue;
+
+      final itemTop = itemBox.localToGlobal(Offset.zero).dy;
+      final itemBottom = itemTop + itemHeight;
+      if (itemBottom <= viewportTop + tolerance ||
+          itemTop >= viewportBottom - tolerance) {
+        continue;
+      }
+
+      if (itemTop <= viewportTop + tolerance &&
+          itemBottom > viewportTop + tolerance) {
+        final hiddenRatio = ((viewportTop - itemTop) / itemHeight).clamp(
+          0.0,
+          1.0,
+        );
+        if (hiddenRatio <= snapWindow) {
+          return _FeedScrollAnchor(index: index, videoId: anchorId);
+        }
+        if (hiddenRatio >= 1 - snapWindow) {
+          if (index + 1 < _visibleFeedQueue.length) {
+            final nextVideo = _visibleFeedQueue[index + 1];
+            return _FeedScrollAnchor(
+              index: index + 1,
+              videoId: _videoAnchorId(nextVideo),
+            );
+          }
+          return _FeedScrollAnchor(index: index, videoId: anchorId);
+        }
+        return null;
+      }
+
+      if (itemTop > viewportTop) {
+        final distance = itemTop - viewportTop;
+        if (firstBelowDistance == null || distance < firstBelowDistance) {
+          firstBelowDistance = distance;
+          firstBelowHeight = itemHeight;
+          firstBelowTop = _FeedScrollAnchor(index: index, videoId: anchorId);
+        }
+      }
+    }
+
+    if (firstBelowTop != null &&
+        firstBelowDistance != null &&
+        firstBelowHeight != null &&
+        firstBelowDistance / firstBelowHeight <= snapWindow) {
+      return firstBelowTop;
+    }
+
+    return null;
+  }
+
+  bool _handleFeedScrollNotification(
+    ScrollNotification notification,
+    int tabIndex,
+  ) {
+    if (_isAdjustingFeedScroll || tabIndex != _tabController.index) {
+      return false;
+    }
+
+    if (notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+
+    if (notification is ScrollStartNotification) {
+      _resetFeedScrollVelocityTracking(notification.metrics);
+    }
+
+    if (notification is ScrollUpdateNotification ||
+        notification is UserScrollNotification) {
+      _recordFeedScrollVelocity(notification.metrics);
+      final anchor = _anchorForVisibleVideo(tabIndex, snapToNearest: false);
+      if (anchor != null) {
+        _lastFeedScrollAnchor = anchor;
+      }
+    }
+
+    if (notification is ScrollEndNotification) {
+      _snapFeedViewToNearestVideo(
+        tabIndex,
+        velocityPxPerSecond: _velocityForScrollEnd(notification),
+      );
+      _lastFeedScrollSampleAt = null;
+      _lastFeedScrollSamplePixels = null;
+      _feedScrollPeakVelocityPxPerSecond = 0;
+    }
+    return false;
+  }
+
+  void _snapFeedViewToNearestVideo(
+    int tabIndex, {
+    required double velocityPxPerSecond,
+  }) {
+    final controller = _scrollControllerForTab(tabIndex);
+    if (!controller.hasClients || _visibleFeedQueue.isEmpty) return;
+
+    final anchor = _anchorForProgressiveSnap(tabIndex, velocityPxPerSecond);
+    if (anchor == null) return;
+
+    final index = _anchorIndex(anchor);
+    final resolvedAnchor = _FeedScrollAnchor(
+      index: index,
+      videoId: _videoAnchorId(_visibleFeedQueue[index]),
+    );
+    final target =
+        _preciseScrollOffsetForAnchor(tabIndex, resolvedAnchor) ??
+        _estimatedScrollOffsetForIndexAndTab(
+          index,
+          tabIndex,
+        ).clamp(0.0, controller.position.maxScrollExtent);
+
+    if ((controller.offset - target).abs() < 3) {
+      _lastFeedScrollAnchor = resolvedAnchor;
+      return;
+    }
+
+    _lastFeedScrollAnchor = resolvedAnchor;
+    _scrollTabToAnchor(tabIndex, resolvedAnchor, animated: true);
+  }
+
+  Widget _buildFeedScrollSurface({
+    required int tabIndex,
+    required Widget child,
+  }) {
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) =>
+          _handleFeedScrollNotification(notification, tabIndex),
+      child: KeyedSubtree(key: _feedViewportKeysByTab[tabIndex], child: child),
+    );
   }
 
   AppLocale _locale(BuildContext context) =>
@@ -472,6 +911,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                   ? videos
                   : _mergeFeedVideos(selectedFeedDetails);
               _visibleFeedQueue = visibleVideos;
+              _pruneFeedItemKeys(visibleVideos);
+              _schedulePendingFeedScrollAnchor();
               if (_prefsLoaded) {
                 _scheduleScrollToActiveFeedVideo(
                   visibleVideos,
@@ -727,35 +1168,47 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   }
 
   Widget _buildCardView(List<YouTubeVideo> videos, Set<String> watchedIds) {
-    return ListView.builder(
-      controller: _cardScrollController,
-      key: const PageStorageKey('videos-card'),
-      padding: const EdgeInsets.all(16),
-      itemCount: videos.length,
-      itemBuilder: (context, index) {
-        final video = videos[index];
-        return VideoCard(
-          video: video,
-          trailing: _buildVideoActionMenu(video, watchedIds),
-          onTap: () => _openVideo(context, video.youtubeVideoId),
-        );
-      },
+    return _buildFeedScrollSurface(
+      tabIndex: 0,
+      child: ListView.builder(
+        controller: _cardScrollController,
+        key: const PageStorageKey('videos-card'),
+        padding: const EdgeInsets.all(16),
+        itemCount: videos.length,
+        itemBuilder: (context, index) {
+          final video = videos[index];
+          return KeyedSubtree(
+            key: _feedItemKeyForTab(0, video),
+            child: VideoCard(
+              video: video,
+              trailing: _buildVideoActionMenu(video, watchedIds),
+              onTap: () => _openVideo(context, video.youtubeVideoId),
+            ),
+          );
+        },
+      ),
     );
   }
 
   Widget _buildListView(List<YouTubeVideo> videos, Set<String> watchedIds) {
-    return ListView.builder(
-      controller: _listScrollController,
-      key: const PageStorageKey('videos-list'),
-      itemCount: videos.length,
-      itemBuilder: (context, index) {
-        final video = videos[index];
-        return VideoListTile(
-          video: video,
-          trailing: _buildVideoActionMenu(video, watchedIds),
-          onTap: () => _openVideo(context, video.youtubeVideoId),
-        );
-      },
+    return _buildFeedScrollSurface(
+      tabIndex: 1,
+      child: ListView.builder(
+        controller: _listScrollController,
+        key: const PageStorageKey('videos-list'),
+        itemCount: videos.length,
+        itemBuilder: (context, index) {
+          final video = videos[index];
+          return KeyedSubtree(
+            key: _feedItemKeyForTab(1, video),
+            child: VideoListTile(
+              video: video,
+              trailing: _buildVideoActionMenu(video, watchedIds),
+              onTap: () => _openVideo(context, video.youtubeVideoId),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -763,65 +1216,71 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     List<YouTubeVideo> videos,
     Map<String, int> notesByVideo,
   ) {
-    return ListView.builder(
-      controller: _summaryScrollController,
-      key: const PageStorageKey('videos-summary'),
-      padding: const EdgeInsets.all(16),
-      itemCount: videos.length,
-      itemBuilder: (context, index) {
-        final video = videos[index];
-        final noteCount = notesByVideo[video.youtubeVideoId] ?? 0;
-        final durationSec = parseDuration(video.duration);
+    return _buildFeedScrollSurface(
+      tabIndex: 2,
+      child: ListView.builder(
+        controller: _summaryScrollController,
+        key: const PageStorageKey('videos-summary'),
+        padding: const EdgeInsets.all(16),
+        itemCount: videos.length,
+        itemBuilder: (context, index) {
+          final video = videos[index];
+          final noteCount = notesByVideo[video.youtubeVideoId] ?? 0;
+          final durationSec = parseDuration(video.duration);
 
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: InkWell(
-            onTap: () {
-              _openVideo(context, video.youtubeVideoId);
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    video.title,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    video.description ??
-                        'No description available for this video.',
-                    style: Theme.of(context).textTheme.bodySmall,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
+          return KeyedSubtree(
+            key: _feedItemKeyForTab(2, video),
+            child: Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: InkWell(
+                onTap: () {
+                  _openVideo(context, video.youtubeVideoId);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.notes, size: 16),
-                      const SizedBox(width: 4),
                       Text(
-                        '$noteCount note${noteCount == 1 ? '' : 's'}',
-                        style: Theme.of(context).textTheme.labelSmall,
+                        video.title,
+                        style: Theme.of(context).textTheme.titleSmall,
                       ),
-                      const SizedBox(width: 16),
-                      if (durationSec != null) ...[
-                        const Icon(Icons.schedule, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          formatDuration(durationSec),
-                          style: Theme.of(context).textTheme.labelSmall,
-                        ),
-                      ],
+                      const SizedBox(height: 4),
+                      Text(
+                        video.description ??
+                            'No description available for this video.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.notes, size: 16),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$noteCount note${noteCount == 1 ? '' : 's'}',
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
+                          const SizedBox(width: 16),
+                          if (durationSec != null) ...[
+                            const Icon(Icons.schedule, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              formatDuration(durationSec),
+                              style: Theme.of(context).textTheme.labelSmall,
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -1239,6 +1698,13 @@ class _SortMenuItem extends PopupMenuItem<String> {
            ],
          ),
        );
+}
+
+class _FeedScrollAnchor {
+  const _FeedScrollAnchor({required this.index, required this.videoId});
+
+  final int index;
+  final String videoId;
 }
 
 class _VideoActionMenuItem extends StatelessWidget {
