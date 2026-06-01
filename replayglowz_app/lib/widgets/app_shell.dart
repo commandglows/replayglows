@@ -387,6 +387,15 @@ class _AppShellState extends ConsumerState<AppShell> {
                     .read(appPlaybackControllerProvider.notifier)
                     .requestPrevious,
               ),
+              onLongPressStart: (_) => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .showPreviousPreview(),
+              onLongPressEnd: (_) => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .hidePreview(),
+              onLongPressCancel: () => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .hidePreview(),
             ),
             _PlaybackBarButton(
               icon: playbackController.isPlaying
@@ -406,6 +415,15 @@ class _AppShellState extends ConsumerState<AppShell> {
               onPressed: () => _handlePlaybackControl(
                 ref.read(appPlaybackControllerProvider.notifier).requestNext,
               ),
+              onLongPressStart: (_) => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .showNextPreview(),
+              onLongPressEnd: (_) => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .hidePreview(),
+              onLongPressCancel: () => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .hidePreview(),
             ),
             _PlaybackBarButton(
               icon: playbackController.loopEnabled
@@ -555,6 +573,9 @@ class _PlaybackBarButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.onLongPress,
+    this.onLongPressStart,
+    this.onLongPressEnd,
+    this.onLongPressCancel,
     this.onSwipeUp,
     this.selected = false,
   });
@@ -563,6 +584,9 @@ class _PlaybackBarButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
   final VoidCallback? onLongPress;
+  final GestureLongPressStartCallback? onLongPressStart;
+  final GestureLongPressEndCallback? onLongPressEnd;
+  final VoidCallback? onLongPressCancel;
   final VoidCallback? onSwipeUp;
   final bool selected;
 
@@ -576,6 +600,9 @@ class _PlaybackBarButton extends StatelessWidget {
         message: label,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
+          onLongPressStart: onLongPressStart,
+          onLongPressEnd: onLongPressEnd,
+          onLongPressCancel: onLongPressCancel,
           onVerticalDragEnd: onSwipeUp == null
               ? null
               : (details) {

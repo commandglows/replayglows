@@ -43,6 +43,8 @@ final activePlayVideoIdProvider =
       ActivePlayVideoIdNotifier.new,
     );
 
+enum PlaybackPreviewDirection { previous, next }
+
 class AppPlaybackControllerState {
   const AppPlaybackControllerState({
     this.isPlaying = false,
@@ -51,6 +53,7 @@ class AppPlaybackControllerState {
     this.toggleRequestId = 0,
     this.previousRequestId = 0,
     this.nextRequestId = 0,
+    this.previewDirection,
     this.loopEnabled = false,
     this.hideCurrentVideoRequestId = 0,
     this.markCurrentVideoWatchedRequestId = 0,
@@ -65,6 +68,7 @@ class AppPlaybackControllerState {
   final int toggleRequestId;
   final int previousRequestId;
   final int nextRequestId;
+  final PlaybackPreviewDirection? previewDirection;
   final bool loopEnabled;
   final int hideCurrentVideoRequestId;
   final int markCurrentVideoWatchedRequestId;
@@ -79,6 +83,8 @@ class AppPlaybackControllerState {
     int? toggleRequestId,
     int? previousRequestId,
     int? nextRequestId,
+    PlaybackPreviewDirection? previewDirection,
+    bool clearPreviewDirection = false,
     bool? loopEnabled,
     int? hideCurrentVideoRequestId,
     int? markCurrentVideoWatchedRequestId,
@@ -93,6 +99,9 @@ class AppPlaybackControllerState {
       toggleRequestId: toggleRequestId ?? this.toggleRequestId,
       previousRequestId: previousRequestId ?? this.previousRequestId,
       nextRequestId: nextRequestId ?? this.nextRequestId,
+      previewDirection: clearPreviewDirection
+          ? null
+          : (previewDirection ?? this.previewDirection),
       loopEnabled: loopEnabled ?? this.loopEnabled,
       hideCurrentVideoRequestId:
           hideCurrentVideoRequestId ?? this.hideCurrentVideoRequestId,
@@ -143,6 +152,27 @@ class AppPlaybackControllerNotifier
       controllerMode: true,
       nextRequestId: state.nextRequestId + 1,
     );
+  }
+
+  void showPreviousPreview() {
+    if (!state.hasActiveVideo) return;
+    state = state.copyWith(
+      controllerMode: true,
+      previewDirection: PlaybackPreviewDirection.previous,
+    );
+  }
+
+  void showNextPreview() {
+    if (!state.hasActiveVideo) return;
+    state = state.copyWith(
+      controllerMode: true,
+      previewDirection: PlaybackPreviewDirection.next,
+    );
+  }
+
+  void hidePreview() {
+    if (state.previewDirection == null) return;
+    state = state.copyWith(clearPreviewDirection: true);
   }
 
   void toggleLoop() {

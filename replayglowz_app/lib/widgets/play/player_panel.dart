@@ -20,11 +20,6 @@ class PlayerPanel extends StatelessWidget {
     this.posterChannelTitle,
     this.posterChannelThumbnailUrl,
     this.onPosterPlay,
-    this.enableSwipeCapture = false,
-    this.onSwipeCaptureStart,
-    this.onSwipeCaptureUpdate,
-    this.onSwipeCaptureEnd,
-    this.onSwipeCaptureCancel,
   });
 
   final String videoId;
@@ -39,11 +34,6 @@ class PlayerPanel extends StatelessWidget {
   final String? posterChannelTitle;
   final String? posterChannelThumbnailUrl;
   final VoidCallback? onPosterPlay;
-  final bool enableSwipeCapture;
-  final GestureDragStartCallback? onSwipeCaptureStart;
-  final GestureDragUpdateCallback? onSwipeCaptureUpdate;
-  final GestureDragEndCallback? onSwipeCaptureEnd;
-  final GestureDragCancelCallback? onSwipeCaptureCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -67,13 +57,6 @@ class PlayerPanel extends StatelessWidget {
                     channelThumbnailUrl: posterChannelThumbnailUrl,
                     onPlay: onPosterPlay,
                   ),
-                if (enableSwipeCapture && !showPoster)
-                  _SwipeCaptureOverlay(
-                    onStart: onSwipeCaptureStart,
-                    onUpdate: onSwipeCaptureUpdate,
-                    onEnd: onSwipeCaptureEnd,
-                    onCancel: onSwipeCaptureCancel,
-                  ),
               ],
             )
           : YoutubePlayer(
@@ -83,32 +66,6 @@ class PlayerPanel extends StatelessWidget {
                 return player;
               },
             ),
-    );
-  }
-}
-
-class _SwipeCaptureOverlay extends StatelessWidget {
-  const _SwipeCaptureOverlay({
-    required this.onStart,
-    required this.onUpdate,
-    required this.onEnd,
-    required this.onCancel,
-  });
-
-  final GestureDragStartCallback? onStart;
-  final GestureDragUpdateCallback? onUpdate;
-  final GestureDragEndCallback? onEnd;
-  final GestureDragCancelCallback? onCancel;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onHorizontalDragStart: onStart,
-      onHorizontalDragUpdate: onUpdate,
-      onHorizontalDragEnd: onEnd,
-      onHorizontalDragCancel: onCancel,
-      child: const SizedBox.expand(),
     );
   }
 }

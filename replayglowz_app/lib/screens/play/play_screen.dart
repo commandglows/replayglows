@@ -201,8 +201,8 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       const WebYoutubePlayerSnapshot();
   bool _focusMode = false;
   bool _showWebPosterOverlay = true;
-  double _playerDragOffset = 0;
-  bool _isPlayerDragging = false;
+  PlaybackPreviewDirection? _playbackPreviewDirection;
+  Timer? _playbackPreviewTimer;
   bool _backgroundPlaybackHintDismissed = false;
   bool _backgroundPlaybackHintVisible = false;
   bool _isAppBackgrounded = false;
@@ -272,8 +272,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _webPlayerSnapshot = const WebYoutubePlayerSnapshot();
     _isPlaying = false;
     ref.read(appPlaybackControllerProvider.notifier).setPlaying(false);
-    _playerDragOffset = 0;
-    _isPlayerDragging = false;
+    _dismissPlaybackPreview(updateController: true);
     if (kIsWeb) {
       _isPlayerReady = false;
     }
@@ -296,6 +295,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _playerController.close();
     _tabController.dispose();
     _noteController.dispose();
+    _playbackPreviewTimer?.cancel();
     super.dispose();
   }
 
@@ -308,6 +308,29 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
 
   void _syncAppPlaybackState(bool isPlaying) {
     ref.read(appPlaybackControllerProvider.notifier).setPlaying(isPlaying);
+  }
+
+  void _setPlaybackPreview(PlaybackPreviewDirection? direction) {
+    _playbackPreviewTimer?.cancel();
+    _playbackPreviewTimer = null;
+    if (!mounted) return;
+
+    setState(() => _playbackPreviewDirection = direction);
+
+    if (direction == null) return;
+    _playbackPreviewTimer = Timer(const Duration(seconds: 7), () {
+      if (!mounted) return;
+      ref.read(appPlaybackControllerProvider.notifier).hidePreview();
+    });
+  }
+
+  void _dismissPlaybackPreview({bool updateController = false}) {
+    _playbackPreviewTimer?.cancel();
+    _playbackPreviewTimer = null;
+    _playbackPreviewDirection = null;
+    if (updateController) {
+      ref.read(appPlaybackControllerProvider.notifier).hidePreview();
+    }
   }
 
   Future<void> _loadPrefs() async {
@@ -461,6 +484,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       if (next.nextRequestId != _lastHandledPlaybackNextRequestId) {
         _lastHandledPlaybackNextRequestId = next.nextRequestId;
         _playNextFeedVideo();
+      }
+      if (next.previewDirection != previous?.previewDirection) {
+        _setPlaybackPreview(next.previewDirection);
       }
       if (next.hideCurrentVideoRequestId !=
           _lastHandledHideCurrentVideoRequestId) {
@@ -635,7 +661,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
               autofocus: true,
               child: Column(
                 children: [
-                  _buildSwipeablePlayerArea(libraryVideosAsync),
+                  _buildPlayerSurface(libraryVideosAsync),
                   _buildPlaybackControls(currentVideo),
                   if (!_focusMode && MediaQuery.sizeOf(context).width < 600)
                     UiHintCard(
@@ -763,80 +789,55 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     );
   }
 
-  Widget _buildSwipeablePlayerArea(
+  Widget _buildPlayerSurface(
     AsyncValue<List<YouTubeVideo>> libraryVideosAsync,
   ) {
-    final queue = ref.watch(playbackSessionProvider);
-    final previousVideoId = queue.previousBefore(widget.videoId);
-    final nextVideoId = queue.nextAfter(widget.videoId);
+    final session = ref.watch(playbackSessionProvider);
+    final previousVideoId = session.previousBefore(widget.videoId);
+    final nextVideoId = session.nextAfter(widget.videoId);
     final libraryVideos =
         libraryVideosAsync.asData?.value ?? const <YouTubeVideo>[];
     final previousVideo = _findLibraryVideo(libraryVideos, previousVideoId);
     final nextVideo = _findLibraryVideo(libraryVideos, nextVideoId);
     final currentVideo = _findLibraryVideo(libraryVideos, widget.videoId);
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = math.max(constraints.maxWidth, 1.0);
-        return ClipRect(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onHorizontalDragStart: (_) {
-              setState(() => _isPlayerDragging = true);
-            },
-            onHorizontalDragUpdate: (details) => _handlePlayerDragUpdate(
-              details,
-              width: width,
-              hasPrevious: previousVideoId != null,
-              hasNext: nextVideoId != null,
-            ),
-            onHorizontalDragEnd: (details) => _handlePlayerDragEnd(
-              details,
-              width: width,
-              previousVideoId: previousVideoId,
-              nextVideoId: nextVideoId,
-            ),
-            onHorizontalDragCancel: _cancelPlayerDrag,
-            child: Stack(
-              children: [
-                if (previousVideoId != null)
-                  Transform.translate(
-                    offset: Offset(_playerDragOffset - width, 0),
-                    child: _buildSwipePreviewPanel(
-                      videoId: previousVideoId,
-                      video: previousVideo,
-                      icon: Icons.skip_previous_rounded,
-                      label: 'Previous',
-                    ),
-                  ),
-                if (nextVideoId != null)
-                  Transform.translate(
-                    offset: Offset(_playerDragOffset + width, 0),
-                    child: _buildSwipePreviewPanel(
-                      videoId: nextVideoId,
-                      video: nextVideo,
-                      icon: Icons.skip_next_rounded,
-                      label: 'Next',
-                    ),
-                  ),
-                AnimatedContainer(
-                  duration: _isPlayerDragging
-                      ? Duration.zero
-                      : const Duration(milliseconds: 180),
-                  curve: Curves.easeOutCubic,
-                  transform: Matrix4.translationValues(_playerDragOffset, 0, 0),
-                  child: _buildPlayerArea(
-                    currentVideo,
-                    width: width,
-                    previousVideoId: previousVideoId,
-                    nextVideoId: nextVideoId,
-                  ),
-                ),
-              ],
-            ),
+    String? previewVideoId;
+    YouTubeVideo? previewVideo;
+    PlaybackQueueItem? previewItem;
+    IconData? previewIcon;
+    String? previewLabel;
+    switch (_playbackPreviewDirection) {
+      case PlaybackPreviewDirection.previous:
+        previewVideoId = previousVideoId;
+        previewVideo = previousVideo;
+        previewIcon = Icons.skip_previous_rounded;
+        previewLabel = 'Previous';
+      case PlaybackPreviewDirection.next:
+        previewVideoId = nextVideoId;
+        previewVideo = nextVideo;
+        previewIcon = Icons.skip_next_rounded;
+        previewLabel = 'Next';
+      case null:
+        break;
+    }
+    if (previewVideoId != null) {
+      previewItem = session.itemFor(previewVideoId);
+    }
+
+    return Stack(
+      children: [
+        _buildPlayerArea(currentVideo),
+        if (previewVideoId != null &&
+            previewIcon != null &&
+            previewLabel != null)
+          _buildPlaybackPreviewOverlay(
+            videoId: previewVideoId,
+            video: previewVideo,
+            item: previewItem,
+            icon: previewIcon,
+            label: previewLabel,
           ),
-        );
-      },
+      ],
     );
   }
 
@@ -850,145 +851,107 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     return null;
   }
 
-  Widget _buildSwipePreviewPanel({
+  Widget _buildPlaybackPreviewOverlay({
     required String videoId,
     required YouTubeVideo? video,
+    required PlaybackQueueItem? item,
     required IconData icon,
     required String label,
   }) {
     final theme = Theme.of(context);
-    final title = video?.title ?? 'Queued video';
+    final title = video?.title ?? item?.title ?? 'Queued video';
+    final channelTitle = video?.channelTitle;
     final thumbnailUrl =
         video?.thumbnailUrl ??
+        item?.thumbnailUrl ??
         'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
 
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          MediaThumbnail(
-            imageUrl: thumbnailUrl,
-            width: double.infinity,
-            height: double.infinity,
-            fit: BoxFit.cover,
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.38),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Align(
-              alignment: Alignment.bottomLeft,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Icon(icon, color: Colors.white, size: 32),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          label,
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 140),
+          opacity: 1,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              MediaThumbnail(
+                imageUrl: thumbnailUrl,
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.cover,
               ),
-            ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.70),
+                      Colors.black.withValues(alpha: 0.28),
+                      Colors.black.withValues(alpha: 0.66),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Icon(icon, color: Colors.white, size: 32),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              label,
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            if (channelTitle != null &&
+                                channelTitle.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                channelTitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.78),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  void _handlePlayerDragUpdate(
-    DragUpdateDetails details, {
-    required double width,
-    required bool hasPrevious,
-    required bool hasNext,
-  }) {
-    final rawOffset = _playerDragOffset + details.delta.dx;
-    final maxForward = hasPrevious ? width : width * 0.12;
-    final maxBackward = hasNext ? width : width * 0.12;
-    final clamped = rawOffset.clamp(-maxBackward, maxForward).toDouble();
-    setState(() => _playerDragOffset = clamped);
-  }
-
-  void _handlePlayerDragEnd(
-    DragEndDetails details, {
-    required double width,
-    required String? previousVideoId,
-    required String? nextVideoId,
-  }) {
-    final velocity = details.primaryVelocity ?? 0;
-    final threshold = width * 0.32;
-    final goPrevious =
-        previousVideoId != null &&
-        (_playerDragOffset > threshold || velocity > 620);
-    final goNext =
-        nextVideoId != null &&
-        (_playerDragOffset < -threshold || velocity < -620);
-
-    if (goPrevious) {
-      _finishPlayerDrag(previousVideoId);
-      return;
-    }
-    if (goNext) {
-      _finishPlayerDrag(nextVideoId);
-      return;
-    }
-
-    _cancelPlayerDrag();
-  }
-
-  void _finishPlayerDrag(String videoId) {
-    setState(() {
-      _playerDragOffset = 0;
-      _isPlayerDragging = false;
-    });
-    _saveProgress();
-    context.go(
-      Uri(
-        path: Routes.play,
-        queryParameters: {'videoId': videoId, 'autoPlay': '1'},
-      ).toString(),
-    );
-  }
-
-  void _cancelPlayerDrag() {
-    if (!mounted) return;
-    setState(() {
-      _playerDragOffset = 0;
-      _isPlayerDragging = false;
-    });
-  }
-
-  Widget _buildPlayerArea(
-    YouTubeVideo? currentVideo, {
-    required double width,
-    required String? previousVideoId,
-    required String? nextVideoId,
-  }) {
+  Widget _buildPlayerArea(YouTubeVideo? currentVideo) {
     return PlayerPanel(
       videoId: _loadedVideoId,
       controller: _playerController,
@@ -1004,23 +967,6 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       posterChannelTitle: currentVideo?.channelTitle,
       posterChannelThumbnailUrl: currentVideo?.channelThumbnailUrl,
       onPosterPlay: _playFromPoster,
-      enableSwipeCapture: kIsWeb,
-      onSwipeCaptureStart: (_) {
-        setState(() => _isPlayerDragging = true);
-      },
-      onSwipeCaptureUpdate: (details) => _handlePlayerDragUpdate(
-        details,
-        width: width,
-        hasPrevious: previousVideoId != null,
-        hasNext: nextVideoId != null,
-      ),
-      onSwipeCaptureEnd: (details) => _handlePlayerDragEnd(
-        details,
-        width: width,
-        previousVideoId: previousVideoId,
-        nextVideoId: nextVideoId,
-      ),
-      onSwipeCaptureCancel: _cancelPlayerDrag,
       onReady: () {
         if (!mounted) return;
         if (!_isPlayerReady) {
@@ -1571,6 +1517,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   }
 
   void _playPreviousFeedVideo() {
+    _dismissPlaybackPreview(updateController: true);
     final previousVideoId = ref
         .read(playbackSessionProvider)
         .previousBefore(widget.videoId);
@@ -1588,6 +1535,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   }
 
   void _playNextFeedVideo() {
+    _dismissPlaybackPreview(updateController: true);
     _saveProgress();
     final nextVideoId = ref
         .read(playbackSessionProvider)

@@ -55,4 +55,33 @@ void main() {
     expect(session.currentVideoId, 'direct-video');
     expect(session.hasQueue, isFalse);
   });
+
+  test(
+    'playback controller preview does not trigger previous or next requests',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final controller = container.read(appPlaybackControllerProvider.notifier);
+      controller.setActiveVideo(true);
+
+      controller.showPreviousPreview();
+      var state = container.read(appPlaybackControllerProvider);
+      expect(state.previewDirection, PlaybackPreviewDirection.previous);
+      expect(state.previousRequestId, 0);
+      expect(state.nextRequestId, 0);
+
+      controller.showNextPreview();
+      state = container.read(appPlaybackControllerProvider);
+      expect(state.previewDirection, PlaybackPreviewDirection.next);
+      expect(state.previousRequestId, 0);
+      expect(state.nextRequestId, 0);
+
+      controller.hidePreview();
+      state = container.read(appPlaybackControllerProvider);
+      expect(state.previewDirection, isNull);
+      expect(state.previousRequestId, 0);
+      expect(state.nextRequestId, 0);
+    },
+  );
 }
