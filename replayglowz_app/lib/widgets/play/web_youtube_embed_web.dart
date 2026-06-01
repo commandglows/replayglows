@@ -126,7 +126,7 @@ class _WebYoutubeEmbedState extends State<WebYoutubeEmbed> {
       ..tabIndex = -1
       ..allow =
           'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
-      ..allowFullscreen = true;
+      ..allowFullscreen = false;
     _iframe.style
       ..setProperty('border', '0')
       ..setProperty('width', '100%')
@@ -180,7 +180,10 @@ class _WebYoutubeEmbedState extends State<WebYoutubeEmbed> {
     _iframe.src =
         'https://www.youtube.com/embed/$safeVideoId'
         '?enablejsapi=1'
+        '&controls=0'
         '&disablekb=1'
+        '&fs=0'
+        '&iv_load_policy=3'
         '&playsinline=1'
         '&rel=0'
         '&modestbranding=1'

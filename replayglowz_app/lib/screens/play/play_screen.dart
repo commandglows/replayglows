@@ -633,7 +633,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
               child: Column(
                 children: [
                   _buildSwipeablePlayerArea(libraryVideosAsync),
-                  if (!kIsWeb) _buildPlaybackControls(currentVideo),
+                  _buildPlaybackControls(currentVideo),
                   if (!_focusMode && MediaQuery.sizeOf(context).width < 600)
                     UiHintCard(
                       hintId: 'play-mobile-bottom-bar-actions',
