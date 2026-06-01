@@ -38,6 +38,10 @@ class VideosScreen extends ConsumerStatefulWidget {
 class _VideosScreenState extends ConsumerState<VideosScreen>
     with SingleTickerProviderStateMixin {
   static const _compactViewBreakpoint = 640.0;
+  static const _feedSnapAnimationDuration = Duration(milliseconds: 300);
+  static const _feedSyncAnimationDuration = Duration(milliseconds: 360);
+  static const Curve _feedSnapCurve = Curves.easeOutCubic;
+  static const Curve _feedSyncCurve = Curves.easeOutCubic;
   static const _prefsTab = 'videos.pref.tab';
   static const _prefsSort = 'videos.pref.sort';
   static const _prefsWatched = 'videos.pref.watched';
@@ -220,7 +224,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _scrollTabToAnchor(nextIndex, anchor, animated: false);
+      _scrollTabToAnchor(
+        nextIndex,
+        anchor,
+        animated: true,
+        duration: _feedSyncAnimationDuration,
+        curve: _feedSyncCurve,
+      );
     });
   }
 
@@ -416,6 +426,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     int tabIndex,
     _FeedScrollAnchor anchor, {
     required bool animated,
+    Duration duration = _feedSnapAnimationDuration,
+    Curve curve = _feedSnapCurve,
   }) {
     final controller = _scrollControllerForTab(tabIndex);
     if (!controller.hasClients || _visibleFeedQueue.isEmpty) {
@@ -438,12 +450,10 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     _isAdjustingFeedScroll = true;
     if (animated) {
       controller
-          .animateTo(
-            target,
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-          )
-          .whenComplete(_finishProgrammaticFeedScroll);
+          .animateTo(target, duration: duration, curve: curve)
+          .whenComplete(() {
+            _softCorrectPreciseAnchor(tabIndex, resolvedAnchor);
+          });
     } else {
       controller.jumpTo(target);
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -465,6 +475,33 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     _lastFeedScrollAnchor = resolvedAnchor;
   }
 
+  void _softCorrectPreciseAnchor(int tabIndex, _FeedScrollAnchor anchor) {
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final controller = _scrollControllerForTab(tabIndex);
+      final preciseTarget = _preciseScrollOffsetForAnchor(tabIndex, anchor);
+      if (preciseTarget == null || !controller.hasClients) {
+        _finishProgrammaticFeedScroll();
+        return;
+      }
+
+      final delta = (controller.offset - preciseTarget).abs();
+      if (delta < 2) {
+        _finishProgrammaticFeedScroll();
+        return;
+      }
+
+      controller
+          .animateTo(
+            preciseTarget,
+            duration: const Duration(milliseconds: 120),
+            curve: Curves.easeOut,
+          )
+          .whenComplete(_finishProgrammaticFeedScroll);
+    });
+  }
+
   void _finishProgrammaticFeedScroll() {
     if (!mounted) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -482,7 +519,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
           _pendingFeedScrollAnchor?.videoId != pendingAnchor.videoId) {
         return;
       }
-      _scrollTabToAnchor(_tabController.index, pendingAnchor, animated: false);
+      _scrollTabToAnchor(
+        _tabController.index,
+        pendingAnchor,
+        animated: true,
+        duration: _feedSyncAnimationDuration,
+        curve: _feedSyncCurve,
+      );
     });
   }
 
@@ -696,7 +739,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     }
 
     _lastFeedScrollAnchor = resolvedAnchor;
-    _scrollTabToAnchor(tabIndex, resolvedAnchor, animated: true);
+    _scrollTabToAnchor(
+      tabIndex,
+      resolvedAnchor,
+      animated: true,
+      duration: _feedSnapAnimationDuration,
+      curve: _feedSnapCurve,
+    );
   }
 
   Widget _buildFeedScrollSurface({

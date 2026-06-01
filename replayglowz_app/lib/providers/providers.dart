@@ -704,7 +704,7 @@ class VirtualFeedDetailsArgs {
     required this.feedId,
     this.includeHidden = false,
     this.includeWatched = false,
-    this.sortOrder = 'default',
+    this.sortOrder,
     this.cursor,
     this.pageSize,
   });
@@ -712,7 +712,7 @@ class VirtualFeedDetailsArgs {
   final String feedId;
   final bool includeHidden;
   final bool includeWatched;
-  final String sortOrder;
+  final String? sortOrder;
   final String? cursor;
   final int? pageSize;
 
@@ -757,11 +757,16 @@ final virtualFeedDetailsProvider =
       }
 
       final service = ref.watch(convexServiceProvider);
+      final sortOrder = switch (args.sortOrder) {
+        'asc' => 'oldest',
+        'desc' => 'newest',
+        final value => value,
+      };
       final raw = await service.query<dynamic>('virtualFeeds:getFeedDetails', {
         'virtualFeedId': args.feedId,
         'includeHidden': args.includeHidden,
         'includeWatched': args.includeWatched,
-        'sortOrder': args.sortOrder,
+        'sortOrder': ?sortOrder,
         if (args.cursor != null) 'cursor': args.cursor,
         if (args.pageSize != null) 'pageSize': args.pageSize,
       });

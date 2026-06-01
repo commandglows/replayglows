@@ -7,7 +7,7 @@ const SUBSCRIPTIONS_SOURCE_ID = "__subscriptions__";
 const DEFAULT_FEED_PAGE_SIZE = 100;
 
 type VirtualFeedSourceType = "channel" | "playlist" | "subscriptions";
-type VirtualFeedSortOrder = "default" | "newest" | "oldest";
+type VirtualFeedSortOrder = "default" | "newest" | "oldest" | "sourceOrder";
 type AddSourceOutcome = "added" | "alreadyAdded" | "rejected";
 
 type CachedVideo = Doc<"youtubeVideosCache">;
@@ -39,6 +39,9 @@ function normalizeSortOrder(
   const normalized = (sortOrder ?? feedSortOrder ?? "default").toLowerCase();
   if (normalized === "newest") return "newest";
   if (normalized === "oldest") return "oldest";
+  if (normalized === "sourceorder" || normalized === "source_order") {
+    return "sourceOrder";
+  }
   return "default";
 }
 
@@ -118,46 +121,45 @@ function sortVideosBySourceOrder(
   const seen = new Set<string>();
   const activeSources = sources.filter((source) => source.isActive !== false);
 
-  for (const video of videos) {
-    if (seen.has(video.youtubeVideoId)) continue;
-
-    if (hiddenIds.has(video.youtubeVideoId)) continue;
-    if (hiddenPlaylistIds.has(video.youtubePlaylistId)) continue;
-    if (!includeWatched && watchedIds.has(video.youtubeVideoId)) continue;
-
-    let matchedSource: VirtualFeedSource | null = null;
-    for (const source of activeSources) {
-      if (source.sourceType === "playlist") {
-        if (video.youtubePlaylistId === source.sourceId) {
-          matchedSource = source;
-          break;
+  for (const source of activeSources) {
+    const sourceVideos = videos
+      .filter((video) => {
+        if (seen.has(video.youtubeVideoId)) return false;
+        if (hiddenIds.has(video.youtubeVideoId)) return false;
+        if (hiddenPlaylistIds.has(video.youtubePlaylistId)) return false;
+        if (!includeWatched && watchedIds.has(video.youtubeVideoId)) {
+          return false;
         }
-        continue;
-      }
 
-      if (source.sourceType === "channel") {
-        if (video.youtubeChannelId && video.youtubeChannelId === source.sourceId) {
-          matchedSource = source;
-          break;
+        if (source.sourceType === "playlist") {
+          return video.youtubePlaylistId === source.sourceId;
         }
-        continue;
-      }
 
-      if (
-        includeSubscriptions &&
-        source.sourceType === "subscriptions" &&
-        source.sourceId === subscriptionSourceId &&
-        video.youtubeChannelId != null &&
-        channelIds.has(video.youtubeChannelId)
-      ) {
-        matchedSource = source;
-        break;
-      }
+        if (source.sourceType === "channel") {
+          return (
+            video.youtubeChannelId != null &&
+            video.youtubeChannelId === source.sourceId
+          );
+        }
+
+        return (
+          includeSubscriptions &&
+          source.sourceType === "subscriptions" &&
+          source.sourceId === subscriptionSourceId &&
+          video.youtubeChannelId != null &&
+          channelIds.has(video.youtubeChannelId)
+        );
+      })
+      .sort((a, b) => {
+        const dateA = toDateNumber(a.publishedAt);
+        const dateB = toDateNumber(b.publishedAt);
+        return dateB - dateA;
+      });
+
+    for (const video of sourceVideos) {
+      seen.add(video.youtubeVideoId);
+      result.push({ video, source });
     }
-
-    if (!matchedSource) continue;
-    seen.add(video.youtubeVideoId);
-    result.push({ video, source: matchedSource });
   }
 
   return result;
@@ -371,7 +373,12 @@ export const getFeedDetails = query({
     includeHidden: v.optional(v.boolean()),
     includeWatched: v.optional(v.boolean()),
     sortOrder: v.optional(
-      v.union(v.literal("newest"), v.literal("oldest"), v.literal("default")),
+      v.union(
+        v.literal("newest"),
+        v.literal("oldest"),
+        v.literal("default"),
+        v.literal("sourceOrder"),
+      ),
     ),
     cursor: v.optional(v.union(v.string(), v.null())),
     pageSize: v.optional(v.number()),
@@ -518,11 +525,13 @@ export const getFeedDetails = query({
         );
       });
 
-    enriched.sort((a, b) => {
-      const dateA = toDateNumber(a.publishedAt as string | undefined);
-      const dateB = toDateNumber(b.publishedAt as string | undefined);
-      return effectiveSortOrder === "oldest" ? dateA - dateB : dateB - dateA;
-    });
+    if (effectiveSortOrder !== "sourceOrder") {
+      enriched.sort((a, b) => {
+        const dateA = toDateNumber(a.publishedAt as string | undefined);
+        const dateB = toDateNumber(b.publishedAt as string | undefined);
+        return effectiveSortOrder === "oldest" ? dateA - dateB : dateB - dateA;
+      });
+    }
 
     const { pageSize, cursorIndex } = normalizePaging(args.pageSize, args.cursor);
     const endIndex = cursorIndex + pageSize;
@@ -685,7 +694,14 @@ export const createFeed = mutation({
     title: v.string(),
     description: v.optional(v.string()),
     includeWatched: v.optional(v.boolean()),
-    sortOrder: v.optional(v.union(v.literal("newest"), v.literal("oldest"), v.literal("default"))),
+    sortOrder: v.optional(
+      v.union(
+        v.literal("newest"),
+        v.literal("oldest"),
+        v.literal("default"),
+        v.literal("sourceOrder"),
+      ),
+    ),
     color: v.optional(v.string()),
     icon: v.optional(v.string()),
     isActive: v.optional(v.boolean()),
@@ -721,7 +737,14 @@ export const updateFeed = mutation({
     title: v.optional(v.string()),
     description: v.optional(v.string()),
     includeWatched: v.optional(v.boolean()),
-    sortOrder: v.optional(v.union(v.literal("newest"), v.literal("oldest"), v.literal("default"))),
+    sortOrder: v.optional(
+      v.union(
+        v.literal("newest"),
+        v.literal("oldest"),
+        v.literal("default"),
+        v.literal("sourceOrder"),
+      ),
+    ),
     color: v.optional(v.string()),
     icon: v.optional(v.string()),
     isActive: v.optional(v.boolean()),

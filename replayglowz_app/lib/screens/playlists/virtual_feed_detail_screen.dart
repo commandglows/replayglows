@@ -31,6 +31,42 @@ class _VirtualFeedSourceCandidate {
   final IconData icon;
 }
 
+class _VirtualFeedVideoListItem {
+  const _VirtualFeedVideoListItem._({this.headerTitle, this.video});
+
+  factory _VirtualFeedVideoListItem.header(String title) {
+    return _VirtualFeedVideoListItem._(headerTitle: title);
+  }
+
+  factory _VirtualFeedVideoListItem.video(YouTubeVideo video) {
+    return _VirtualFeedVideoListItem._(video: video);
+  }
+
+  final String? headerTitle;
+  final YouTubeVideo? video;
+
+  bool get isHeader => headerTitle != null;
+}
+
+class _SortMenuItem extends PopupMenuItem<String> {
+  _SortMenuItem({
+    required String value,
+    required IconData icon,
+    required String label,
+    required bool selected,
+  }) : super(
+         value: value,
+         child: Row(
+           children: [
+             Icon(icon, size: 18),
+             const SizedBox(width: 10),
+             Expanded(child: Text(label)),
+             if (selected) const Icon(Icons.check_rounded, size: 18),
+           ],
+         ),
+       );
+}
+
 class VirtualFeedDetailScreen extends ConsumerStatefulWidget {
   /// Convex document ID of the virtual feed.
   final String feedId;
@@ -131,6 +167,52 @@ class _VirtualFeedDetailScreenState
         ? '${source.videoCount} ${t('virtualFeedDetail.videoCount', locale: l)}'
         : t('virtualFeedDetail.noVideos', locale: l);
     return '$prefix • $suffix';
+  }
+
+  String _sortOrderLabel(String sortOrder, AppLocale l) {
+    return switch (sortOrder) {
+      'oldest' => t('virtualFeedDetail.sortOldest', locale: l),
+      'sourceOrder' => t('virtualFeedDetail.sortSourceOrder', locale: l),
+      _ => t('virtualFeedDetail.sortNewest', locale: l),
+    };
+  }
+
+  IconData _sortOrderIcon(String sortOrder) {
+    return switch (sortOrder) {
+      'oldest' => Icons.arrow_upward_rounded,
+      'sourceOrder' => Icons.low_priority_rounded,
+      _ => Icons.arrow_downward_rounded,
+    };
+  }
+
+  List<_VirtualFeedVideoListItem> _videoListItems(
+    List<YouTubeVideo> videos,
+    bool groupBySource,
+  ) {
+    if (!groupBySource) {
+      return videos
+          .map(_VirtualFeedVideoListItem.video)
+          .toList(growable: false);
+    }
+
+    final items = <_VirtualFeedVideoListItem>[];
+    String? currentSourceKey;
+    for (final video in videos) {
+      final sourceKey =
+          '${video.feedSourceType ?? 'unknown'}:${video.feedSourceId ?? ''}';
+      if (sourceKey != currentSourceKey) {
+        currentSourceKey = sourceKey;
+        items.add(
+          _VirtualFeedVideoListItem.header(
+            video.feedSourceTitle?.trim().isNotEmpty == true
+                ? video.feedSourceTitle!.trim()
+                : video.channelTitle,
+          ),
+        );
+      }
+      items.add(_VirtualFeedVideoListItem.video(video));
+    }
+    return items;
   }
 
   List<YouTubeVideo> _videosForSources(
@@ -434,6 +516,28 @@ class _VirtualFeedDetailScreenState
         context,
         error: e,
         prefix: t('virtualFeedDetail.sourceRemoveFailed', locale: l),
+      );
+    }
+  }
+
+  Future<void> _updateFeedSortOrder(
+    BuildContext context,
+    VirtualFeed feed,
+    String sortOrder,
+    AppLocale l,
+  ) async {
+    try {
+      await updateVirtualFeed(ref, feedId: feed.id, sortOrder: sortOrder);
+      if (!mounted || !context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(t('virtualFeedDetail.sortUpdated', locale: l))),
+      );
+    } catch (error) {
+      if (!mounted || !context.mounted) return;
+      showErrorSnackBar(
+        context,
+        error: error,
+        prefix: t('virtualFeedDetail.sortUpdateFailed', locale: l),
       );
     }
   }
@@ -1409,6 +1513,11 @@ class _VirtualFeedDetailScreenState
             : Theme.of(context).colorScheme.primary;
         final sources = _editableSources.toList(growable: false);
         final videos = _videosForSources(detailsData.videos, sources);
+        final sortOrder = detailsData.sortOrder;
+        final videoListItems = _videoListItems(
+          videos,
+          sortOrder == 'sourceOrder',
+        );
         final feedStats = detailsData.stats;
 
         final hasCacheError = sources.any((source) => source.isStale);
@@ -1437,6 +1546,37 @@ class _VirtualFeedDetailScreenState
           appBar: AppBar(
             title: Text(feed.title),
             actions: [
+              PopupMenuButton<String>(
+                tooltip: t('virtualFeedDetail.sortVideos', locale: l),
+                icon: Icon(_sortOrderIcon(sortOrder)),
+                onSelected: (value) async {
+                  if (value == sortOrder ||
+                      (value == 'newest' && sortOrder == 'default')) {
+                    return;
+                  }
+                  await _updateFeedSortOrder(context, feed, value, l);
+                },
+                itemBuilder: (context) => [
+                  _SortMenuItem(
+                    value: 'newest',
+                    icon: Icons.arrow_downward_rounded,
+                    label: t('virtualFeedDetail.sortNewest', locale: l),
+                    selected: sortOrder == 'newest' || sortOrder == 'default',
+                  ),
+                  _SortMenuItem(
+                    value: 'oldest',
+                    icon: Icons.arrow_upward_rounded,
+                    label: t('virtualFeedDetail.sortOldest', locale: l),
+                    selected: sortOrder == 'oldest',
+                  ),
+                  _SortMenuItem(
+                    value: 'sourceOrder',
+                    icon: Icons.low_priority_rounded,
+                    label: t('virtualFeedDetail.sortSourceOrder', locale: l),
+                    selected: sortOrder == 'sourceOrder',
+                  ),
+                ],
+              ),
               IconButton(
                 tooltip: t('virtualFeedDetail.refreshYoutube', locale: l),
                 icon: _isRefreshing
@@ -1494,12 +1634,8 @@ class _VirtualFeedDetailScreenState
                           ),
                           title: Text(feed.title),
                           subtitle: Text(
-                            feed.description?.trim().isNotEmpty == true
-                                ? feed.description!.trim()
-                                : t(
-                                    'virtualFeedDetail.feedDescriptionFallback',
-                                    locale: l,
-                                  ),
+                            '${feed.description?.trim().isNotEmpty == true ? feed.description!.trim() : t('virtualFeedDetail.feedDescriptionFallback', locale: l)}\n'
+                            '${t('virtualFeedDetail.sortLabel', locale: l)}: ${_sortOrderLabel(sortOrder, l)}',
                           ),
                           trailing: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
@@ -1735,9 +1871,30 @@ class _VirtualFeedDetailScreenState
                 )
               else
                 SliverList.builder(
-                  itemCount: videos.length,
+                  itemCount: videoListItems.length,
                   itemBuilder: (context, index) {
-                    final video = videos[index];
+                    final item = videoListItems[index];
+                    if (item.isHeader) {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.source_outlined, size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                item.headerTitle!,
+                                style: Theme.of(context).textTheme.titleSmall,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    final video = item.video!;
                     final key = _videoItemKeys[video.youtubeVideoId];
                     return Card(
                       key: key,

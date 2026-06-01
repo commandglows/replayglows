@@ -245,7 +245,12 @@ export default defineSchema({
     description: v.optional(v.string()),
     includeWatched: v.optional(v.boolean()),
     sortOrder: v.optional(
-      v.union(v.literal("newest"), v.literal("oldest"), v.literal("default")),
+      v.union(
+        v.literal("newest"),
+        v.literal("oldest"),
+        v.literal("default"),
+        v.literal("sourceOrder"),
+      ),
     ),
     color: v.optional(v.string()),
     icon: v.optional(v.string()),
