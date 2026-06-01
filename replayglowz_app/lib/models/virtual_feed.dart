@@ -176,6 +176,8 @@ class VirtualFeedSource {
 
   bool get isSubscriptionSource => sourceType == 'subscriptions';
 
+  bool get isVideoSource => sourceType == 'video';
+
   bool get isChannelSource => sourceType == 'channel';
 
   bool get isPlaylistSource => sourceType == 'playlist';

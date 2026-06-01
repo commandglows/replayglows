@@ -6,7 +6,7 @@ import { Doc, Id } from "./_generated/dataModel";
 const SUBSCRIPTIONS_SOURCE_ID = "__subscriptions__";
 const DEFAULT_FEED_PAGE_SIZE = 100;
 
-type VirtualFeedSourceType = "channel" | "playlist" | "subscriptions";
+type VirtualFeedSourceType = "video" | "channel" | "playlist" | "subscriptions";
 type VirtualFeedSortOrder = "default" | "newest" | "oldest" | "sourceOrder";
 type AddSourceOutcome = "added" | "alreadyAdded" | "rejected";
 
@@ -79,9 +79,9 @@ async function getUserOwnedFeed(
   userId: string,
   feedId: string,
 ): Promise<FeedDoc | null> {
-  const feed = (await ctx.db.get(feedId as Id<"virtualFeeds">)) as
-    | FeedDoc
-    | null;
+  const feed = (await ctx.db.get(
+    feedId as Id<"virtualFeeds">,
+  )) as FeedDoc | null;
   if (!feed || feed.userId !== userId) return null;
   return feed;
 }
@@ -133,6 +133,10 @@ function sortVideosBySourceOrder(
 
         if (source.sourceType === "playlist") {
           return video.youtubePlaylistId === source.sourceId;
+        }
+
+        if (source.sourceType === "video") {
+          return video.youtubeVideoId === source.sourceId;
         }
 
         if (source.sourceType === "channel") {
@@ -203,10 +207,28 @@ async function getSourceAvailability(
   playlistIds: Set<string>,
 ): Promise<{ isAvailable: boolean; reason: string | null }> {
   if (source.sourceType === "channel") {
-    const hasChannel = channelIds.has(source.sourceId) || videoChannelIds.has(source.sourceId);
+    const hasChannel =
+      channelIds.has(source.sourceId) || videoChannelIds.has(source.sourceId);
     return {
       isAvailable: hasChannel,
-      reason: hasChannel ? null : "Channel is no longer available in your cache.",
+      reason: hasChannel
+        ? null
+        : "Channel is no longer available in your cache.",
+    };
+  }
+
+  if (source.sourceType === "video") {
+    const video = await ctx.db
+      .query("youtubeVideosCache")
+      .withIndex("by_user_and_video", (q: any) =>
+        q.eq("userId", userId).eq("youtubeVideoId", source.sourceId),
+      )
+      .first();
+    return {
+      isAvailable: !!video,
+      reason: video
+        ? null
+        : "Video is no longer available in your cache. Sync YouTube first.",
     };
   }
 
@@ -214,9 +236,7 @@ async function getSourceAvailability(
     const playlist = await ctx.db
       .query("youtubePlaylistsCache")
       .withIndex("by_user_and_youtube_id", (q: any) =>
-        q
-          .eq("userId", userId)
-          .eq("youtubePlaylistId", source.sourceId),
+        q.eq("userId", userId).eq("youtubePlaylistId", source.sourceId),
       )
       .first();
     return {
@@ -230,16 +250,20 @@ async function getSourceAvailability(
   if (source.sourceType === "subscriptions") {
     return {
       isAvailable: channelIds.size > 0,
-      reason: channelIds.size > 0
-        ? null
-        : "No channel subscriptions available. Refresh subscriptions in ReplayGlowz.",
+      reason:
+        channelIds.size > 0
+          ? null
+          : "No channel subscriptions available. Refresh subscriptions in ReplayGlowz.",
     };
   }
 
   return { isAvailable: false, reason: "Unknown source type." };
 }
 
-function withUpdatedTimestamps(data: { feed: FeedDoc; updatedAt: number }): FeedDoc {
+function withUpdatedTimestamps(data: {
+  feed: FeedDoc;
+  updatedAt: number;
+}): FeedDoc {
   return {
     ...data.feed,
     updatedAt: data.updatedAt,
@@ -255,7 +279,11 @@ async function validateFeedSource(
 ): Promise<SourceValidationResult> {
   if (sourceType === "subscriptions") {
     if (sourceId !== SUBSCRIPTIONS_SOURCE_ID) {
-      return { title: fallbackTitle, valid: false, error: "Invalid subscriptions source identifier." };
+      return {
+        title: fallbackTitle,
+        valid: false,
+        error: "Invalid subscriptions source identifier.",
+      };
     }
     const channels = await ctx.db
       .query("youtubeChannelsCache")
@@ -265,7 +293,8 @@ async function validateFeedSource(
       return {
         title: fallbackTitle,
         valid: false,
-        error: "Cannot add subscriptions source: no subscribed channels available.",
+        error:
+          "Cannot add subscriptions source: no subscribed channels available.",
       };
     }
     return { title: fallbackTitle, valid: true };
@@ -279,9 +308,30 @@ async function validateFeedSource(
       )
       .first();
     if (!playlist) {
-      return { title: fallbackTitle, valid: false, error: "Playlist not found in your cache." };
+      return {
+        title: fallbackTitle,
+        valid: false,
+        error: "Playlist not found in your cache.",
+      };
     }
     return { title: playlist.title, valid: true };
+  }
+
+  if (sourceType === "video") {
+    const video = await ctx.db
+      .query("youtubeVideosCache")
+      .withIndex("by_user_and_video", (q) =>
+        q.eq("userId", userId).eq("youtubeVideoId", sourceId),
+      )
+      .first();
+    if (!video) {
+      return {
+        title: fallbackTitle,
+        valid: false,
+        error: "Video not found in your cache.",
+      };
+    }
+    return { title: video.title || fallbackTitle, valid: true };
   }
 
   const channel = await ctx.db
@@ -300,7 +350,11 @@ async function validateFeedSource(
     .collect();
   const video = videos.find((entry) => entry.youtubeChannelId === sourceId);
   if (!video) {
-    return { title: fallbackTitle, valid: false, error: "Channel not found in your cache." };
+    return {
+      title: fallbackTitle,
+      valid: false,
+      error: "Channel not found in your cache.",
+    };
   }
   return { title: video.channelTitle || fallbackTitle, valid: true };
 }
@@ -357,7 +411,9 @@ export const listFeeds = query({
 
     return filtered.map((feed, index) => {
       const sources = sourceBuckets[index] ?? [];
-      const activeSources = sources.filter((source) => source.isActive !== false);
+      const activeSources = sources.filter(
+        (source) => source.isActive !== false,
+      );
       return {
         ...feed,
         sourceCount: sources.length,
@@ -467,17 +523,29 @@ export const getFeedDetails = query({
     ]);
 
     const includeWatched = args.includeWatched ?? !!feed.includeWatched;
-    const effectiveSortOrder = normalizeSortOrder(args.sortOrder, feed.sortOrder);
-    const hiddenIds = new Set<string>(hiddenVideos.map((item) => item.youtubeId));
+    const effectiveSortOrder = normalizeSortOrder(
+      args.sortOrder,
+      feed.sortOrder,
+    );
+    const hiddenIds = new Set<string>(
+      hiddenVideos.map((item) => item.youtubeId),
+    );
     const hiddenPlaylistIds = new Set<string>(
       hiddenPlaylists.map((item) => item.youtubeId),
     );
-    const watchedIds = new Set<string>(watchedVideos.map((item) => item.youtubeVideoId));
-    const channelIds = new Set<string>(cachedChannels.map((channel) => channel.youtubeChannelId));
+    const watchedIds = new Set<string>(
+      watchedVideos.map((item) => item.youtubeVideoId),
+    );
+    const channelIds = new Set<string>(
+      cachedChannels.map((channel) => channel.youtubeChannelId),
+    );
     const videoChannelIds = new Set<string>(
       allVideos
         .map((video) => video.youtubeChannelId)
-        .filter((channelId): channelId is string => typeof channelId === "string" && channelId.length > 0),
+        .filter(
+          (channelId): channelId is string =>
+            typeof channelId === "string" && channelId.length > 0,
+        ),
     );
     const playlistIds = new Set<string>(
       cachedPlaylists.map((playlist) => playlist.youtubePlaylistId),
@@ -533,7 +601,10 @@ export const getFeedDetails = query({
       });
     }
 
-    const { pageSize, cursorIndex } = normalizePaging(args.pageSize, args.cursor);
+    const { pageSize, cursorIndex } = normalizePaging(
+      args.pageSize,
+      args.cursor,
+    );
     const endIndex = cursorIndex + pageSize;
     const page = enriched.slice(cursorIndex, endIndex);
     const isDone = endIndex >= enriched.length;
@@ -570,7 +641,8 @@ export const getFeedDetails = query({
       stats: {
         sourceCount: sources.length,
         activeSourceCount: activeSources.length,
-        staleSourceCount: sourceStates.filter((source) => source.isStale).length,
+        staleSourceCount: sourceStates.filter((source) => source.isStale)
+          .length,
         matchedVideoCount: enriched.length,
       },
       isDone,
@@ -627,7 +699,9 @@ export const listPlaylistChannelCandidates = query({
       getSourcesByFeed(ctx, args.virtualFeedId),
     ]);
 
-    const channelCache = new Map(channels.map((channel) => [channel.youtubeChannelId, channel]));
+    const channelCache = new Map(
+      channels.map((channel) => [channel.youtubeChannelId, channel]),
+    );
     const alreadyAddedChannelIds = new Set(
       sources
         .filter((source) => source.sourceType === "channel")
@@ -645,10 +719,14 @@ export const listPlaylistChannelCandidates = query({
       const current = groups.get(channelId);
       if (current) {
         current.count += 1;
-        if (!current.title && video.channelTitle) current.title = video.channelTitle;
+        if (!current.title && video.channelTitle)
+          current.title = video.channelTitle;
       } else {
         groups.set(channelId, {
-          title: video.channelTitle || channelCache.get(channelId)?.title || "Untitled channel",
+          title:
+            video.channelTitle ||
+            channelCache.get(channelId)?.title ||
+            "Untitled channel",
           count: 1,
         });
       }
@@ -805,9 +883,7 @@ export const deleteFeed = mutation({
     if (!feed) throw new Error("Unauthorized");
 
     const sources = await getSourcesByFeed(ctx, args.virtualFeedId);
-    await Promise.all(
-      sources.map((source) => ctx.db.delete(source._id)),
-    );
+    await Promise.all(sources.map((source) => ctx.db.delete(source._id)));
     await ctx.db.delete(args.virtualFeedId);
   },
 });
@@ -816,6 +892,7 @@ export const addFeedSource = mutation({
   args: {
     virtualFeedId: v.id("virtualFeeds"),
     sourceType: v.union(
+      v.literal("video"),
       v.literal("channel"),
       v.literal("playlist"),
       v.literal("subscriptions"),
@@ -844,7 +921,9 @@ export const addFeedSource = mutation({
       sourceTitle,
     );
     if (!validation.valid) {
-      throw new Error(validation.error ?? "Source is not available in your cache.");
+      throw new Error(
+        validation.error ?? "Source is not available in your cache.",
+      );
     }
 
     const existing = await findExistingSource(
@@ -905,10 +984,11 @@ export const addFeedSources = mutation({
     if (!feed) throw new Error("Unauthorized");
 
     const existingSources = await getSourcesByFeed(ctx, args.virtualFeedId);
-    let nextPosition = existingSources.reduce(
-      (max, source) => Math.max(max, source.position),
-      -1,
-    ) + 1;
+    let nextPosition =
+      existingSources.reduce(
+        (max, source) => Math.max(max, source.position),
+        -1,
+      ) + 1;
     const seenInRequest = new Set<string>();
     const now = Date.now();
     let addedCount = 0;
@@ -927,7 +1007,10 @@ export const addFeedSources = mutation({
       channelTitleById.set(channel.youtubeChannelId, channel.title);
     }
     for (const video of cachedVideos) {
-      if (video.youtubeChannelId && !channelTitleById.has(video.youtubeChannelId)) {
+      if (
+        video.youtubeChannelId &&
+        !channelTitleById.has(video.youtubeChannelId)
+      ) {
         channelTitleById.set(video.youtubeChannelId, video.channelTitle);
       }
     }
@@ -1017,8 +1100,11 @@ export const addFeedSources = mutation({
     return {
       virtualFeedId: args.virtualFeedId,
       addedCount,
-      alreadyAddedCount: results.filter((result) => result.status === "alreadyAdded").length,
-      rejectedCount: results.filter((result) => result.status === "rejected").length,
+      alreadyAddedCount: results.filter(
+        (result) => result.status === "alreadyAdded",
+      ).length,
+      rejectedCount: results.filter((result) => result.status === "rejected")
+        .length,
       results,
     };
   },
@@ -1039,9 +1125,9 @@ export const removeFeedSource = mutation({
     if (!feed) throw new Error("Feed not found");
 
     const now = Date.now();
-    const remaining = (await getSourcesByFeed(ctx, source.virtualFeedId)).filter(
-      (entry) => entry._id !== args.virtualFeedSourceId,
-    );
+    const remaining = (
+      await getSourcesByFeed(ctx, source.virtualFeedId)
+    ).filter((entry) => entry._id !== args.virtualFeedSourceId);
 
     await Promise.all(
       remaining.map((entry, index) =>
@@ -1084,7 +1170,9 @@ export const reorderFeedSources = mutation({
       throw new Error("Source list is out of date. Reload and retry.");
     }
 
-    const sourceSet = new Set(allSources.map((source) => source._id.toString()));
+    const sourceSet = new Set(
+      allSources.map((source) => source._id.toString()),
+    );
     for (const sourceId of args.sourceIds) {
       if (!sourceSet.has(sourceId)) {
         throw new Error("Cannot reorder: stale source list.");

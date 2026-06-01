@@ -155,6 +155,8 @@ class _VirtualFeedDetailScreenState
   String _sourceSubtitle(VirtualFeedSource source, AppLocale l) {
     final prefix = source.sourceType == 'subscriptions'
         ? t('virtualFeedDetail.sourceType.subscriptions', locale: l)
+        : source.sourceType == 'video'
+        ? t('virtualFeedDetail.sourceType.video', locale: l)
         : source.sourceType == 'channel'
         ? t('virtualFeedDetail.sourceType.channel', locale: l)
         : t('virtualFeedDetail.sourceType.playlist', locale: l);
@@ -1795,6 +1797,8 @@ class _VirtualFeedDetailScreenState
                           leading: Icon(
                             source.isSubscriptionSource
                                 ? Icons.rss_feed
+                                : source.isVideoSource
+                                ? Icons.play_circle_outline
                                 : source.isChannelSource
                                 ? Icons.person_search
                                 : Icons.playlist_play,

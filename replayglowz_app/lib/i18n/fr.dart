@@ -201,6 +201,7 @@ const Map<String, dynamic> fr = {
         'Ajoutez une playlist pour importer toutes ses vidéos dans ce Feed, ou ajoutez des chaînes et abonnements pour construire une playlist live qui se remplit automatiquement.',
     'activeVideoHint':
         'Ouvrez une vidéo depuis ce Feed dans Lire pour garder la position synchronisée.',
+    'sourceType.video': 'Vidéo YouTube',
     'sourceType.channel': 'Chaîne YouTube',
     'sourceType.playlist': 'Playlist YouTube',
     'sourceType.subscriptions': 'Tous les abonnements',

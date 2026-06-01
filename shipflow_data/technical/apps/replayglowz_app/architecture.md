@@ -188,20 +188,20 @@ Feed-specific behavior:
 - The global Videos screen can render either the all-videos provider or a merged union of selected ReplayGlowz feed details.
 - Feed selections are persisted locally as a set of feed ids; legacy single-feed and playlist-filter preferences are cleared during migration.
 - ReplayGlowz feed source mutations must invalidate matching detail providers and visible video providers. Source deletion also removes matching source/video rows optimistically so the UI does not wait for a full reload.
-- YouTube playlists are not direct main-feed filter entries; playlist/channel/subscription sources are managed from ReplayGlowz feed source flows.
+- YouTube playlists are not direct main-feed filter entries; video/playlist/channel/subscription sources are managed from ReplayGlowz feed source flows. A video source pins one cached YouTube video into a feed; a channel source keeps all cached videos from that channel available to the feed.
 
 ## Navigation architecture
 
 - Public routes: `/sign-in`, `/feedback`, `/feedback/admin`.
 - Protected routes are mounted under `ShellRoute`.
 - `AppShell` uses a bottom `NavigationBar` below 600dp and a `NavigationRail` at 600dp and above.
-- On mobile Play, `AppShell` can replace the normal bottom navigation with playback controls after a long press or temporary Play activation, and can slide timeline/seek controls above the bottom navigation after an upward swipe from Play.
+- On mobile Play, `AppShell` can replace the normal bottom navigation with playback controls after a long press or temporary Play activation, and can slide advanced controls above the bottom navigation after an upward swipe from Play.
 - YouTube connection and OAuth feedback banners are injected at shell level.
 
 ## Playback architecture
 
 - `AppPlaybackController` is a Riverpod command bridge between shell controls and `PlayScreen`.
-- Shell playback controls emit request counters for play/pause, previous, next, loop, hide current video, mark current video watched, speed up, slow down, and seek requests, plus transient previous/next preview state for long-press thumbnails and shared playback position for the swipe-up timeline.
+- Shell playback controls emit request counters for play/pause, previous, next, loop, hide current video, mark current video watched, add current video/channel to a ReplayGlowz feed, speed changes, and seek requests, plus transient previous/next preview state for long-press thumbnails and shared playback position for the swipe-up timeline.
 - `PlaybackSession` is the in-memory source of truth for the active "Up next" context. Feed, playlist, and ReplayGlowz feed entry points create typed sessions with source metadata and ordered queue items before routing to `PlayScreen`; direct links fall back to a one-video direct session.
 - `PlayScreen` owns player execution, progress persistence, playback-session previous/next navigation, loop handling, current-video mutations, and the "Up next" drawer.
 - Web playback uses YouTube iframe/player state snapshots with YouTube keyboard and visible controls disabled where the IFrame API allows it; ReplayGlowz renders a pre-play thumbnail poster over the player, long-press previous/next thumbnail previews from the playback bar, and swipe-up timeline controls from the bottom Play button. Native/non-web playback uses the package controller path already present in the screen.

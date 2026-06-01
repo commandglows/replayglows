@@ -200,6 +200,7 @@ const Map<String, dynamic> en = {
         'Add a playlist to bring all of its videos into this Feed, or add channels and subscriptions to build a live playlist that fills itself automatically.',
     'activeVideoHint':
         'Open a video from this Feed in Play to keep your position in sync.',
+    'sourceType.video': 'YouTube video',
     'sourceType.channel': 'YouTube channel',
     'sourceType.playlist': 'YouTube playlist',
     'sourceType.subscriptions': 'All subscriptions',

@@ -44,6 +44,8 @@ class _TranscriptEntry {
   double get endSeconds => startSeconds + durationSeconds;
 }
 
+enum _FeedAddTarget { video, channel }
+
 class _TranscriptControlHeader extends StatelessWidget {
   const _TranscriptControlHeader({
     required this.language,
@@ -198,6 +200,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   int _activeTabIndex = 0;
   WebYoutubePlayerSnapshot _webPlayerSnapshot =
       const WebYoutubePlayerSnapshot();
+  YouTubeVideo? _latestCurrentVideo;
   bool _focusMode = false;
   bool _showWebPosterOverlay = true;
   PlaybackPreviewDirection? _playbackPreviewDirection;
@@ -213,6 +216,8 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   int _lastHandledPlaybackSeekRequestId = 0;
   int _lastHandledHideCurrentVideoRequestId = 0;
   int _lastHandledMarkCurrentVideoWatchedRequestId = 0;
+  int _lastHandledAddCurrentVideoToFeedRequestId = 0;
+  int _lastHandledAddCurrentChannelToFeedRequestId = 0;
   int _lastHandledSpeedUpRequestId = 0;
   int _lastHandledSpeedDownRequestId = 0;
   int _lastHandledSpeedDeltaRequestId = 0;
@@ -508,6 +513,18 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
             next.markCurrentVideoWatchedRequestId;
         _markCurrentVideoWatchedFromPlaybackBar();
       }
+      if (next.addCurrentVideoToFeedRequestId !=
+          _lastHandledAddCurrentVideoToFeedRequestId) {
+        _lastHandledAddCurrentVideoToFeedRequestId =
+            next.addCurrentVideoToFeedRequestId;
+        _showAddCurrentToFeedSheet(_FeedAddTarget.video);
+      }
+      if (next.addCurrentChannelToFeedRequestId !=
+          _lastHandledAddCurrentChannelToFeedRequestId) {
+        _lastHandledAddCurrentChannelToFeedRequestId =
+            next.addCurrentChannelToFeedRequestId;
+        _showAddCurrentToFeedSheet(_FeedAddTarget.channel);
+      }
       if (next.speedUpRequestId != _lastHandledSpeedUpRequestId) {
         _lastHandledSpeedUpRequestId = next.speedUpRequestId;
         _changePlaybackRate(forward: true);
@@ -575,6 +592,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     final libraryVideos =
         libraryVideosAsync.asData?.value ?? const <YouTubeVideo>[];
     final currentVideo = _findLibraryVideo(libraryVideos, widget.videoId);
+    _latestCurrentVideo = currentVideo;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _syncAppPlaybackPosition(currentVideo: currentVideo);
@@ -1401,6 +1419,131 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     } catch (e) {
       if (!mounted) return;
       showErrorSnackBar(context, error: e, prefix: 'Could not mark watched');
+    }
+  }
+
+  Future<void> _showAddCurrentToFeedSheet(_FeedAddTarget target) async {
+    final video = _latestCurrentVideo;
+    if (video == null || video.youtubeVideoId.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Current video metadata is not ready.')),
+      );
+      return;
+    }
+
+    final sourceType = target == _FeedAddTarget.video ? 'video' : 'channel';
+    final sourceId = target == _FeedAddTarget.video
+        ? video.youtubeVideoId
+        : video.youtubeChannelId?.trim();
+    final sourceTitle = target == _FeedAddTarget.video
+        ? video.title.trim()
+        : video.channelTitle.trim();
+
+    if (sourceId == null || sourceId.isEmpty || sourceTitle.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            target == _FeedAddTarget.video
+                ? 'Current video cannot be added to a feed yet.'
+                : 'Current video channel metadata is not ready.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    List<VirtualFeed> feeds;
+    try {
+      feeds = await ref.read(virtualFeedsProvider.future);
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Could not load feeds');
+      return;
+    }
+
+    if (!mounted) return;
+    final activeFeeds = feeds.where((feed) => feed.isActive).toList();
+    if (activeFeeds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Create a ReplayGlowz feed first.')),
+      );
+      return;
+    }
+
+    final selectedFeed = await showModalBottomSheet<VirtualFeed>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            children: [
+              Text(
+                target == _FeedAddTarget.video
+                    ? 'Add video to feed'
+                    : 'Add channel to feed',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                sourceTitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 12),
+              for (final feed in activeFeeds)
+                ListTile(
+                  leading: CircleAvatar(child: Text(feed.initials)),
+                  title: Text(feed.title),
+                  subtitle: Text(
+                    '${feed.sourceCount} source${feed.sourceCount == 1 ? '' : 's'}',
+                  ),
+                  onTap: () => Navigator.of(sheetContext).pop(feed),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selectedFeed == null || !mounted) return;
+
+    try {
+      await addVirtualFeedSource(
+        ref,
+        feedId: selectedFeed.id,
+        sourceType: sourceType,
+        sourceId: sourceId,
+        sourceTitle: sourceTitle,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            target == _FeedAddTarget.video
+                ? 'Video added to ${selectedFeed.title}.'
+                : 'Channel added to ${selectedFeed.title}.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(
+        context,
+        error: e,
+        prefix: target == _FeedAddTarget.video
+            ? 'Could not add video to feed'
+            : 'Could not add channel to feed',
+      );
     }
   }
 

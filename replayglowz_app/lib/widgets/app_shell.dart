@@ -324,7 +324,6 @@ class _AppShellState extends ConsumerState<AppShell> {
   ) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final rate = playbackController.playbackRate;
     final maxSeconds = math.max(playbackController.durationSeconds, 1.0);
     final currentSeconds =
         (_activeSeekDragSeconds ?? playbackController.currentSeconds)
@@ -372,24 +371,21 @@ class _AppShellState extends ConsumerState<AppShell> {
                     ),
                   ),
                   _PlaybackBarButton(
-                    icon: Icons.remove_rounded,
-                    label: 'Slower',
+                    icon: Icons.playlist_add_rounded,
+                    label: 'Add video',
                     onPressed: () => _handleAdvancedPlaybackControl(
                       ref
                           .read(appPlaybackControllerProvider.notifier)
-                          .requestSpeedDown,
+                          .requestAddCurrentVideoToFeed,
                     ),
                   ),
                   _PlaybackBarButton(
-                    icon: Icons.add_rounded,
-                    label: rate == rate.truncateToDouble()
-                        ? '${rate.toInt()}x'
-                        : '${rate.toStringAsFixed(2)}x',
-                    selected: rate != 1,
+                    icon: Icons.subscriptions_outlined,
+                    label: 'Channel',
                     onPressed: () => _handleAdvancedPlaybackControl(
                       ref
                           .read(appPlaybackControllerProvider.notifier)
-                          .requestSpeedUp,
+                          .requestAddCurrentChannelToFeed,
                     ),
                   ),
                 ],

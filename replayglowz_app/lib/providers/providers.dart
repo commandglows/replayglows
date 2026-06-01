@@ -58,6 +58,8 @@ class AppPlaybackControllerState {
     this.loopEnabled = false,
     this.hideCurrentVideoRequestId = 0,
     this.markCurrentVideoWatchedRequestId = 0,
+    this.addCurrentVideoToFeedRequestId = 0,
+    this.addCurrentChannelToFeedRequestId = 0,
     this.speedUpRequestId = 0,
     this.speedDownRequestId = 0,
     this.speedDeltaRequestId = 0,
@@ -79,6 +81,8 @@ class AppPlaybackControllerState {
   final bool loopEnabled;
   final int hideCurrentVideoRequestId;
   final int markCurrentVideoWatchedRequestId;
+  final int addCurrentVideoToFeedRequestId;
+  final int addCurrentChannelToFeedRequestId;
   final int speedUpRequestId;
   final int speedDownRequestId;
   final int speedDeltaRequestId;
@@ -101,6 +105,8 @@ class AppPlaybackControllerState {
     bool? loopEnabled,
     int? hideCurrentVideoRequestId,
     int? markCurrentVideoWatchedRequestId,
+    int? addCurrentVideoToFeedRequestId,
+    int? addCurrentChannelToFeedRequestId,
     int? speedUpRequestId,
     int? speedDownRequestId,
     int? speedDeltaRequestId,
@@ -127,6 +133,11 @@ class AppPlaybackControllerState {
       markCurrentVideoWatchedRequestId:
           markCurrentVideoWatchedRequestId ??
           this.markCurrentVideoWatchedRequestId,
+      addCurrentVideoToFeedRequestId:
+          addCurrentVideoToFeedRequestId ?? this.addCurrentVideoToFeedRequestId,
+      addCurrentChannelToFeedRequestId:
+          addCurrentChannelToFeedRequestId ??
+          this.addCurrentChannelToFeedRequestId,
       speedUpRequestId: speedUpRequestId ?? this.speedUpRequestId,
       speedDownRequestId: speedDownRequestId ?? this.speedDownRequestId,
       speedDeltaRequestId: speedDeltaRequestId ?? this.speedDeltaRequestId,
@@ -221,6 +232,23 @@ class AppPlaybackControllerNotifier
       controllerMode: true,
       markCurrentVideoWatchedRequestId:
           state.markCurrentVideoWatchedRequestId + 1,
+    );
+  }
+
+  void requestAddCurrentVideoToFeed() {
+    if (!state.hasActiveVideo) return;
+    state = state.copyWith(
+      controllerMode: true,
+      addCurrentVideoToFeedRequestId: state.addCurrentVideoToFeedRequestId + 1,
+    );
+  }
+
+  void requestAddCurrentChannelToFeed() {
+    if (!state.hasActiveVideo) return;
+    state = state.copyWith(
+      controllerMode: true,
+      addCurrentChannelToFeedRequestId:
+          state.addCurrentChannelToFeedRequestId + 1,
     );
   }
 
