@@ -84,4 +84,50 @@ void main() {
       expect(state.nextRequestId, 0);
     },
   );
+
+  test('playback controller clamps seek requests to known duration', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    final controller = container.read(appPlaybackControllerProvider.notifier);
+    controller.setActiveVideo(true);
+    controller.setPlaybackPosition(currentSeconds: 35, durationSeconds: 90);
+
+    controller.requestSeekRelative(-50);
+    var state = container.read(appPlaybackControllerProvider);
+    expect(state.seekRequestId, 1);
+    expect(state.seekSeconds, 0);
+    expect(state.currentSeconds, 0);
+
+    controller.setPlaybackPosition(currentSeconds: 35, durationSeconds: 90);
+    controller.requestSeekRelative(30);
+    state = container.read(appPlaybackControllerProvider);
+    expect(state.seekRequestId, 2);
+    expect(state.seekSeconds, 65);
+    expect(state.currentSeconds, 65);
+
+    controller.requestSeekTo(120);
+    state = container.read(appPlaybackControllerProvider);
+    expect(state.seekRequestId, 3);
+    expect(state.seekSeconds, 90);
+    expect(state.currentSeconds, 90);
+  });
+
+  test('playback controller exposes exact speed delta requests', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    final controller = container.read(appPlaybackControllerProvider.notifier);
+    controller.setActiveVideo(true);
+
+    controller.requestSpeedDelta(-0.10);
+    var state = container.read(appPlaybackControllerProvider);
+    expect(state.speedDeltaRequestId, 1);
+    expect(state.speedDelta, -0.10);
+
+    controller.requestSpeedDelta(0.50);
+    state = container.read(appPlaybackControllerProvider);
+    expect(state.speedDeltaRequestId, 2);
+    expect(state.speedDelta, 0.50);
+  });
 }

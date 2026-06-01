@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,7 @@ import 'package:replayglowz_app/auth/auth_service.dart';
 import 'package:replayglowz_app/auth/auth_state.dart';
 import 'package:replayglowz_app/providers/providers.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
+import 'package:replayglowz_app/widgets/play/playback_controls.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
 /// Responsive app shell with bottom navigation (mobile) or side rail
@@ -34,10 +36,12 @@ class AppShell extends ConsumerStatefulWidget {
 class _AppShellState extends ConsumerState<AppShell> {
   static const _bottomNavIconSize = 28.0;
   static const _temporaryPlaybackControlsDuration = Duration(seconds: 5);
+  static const _verticalSwipeVelocityThreshold = 220.0;
   Timer? _temporaryPlaybackControlsTimer;
   bool _persistentPlaybackControls = false;
   bool _temporaryPlaybackControls = false;
-  bool _videoActionControlsVisible = false;
+  bool _playbackSeekControlsVisible = false;
+  double? _activeSeekDragSeconds;
 
   StatefulNavigationShell get navigationShell => widget.navigationShell;
   GoRouterState get shellState => widget.shellState;
@@ -147,20 +151,41 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
   }
 
-  void _showVideoActionControls() {
-    if (!mounted || _videoActionControlsVisible) return;
-    setState(() => _videoActionControlsVisible = true);
-  }
-
-  void _hideVideoActionControls() {
-    if (!mounted || !_videoActionControlsVisible) return;
-    setState(() => _videoActionControlsVisible = false);
-  }
-
-  void _handleVideoActionControl(VoidCallback action, {bool close = false}) {
+  void _handleAdvancedPlaybackControl(
+    VoidCallback action, {
+    bool close = false,
+  }) {
     action();
     if (close) {
-      _hideVideoActionControls();
+      _hidePlaybackSeekControls();
+    }
+  }
+
+  void _hidePlaybackSeekControls() {
+    if (!mounted || !_playbackSeekControlsVisible) return;
+    setState(() {
+      _playbackSeekControlsVisible = false;
+      _activeSeekDragSeconds = null;
+    });
+  }
+
+  void _togglePlaybackSeekControlsFromSwipe() {
+    if (!mounted) return;
+    setState(() {
+      _playbackSeekControlsVisible = !_playbackSeekControlsVisible;
+      if (!_playbackSeekControlsVisible) {
+        _activeSeekDragSeconds = null;
+      }
+    });
+  }
+
+  void _handlePlaybackSeekControlsSwipe(double velocity) {
+    if (velocity < -_verticalSwipeVelocityThreshold) {
+      _togglePlaybackSeekControlsFromSwipe();
+      return;
+    }
+    if (velocity > _verticalSwipeVelocityThreshold) {
+      _hidePlaybackSeekControls();
     }
   }
 
@@ -216,10 +241,10 @@ class _AppShellState extends ConsumerState<AppShell> {
         location.startsWith(Routes.play) &&
         playbackController.hasActiveVideo &&
         (_persistentPlaybackControls || _temporaryPlaybackControls);
-    final showVideoActionControls =
+    final showPlaybackSeekControls =
         location.startsWith(Routes.play) &&
         playbackController.hasActiveVideo &&
-        _videoActionControlsVisible;
+        _playbackSeekControlsVisible;
     final primaryBottomBar = showPlaybackControls
         ? _buildPlaybackBottomBar(context, ref, playbackController)
         : NavigationBar(
@@ -282,8 +307,8 @@ class _AppShellState extends ConsumerState<AppShell> {
                 ),
               );
             },
-            child: showVideoActionControls
-                ? _buildVideoActionBottomBar(context, ref, playbackController)
+            child: showPlaybackSeekControls
+                ? _buildPlaybackSeekBottomBar(context, ref, playbackController)
                 : const SizedBox.shrink(),
           ),
           primaryBottomBar,
@@ -292,7 +317,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
   }
 
-  Widget _buildVideoActionBottomBar(
+  Widget _buildPlaybackSeekBottomBar(
     BuildContext context,
     WidgetRef ref,
     AppPlaybackControllerState playbackController,
@@ -300,66 +325,136 @@ class _AppShellState extends ConsumerState<AppShell> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final rate = playbackController.playbackRate;
+    final maxSeconds = math.max(playbackController.durationSeconds, 1.0);
+    final currentSeconds =
+        (_activeSeekDragSeconds ?? playbackController.currentSeconds)
+            .clamp(0, maxSeconds)
+            .toDouble();
     return GestureDetector(
-      key: const ValueKey('video-action-bottom-bar'),
+      key: const ValueKey('playback-seek-bottom-bar'),
       behavior: HitTestBehavior.opaque,
       onVerticalDragEnd: (details) {
         final velocity = details.primaryVelocity ?? 0;
-        if (velocity > 220) {
-          _hideVideoActionControls();
+        if (velocity > _verticalSwipeVelocityThreshold) {
+          _hidePlaybackSeekControls();
         }
       },
       child: Container(
-        height: 72,
+        height: 176,
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerHighest,
           border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
         ),
-        child: Row(
+        child: Column(
           children: [
-            _PlaybackBarButton(
-              icon: Icons.visibility_off_outlined,
-              label: 'Hide',
-              onPressed: () => _handleVideoActionControl(
-                ref
-                    .read(appPlaybackControllerProvider.notifier)
-                    .requestHideCurrentVideo,
-                close: true,
+            SizedBox(
+              height: 72,
+              child: Row(
+                children: [
+                  _PlaybackBarButton(
+                    icon: Icons.visibility_off_outlined,
+                    label: 'Hide',
+                    onPressed: () => _handleAdvancedPlaybackControl(
+                      ref
+                          .read(appPlaybackControllerProvider.notifier)
+                          .requestHideCurrentVideo,
+                      close: true,
+                    ),
+                  ),
+                  _PlaybackBarButton(
+                    icon: Icons.done_all_rounded,
+                    label: 'Watched',
+                    onPressed: () => _handleAdvancedPlaybackControl(
+                      ref
+                          .read(appPlaybackControllerProvider.notifier)
+                          .requestMarkCurrentVideoWatched,
+                      close: true,
+                    ),
+                  ),
+                  _PlaybackBarButton(
+                    icon: Icons.remove_rounded,
+                    label: 'Slower',
+                    onPressed: () => _handleAdvancedPlaybackControl(
+                      ref
+                          .read(appPlaybackControllerProvider.notifier)
+                          .requestSpeedDown,
+                    ),
+                  ),
+                  _PlaybackBarButton(
+                    icon: Icons.add_rounded,
+                    label: rate == rate.truncateToDouble()
+                        ? '${rate.toInt()}x'
+                        : '${rate.toStringAsFixed(2)}x',
+                    selected: rate != 1,
+                    onPressed: () => _handleAdvancedPlaybackControl(
+                      ref
+                          .read(appPlaybackControllerProvider.notifier)
+                          .requestSpeedUp,
+                    ),
+                  ),
+                ],
               ),
             ),
-            _PlaybackBarButton(
-              icon: Icons.done_all_rounded,
-              label: 'Watched',
-              onPressed: () => _handleVideoActionControl(
+            PlaybackControlsPanel(
+              currentSeconds: currentSeconds,
+              maxSeconds: maxSeconds.toDouble(),
+              onChangeStart: (value) =>
+                  setState(() => _activeSeekDragSeconds = value),
+              onChanged: (value) {
+                setState(() => _activeSeekDragSeconds = value);
                 ref
                     .read(appPlaybackControllerProvider.notifier)
-                    .requestMarkCurrentVideoWatched,
-                close: true,
-              ),
-            ),
-            _PlaybackBarButton(
-              icon: Icons.remove_rounded,
-              label: 'Slower',
-              onPressed: () => _handleVideoActionControl(
+                    .setPlaybackPosition(
+                      currentSeconds: value,
+                      durationSeconds: playbackController.durationSeconds,
+                    );
+              },
+              onSeekEnd: (value) {
+                setState(() => _activeSeekDragSeconds = null);
                 ref
                     .read(appPlaybackControllerProvider.notifier)
-                    .requestSpeedDown,
-              ),
-            ),
-            _PlaybackBarButton(
-              icon: Icons.add_rounded,
-              label: rate == rate.truncateToDouble()
-                  ? '${rate.toInt()}x'
-                  : '${rate.toStringAsFixed(2)}x',
-              selected: rate != 1,
-              onPressed: () => _handleVideoActionControl(
-                ref.read(appPlaybackControllerProvider.notifier).requestSpeedUp,
-              ),
+                    .requestSeekTo(value);
+              },
+              onSpeedDownHalf: () => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .requestSpeedDelta(-0.50),
+              onSpeedDownTenth: () => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .requestSpeedDelta(-0.10),
+              onBackThirty: () => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .requestSeekRelative(-30),
+              onBackTen: () => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .requestSeekRelative(-10),
+              onForwardTen: () => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .requestSeekRelative(10),
+              onForwardThirty: () => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .requestSeekRelative(30),
+              onSpeedUpTenth: () => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .requestSpeedDelta(0.10),
+              onSpeedUpHalf: () => ref
+                  .read(appPlaybackControllerProvider.notifier)
+                  .requestSpeedDelta(0.50),
+              formatTime: _formatPlaybackTime,
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _formatPlaybackTime(double seconds) {
+    if (!seconds.isFinite || seconds < 0) {
+      return '0:00';
+    }
+    final totalSeconds = seconds.round();
+    final minutes = totalSeconds ~/ 60;
+    final secs = totalSeconds % 60;
+    return '$minutes:${secs.toString().padLeft(2, '0')}';
   }
 
   Widget _buildPlaybackBottomBar(
@@ -407,7 +502,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                 ref.read(appPlaybackControllerProvider.notifier).requestToggle,
               ),
               onLongPress: _togglePersistentPlaybackControls,
-              onSwipeUp: _showVideoActionControls,
+              onVerticalSwipe: _handlePlaybackSeekControlsSwipe,
             ),
             _PlaybackBarButton(
               icon: Icons.skip_next_rounded,
@@ -478,12 +573,8 @@ class _AppShellState extends ConsumerState<AppShell> {
             ? _togglePersistentPlaybackControls
             : null,
         onVerticalDragEnd: playbackController.hasActiveVideo
-            ? (details) {
-                final velocity = details.primaryVelocity ?? 0;
-                if (velocity < -220) {
-                  _showVideoActionControls();
-                }
-              }
+            ? (details) =>
+                  _handlePlaybackSeekControlsSwipe(details.primaryVelocity ?? 0)
             : null,
         child: Icon(icon, size: _bottomNavIconSize),
       ),
@@ -576,7 +667,7 @@ class _PlaybackBarButton extends StatelessWidget {
     this.onLongPressStart,
     this.onLongPressEnd,
     this.onLongPressCancel,
-    this.onSwipeUp,
+    this.onVerticalSwipe,
     this.selected = false,
   });
 
@@ -587,7 +678,7 @@ class _PlaybackBarButton extends StatelessWidget {
   final GestureLongPressStartCallback? onLongPressStart;
   final GestureLongPressEndCallback? onLongPressEnd;
   final VoidCallback? onLongPressCancel;
-  final VoidCallback? onSwipeUp;
+  final ValueChanged<double>? onVerticalSwipe;
   final bool selected;
 
   @override
@@ -603,14 +694,9 @@ class _PlaybackBarButton extends StatelessWidget {
           onLongPressStart: onLongPressStart,
           onLongPressEnd: onLongPressEnd,
           onLongPressCancel: onLongPressCancel,
-          onVerticalDragEnd: onSwipeUp == null
+          onVerticalDragEnd: onVerticalSwipe == null
               ? null
-              : (details) {
-                  final velocity = details.primaryVelocity ?? 0;
-                  if (velocity < -220) {
-                    onSwipeUp!();
-                  }
-                },
+              : (details) => onVerticalSwipe!(details.primaryVelocity ?? 0),
           child: InkResponse(
             onTap: onPressed,
             onLongPress: onLongPress,

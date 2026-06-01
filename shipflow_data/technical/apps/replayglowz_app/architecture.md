@@ -195,16 +195,16 @@ Feed-specific behavior:
 - Public routes: `/sign-in`, `/feedback`, `/feedback/admin`.
 - Protected routes are mounted under `ShellRoute`.
 - `AppShell` uses a bottom `NavigationBar` below 600dp and a `NavigationRail` at 600dp and above.
-- On mobile Play, `AppShell` can replace the normal bottom navigation with playback controls after a long press or temporary Play activation, and can slide a current-video action bar above the bottom navigation after an upward swipe from Play.
+- On mobile Play, `AppShell` can replace the normal bottom navigation with playback controls after a long press or temporary Play activation, and can slide timeline/seek controls above the bottom navigation after an upward swipe from Play.
 - YouTube connection and OAuth feedback banners are injected at shell level.
 
 ## Playback architecture
 
 - `AppPlaybackController` is a Riverpod command bridge between shell controls and `PlayScreen`.
-- Shell playback controls emit request counters for play/pause, previous, next, loop, hide current video, mark current video watched, speed up, and slow down, plus transient previous/next preview state for long-press thumbnails.
+- Shell playback controls emit request counters for play/pause, previous, next, loop, hide current video, mark current video watched, speed up, slow down, and seek requests, plus transient previous/next preview state for long-press thumbnails and shared playback position for the swipe-up timeline.
 - `PlaybackSession` is the in-memory source of truth for the active "Up next" context. Feed, playlist, and ReplayGlowz feed entry points create typed sessions with source metadata and ordered queue items before routing to `PlayScreen`; direct links fall back to a one-video direct session.
 - `PlayScreen` owns player execution, progress persistence, playback-session previous/next navigation, loop handling, current-video mutations, and the "Up next" drawer.
-- Web playback uses YouTube iframe/player state snapshots with YouTube keyboard and visible controls disabled where the IFrame API allows it; ReplayGlowz renders a pre-play thumbnail poster over the player, long-press previous/next thumbnail previews from the playback bar, and its own playback controls below the player. Native/non-web playback uses the package controller path already present in the screen.
+- Web playback uses YouTube iframe/player state snapshots with YouTube keyboard and visible controls disabled where the IFrame API allows it; ReplayGlowz renders a pre-play thumbnail poster over the player, long-press previous/next thumbnail previews from the playback bar, and swipe-up timeline controls from the bottom Play button. Native/non-web playback uses the package controller path already present in the screen.
 - Web background playback is treated as an external browser/YouTube iframe behavior. The app observes lifecycle transitions and player snapshots, then shows guidance only when playback appears to have been interrupted while the app was backgrounded. Native playback behavior is a separate future product surface and should not inherit web iframe constraints by default.
 
 ## Deployment architecture

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -59,7 +60,13 @@ class AppPlaybackControllerState {
     this.markCurrentVideoWatchedRequestId = 0,
     this.speedUpRequestId = 0,
     this.speedDownRequestId = 0,
+    this.speedDeltaRequestId = 0,
+    this.speedDelta = 0,
     this.playbackRate = 1,
+    this.currentSeconds = 0,
+    this.durationSeconds = 0,
+    this.seekRequestId = 0,
+    this.seekSeconds = 0,
   });
 
   final bool isPlaying;
@@ -74,7 +81,13 @@ class AppPlaybackControllerState {
   final int markCurrentVideoWatchedRequestId;
   final int speedUpRequestId;
   final int speedDownRequestId;
+  final int speedDeltaRequestId;
+  final double speedDelta;
   final double playbackRate;
+  final double currentSeconds;
+  final double durationSeconds;
+  final int seekRequestId;
+  final double seekSeconds;
 
   AppPlaybackControllerState copyWith({
     bool? isPlaying,
@@ -90,7 +103,13 @@ class AppPlaybackControllerState {
     int? markCurrentVideoWatchedRequestId,
     int? speedUpRequestId,
     int? speedDownRequestId,
+    int? speedDeltaRequestId,
+    double? speedDelta,
     double? playbackRate,
+    double? currentSeconds,
+    double? durationSeconds,
+    int? seekRequestId,
+    double? seekSeconds,
   }) {
     return AppPlaybackControllerState(
       isPlaying: isPlaying ?? this.isPlaying,
@@ -110,7 +129,13 @@ class AppPlaybackControllerState {
           this.markCurrentVideoWatchedRequestId,
       speedUpRequestId: speedUpRequestId ?? this.speedUpRequestId,
       speedDownRequestId: speedDownRequestId ?? this.speedDownRequestId,
+      speedDeltaRequestId: speedDeltaRequestId ?? this.speedDeltaRequestId,
+      speedDelta: speedDelta ?? this.speedDelta,
       playbackRate: playbackRate ?? this.playbackRate,
+      currentSeconds: currentSeconds ?? this.currentSeconds,
+      durationSeconds: durationSeconds ?? this.durationSeconds,
+      seekRequestId: seekRequestId ?? this.seekRequestId,
+      seekSeconds: seekSeconds ?? this.seekSeconds,
     );
   }
 }
@@ -215,10 +240,54 @@ class AppPlaybackControllerNotifier
     );
   }
 
+  void requestSpeedDelta(double delta) {
+    if (!state.hasActiveVideo || !delta.isFinite || delta == 0) return;
+    state = state.copyWith(
+      controllerMode: true,
+      speedDelta: delta,
+      speedDeltaRequestId: state.speedDeltaRequestId + 1,
+    );
+  }
+
   void setPlaybackRate(double playbackRate) {
     if (!playbackRate.isFinite || playbackRate <= 0) return;
     if ((state.playbackRate - playbackRate).abs() < 0.001) return;
     state = state.copyWith(playbackRate: playbackRate);
+  }
+
+  void setPlaybackPosition({
+    required double currentSeconds,
+    required double durationSeconds,
+  }) {
+    final current = currentSeconds.isFinite
+        ? currentSeconds.clamp(0, double.infinity).toDouble()
+        : 0.0;
+    final duration = durationSeconds.isFinite
+        ? durationSeconds.clamp(0, double.infinity).toDouble()
+        : 0.0;
+    if ((state.currentSeconds - current).abs() < 0.2 &&
+        (state.durationSeconds - duration).abs() < 0.5) {
+      return;
+    }
+    state = state.copyWith(currentSeconds: current, durationSeconds: duration);
+  }
+
+  void requestSeekTo(double seconds) {
+    if (!state.hasActiveVideo) return;
+    final max = state.durationSeconds > 0
+        ? state.durationSeconds
+        : math.max(seconds, 0.0);
+    final clamped = seconds.clamp(0, max).toDouble();
+    state = state.copyWith(
+      controllerMode: true,
+      currentSeconds: clamped,
+      seekSeconds: clamped,
+      seekRequestId: state.seekRequestId + 1,
+    );
+  }
+
+  void requestSeekRelative(double deltaSeconds) {
+    requestSeekTo(state.currentSeconds + deltaSeconds);
   }
 }
 

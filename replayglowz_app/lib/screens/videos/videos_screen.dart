@@ -298,6 +298,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     return math.max(0, topPadding + (index * itemExtent) - 24);
   }
 
+  double _feedTrailingAlignmentPadding(BoxConstraints constraints) {
+    if (!constraints.hasBoundedHeight || constraints.maxHeight <= 0) {
+      return 320.0;
+    }
+    return math.max(96.0, constraints.maxHeight - 24.0);
+  }
+
   String _videoAnchorId(YouTubeVideo video) {
     return video.id.isNotEmpty ? video.id : video.youtubeVideoId;
   }
@@ -426,6 +433,40 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     );
   }
 
+  void _syncInactiveFeedViewsToAnchor(
+    int sourceTabIndex,
+    _FeedScrollAnchor anchor,
+  ) {
+    if (_visibleFeedQueue.isEmpty) return;
+
+    for (var tabIndex = 0; tabIndex < 3; tabIndex++) {
+      if (tabIndex == sourceTabIndex) continue;
+      _jumpFeedTabToAnchor(tabIndex, anchor);
+    }
+  }
+
+  void _jumpFeedTabToAnchor(int tabIndex, _FeedScrollAnchor anchor) {
+    final controller = _scrollControllerForTab(tabIndex);
+    if (!controller.hasClients || _visibleFeedQueue.isEmpty) {
+      return;
+    }
+
+    final index = _anchorIndex(anchor);
+    final resolvedAnchor = _FeedScrollAnchor(
+      index: index,
+      videoId: _videoAnchorId(_visibleFeedQueue[index]),
+    );
+    final target =
+        _preciseScrollOffsetForAnchor(tabIndex, resolvedAnchor) ??
+        _estimatedScrollOffsetForIndexAndTab(
+          index,
+          tabIndex,
+        ).clamp(0.0, controller.position.maxScrollExtent);
+
+    if ((controller.offset - target).abs() < 1) return;
+    controller.jumpTo(target);
+  }
+
   void _scrollTabToAnchor(
     int tabIndex,
     _FeedScrollAnchor anchor, {
@@ -478,6 +519,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       _pendingFeedScrollAnchor = null;
     }
     _lastFeedScrollAnchor = resolvedAnchor;
+    _syncInactiveFeedViewsToAnchor(tabIndex, resolvedAnchor);
   }
 
   void _softCorrectPreciseAnchor(int tabIndex, _FeedScrollAnchor anchor) {
@@ -730,6 +772,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       final anchor = _anchorForVisibleVideo(tabIndex, snapToNearest: false);
       if (anchor != null) {
         _lastFeedScrollAnchor = anchor;
+        _syncInactiveFeedViewsToAnchor(tabIndex, anchor);
       }
       _scheduleFeedSnapAfterIdle(tabIndex);
     }
@@ -774,6 +817,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     }
 
     _lastFeedScrollAnchor = resolvedAnchor;
+    _syncInactiveFeedViewsToAnchor(tabIndex, resolvedAnchor);
     _scrollTabToAnchor(
       tabIndex,
       resolvedAnchor,
@@ -1276,20 +1320,29 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   Widget _buildCardView(List<YouTubeVideo> videos, Set<String> watchedIds) {
     return _buildFeedScrollSurface(
       tabIndex: 0,
-      child: ListView.builder(
-        controller: _cardScrollController,
-        key: const PageStorageKey('videos-card'),
-        padding: const EdgeInsets.all(16),
-        itemCount: videos.length,
-        itemBuilder: (context, index) {
-          final video = videos[index];
-          return KeyedSubtree(
-            key: _feedItemKeyForTab(0, video),
-            child: VideoCard(
-              video: video,
-              trailing: _buildVideoActionMenu(video, watchedIds),
-              onTap: () => _openVideo(context, video.youtubeVideoId),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return ListView.builder(
+            controller: _cardScrollController,
+            key: const PageStorageKey('videos-card'),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              16,
+              16,
+              _feedTrailingAlignmentPadding(constraints),
             ),
+            itemCount: videos.length,
+            itemBuilder: (context, index) {
+              final video = videos[index];
+              return KeyedSubtree(
+                key: _feedItemKeyForTab(0, video),
+                child: VideoCard(
+                  video: video,
+                  trailing: _buildVideoActionMenu(video, watchedIds),
+                  onTap: () => _openVideo(context, video.youtubeVideoId),
+                ),
+              );
+            },
           );
         },
       ),
@@ -1299,19 +1352,26 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   Widget _buildListView(List<YouTubeVideo> videos, Set<String> watchedIds) {
     return _buildFeedScrollSurface(
       tabIndex: 1,
-      child: ListView.builder(
-        controller: _listScrollController,
-        key: const PageStorageKey('videos-list'),
-        itemCount: videos.length,
-        itemBuilder: (context, index) {
-          final video = videos[index];
-          return KeyedSubtree(
-            key: _feedItemKeyForTab(1, video),
-            child: VideoListTile(
-              video: video,
-              trailing: _buildVideoActionMenu(video, watchedIds),
-              onTap: () => _openVideo(context, video.youtubeVideoId),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return ListView.builder(
+            controller: _listScrollController,
+            key: const PageStorageKey('videos-list'),
+            padding: EdgeInsets.only(
+              bottom: _feedTrailingAlignmentPadding(constraints),
             ),
+            itemCount: videos.length,
+            itemBuilder: (context, index) {
+              final video = videos[index];
+              return KeyedSubtree(
+                key: _feedItemKeyForTab(1, video),
+                child: VideoListTile(
+                  video: video,
+                  trailing: _buildVideoActionMenu(video, watchedIds),
+                  onTap: () => _openVideo(context, video.youtubeVideoId),
+                ),
+              );
+            },
           );
         },
       ),
@@ -1324,66 +1384,75 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   ) {
     return _buildFeedScrollSurface(
       tabIndex: 2,
-      child: ListView.builder(
-        controller: _summaryScrollController,
-        key: const PageStorageKey('videos-summary'),
-        padding: const EdgeInsets.all(16),
-        itemCount: videos.length,
-        itemBuilder: (context, index) {
-          final video = videos[index];
-          final noteCount = notesByVideo[video.youtubeVideoId] ?? 0;
-          final durationSec = parseDuration(video.duration);
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return ListView.builder(
+            controller: _summaryScrollController,
+            key: const PageStorageKey('videos-summary'),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              16,
+              16,
+              _feedTrailingAlignmentPadding(constraints),
+            ),
+            itemCount: videos.length,
+            itemBuilder: (context, index) {
+              final video = videos[index];
+              final noteCount = notesByVideo[video.youtubeVideoId] ?? 0;
+              final durationSec = parseDuration(video.duration);
 
-          return KeyedSubtree(
-            key: _feedItemKeyForTab(2, video),
-            child: Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: InkWell(
-                onTap: () {
-                  _openVideo(context, video.youtubeVideoId);
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        video.title,
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        video.description ??
-                            'No description available for this video.',
-                        style: Theme.of(context).textTheme.bodySmall,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
+              return KeyedSubtree(
+                key: _feedItemKeyForTab(2, video),
+                child: Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: InkWell(
+                    onTap: () {
+                      _openVideo(context, video.youtubeVideoId);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.notes, size: 16),
-                          const SizedBox(width: 4),
                           Text(
-                            '$noteCount note${noteCount == 1 ? '' : 's'}',
-                            style: Theme.of(context).textTheme.labelSmall,
+                            video.title,
+                            style: Theme.of(context).textTheme.titleSmall,
                           ),
-                          const SizedBox(width: 16),
-                          if (durationSec != null) ...[
-                            const Icon(Icons.schedule, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              formatDuration(durationSec),
-                              style: Theme.of(context).textTheme.labelSmall,
-                            ),
-                          ],
+                          const SizedBox(height: 4),
+                          Text(
+                            video.description ??
+                                'No description available for this video.',
+                            style: Theme.of(context).textTheme.bodySmall,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.notes, size: 16),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$noteCount note${noteCount == 1 ? '' : 's'}',
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                              const SizedBox(width: 16),
+                              if (durationSec != null) ...[
+                                const Icon(Icons.schedule, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  formatDuration(durationSec),
+                                  style: Theme.of(context).textTheme.labelSmall,
+                                ),
+                              ],
+                            ],
+                          ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           );
         },
       ),

@@ -22,7 +22,6 @@ import 'package:replayglowz_app/widgets/error_feedback.dart';
 import 'package:replayglowz_app/widgets/media/media_thumbnail.dart';
 import 'package:replayglowz_app/widgets/notes/note_tile.dart';
 import 'package:replayglowz_app/widgets/play/comments_placeholder.dart';
-import 'package:replayglowz_app/widgets/play/playback_controls.dart';
 import 'package:replayglowz_app/widgets/play/player_panel.dart';
 import 'package:replayglowz_app/widgets/play/web_youtube_embed.dart';
 import 'package:replayglowz_app/widgets/transcripts/transcript_entry_tile.dart';
@@ -202,7 +201,6 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   bool _focusMode = false;
   bool _showWebPosterOverlay = true;
   PlaybackPreviewDirection? _playbackPreviewDirection;
-  Timer? _playbackPreviewTimer;
   bool _backgroundPlaybackHintDismissed = false;
   bool _backgroundPlaybackHintVisible = false;
   bool _isAppBackgrounded = false;
@@ -212,10 +210,12 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   int _lastHandledPlaybackToggleRequestId = 0;
   int _lastHandledPlaybackPreviousRequestId = 0;
   int _lastHandledPlaybackNextRequestId = 0;
+  int _lastHandledPlaybackSeekRequestId = 0;
   int _lastHandledHideCurrentVideoRequestId = 0;
   int _lastHandledMarkCurrentVideoWatchedRequestId = 0;
   int _lastHandledSpeedUpRequestId = 0;
   int _lastHandledSpeedDownRequestId = 0;
+  int _lastHandledSpeedDeltaRequestId = 0;
 
   @override
   void initState() {
@@ -271,6 +271,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _lastSyncedSecond = -1;
     _webPlayerSnapshot = const WebYoutubePlayerSnapshot();
     _isPlaying = false;
+    ref
+        .read(appPlaybackControllerProvider.notifier)
+        .setPlaybackPosition(currentSeconds: 0, durationSeconds: 0);
     ref.read(appPlaybackControllerProvider.notifier).setPlaying(false);
     _dismissPlaybackPreview(updateController: true);
     if (kIsWeb) {
@@ -295,7 +298,6 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _playerController.close();
     _tabController.dispose();
     _noteController.dispose();
-    _playbackPreviewTimer?.cancel();
     super.dispose();
   }
 
@@ -310,23 +312,25 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     ref.read(appPlaybackControllerProvider.notifier).setPlaying(isPlaying);
   }
 
+  void _syncAppPlaybackPosition({
+    YouTubeVideo? currentVideo,
+    double? currentSeconds,
+  }) {
+    ref
+        .read(appPlaybackControllerProvider.notifier)
+        .setPlaybackPosition(
+          currentSeconds: currentSeconds ?? _currentTimestamp,
+          durationSeconds: _resolvedDurationSeconds(currentVideo).toDouble(),
+        );
+  }
+
   void _setPlaybackPreview(PlaybackPreviewDirection? direction) {
-    _playbackPreviewTimer?.cancel();
-    _playbackPreviewTimer = null;
     if (!mounted) return;
 
     setState(() => _playbackPreviewDirection = direction);
-
-    if (direction == null) return;
-    _playbackPreviewTimer = Timer(const Duration(seconds: 7), () {
-      if (!mounted) return;
-      ref.read(appPlaybackControllerProvider.notifier).hidePreview();
-    });
   }
 
   void _dismissPlaybackPreview({bool updateController = false}) {
-    _playbackPreviewTimer?.cancel();
-    _playbackPreviewTimer = null;
     _playbackPreviewDirection = null;
     if (updateController) {
       ref.read(appPlaybackControllerProvider.notifier).hidePreview();
@@ -465,6 +469,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     setState(() {
       _currentTimestamp = state.position.inMilliseconds / 1000;
     });
+    _syncAppPlaybackPosition(currentSeconds: _currentTimestamp);
   }
 
   @override
@@ -484,6 +489,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       if (next.nextRequestId != _lastHandledPlaybackNextRequestId) {
         _lastHandledPlaybackNextRequestId = next.nextRequestId;
         _playNextFeedVideo();
+      }
+      if (next.seekRequestId != _lastHandledPlaybackSeekRequestId) {
+        _lastHandledPlaybackSeekRequestId = next.seekRequestId;
+        _seekToSeconds(next.seekSeconds);
       }
       if (next.previewDirection != previous?.previewDirection) {
         _setPlaybackPreview(next.previewDirection);
@@ -506,6 +515,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       if (next.speedDownRequestId != _lastHandledSpeedDownRequestId) {
         _lastHandledSpeedDownRequestId = next.speedDownRequestId;
         _changePlaybackRate(forward: false);
+      }
+      if (next.speedDeltaRequestId != _lastHandledSpeedDeltaRequestId) {
+        _lastHandledSpeedDeltaRequestId = next.speedDeltaRequestId;
+        _adjustPlaybackRate(next.speedDelta);
       }
     });
 
@@ -562,6 +575,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     final libraryVideos =
         libraryVideosAsync.asData?.value ?? const <YouTubeVideo>[];
     final currentVideo = _findLibraryVideo(libraryVideos, widget.videoId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _syncAppPlaybackPosition(currentVideo: currentVideo);
+    });
     final playerTitle = _playerController.metadata.title.trim();
     final title =
         currentVideo?.title ??
@@ -662,7 +679,6 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
               child: Column(
                 children: [
                   _buildPlayerSurface(libraryVideosAsync),
-                  _buildPlaybackControls(currentVideo),
                   if (!_focusMode && MediaQuery.sizeOf(context).width < 600)
                     UiHintCard(
                       hintId: 'play-mobile-bottom-bar-actions',
@@ -886,9 +902,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withValues(alpha: 0.70),
+                      Colors.black.withValues(alpha: 0.22),
+                      Colors.black.withValues(alpha: 0.04),
                       Colors.black.withValues(alpha: 0.28),
-                      Colors.black.withValues(alpha: 0.66),
                     ],
                   ),
                 ),
@@ -997,27 +1013,6 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         });
         _handlePlaybackEnded();
       },
-    );
-  }
-
-  Widget _buildPlaybackControls(YouTubeVideo? currentVideo) {
-    final maxSeconds = math.max(_resolvedDurationSeconds(currentVideo), 1);
-    final sliderValue = _currentTimestamp
-        .clamp(0, maxSeconds.toDouble())
-        .toDouble();
-
-    return PlaybackControlsPanel(
-      currentSeconds: sliderValue,
-      maxSeconds: maxSeconds.toDouble(),
-      isPlaying: _isPlaying,
-      onChanged: (value) {
-        setState(() => _currentTimestamp = value);
-      },
-      onSeekEnd: _seekToSeconds,
-      onBackTen: () => _seekToSeconds(_currentTimestamp - 10),
-      onTogglePlayPause: _togglePlayPause,
-      onForwardTen: () => _seekToSeconds(_currentTimestamp + 10),
-      formatTime: _formatTime,
     );
   }
 
@@ -1255,6 +1250,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     final max = duration > 0 ? duration : math.max(seconds, 0.0);
     final clamped = seconds.clamp(0, max).toDouble();
     setState(() => _currentTimestamp = clamped);
+    _syncAppPlaybackPosition(currentSeconds: clamped);
 
     if (!_isPlayerReady) {
       _pendingSeekSeconds = clamped;
@@ -1333,6 +1329,26 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
           );
 
     if ((nextRate - current).abs() < 0.001) {
+      return;
+    }
+
+    if (kIsWeb) {
+      _webPlayerController.setPlaybackRate(nextRate);
+    } else {
+      _playerController.setPlaybackRate(nextRate);
+    }
+    ref.read(appPlaybackControllerProvider.notifier).setPlaybackRate(nextRate);
+  }
+
+  void _adjustPlaybackRate(double delta) {
+    if (!_isPlayerReady || !delta.isFinite || delta == 0) {
+      return;
+    }
+
+    final nextRate = (_currentPlaybackRate + delta)
+        .clamp(_playbackRates.first, _playbackRates.last)
+        .toDouble();
+    if ((nextRate - _currentPlaybackRate).abs() < 0.001) {
       return;
     }
 
@@ -1488,6 +1504,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       }
     });
     _syncAppPlaybackState(snapshot.isPlaying);
+    _syncAppPlaybackPosition(currentSeconds: currentSeconds);
     ref
         .read(appPlaybackControllerProvider.notifier)
         .setPlaybackRate(snapshot.playbackRate);
