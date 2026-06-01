@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -40,6 +41,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   static const _compactViewBreakpoint = 640.0;
   static const _feedSnapAnimationDuration = Duration(milliseconds: 300);
   static const _feedSyncAnimationDuration = Duration(milliseconds: 360);
+  static const _feedSlowSnapVelocity = 420.0;
+  static const _feedDisabledSnapVelocity = 2200.0;
   static const Curve _feedSnapCurve = Curves.easeOutCubic;
   static const Curve _feedSyncCurve = Curves.easeOutCubic;
   static const _prefsTab = 'videos.pref.tab';
@@ -75,13 +78,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   _FeedScrollAnchor? _lastFeedScrollAnchor;
   _FeedScrollAnchor? _pendingFeedScrollAnchor;
   bool _isAdjustingFeedScroll = false;
+  Timer? _feedSnapIdleTimer;
   double _feedScrollVelocityPxPerSecond = 0;
-  double _feedScrollPeakVelocityPxPerSecond = 0;
   DateTime? _lastFeedScrollSampleAt;
   double? _lastFeedScrollSamplePixels;
 
   VideosArgs get _videosArgs =>
-      VideosArgs(sortOrder: _sortOrder, includeWatched: _includeWatched);
+      VideosArgs(sortOrder: _sortOrder, includeWatched: true);
 
   @override
   void initState() {
@@ -95,6 +98,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   @override
   void dispose() {
     _tabController.removeListener(_handleTabChanged);
+    _feedSnapIdleTimer?.cancel();
     _tabController.dispose();
     _cardScrollController.dispose();
     _listScrollController.dispose();
@@ -434,6 +438,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       _pendingFeedScrollAnchor = anchor;
       return;
     }
+    _feedSnapIdleTimer?.cancel();
 
     final index = _anchorIndex(anchor);
     final resolvedAnchor = _FeedScrollAnchor(
@@ -530,8 +535,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   }
 
   void _resetFeedScrollVelocityTracking(ScrollMetrics metrics) {
+    _feedSnapIdleTimer?.cancel();
     _feedScrollVelocityPxPerSecond = 0;
-    _feedScrollPeakVelocityPxPerSecond = 0;
     _lastFeedScrollSampleAt = DateTime.now();
     _lastFeedScrollSamplePixels = metrics.pixels;
   }
@@ -557,45 +562,64 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     _feedScrollVelocityPxPerSecond = _feedScrollVelocityPxPerSecond == 0
         ? sampleVelocity
         : (_feedScrollVelocityPxPerSecond * 0.65) + (sampleVelocity * 0.35);
-    _feedScrollPeakVelocityPxPerSecond = math.max(
-      _feedScrollPeakVelocityPxPerSecond,
-      sampleVelocity,
-    );
+  }
+
+  void _scheduleFeedSnapAfterIdle(int tabIndex) {
+    _feedSnapIdleTimer?.cancel();
+    _feedSnapIdleTimer = Timer(const Duration(milliseconds: 180), () {
+      if (!mounted ||
+          _isAdjustingFeedScroll ||
+          tabIndex != _tabController.index) {
+        return;
+      }
+
+      final controller = _scrollControllerForTab(tabIndex);
+      if (!controller.hasClients) {
+        return;
+      }
+      if (controller.position.isScrollingNotifier.value) {
+        _scheduleFeedSnapAfterIdle(tabIndex);
+        return;
+      }
+
+      _snapFeedViewToNearestVideo(
+        tabIndex,
+        velocityPxPerSecond: _feedSlowSnapVelocity,
+      );
+      _lastFeedScrollSampleAt = null;
+      _lastFeedScrollSamplePixels = null;
+    });
   }
 
   double _velocityForScrollEnd(ScrollEndNotification notification) {
     final dragVelocity = notification.dragDetails?.primaryVelocity?.abs();
-    if (dragVelocity != null && dragVelocity > 0) {
-      return math.max(dragVelocity, _feedScrollVelocityPxPerSecond);
+    if (dragVelocity != null) {
+      return dragVelocity;
     }
-    return math.max(
-      _feedScrollVelocityPxPerSecond,
-      _feedScrollPeakVelocityPxPerSecond,
-    );
+    return _feedScrollVelocityPxPerSecond;
   }
 
   _FeedScrollAnchor? _anchorForProgressiveSnap(
     int tabIndex,
     double velocityPxPerSecond,
   ) {
-    const slowSnapVelocity = 180.0;
-    const disabledSnapVelocity = 1800.0;
-    const minimumSnapWindow = 0.14;
+    const minimumSnapWindow = 0.24;
     const maximumSnapWindow = 0.50;
 
     if (_visibleFeedQueue.isEmpty ||
-        velocityPxPerSecond >= disabledSnapVelocity) {
+        velocityPxPerSecond >= _feedDisabledSnapVelocity) {
       return null;
     }
 
     final velocityRatio =
-        ((velocityPxPerSecond - slowSnapVelocity) /
-                (disabledSnapVelocity - slowSnapVelocity))
+        ((velocityPxPerSecond - _feedSlowSnapVelocity) /
+                (_feedDisabledSnapVelocity - _feedSlowSnapVelocity))
             .clamp(0.0, 1.0);
     final snapStrength = 1 - velocityRatio;
     final snapWindow =
         minimumSnapWindow +
         ((maximumSnapWindow - minimumSnapWindow) * snapStrength);
+    final shouldSnapToNearest = velocityPxPerSecond <= _feedSlowSnapVelocity;
 
     final viewportContext = _feedViewportKeysByTab[tabIndex].currentContext;
     final viewportBox = viewportContext?.findRenderObject();
@@ -638,6 +662,16 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
           0.0,
           1.0,
         );
+        if (shouldSnapToNearest) {
+          if (hiddenRatio < 0.5 || index + 1 >= _visibleFeedQueue.length) {
+            return _FeedScrollAnchor(index: index, videoId: anchorId);
+          }
+          final nextVideo = _visibleFeedQueue[index + 1];
+          return _FeedScrollAnchor(
+            index: index + 1,
+            videoId: _videoAnchorId(nextVideo),
+          );
+        }
         if (hiddenRatio <= snapWindow) {
           return _FeedScrollAnchor(index: index, videoId: anchorId);
         }
@@ -697,16 +731,17 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       if (anchor != null) {
         _lastFeedScrollAnchor = anchor;
       }
+      _scheduleFeedSnapAfterIdle(tabIndex);
     }
 
     if (notification is ScrollEndNotification) {
+      _feedSnapIdleTimer?.cancel();
       _snapFeedViewToNearestVideo(
         tabIndex,
         velocityPxPerSecond: _velocityForScrollEnd(notification),
       );
       _lastFeedScrollSampleAt = null;
       _lastFeedScrollSamplePixels = null;
-      _feedScrollPeakVelocityPxPerSecond = 0;
     }
     return false;
   }
@@ -841,7 +876,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 virtualFeedDetailsProvider(
                   VirtualFeedDetailsArgs(
                     feedId: feedId,
-                    includeWatched: _includeWatched,
+                    includeWatched: true,
                     sortOrder: _sortOrder,
                     pageSize: 500,
                   ),
@@ -956,9 +991,18 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 return _buildShimmerLoading();
               }
 
-              final visibleVideos = _feedFilterIds.isEmpty
+              final watchedIds =
+                  watchedAsync.asData?.value
+                      .map((item) => item.youtubeVideoId)
+                      .toSet() ??
+                  const <String>{};
+              final sourceVideos = _feedFilterIds.isEmpty
                   ? videos
                   : _mergeFeedVideos(selectedFeedDetails);
+              final visibleVideos = _filterWatchedVideos(
+                sourceVideos,
+                watchedIds,
+              );
               _visibleFeedQueue = visibleVideos;
               _pruneFeedItemKeys(visibleVideos);
               _schedulePendingFeedScrollAnchor();
@@ -968,12 +1012,6 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                   activeFeedVideoId,
                 );
               }
-              final watchedIds =
-                  watchedAsync.asData?.value
-                      .map((item) => item.youtubeVideoId)
-                      .toSet() ??
-                  const <String>{};
-
               if (!_prefsLoaded) {
                 return _buildShimmerLoading();
               }
@@ -1210,6 +1248,18 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
           : bTime.compareTo(aTime);
     });
     return videos;
+  }
+
+  List<YouTubeVideo> _filterWatchedVideos(
+    List<YouTubeVideo> videos,
+    Set<String> watchedIds,
+  ) {
+    if (_includeWatched || watchedIds.isEmpty) {
+      return videos;
+    }
+    return videos
+        .where((video) => !watchedIds.contains(video.youtubeVideoId))
+        .toList(growable: false);
   }
 
   int _videoSortTimestamp(YouTubeVideo video) {

@@ -904,7 +904,7 @@ class _ChannelAutomationSettingsCard extends ConsumerWidget {
                       ),
                     );
                   })
-                  .toList(growable: false)
+                  .toList()
                 ..insert(0, header),
         );
       },

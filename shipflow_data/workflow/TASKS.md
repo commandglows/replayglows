@@ -37,6 +37,11 @@
 🟢 [replayglowz] task: Wire persisted app theme settings into `themeModeProvider` or remove the non-functional selector until the preference changes the UI | status: done | area: design | evidence: `replayglowz_app/lib/app/theme.dart` and `replayglowz_app/lib/main.dart`
 🟡 [replayglowz] task: Consolidate site/app design tokens for typography, radius, color roles, focus states, and motion so both surfaces feel like one product | status: todo | area: design
 
+## Current Fixes
+
+🟠 [replayglowz] task: Fix Feed video snap so slow vertical scroll release visibly aligns to the nearest video in cards, list, and notes views | status: fixed-pending-verify | area: app | bug: BUG-2026-06-01-002 | evidence: `flutter analyze`, `flutter test`, metadata lint | next: /sf-test --retest BUG-2026-06-01-002
+🟠 [replayglowz] task: Stop the watched visibility toggle from refreshing the whole Feed; filter watched videos locally instead | status: fixed-pending-verify | area: app | bug: BUG-2026-06-01-003 | evidence: `flutter analyze`, `flutter test`, metadata lint, `git diff --check`
+
 ---
 
 ## Audit Findings
