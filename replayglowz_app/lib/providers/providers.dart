@@ -334,12 +334,16 @@ class PlaybackQueueItem {
     this.title,
     this.thumbnailUrl,
     this.duration,
+    this.youtubeChannelId,
+    this.channelTitle,
   });
 
   final String youtubeVideoId;
   final String? title;
   final String? thumbnailUrl;
   final String? duration;
+  final String? youtubeChannelId;
+  final String? channelTitle;
 
   factory PlaybackQueueItem.fromVideo(YouTubeVideo video) {
     return PlaybackQueueItem(
@@ -347,6 +351,8 @@ class PlaybackQueueItem {
       title: video.title,
       thumbnailUrl: video.thumbnailUrl,
       duration: video.duration,
+      youtubeChannelId: video.youtubeChannelId,
+      channelTitle: video.channelTitle,
     );
   }
 }

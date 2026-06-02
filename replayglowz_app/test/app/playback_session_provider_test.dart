@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/providers.dart';
 
 void main() {
@@ -28,6 +29,24 @@ void main() {
     expect(session.currentVideoId, 'video-b');
     expect(session.previousBefore('video-b'), 'video-a');
     expect(session.nextAfter('video-b'), 'video-c');
+  });
+
+  test('playback queue items preserve channel metadata from videos', () {
+    const video = YouTubeVideo(
+      id: 'doc-1',
+      youtubeVideoId: 'video-a',
+      playlistId: 'playlist-1',
+      title: 'A',
+      channelTitle: 'Channel A',
+      youtubeChannelId: 'channel-a',
+      cachedAt: 1,
+    );
+
+    final item = PlaybackQueueItem.fromVideo(video);
+
+    expect(item.youtubeVideoId, 'video-a');
+    expect(item.channelTitle, 'Channel A');
+    expect(item.youtubeChannelId, 'channel-a');
   });
 
   test('markCurrent falls back to a direct session for unknown videos', () {

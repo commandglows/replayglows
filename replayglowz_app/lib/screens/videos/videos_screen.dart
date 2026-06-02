@@ -76,7 +76,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   int? _lastAutoScrolledTabIndex;
   int _lastSyncedTabIndex = 0;
   _FeedScrollAnchor? _lastFeedScrollAnchor;
-  _FeedScrollAnchor? _pendingFeedScrollAnchor;
+  final List<_FeedScrollAnchor?> _pendingFeedScrollAnchorsByTab =
+      List<_FeedScrollAnchor?>.filled(3, null);
   bool _isAdjustingFeedScroll = false;
   Timer? _feedSnapIdleTimer;
   double _feedScrollVelocityPxPerSecond = 0;
@@ -92,11 +93,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     _tabController = TabController(length: 3, vsync: this);
     _lastSyncedTabIndex = _tabController.index;
     _tabController.addListener(_handleTabChanged);
+    _tabController.animation?.addListener(_handleTabAnimation);
     _loadLocalPrefs();
   }
 
   @override
   void dispose() {
+    _tabController.animation?.removeListener(_handleTabAnimation);
     _tabController.removeListener(_handleTabChanged);
     _feedSnapIdleTimer?.cancel();
     _tabController.dispose();
@@ -116,6 +119,26 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     _persistLocalPrefs();
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  void _handleTabAnimation() {
+    final value = _tabController.animation?.value;
+    if (value == null || _visibleFeedQueue.isEmpty) return;
+
+    final lowerTab = value.floor().clamp(0, 2);
+    final upperTab = value.ceil().clamp(0, 2);
+    if (lowerTab == upperTab) return;
+
+    final sourceTab = _lastSyncedTabIndex.clamp(0, 2);
+    final anchor =
+        _lastFeedScrollAnchor ??
+        _anchorForVisibleVideo(sourceTab, snapToNearest: true);
+    if (anchor == null) return;
+
+    for (final tabIndex in {lowerTab, upperTab}) {
+      if (tabIndex == sourceTab) continue;
+      _queueOrJumpFeedTabToAnchor(tabIndex, anchor);
     }
   }
 
@@ -188,7 +211,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
 
   void _jumpFeedViewsToTop() {
     _lastFeedScrollAnchor = null;
-    _pendingFeedScrollAnchor = null;
+    for (
+      var index = 0;
+      index < _pendingFeedScrollAnchorsByTab.length;
+      index++
+    ) {
+      _pendingFeedScrollAnchorsByTab[index] = null;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       for (final controller in [
@@ -224,7 +253,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     }
 
     _lastFeedScrollAnchor = anchor;
-    _pendingFeedScrollAnchor = anchor;
+    _pendingFeedScrollAnchorsByTab[nextIndex] = anchor;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -441,8 +470,28 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
 
     for (var tabIndex = 0; tabIndex < 3; tabIndex++) {
       if (tabIndex == sourceTabIndex) continue;
-      _jumpFeedTabToAnchor(tabIndex, anchor);
+      _queueOrJumpFeedTabToAnchor(tabIndex, anchor);
     }
+  }
+
+  void _queueOrJumpFeedTabToAnchor(int tabIndex, _FeedScrollAnchor anchor) {
+    if (tabIndex < 0 || tabIndex >= _pendingFeedScrollAnchorsByTab.length) {
+      return;
+    }
+
+    final controller = _scrollControllerForTab(tabIndex);
+    if (!controller.hasClients || _visibleFeedQueue.isEmpty) {
+      _pendingFeedScrollAnchorsByTab[tabIndex] = anchor;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _applyPendingFeedScrollAnchors();
+        }
+      });
+      return;
+    }
+
+    _jumpFeedTabToAnchor(tabIndex, anchor);
+    _pendingFeedScrollAnchorsByTab[tabIndex] = null;
   }
 
   void _jumpFeedTabToAnchor(int tabIndex, _FeedScrollAnchor anchor) {
@@ -476,7 +525,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   }) {
     final controller = _scrollControllerForTab(tabIndex);
     if (!controller.hasClients || _visibleFeedQueue.isEmpty) {
-      _pendingFeedScrollAnchor = anchor;
+      _pendingFeedScrollAnchorsByTab[tabIndex] = anchor;
       return;
     }
     _feedSnapIdleTimer?.cancel();
@@ -515,8 +564,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       });
     }
 
-    if (_pendingFeedScrollAnchor?.videoId == anchor.videoId) {
-      _pendingFeedScrollAnchor = null;
+    if (_pendingFeedScrollAnchorsByTab[tabIndex]?.videoId == anchor.videoId) {
+      _pendingFeedScrollAnchorsByTab[tabIndex] = null;
     }
     _lastFeedScrollAnchor = resolvedAnchor;
     _syncInactiveFeedViewsToAnchor(tabIndex, resolvedAnchor);
@@ -558,22 +607,41 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     });
   }
 
-  void _schedulePendingFeedScrollAnchor() {
-    final pendingAnchor = _pendingFeedScrollAnchor;
-    if (pendingAnchor == null) return;
+  void _schedulePendingFeedScrollAnchors() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted ||
-          _pendingFeedScrollAnchor?.videoId != pendingAnchor.videoId) {
-        return;
+      if (mounted) {
+        _applyPendingFeedScrollAnchors();
       }
-      _scrollTabToAnchor(
-        _tabController.index,
-        pendingAnchor,
-        animated: true,
-        duration: _feedSyncAnimationDuration,
-        curve: _feedSyncCurve,
-      );
     });
+  }
+
+  void _applyPendingFeedScrollAnchors() {
+    if (!mounted || _visibleFeedQueue.isEmpty) return;
+
+    for (
+      var tabIndex = 0;
+      tabIndex < _pendingFeedScrollAnchorsByTab.length;
+      tabIndex++
+    ) {
+      final pendingAnchor = _pendingFeedScrollAnchorsByTab[tabIndex];
+      if (pendingAnchor == null) continue;
+
+      final controller = _scrollControllerForTab(tabIndex);
+      if (!controller.hasClients) continue;
+
+      if (tabIndex == _tabController.index) {
+        _scrollTabToAnchor(
+          tabIndex,
+          pendingAnchor,
+          animated: true,
+          duration: _feedSyncAnimationDuration,
+          curve: _feedSyncCurve,
+        );
+      } else {
+        _jumpFeedTabToAnchor(tabIndex, pendingAnchor);
+        _pendingFeedScrollAnchorsByTab[tabIndex] = null;
+      }
+    }
   }
 
   void _resetFeedScrollVelocityTracking(ScrollMetrics metrics) {
@@ -1049,7 +1117,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
               );
               _visibleFeedQueue = visibleVideos;
               _pruneFeedItemKeys(visibleVideos);
-              _schedulePendingFeedScrollAnchor();
+              _schedulePendingFeedScrollAnchors();
               if (_prefsLoaded) {
                 _scheduleScrollToActiveFeedVideo(
                   visibleVideos,

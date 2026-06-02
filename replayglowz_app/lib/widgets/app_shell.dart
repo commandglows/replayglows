@@ -13,6 +13,32 @@ import 'package:replayglowz_app/widgets/error_feedback.dart';
 import 'package:replayglowz_app/widgets/play/playback_controls.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
 
+@visibleForTesting
+enum PlaybackSeekControlsSwipeAction { show, hide, none }
+
+@visibleForTesting
+PlaybackSeekControlsSwipeAction playbackSeekControlsSwipeActionForVelocity(
+  double velocity, {
+  double threshold = 220.0,
+}) {
+  if (velocity < -threshold) return PlaybackSeekControlsSwipeAction.show;
+  if (velocity > threshold) return PlaybackSeekControlsSwipeAction.hide;
+  return PlaybackSeekControlsSwipeAction.none;
+}
+
+@visibleForTesting
+bool playbackSeekControlsAvailableForPlayContext({
+  required String location,
+  required String? routeVideoId,
+  required String? activeVideoId,
+  required bool hasActiveVideo,
+}) {
+  if (!location.startsWith(Routes.play)) return false;
+  return hasActiveVideo ||
+      (routeVideoId?.trim().isNotEmpty ?? false) ||
+      (activeVideoId?.trim().isNotEmpty ?? false);
+}
+
 /// Responsive app shell with bottom navigation (mobile) or side rail
 /// (tablet / web).
 ///
@@ -169,23 +195,22 @@ class _AppShellState extends ConsumerState<AppShell> {
     });
   }
 
-  void _togglePlaybackSeekControlsFromSwipe() {
-    if (!mounted) return;
-    setState(() {
-      _playbackSeekControlsVisible = !_playbackSeekControlsVisible;
-      if (!_playbackSeekControlsVisible) {
-        _activeSeekDragSeconds = null;
-      }
-    });
+  void _showPlaybackSeekControls() {
+    if (!mounted || _playbackSeekControlsVisible) return;
+    setState(() => _playbackSeekControlsVisible = true);
   }
 
   void _handlePlaybackSeekControlsSwipe(double velocity) {
-    if (velocity < -_verticalSwipeVelocityThreshold) {
-      _togglePlaybackSeekControlsFromSwipe();
-      return;
-    }
-    if (velocity > _verticalSwipeVelocityThreshold) {
-      _hidePlaybackSeekControls();
+    switch (playbackSeekControlsSwipeActionForVelocity(
+      velocity,
+      threshold: _verticalSwipeVelocityThreshold,
+    )) {
+      case PlaybackSeekControlsSwipeAction.show:
+        _showPlaybackSeekControls();
+      case PlaybackSeekControlsSwipeAction.hide:
+        _hidePlaybackSeekControls();
+      case PlaybackSeekControlsSwipeAction.none:
+        break;
     }
   }
 
@@ -237,14 +262,19 @@ class _AppShellState extends ConsumerState<AppShell> {
   ) {
     final showYoutubeStatusChrome = _showYoutubeStatusChrome(location);
     final playbackController = ref.watch(appPlaybackControllerProvider);
+    final activeVideoId = ref.watch(activePlayVideoIdProvider);
+    final hasPlayVideoContext = playbackSeekControlsAvailableForPlayContext(
+      location: location,
+      routeVideoId: shellState.uri.queryParameters['videoId'],
+      activeVideoId: activeVideoId,
+      hasActiveVideo: playbackController.hasActiveVideo,
+    );
     final showPlaybackControls =
         location.startsWith(Routes.play) &&
         playbackController.hasActiveVideo &&
         (_persistentPlaybackControls || _temporaryPlaybackControls);
     final showPlaybackSeekControls =
-        location.startsWith(Routes.play) &&
-        playbackController.hasActiveVideo &&
-        _playbackSeekControlsVisible;
+        hasPlayVideoContext && _playbackSeekControlsVisible;
     final primaryBottomBar = showPlaybackControls
         ? _buildPlaybackBottomBar(context, ref, playbackController)
         : NavigationBar(
@@ -272,6 +302,14 @@ class _AppShellState extends ConsumerState<AppShell> {
                 ),
             ],
           );
+    final swipeablePrimaryBottomBar = hasPlayVideoContext
+        ? GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onVerticalDragEnd: (details) =>
+                _handlePlaybackSeekControlsSwipe(details.primaryVelocity ?? 0),
+            child: primaryBottomBar,
+          )
+        : primaryBottomBar;
 
     return Scaffold(
       body: Column(
@@ -311,7 +349,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                 ? _buildPlaybackSeekBottomBar(context, ref, playbackController)
                 : const SizedBox.shrink(),
           ),
-          primaryBottomBar,
+          swipeablePrimaryBottomBar,
         ],
       ),
     );
@@ -654,6 +692,22 @@ class _NavDestination {
   final String path;
 }
 
+Color? _playbackBarButtonOverlayColor(
+  ColorScheme colorScheme,
+  bool selected,
+  Set<WidgetState> states,
+) {
+  final base = selected ? colorScheme.primary : colorScheme.onSurfaceVariant;
+  if (states.contains(WidgetState.pressed)) {
+    return base.withValues(alpha: selected ? 0.18 : 0.14);
+  }
+  if (states.contains(WidgetState.focused) ||
+      states.contains(WidgetState.hovered)) {
+    return base.withValues(alpha: selected ? 0.12 : 0.08);
+  }
+  return null;
+}
+
 class _PlaybackBarButton extends StatelessWidget {
   const _PlaybackBarButton({
     required this.icon,
@@ -693,26 +747,37 @@ class _PlaybackBarButton extends StatelessWidget {
           onVerticalDragEnd: onVerticalSwipe == null
               ? null
               : (details) => onVerticalSwipe!(details.primaryVelocity ?? 0),
-          child: InkResponse(
-            onTap: onPressed,
-            onLongPress: onLongPress,
-            radius: 32,
-            child: SizedBox.expand(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: selected ? 34 : 28, color: color),
-                  const SizedBox(height: 4),
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: color,
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              onTap: onPressed,
+              onLongPress: onLongPress,
+              overlayColor: WidgetStateProperty.resolveWith(
+                (states) => _playbackBarButtonOverlayColor(
+                  colorScheme,
+                  selected,
+                  states,
+                ),
+              ),
+              child: SizedBox.expand(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, size: selected ? 34 : 28, color: color),
+                    const SizedBox(height: 4),
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: color,
+                        fontWeight: selected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

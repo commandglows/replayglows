@@ -45,7 +45,27 @@ class _TranscriptEntry {
   double get endSeconds => startSeconds + durationSeconds;
 }
 
-enum _AdvancedAddTarget { videoToPlaylist, channelToFeed }
+class _VideoPlaylistActionTarget {
+  const _VideoPlaylistActionTarget({
+    required this.youtubeVideoId,
+    required this.title,
+  });
+
+  final String youtubeVideoId;
+  final String title;
+}
+
+class _ChannelFeedActionTarget {
+  const _ChannelFeedActionTarget({
+    required this.youtubeVideoId,
+    required this.sourceId,
+    required this.sourceTitle,
+  });
+
+  final String youtubeVideoId;
+  final String sourceId;
+  final String sourceTitle;
+}
 
 class _TranscriptControlHeader extends StatelessWidget {
   const _TranscriptControlHeader({
@@ -198,6 +218,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   int _lastSyncedSecond = -1;
   double _currentTimestamp = 0.0;
   double? _pendingSeekSeconds;
+  double? _pendingPlaybackRate;
   int _activeTabIndex = 0;
   WebYoutubePlayerSnapshot _webPlayerSnapshot =
       const WebYoutubePlayerSnapshot();
@@ -274,6 +295,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _progressRestored = false;
     _currentTimestamp = 0;
     _pendingSeekSeconds = null;
+    _pendingPlaybackRate = null;
     _lastSyncedSecond = -1;
     _webPlayerSnapshot = const WebYoutubePlayerSnapshot();
     _isPlaying = false;
@@ -429,17 +451,22 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
     if (!mounted) return;
 
+    var becameReady = false;
     if (!_isPlayerReady &&
         (value.playerState == PlayerState.cued ||
             value.playerState == PlayerState.playing ||
             value.playerState == PlayerState.paused)) {
       setState(() => _isPlayerReady = true);
+      becameReady = true;
     }
 
     final playing = value.playerState == PlayerState.playing;
     ref
         .read(appPlaybackControllerProvider.notifier)
         .setPlaybackRate(value.playbackRate);
+    if (becameReady) {
+      _applyPendingPlaybackRate();
+    }
 
     if (value.playerState == PlayerState.ended) {
       final playerDuration = value.metaData.duration.inSeconds.toDouble();
@@ -1017,6 +1044,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
           _pendingSeekSeconds = null;
           _seekToSeconds(pendingSeek);
         }
+        _applyPendingPlaybackRate();
         if (widget.autoPlay && kIsWeb && _loadedVideoId.isNotEmpty) {
           setState(() => _showWebPosterOverlay = false);
           _webPlayerController.play();
@@ -1331,12 +1359,41 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     return rate;
   }
 
-  void _changePlaybackRate({required bool forward}) {
+  double _normalizedPlaybackRate(double rate) {
+    if (!rate.isFinite || rate <= 0) return 1;
+    return rate.clamp(_playbackRates.first, _playbackRates.last).toDouble();
+  }
+
+  void _applyPendingPlaybackRate() {
+    final pendingRate = _pendingPlaybackRate;
+    if (!_isPlayerReady || pendingRate == null) return;
+    _pendingPlaybackRate = null;
+    _applyPlaybackRate(pendingRate);
+  }
+
+  void _queueOrApplyPlaybackRate(double rate) {
+    final nextRate = _normalizedPlaybackRate(rate);
+    ref.read(appPlaybackControllerProvider.notifier).setPlaybackRate(nextRate);
     if (!_isPlayerReady) {
+      _pendingPlaybackRate = nextRate;
       return;
     }
+    _pendingPlaybackRate = null;
+    _applyPlaybackRate(nextRate);
+  }
 
-    final current = _currentPlaybackRate;
+  void _applyPlaybackRate(double rate) {
+    final nextRate = _normalizedPlaybackRate(rate);
+    if (kIsWeb) {
+      _webPlayerController.setPlaybackRate(nextRate);
+    } else {
+      _playerController.setPlaybackRate(nextRate);
+    }
+    ref.read(appPlaybackControllerProvider.notifier).setPlaybackRate(nextRate);
+  }
+
+  void _changePlaybackRate({required bool forward}) {
+    final current = _pendingPlaybackRate ?? _currentPlaybackRate;
     final nextRate = forward
         ? _playbackRates.firstWhere(
             (rate) => rate > current + 0.01,
@@ -1351,32 +1408,23 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       return;
     }
 
-    if (kIsWeb) {
-      _webPlayerController.setPlaybackRate(nextRate);
-    } else {
-      _playerController.setPlaybackRate(nextRate);
-    }
-    ref.read(appPlaybackControllerProvider.notifier).setPlaybackRate(nextRate);
+    _queueOrApplyPlaybackRate(nextRate);
   }
 
   void _adjustPlaybackRate(double delta) {
-    if (!_isPlayerReady || !delta.isFinite || delta == 0) {
+    if (!delta.isFinite || delta == 0) {
       return;
     }
 
-    final nextRate = (_currentPlaybackRate + delta)
+    final current = _pendingPlaybackRate ?? _currentPlaybackRate;
+    final nextRate = (current + delta)
         .clamp(_playbackRates.first, _playbackRates.last)
         .toDouble();
-    if ((nextRate - _currentPlaybackRate).abs() < 0.001) {
+    if ((nextRate - current).abs() < 0.001) {
       return;
     }
 
-    if (kIsWeb) {
-      _webPlayerController.setPlaybackRate(nextRate);
-    } else {
-      _playerController.setPlaybackRate(nextRate);
-    }
-    ref.read(appPlaybackControllerProvider.notifier).setPlaybackRate(nextRate);
+    _queueOrApplyPlaybackRate(nextRate);
   }
 
   Future<void> _hideCurrentVideoFromPlaybackBar() async {
@@ -1424,13 +1472,11 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   }
 
   Future<void> _showAddCurrentVideoToPlaylistSheet() async {
-    final video = await _resolveCurrentVideoForAdvancedAction(
-      _AdvancedAddTarget.videoToPlaylist,
-    );
-    if (video == null || video.youtubeVideoId.isEmpty) {
+    final target = await _resolveCurrentVideoForPlaylistAction();
+    if (target == null || target.youtubeVideoId.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Current video metadata is not ready.')),
+        const SnackBar(content: Text('Open a video before adding it.')),
       );
       return;
     }
@@ -1473,7 +1519,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
               ),
               const SizedBox(height: 4),
               Text(
-                video.title,
+                target.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -1512,7 +1558,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       await addVideoToYoutubePlaylist(
         ref,
         playlistId: selectedPlaylist.youtubePlaylistId,
-        videoId: video.youtubeVideoId,
+        videoId: target.youtubeVideoId,
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1524,11 +1570,81 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
   }
 
+  Future<_VideoPlaylistActionTarget?>
+  _resolveCurrentVideoForPlaylistAction() async {
+    final routeVideoId = widget.videoId.trim();
+    if (routeVideoId.isNotEmpty) {
+      final cached = _latestCurrentVideo;
+      if (cached != null && cached.youtubeVideoId.trim() == routeVideoId) {
+        return _VideoPlaylistActionTarget(
+          youtubeVideoId: routeVideoId,
+          title: _titleForPlaylistAction(video: cached, videoId: routeVideoId),
+        );
+      }
+
+      try {
+        final video = await ref.read(
+          videoByYoutubeIdProvider(routeVideoId).future,
+        );
+        if (video != null && video.youtubeVideoId.trim().isNotEmpty) {
+          final resolvedVideoId = video.youtubeVideoId.trim();
+          return _VideoPlaylistActionTarget(
+            youtubeVideoId: resolvedVideoId,
+            title: _titleForPlaylistAction(
+              video: video,
+              videoId: resolvedVideoId,
+            ),
+          );
+        }
+      } catch (_) {
+        // Playlist insertion only needs the YouTube video id; metadata can
+        // still arrive later through the normal Play page providers.
+      }
+
+      return _VideoPlaylistActionTarget(
+        youtubeVideoId: routeVideoId,
+        title: _titleForPlaylistAction(videoId: routeVideoId),
+      );
+    }
+
+    final cached = _latestCurrentVideo;
+    if (cached != null && cached.youtubeVideoId.trim().isNotEmpty) {
+      final cachedVideoId = cached.youtubeVideoId.trim();
+      return _VideoPlaylistActionTarget(
+        youtubeVideoId: cachedVideoId,
+        title: _titleForPlaylistAction(video: cached, videoId: cachedVideoId),
+      );
+    }
+
+    return null;
+  }
+
+  String _titleForPlaylistAction({
+    YouTubeVideo? video,
+    required String videoId,
+  }) {
+    final videoTitle = video?.title.trim();
+    if (videoTitle != null && videoTitle.isNotEmpty) return videoTitle;
+
+    final normalizedVideoId = videoId.trim();
+    final cached = _latestCurrentVideo;
+    if (cached != null && cached.youtubeVideoId.trim() == normalizedVideoId) {
+      final cachedTitle = cached.title.trim();
+      if (cachedTitle.isNotEmpty) return cachedTitle;
+    }
+
+    final playerMetadata = _playerController.metadata;
+    if (playerMetadata.videoId.trim() == normalizedVideoId) {
+      final playerTitle = playerMetadata.title.trim();
+      if (playerTitle.isNotEmpty) return playerTitle;
+    }
+
+    return 'Current video';
+  }
+
   Future<void> _showAddCurrentChannelToFeedSheet() async {
-    final video = await _resolveCurrentVideoForAdvancedAction(
-      _AdvancedAddTarget.channelToFeed,
-    );
-    if (video == null || video.youtubeVideoId.isEmpty) {
+    final target = await _resolveCurrentChannelForFeedAction();
+    if (target == null || target.youtubeVideoId.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Current video metadata is not ready.')),
@@ -1537,10 +1653,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
 
     const sourceType = 'channel';
-    final sourceId = video.youtubeChannelId?.trim();
-    final sourceTitle = video.channelTitle.trim();
+    final sourceId = target.sourceId.trim();
+    final sourceTitle = target.sourceTitle.trim();
 
-    if (sourceId == null || sourceId.isEmpty || sourceTitle.isEmpty) {
+    if (sourceId.isEmpty || sourceTitle.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -1633,28 +1749,73 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
   }
 
-  Future<YouTubeVideo?> _resolveCurrentVideoForAdvancedAction(
-    _AdvancedAddTarget target,
-  ) async {
-    final cached = _latestCurrentVideo;
-    if (cached != null && cached.youtubeVideoId.isNotEmpty) {
-      final hasRequiredMetadata =
-          target == _AdvancedAddTarget.videoToPlaylist ||
-          (cached.youtubeChannelId?.trim().isNotEmpty == true &&
-              cached.channelTitle.trim().isNotEmpty);
-      if (hasRequiredMetadata) {
-        return cached;
+  Future<_ChannelFeedActionTarget?>
+  _resolveCurrentChannelForFeedAction() async {
+    final routeVideoId = widget.videoId.trim();
+    if (routeVideoId.isNotEmpty) {
+      final cached = _latestCurrentVideo;
+      final cachedTarget =
+          cached != null && cached.youtubeVideoId.trim() == routeVideoId
+          ? _channelFeedActionTargetFromVideo(cached)
+          : null;
+      if (cachedTarget != null) return cachedTarget;
+
+      final sessionItem = ref
+          .read(playbackSessionProvider)
+          .itemFor(routeVideoId);
+      final sessionTarget = _channelFeedActionTargetFromQueueItem(sessionItem);
+      if (sessionTarget != null) return sessionTarget;
+
+      try {
+        final video = await ref.read(
+          videoByYoutubeIdProvider(routeVideoId).future,
+        );
+        final backendTarget = _channelFeedActionTargetFromVideo(video);
+        if (backendTarget != null) return backendTarget;
+      } catch (_) {
+        return null;
       }
-    }
 
-    final videoId = widget.videoId.trim();
-    if (videoId.isEmpty) return null;
-
-    try {
-      return await ref.read(videoByYoutubeIdProvider(videoId).future);
-    } catch (_) {
       return null;
     }
+
+    final cached = _latestCurrentVideo;
+    return _channelFeedActionTargetFromVideo(cached);
+  }
+
+  _ChannelFeedActionTarget? _channelFeedActionTargetFromVideo(
+    YouTubeVideo? video,
+  ) {
+    if (video == null || video.youtubeVideoId.trim().isEmpty) return null;
+    final sourceId = video.youtubeChannelId?.trim();
+    final sourceTitle = video.channelTitle.trim();
+    if (sourceId == null || sourceId.isEmpty || sourceTitle.isEmpty) {
+      return null;
+    }
+    return _ChannelFeedActionTarget(
+      youtubeVideoId: video.youtubeVideoId.trim(),
+      sourceId: sourceId,
+      sourceTitle: sourceTitle,
+    );
+  }
+
+  _ChannelFeedActionTarget? _channelFeedActionTargetFromQueueItem(
+    PlaybackQueueItem? item,
+  ) {
+    if (item == null || item.youtubeVideoId.trim().isEmpty) return null;
+    final sourceId = item.youtubeChannelId?.trim();
+    final sourceTitle = item.channelTitle?.trim();
+    if (sourceId == null ||
+        sourceId.isEmpty ||
+        sourceTitle == null ||
+        sourceTitle.isEmpty) {
+      return null;
+    }
+    return _ChannelFeedActionTarget(
+      youtubeVideoId: item.youtubeVideoId.trim(),
+      sourceId: sourceId,
+      sourceTitle: sourceTitle,
+    );
   }
 
   Future<void> _maybeShowBackgroundPlaybackInterruptionHint() async {

@@ -1,0 +1,91 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:replayglowz_app/widgets/app_shell.dart';
+
+void main() {
+  test('playback seek controls swipe action is deterministic', () {
+    expect(
+      playbackSeekControlsSwipeActionForVelocity(-260),
+      PlaybackSeekControlsSwipeAction.show,
+    );
+    expect(
+      playbackSeekControlsSwipeActionForVelocity(260),
+      PlaybackSeekControlsSwipeAction.hide,
+    );
+    expect(
+      playbackSeekControlsSwipeActionForVelocity(40),
+      PlaybackSeekControlsSwipeAction.none,
+    );
+  });
+
+  test('playback seek controls swipe action respects threshold', () {
+    expect(
+      playbackSeekControlsSwipeActionForVelocity(-120, threshold: 100),
+      PlaybackSeekControlsSwipeAction.show,
+    );
+    expect(
+      playbackSeekControlsSwipeActionForVelocity(120, threshold: 100),
+      PlaybackSeekControlsSwipeAction.hide,
+    );
+    expect(
+      playbackSeekControlsSwipeActionForVelocity(80, threshold: 100),
+      PlaybackSeekControlsSwipeAction.none,
+    );
+  });
+
+  test(
+    'playback seek controls are available on Play before active playback',
+    () {
+      expect(
+        playbackSeekControlsAvailableForPlayContext(
+          location: '/play',
+          routeVideoId: 'youtube-id',
+          activeVideoId: null,
+          hasActiveVideo: false,
+        ),
+        isTrue,
+      );
+      expect(
+        playbackSeekControlsAvailableForPlayContext(
+          location: '/play',
+          routeVideoId: null,
+          activeVideoId: 'last-video-id',
+          hasActiveVideo: false,
+        ),
+        isTrue,
+      );
+      expect(
+        playbackSeekControlsAvailableForPlayContext(
+          location: '/play',
+          routeVideoId: null,
+          activeVideoId: null,
+          hasActiveVideo: true,
+        ),
+        isTrue,
+      );
+    },
+  );
+
+  test(
+    'playback seek controls stay unavailable without Play video context',
+    () {
+      expect(
+        playbackSeekControlsAvailableForPlayContext(
+          location: '/videos',
+          routeVideoId: 'youtube-id',
+          activeVideoId: 'last-video-id',
+          hasActiveVideo: true,
+        ),
+        isFalse,
+      );
+      expect(
+        playbackSeekControlsAvailableForPlayContext(
+          location: '/play',
+          routeVideoId: null,
+          activeVideoId: null,
+          hasActiveVideo: false,
+        ),
+        isFalse,
+      );
+    },
+  );
+}
