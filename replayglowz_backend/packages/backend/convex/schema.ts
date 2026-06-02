@@ -265,7 +265,6 @@ export default defineSchema({
     userId: v.string(),
     virtualFeedId: v.id("virtualFeeds"),
     sourceType: v.union(
-      v.literal("video"),
       v.literal("channel"),
       v.literal("playlist"),
       v.literal("subscriptions"),

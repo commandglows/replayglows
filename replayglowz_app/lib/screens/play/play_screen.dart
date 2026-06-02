@@ -27,6 +27,7 @@ import 'package:replayglowz_app/widgets/play/web_youtube_embed.dart';
 import 'package:replayglowz_app/widgets/transcripts/transcript_entry_tile.dart';
 import 'package:replayglowz_app/widgets/ui_hint_card.dart';
 import 'package:replayglowz_app/widgets/youtube_connect.dart';
+import 'package:replayglowz_app/widgets/youtube_quota_guard.dart';
 
 class _TranscriptEntry {
   const _TranscriptEntry({
@@ -44,7 +45,7 @@ class _TranscriptEntry {
   double get endSeconds => startSeconds + durationSeconds;
 }
 
-enum _FeedAddTarget { video, channel }
+enum _AdvancedAddTarget { videoToPlaylist, channelToFeed }
 
 class _TranscriptControlHeader extends StatelessWidget {
   const _TranscriptControlHeader({
@@ -216,7 +217,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   int _lastHandledPlaybackSeekRequestId = 0;
   int _lastHandledHideCurrentVideoRequestId = 0;
   int _lastHandledMarkCurrentVideoWatchedRequestId = 0;
-  int _lastHandledAddCurrentVideoToFeedRequestId = 0;
+  int _lastHandledAddCurrentVideoToPlaylistRequestId = 0;
   int _lastHandledAddCurrentChannelToFeedRequestId = 0;
   int _lastHandledSpeedUpRequestId = 0;
   int _lastHandledSpeedDownRequestId = 0;
@@ -513,17 +514,17 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
             next.markCurrentVideoWatchedRequestId;
         _markCurrentVideoWatchedFromPlaybackBar();
       }
-      if (next.addCurrentVideoToFeedRequestId !=
-          _lastHandledAddCurrentVideoToFeedRequestId) {
-        _lastHandledAddCurrentVideoToFeedRequestId =
-            next.addCurrentVideoToFeedRequestId;
-        _showAddCurrentToFeedSheet(_FeedAddTarget.video);
+      if (next.addCurrentVideoToPlaylistRequestId !=
+          _lastHandledAddCurrentVideoToPlaylistRequestId) {
+        _lastHandledAddCurrentVideoToPlaylistRequestId =
+            next.addCurrentVideoToPlaylistRequestId;
+        _showAddCurrentVideoToPlaylistSheet();
       }
       if (next.addCurrentChannelToFeedRequestId !=
           _lastHandledAddCurrentChannelToFeedRequestId) {
         _lastHandledAddCurrentChannelToFeedRequestId =
             next.addCurrentChannelToFeedRequestId;
-        _showAddCurrentToFeedSheet(_FeedAddTarget.channel);
+        _showAddCurrentChannelToFeedSheet();
       }
       if (next.speedUpRequestId != _lastHandledSpeedUpRequestId) {
         _lastHandledSpeedUpRequestId = next.speedUpRequestId;
@@ -1422,8 +1423,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
   }
 
-  Future<void> _showAddCurrentToFeedSheet(_FeedAddTarget target) async {
-    final video = _latestCurrentVideo;
+  Future<void> _showAddCurrentVideoToPlaylistSheet() async {
+    final video = await _resolveCurrentVideoForAdvancedAction(
+      _AdvancedAddTarget.videoToPlaylist,
+    );
     if (video == null || video.youtubeVideoId.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1432,23 +1435,116 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       return;
     }
 
-    final sourceType = target == _FeedAddTarget.video ? 'video' : 'channel';
-    final sourceId = target == _FeedAddTarget.video
-        ? video.youtubeVideoId
-        : video.youtubeChannelId?.trim();
-    final sourceTitle = target == _FeedAddTarget.video
-        ? video.title.trim()
-        : video.channelTitle.trim();
+    List<YouTubePlaylist> playlists;
+    try {
+      playlists = await ref.read(playlistsProvider.future);
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Could not load playlists');
+      return;
+    }
+
+    if (!mounted) return;
+    final eligiblePlaylists = playlists
+        .where((playlist) => playlist.youtubePlaylistId.isNotEmpty)
+        .toList();
+    if (eligiblePlaylists.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No playlist available.')));
+      return;
+    }
+
+    final selectedPlaylist = await showModalBottomSheet<YouTubePlaylist>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            children: [
+              Text(
+                'Add video to playlist',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                video.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 12),
+              for (final playlist in eligiblePlaylists)
+                ListTile(
+                  leading: const CircleAvatar(
+                    child: Icon(Icons.queue_music_rounded),
+                  ),
+                  title: Text(playlist.title),
+                  subtitle: Text(
+                    '${playlist.videoCount} video${playlist.videoCount == 1 ? '' : 's'}',
+                  ),
+                  onTap: () => Navigator.of(sheetContext).pop(playlist),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selectedPlaylist == null || !mounted) return;
+
+    final confirmed = await confirmYoutubeQuotaRisk(
+      context: context,
+      ref: ref,
+      cost: YoutubeQuotaCost.addPlaylistItem,
+      actionLabel: 'Adding this video to a playlist',
+    );
+    if (!confirmed) return;
+
+    try {
+      await addVideoToYoutubePlaylist(
+        ref,
+        playlistId: selectedPlaylist.youtubePlaylistId,
+        videoId: video.youtubeVideoId,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Video added to ${selectedPlaylist.title}.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, error: e, prefix: 'Add to playlist failed');
+    }
+  }
+
+  Future<void> _showAddCurrentChannelToFeedSheet() async {
+    final video = await _resolveCurrentVideoForAdvancedAction(
+      _AdvancedAddTarget.channelToFeed,
+    );
+    if (video == null || video.youtubeVideoId.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Current video metadata is not ready.')),
+      );
+      return;
+    }
+
+    const sourceType = 'channel';
+    final sourceId = video.youtubeChannelId?.trim();
+    final sourceTitle = video.channelTitle.trim();
 
     if (sourceId == null || sourceId.isEmpty || sourceTitle.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            target == _FeedAddTarget.video
-                ? 'Current video cannot be added to a feed yet.'
-                : 'Current video channel metadata is not ready.',
-          ),
+        const SnackBar(
+          content: Text('Current video channel metadata is not ready.'),
         ),
       );
       return;
@@ -1483,9 +1579,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             children: [
               Text(
-                target == _FeedAddTarget.video
-                    ? 'Add video to feed'
-                    : 'Add channel to feed',
+                'Add channel to feed',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
@@ -1527,23 +1621,39 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            target == _FeedAddTarget.video
-                ? 'Video added to ${selectedFeed.title}.'
-                : 'Channel added to ${selectedFeed.title}.',
-          ),
-        ),
+        SnackBar(content: Text('Channel added to ${selectedFeed.title}.')),
       );
     } catch (e) {
       if (!mounted) return;
       showErrorSnackBar(
         context,
         error: e,
-        prefix: target == _FeedAddTarget.video
-            ? 'Could not add video to feed'
-            : 'Could not add channel to feed',
+        prefix: 'Could not add channel to feed',
       );
+    }
+  }
+
+  Future<YouTubeVideo?> _resolveCurrentVideoForAdvancedAction(
+    _AdvancedAddTarget target,
+  ) async {
+    final cached = _latestCurrentVideo;
+    if (cached != null && cached.youtubeVideoId.isNotEmpty) {
+      final hasRequiredMetadata =
+          target == _AdvancedAddTarget.videoToPlaylist ||
+          (cached.youtubeChannelId?.trim().isNotEmpty == true &&
+              cached.channelTitle.trim().isNotEmpty);
+      if (hasRequiredMetadata) {
+        return cached;
+      }
+    }
+
+    final videoId = widget.videoId.trim();
+    if (videoId.isEmpty) return null;
+
+    try {
+      return await ref.read(videoByYoutubeIdProvider(videoId).future);
+    } catch (_) {
+      return null;
     }
   }
 

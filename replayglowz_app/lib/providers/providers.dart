@@ -58,7 +58,7 @@ class AppPlaybackControllerState {
     this.loopEnabled = false,
     this.hideCurrentVideoRequestId = 0,
     this.markCurrentVideoWatchedRequestId = 0,
-    this.addCurrentVideoToFeedRequestId = 0,
+    this.addCurrentVideoToPlaylistRequestId = 0,
     this.addCurrentChannelToFeedRequestId = 0,
     this.speedUpRequestId = 0,
     this.speedDownRequestId = 0,
@@ -81,7 +81,7 @@ class AppPlaybackControllerState {
   final bool loopEnabled;
   final int hideCurrentVideoRequestId;
   final int markCurrentVideoWatchedRequestId;
-  final int addCurrentVideoToFeedRequestId;
+  final int addCurrentVideoToPlaylistRequestId;
   final int addCurrentChannelToFeedRequestId;
   final int speedUpRequestId;
   final int speedDownRequestId;
@@ -105,7 +105,7 @@ class AppPlaybackControllerState {
     bool? loopEnabled,
     int? hideCurrentVideoRequestId,
     int? markCurrentVideoWatchedRequestId,
-    int? addCurrentVideoToFeedRequestId,
+    int? addCurrentVideoToPlaylistRequestId,
     int? addCurrentChannelToFeedRequestId,
     int? speedUpRequestId,
     int? speedDownRequestId,
@@ -133,8 +133,9 @@ class AppPlaybackControllerState {
       markCurrentVideoWatchedRequestId:
           markCurrentVideoWatchedRequestId ??
           this.markCurrentVideoWatchedRequestId,
-      addCurrentVideoToFeedRequestId:
-          addCurrentVideoToFeedRequestId ?? this.addCurrentVideoToFeedRequestId,
+      addCurrentVideoToPlaylistRequestId:
+          addCurrentVideoToPlaylistRequestId ??
+          this.addCurrentVideoToPlaylistRequestId,
       addCurrentChannelToFeedRequestId:
           addCurrentChannelToFeedRequestId ??
           this.addCurrentChannelToFeedRequestId,
@@ -235,11 +236,12 @@ class AppPlaybackControllerNotifier
     );
   }
 
-  void requestAddCurrentVideoToFeed() {
+  void requestAddCurrentVideoToPlaylist() {
     if (!state.hasActiveVideo) return;
     state = state.copyWith(
       controllerMode: true,
-      addCurrentVideoToFeedRequestId: state.addCurrentVideoToFeedRequestId + 1,
+      addCurrentVideoToPlaylistRequestId:
+          state.addCurrentVideoToPlaylistRequestId + 1,
     );
   }
 
@@ -779,6 +781,31 @@ final videosProvider = StreamProvider.family<List<YouTubeVideo>, VideosArgs>((
           raw,
         ).map((json) => YouTubeVideo.fromJson(json)).toList(growable: false),
       );
+});
+
+/// One-shot lookup for a cached YouTube video by YouTube video id.
+///
+/// Used by Play actions that need current video metadata even before the full
+/// library video stream has delivered its list.
+final videoByYoutubeIdProvider = FutureProvider.family<YouTubeVideo?, String>((
+  ref,
+  youtubeVideoId,
+) async {
+  final id = youtubeVideoId.trim();
+  if (id.isEmpty) return null;
+  if (!await _waitForConvexAuthReady(
+    ref,
+    consumer: 'videoByYoutubeIdProvider',
+  )) {
+    return null;
+  }
+
+  final service = ref.watch(convexServiceProvider);
+  final raw = await service.query<dynamic>('youtube:getVideoByYoutubeId', {
+    'youtubeVideoId': id,
+  });
+  final json = _decodeMap(raw);
+  return json == null ? null : YouTubeVideo.fromJson(json);
 });
 
 // ---------------------------------------------------------------------------

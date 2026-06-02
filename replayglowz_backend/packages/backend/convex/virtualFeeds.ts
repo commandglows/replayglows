@@ -6,7 +6,7 @@ import { Doc, Id } from "./_generated/dataModel";
 const SUBSCRIPTIONS_SOURCE_ID = "__subscriptions__";
 const DEFAULT_FEED_PAGE_SIZE = 100;
 
-type VirtualFeedSourceType = "video" | "channel" | "playlist" | "subscriptions";
+type VirtualFeedSourceType = "channel" | "playlist" | "subscriptions";
 type VirtualFeedSortOrder = "default" | "newest" | "oldest" | "sourceOrder";
 type AddSourceOutcome = "added" | "alreadyAdded" | "rejected";
 
@@ -135,10 +135,6 @@ function sortVideosBySourceOrder(
           return video.youtubePlaylistId === source.sourceId;
         }
 
-        if (source.sourceType === "video") {
-          return video.youtubeVideoId === source.sourceId;
-        }
-
         if (source.sourceType === "channel") {
           return (
             video.youtubeChannelId != null &&
@@ -214,21 +210,6 @@ async function getSourceAvailability(
       reason: hasChannel
         ? null
         : "Channel is no longer available in your cache.",
-    };
-  }
-
-  if (source.sourceType === "video") {
-    const video = await ctx.db
-      .query("youtubeVideosCache")
-      .withIndex("by_user_and_video", (q: any) =>
-        q.eq("userId", userId).eq("youtubeVideoId", source.sourceId),
-      )
-      .first();
-    return {
-      isAvailable: !!video,
-      reason: video
-        ? null
-        : "Video is no longer available in your cache. Sync YouTube first.",
     };
   }
 
@@ -315,23 +296,6 @@ async function validateFeedSource(
       };
     }
     return { title: playlist.title, valid: true };
-  }
-
-  if (sourceType === "video") {
-    const video = await ctx.db
-      .query("youtubeVideosCache")
-      .withIndex("by_user_and_video", (q) =>
-        q.eq("userId", userId).eq("youtubeVideoId", sourceId),
-      )
-      .first();
-    if (!video) {
-      return {
-        title: fallbackTitle,
-        valid: false,
-        error: "Video not found in your cache.",
-      };
-    }
-    return { title: video.title || fallbackTitle, valid: true };
   }
 
   const channel = await ctx.db
@@ -892,7 +856,6 @@ export const addFeedSource = mutation({
   args: {
     virtualFeedId: v.id("virtualFeeds"),
     sourceType: v.union(
-      v.literal("video"),
       v.literal("channel"),
       v.literal("playlist"),
       v.literal("subscriptions"),

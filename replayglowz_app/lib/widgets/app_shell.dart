@@ -372,11 +372,11 @@ class _AppShellState extends ConsumerState<AppShell> {
                   ),
                   _PlaybackBarButton(
                     icon: Icons.playlist_add_rounded,
-                    label: 'Add video',
+                    label: 'Playlist',
                     onPressed: () => _handleAdvancedPlaybackControl(
                       ref
                           .read(appPlaybackControllerProvider.notifier)
-                          .requestAddCurrentVideoToFeed,
+                          .requestAddCurrentVideoToPlaylist,
                     ),
                   ),
                   _PlaybackBarButton(

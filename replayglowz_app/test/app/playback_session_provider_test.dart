@@ -131,21 +131,21 @@ void main() {
     expect(state.speedDelta, 0.50);
   });
 
-  test('playback controller exposes add current media to feed requests', () {
+  test('playback controller exposes add current media requests', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
     final controller = container.read(appPlaybackControllerProvider.notifier);
     controller.setActiveVideo(true);
 
-    controller.requestAddCurrentVideoToFeed();
+    controller.requestAddCurrentVideoToPlaylist();
     var state = container.read(appPlaybackControllerProvider);
-    expect(state.addCurrentVideoToFeedRequestId, 1);
+    expect(state.addCurrentVideoToPlaylistRequestId, 1);
     expect(state.addCurrentChannelToFeedRequestId, 0);
 
     controller.requestAddCurrentChannelToFeed();
     state = container.read(appPlaybackControllerProvider);
-    expect(state.addCurrentVideoToFeedRequestId, 1);
+    expect(state.addCurrentVideoToPlaylistRequestId, 1);
     expect(state.addCurrentChannelToFeedRequestId, 1);
   });
 }
