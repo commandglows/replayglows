@@ -3,6 +3,8 @@ const YOUTUBE_SCOPE = 'https://www.googleapis.com/auth/youtube';
 const _HOST_PATTERN = /^[A-Za-z0-9.-]+(?::\d+)?$/;
 const DEFAULT_PRODUCT_ID = 'replayglowz';
 const DEFAULT_LEGACY_PRODUCT_IDS = ['tubeflow'];
+const OAUTH_TICKET_VERSION = 1;
+const OAUTH_TICKET_TTL_MS = 15 * 60 * 1000;
 
 function getEnv(...names) {
   for (const name of names) {
@@ -176,6 +178,100 @@ function decodeJwtPayload(jwt) {
     return JSON.parse(Buffer.from(padded, 'base64').toString('utf8'));
   } catch (_) {
     return {};
+  }
+}
+
+function base64UrlEncode(value) {
+  return Buffer.from(value)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
+function base64UrlDecode(value) {
+  const normalized = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized.padEnd(
+    normalized.length + ((4 - (normalized.length % 4)) % 4),
+    '=',
+  );
+  return Buffer.from(padded, 'base64');
+}
+
+function resolveOAuthTicketSecret() {
+  return getEnv(
+    'REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_SECRET',
+    'SUITE_ENTITLEMENT_VERIFY_SECRET',
+    'YOUTUBE_OAUTH_CLIENT_SECRET',
+  );
+}
+
+function deriveOAuthTicketKey(secret) {
+  return require('node:crypto').createHash('sha256').update(secret).digest();
+}
+
+function createOAuthTicket(payload, secret, now = Date.now()) {
+  if (!secret) {
+    throw new Error('ReplayGlowz YouTube OAuth ticket secret is not configured.');
+  }
+
+  const crypto = require('node:crypto');
+  const iv = crypto.randomBytes(12);
+  const key = deriveOAuthTicketKey(secret);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const body = Buffer.from(
+    JSON.stringify({
+      ...payload,
+      v: OAUTH_TICKET_VERSION,
+      exp: now + OAUTH_TICKET_TTL_MS,
+    }),
+    'utf8',
+  );
+  const encrypted = Buffer.concat([cipher.update(body), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return [
+    String(OAUTH_TICKET_VERSION),
+    base64UrlEncode(iv),
+    base64UrlEncode(tag),
+    base64UrlEncode(encrypted),
+  ].join('.');
+}
+
+function openOAuthTicket(ticket, secret, now = Date.now()) {
+  if (!ticket || !secret) {
+    return null;
+  }
+
+  const [version, ivRaw, tagRaw, encryptedRaw] = String(ticket).split('.');
+  if (version !== String(OAUTH_TICKET_VERSION) || !ivRaw || !tagRaw || !encryptedRaw) {
+    return null;
+  }
+
+  try {
+    const crypto = require('node:crypto');
+    const key = deriveOAuthTicketKey(secret);
+    const decipher = crypto.createDecipheriv(
+      'aes-256-gcm',
+      key,
+      base64UrlDecode(ivRaw),
+    );
+    decipher.setAuthTag(base64UrlDecode(tagRaw));
+    const decrypted = Buffer.concat([
+      decipher.update(base64UrlDecode(encryptedRaw)),
+      decipher.final(),
+    ]);
+    const payload = JSON.parse(decrypted.toString('utf8'));
+    if (
+      !payload ||
+      payload.v !== OAUTH_TICKET_VERSION ||
+      typeof payload.exp !== 'number' ||
+      payload.exp < now
+    ) {
+      return null;
+    }
+    return payload;
+  } catch (_) {
+    return null;
   }
 }
 
@@ -488,6 +584,9 @@ module.exports = {
   verifyReplayGlowzSessionAndAccess,
   verifyReplayGlowzSessionAccessWithFallback,
   verifySuiteSessionAndEntitlement,
+  resolveOAuthTicketSecret,
+  createOAuthTicket,
+  openOAuthTicket,
   parseCookies,
   serializeCookie,
   appendCookies,

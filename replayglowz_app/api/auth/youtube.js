@@ -7,15 +7,15 @@ const {
   getBearerTokenFromAuthHeader,
   getEnv,
   resolveEntitlementInputs,
+  resolveOAuthTicketSecret,
+  createOAuthTicket,
   verifyReplayGlowzSessionAccessWithFallback,
   serializeCookie,
   sanitizeReturnTo,
 } = require('./_youtube');
 
-const REPLAYGLOWZ_SUITE_SESSION_TOKEN_COOKIE =
-  'replayglowz_youtube_suite_session_token';
-const REPLAYGLOWZ_OAUTH_GLOBAL_USER_COOKIE =
-  'replayglowz_youtube_global_user_id';
+const REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_COOKIE =
+  'replayglowz_youtube_oauth_ticket';
 
 function sendJsonError(res, statusCode, message) {
   res.statusCode = statusCode;
@@ -39,6 +39,7 @@ module.exports = async function handler(req, res) {
   const requestId = req.headers['x-request-id'];
   const googleClientId = getEnv('YOUTUBE_OAUTH_CLIENT_ID');
   const convexUrl = getEnv('CONVEX_URL');
+  const ticketSecret = resolveOAuthTicketSecret();
   const { productId, legacyProductIds, verifySecret, verifyUrl } =
     resolveEntitlementInputs();
 
@@ -53,6 +54,11 @@ module.exports = async function handler(req, res) {
 
   if (!sessionToken) {
     sendJsonError(res, 401, 'Missing ReplayGlowz session token.');
+    return;
+  }
+
+  if (!ticketSecret) {
+    sendJsonError(res, 500, 'ReplayGlowz YouTube OAuth ticketing is not configured.');
     return;
   }
 
@@ -77,6 +83,16 @@ module.exports = async function handler(req, res) {
   }
 
   const state = crypto.randomUUID();
+  const oauthTicket = createOAuthTicket(
+    {
+      state,
+      sessionToken,
+      globalUserId: verification.globalUserId || '',
+      matchedProductId: verification.matchedProductId || productId,
+      localConvexVerified: verification.localConvexVerified === true,
+    },
+    ticketSecret,
+  );
   const redirectUri = new URL('/api/auth/youtube/callback', origin).toString();
   const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
 
@@ -106,25 +122,7 @@ module.exports = async function handler(req, res) {
       secure,
       maxAge: 600,
     }),
-    serializeCookie(REPLAYGLOWZ_SUITE_SESSION_TOKEN_COOKIE, sessionToken, {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax',
-      secure,
-      maxAge: 900,
-    }),
-    serializeCookie(
-      REPLAYGLOWZ_OAUTH_GLOBAL_USER_COOKIE,
-      verification.globalUserId || '',
-      {
-        path: '/',
-        httpOnly: true,
-        sameSite: 'Lax',
-        secure,
-        maxAge: 900,
-      },
-    ),
-    serializeCookie('replayglowz_oauth_product_id', verification.matchedProductId, {
+    serializeCookie(REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_COOKIE, oauthTicket, {
       path: '/',
       httpOnly: true,
       sameSite: 'Lax',

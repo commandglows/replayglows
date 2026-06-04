@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.3.0"
 project: "replayglowz-app"
 created: "2026-04-26"
-updated: "2026-05-24"
+updated: "2026-06-02"
 status: "reviewed"
 source_skill: sf-docs
 scope: "file"
@@ -19,6 +19,8 @@ linked_systems:
   - "WinFlowz suite entitlement verifier"
   - "ReplayGlowz product Convex backend"
   - "Vercel"
+  - "GitHub Actions"
+  - "Blacksmith"
   - "YouTube OAuth"
 depends_on:
   - "README.md"
@@ -46,7 +48,7 @@ Operational guide for agents working in `replayglowz-app`.
 
 ## Repository role
 
-`replayglowz-app` is a Flutter web client. It uses suite Clerk identity and a ReplayGlowz product Convex backend for product data. It deploys on Vercel with OAuth handlers under `api/auth/`.
+`replayglowz-app` is a Flutter client. The web build uses suite Clerk identity and deploys on Vercel with OAuth handlers under `api/auth/`. Native builds use Firebase Auth as the app session adapter and must resolve suite identity/product access through the WinFlowz suite bridge. Android build verification runs from the monorepo GitHub Actions workflow on Blacksmith runners.
 
 ## Non-negotiable boundaries
 
@@ -64,6 +66,8 @@ Operational guide for agents working in `replayglowz-app`.
 4. Protected routes require authentication and server product-access status; ReplayGlowz defaults recognized accounts to product-scoped free access unless explicitly revoked.
 5. YouTube OAuth start/callback verifies entitlement server-side before token persistence.
 6. YouTube library refresh is backend-orchestrated through `youtube:startQuotaSafeSync`; the Flutter app must not loop over every playlist with direct `fetchPlaylistItems` calls.
+7. Android CI currently verifies buildability and uploads a debug APK on manual runs; Play Store release requires a signed AAB workflow and keystore secrets.
+8. Native Firebase sign-in is not product access. The app must not send a Convex token unless the suite bridge returns active `replayglowz` access and a server-issued product token.
 
 ## Source-of-truth files
 
@@ -75,6 +79,7 @@ Operational guide for agents working in `replayglowz-app`.
 - `api/auth/youtube.js`
 - `api/auth/youtube/callback.js`
 - `tool/check_shared_backend_contract.dart`
+- `.github/workflows/replayglowz-app-android.yml` (monorepo root)
 
 ## Environment contract
 
@@ -96,6 +101,7 @@ Vercel server/runtime values:
 - `CLERK_SECRET_KEY`
 - `SUITE_ENTITLEMENT_VERIFY_URL` (`https://www.winflowz.com/api/bridge/entitlement`)
 - `SUITE_ENTITLEMENT_VERIFY_SECRET` (sent as `x-suite-entitlement-secret`)
+- `REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_SECRET` (encrypts the short-lived YouTube OAuth callback handoff ticket)
 
 ## Backend checkout contract
 

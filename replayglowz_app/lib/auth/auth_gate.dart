@@ -97,7 +97,7 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
                         )
                       : const Icon(Icons.login),
                   label: Text(
-                    hasClerkConfig
+                    hasAuthConfig
                         ? 'Continue to ReplayGlowz'
                         : 'ReplayGlowz sign-in not configured',
                   ),

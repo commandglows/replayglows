@@ -5,16 +5,16 @@ const {
   isSecureOrigin,
   parseCookies,
   resolveEntitlementInputs,
+  resolveOAuthTicketSecret,
+  openOAuthTicket,
   serializeCookie,
   buildReturnUrl,
   sendRedirect,
   verifyReplayGlowzSessionAccessWithFallback,
 } = require('../_youtube');
 
-const REPLAYGLOWZ_SUITE_SESSION_TOKEN_COOKIE =
-  'replayglowz_youtube_suite_session_token';
-const REPLAYGLOWZ_OAUTH_GLOBAL_USER_COOKIE =
-  'replayglowz_youtube_global_user_id';
+const REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_COOKIE =
+  'replayglowz_youtube_oauth_ticket';
 
 async function exchangeCodeForTokens({
   code,
@@ -128,10 +128,15 @@ module.exports = async function handler(req, res) {
   const cookies = parseCookies(req.headers.cookie);
   const storedState = cookies.youtube_oauth_state;
   const returnTo = cookies.youtube_oauth_return_to;
-  const suiteSessionTokenFromCookie = cookies[REPLAYGLOWZ_SUITE_SESSION_TOKEN_COOKIE];
+  const ticketSecret = resolveOAuthTicketSecret();
+  const oauthTicket = openOAuthTicket(
+    cookies[REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_COOKIE],
+    ticketSecret,
+  );
   const suiteSessionToken =
-    suiteSessionTokenFromCookie ||
-    getBearerTokenFromAuthHeader(req.headers.authorization);
+    typeof oauthTicket?.sessionToken === 'string'
+      ? oauthTicket.sessionToken
+      : getBearerTokenFromAuthHeader(req.headers.authorization);
   const requestId = req.headers['x-request-id'];
   const { productId, legacyProductIds, verifySecret, verifyUrl } =
     resolveEntitlementInputs();
@@ -155,21 +160,7 @@ module.exports = async function handler(req, res) {
       secure,
       maxAge: 0,
     }),
-    serializeCookie(REPLAYGLOWZ_SUITE_SESSION_TOKEN_COOKIE, '', {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax',
-      secure,
-      maxAge: 0,
-    }),
-    serializeCookie(REPLAYGLOWZ_OAUTH_GLOBAL_USER_COOKIE, '', {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax',
-      secure,
-      maxAge: 0,
-    }),
-    serializeCookie('replayglowz_oauth_product_id', '', {
+    serializeCookie(REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_COOKIE, '', {
       path: '/',
       httpOnly: true,
       sameSite: 'Lax',
@@ -202,6 +193,13 @@ module.exports = async function handler(req, res) {
 
   if (!storedState || storedState !== state) {
     redirectWithError('ReplayGlowz could not verify the YouTube OAuth state.');
+    return;
+  }
+
+  if (!oauthTicket || oauthTicket.state !== state) {
+    redirectWithError(
+      'ReplayGlowz could not verify the YouTube OAuth handoff ticket.',
+    );
     return;
   }
 

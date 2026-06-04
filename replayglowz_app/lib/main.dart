@@ -58,7 +58,7 @@ Future<void> _runApp() async {
 
   AppLogger.instance.log(
     'main() start — CONVEX_URL=${const bool.hasEnvironment('CONVEX_URL')} '
-    'CLERK_PUBLISHABLE_KEY=${clerkPublishableKey.isNotEmpty} '
+    'has_auth_config=$hasAuthConfig '
     'BUILD_COMMIT_SHA=$buildCommitSha '
     'BUILD_ENVIRONMENT=$buildEnvironment',
     source: 'main',
@@ -133,7 +133,9 @@ Future<void> _configureSentryScope() async {
       'timestamp': buildTimestamp,
       'mode': buildModeLabel(),
       'app_url_host': hostForUrl(replayGlowzAppUrl),
-      'clerk_configured': hasClerkConfig,
+      'has_auth_config': hasAuthConfig,
+      'has_clerk_config': hasClerkConfig,
+      'has_native_firebase_config': hasFirebaseNativeConfig,
       'product_id': replayGlowzProductId,
       'sentry_traces_sample_rate': sentryTracesSampleRate,
     });
@@ -152,13 +154,12 @@ Future<void> _configureSentryScope() async {
 // Bootstrap widget
 // ---------------------------------------------------------------------------
 
-/// Eagerly initialises Clerk auth and wires the Convex auth token before
-/// building the main application widget.
-///
 /// This is a separate [ConsumerStatefulWidget] so that the auth service is
 /// created (and begins restoring a persisted session) on the very first frame,
 /// and the Convex client gets its token provider as soon as both services
 /// exist.
+/// Eagerly initialises the active auth owner (Clerk web or native Firebase)
+/// and wires the Convex auth token before building the main application widget.
 class _AppBootstrap extends ConsumerStatefulWidget {
   const _AppBootstrap();
 
@@ -171,7 +172,7 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
 
   bool get _hasConvexConfig => convexUrl.isNotEmpty;
 
-  bool get _hasAuthConfig => hasClerkConfig;
+  bool get _hasAuthConfig => hasAuthConfig;
 
   @override
   void initState() {
@@ -192,7 +193,9 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
         final auth = ref.read(authServiceProvider);
         await auth.ready;
         AppLogger.instance.log(
-          'Clerk auth ready (isInitialised=${auth.isInitialised})',
+          hasAuthConfig
+              ? 'Auth ready (isInitialised=${auth.isInitialised})'
+              : 'Auth unavailable because native/web auth config is missing',
           source: 'bootstrap',
         );
         final convex = ref.read(convexServiceProvider);
@@ -275,6 +278,13 @@ class _ConfigFallbackScreen extends StatelessWidget {
       'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
       'CONVEX_URL: ${convexUrl.isNotEmpty ? convexUrl : '(missing)'}',
       'CLERK_PUBLISHABLE_KEY: ${clerkPublishableKey.isNotEmpty ? maskValue(clerkPublishableKey) : '(missing)'}',
+      'FIREBASE_PROJECT_ID: ${firebaseProjectId.isNotEmpty ? maskValue(firebaseProjectId) : '(missing)'}',
+      'FIREBASE_DEV_API_KEY: ${firebaseDevApiKey.isNotEmpty ? maskValue(firebaseDevApiKey) : '(missing)'}',
+      'FIREBASE_DEV_APP_ID: ${firebaseDevAppId.isNotEmpty ? maskValue(firebaseDevAppId) : '(missing)'}',
+      'FIREBASE_DEV_MESSAGING_SENDER_ID: ${firebaseDevMessagingSenderId.isNotEmpty ? maskValue(firebaseDevMessagingSenderId) : '(missing)'}',
+      'FIREBASE_DEV_AUTH_DOMAIN: ${firebaseDevAuthDomain.isNotEmpty ? firebaseDevAuthDomain : '(missing)'}',
+      'FIREBASE_DEV_STORAGE_BUCKET: ${firebaseDevStorageBucket.isNotEmpty ? firebaseDevStorageBucket : '(missing)'}',
+      'SUITE_IDENTITY_BRIDGE_URL: ${trimmedSuiteIdentityBridgeUrl.isNotEmpty ? trimmedSuiteIdentityBridgeUrl : '(missing)'}',
       'CLERK_SIGN_IN_URL: $clerkSignInUrl',
       'CLERK_SIGN_UP_URL: $clerkSignUpUrl',
       'REPLAYGLOWZ_PRODUCT_ID: $replayGlowzProductId',
@@ -300,7 +310,8 @@ class _ConfigFallbackScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final missing = <String>[
       if (!hasConvexConfig) 'CONVEX_URL',
-      if (!hasAuthConfig) 'CLERK_PUBLISHABLE_KEY',
+      if (!hasAuthConfig && kIsWeb) 'CLERK_PUBLISHABLE_KEY',
+      if (!hasAuthConfig && !kIsWeb) ...missingFirebaseNativeEnvironmentNames,
     ];
 
     return Scaffold(
@@ -358,6 +369,13 @@ class _ConfigFallbackScreen extends StatelessWidget {
                       'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}\n'
                       'CONVEX_URL: ${convexUrl.isNotEmpty ? convexUrl : '(missing)'}\n'
                       'CLERK_PUBLISHABLE_KEY: ${clerkPublishableKey.isNotEmpty ? maskValue(clerkPublishableKey) : '(missing)'}\n'
+                      'FIREBASE_PROJECT_ID: ${firebaseProjectId.isNotEmpty ? maskValue(firebaseProjectId) : '(missing)'}\n'
+                      'FIREBASE_DEV_API_KEY: ${firebaseDevApiKey.isNotEmpty ? maskValue(firebaseDevApiKey) : '(missing)'}\n'
+                      'FIREBASE_DEV_APP_ID: ${firebaseDevAppId.isNotEmpty ? maskValue(firebaseDevAppId) : '(missing)'}\n'
+                      'FIREBASE_DEV_MESSAGING_SENDER_ID: ${firebaseDevMessagingSenderId.isNotEmpty ? maskValue(firebaseDevMessagingSenderId) : '(missing)'}\n'
+                      'FIREBASE_DEV_AUTH_DOMAIN: ${firebaseDevAuthDomain.isNotEmpty ? firebaseDevAuthDomain : '(missing)'}\n'
+                      'FIREBASE_DEV_STORAGE_BUCKET: ${firebaseDevStorageBucket.isNotEmpty ? firebaseDevStorageBucket : '(missing)'}\n'
+                      'SUITE_IDENTITY_BRIDGE_URL: ${trimmedSuiteIdentityBridgeUrl.isNotEmpty ? trimmedSuiteIdentityBridgeUrl : '(missing)'}\n'
                       'CLERK_SIGN_IN_URL: $clerkSignInUrl\n'
                       'CLERK_SIGN_UP_URL: $clerkSignUpUrl\n'
                       'REPLAYGLOWZ_PRODUCT_ID: $replayGlowzProductId\n'

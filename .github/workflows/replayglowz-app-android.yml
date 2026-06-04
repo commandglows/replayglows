@@ -1,0 +1,276 @@
+name: ReplayGlowz App Android CI
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "replayglowz_app/**"
+      - ".github/workflows/replayglowz-app-android.yml"
+  pull_request:
+    branches: [main, master]
+    paths:
+      - "replayglowz_app/**"
+      - ".github/workflows/replayglowz-app-android.yml"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FLUTTER_VERSION: "3.41.7"
+
+defaults:
+  run:
+    working-directory: replayglowz_app
+
+jobs:
+  changes:
+    name: Detect Android-impacting changes
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 10
+    outputs:
+      android: ${{ steps.filter.outputs.android }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          filters: |
+            android:
+              - "replayglowz_app/android/**"
+              - "replayglowz_app/lib/**"
+              - "replayglowz_app/test/**"
+              - "replayglowz_app/pubspec.yaml"
+              - "replayglowz_app/pubspec.lock"
+              - ".github/workflows/replayglowz-app-android.yml"
+
+  analyze:
+    name: Flutter Analyze
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 20
+    needs:
+      - changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.android == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+          cache-key: replayglowz-app-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('replayglowz_app/pubspec.lock') }}
+
+      - name: Cache Pub and Dart tool state
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.pub-cache
+            replayglowz_app/.dart_tool
+          key: replayglowz-app-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('replayglowz_app/pubspec.lock') }}
+          restore-keys: |
+            replayglowz-app-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-
+            replayglowz-app-pub-${{ runner.os }}-
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Static analysis
+        run: flutter analyze
+
+  test:
+    name: Flutter Test
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 25
+    needs:
+      - changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.android == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+          cache-key: replayglowz-app-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('replayglowz_app/pubspec.lock') }}
+
+      - name: Cache Pub and Dart tool state
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.pub-cache
+            replayglowz_app/.dart_tool
+            replayglowz_app/build/test_cache
+            replayglowz_app/build/unit_test_assets
+          key: replayglowz-app-test-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('replayglowz_app/pubspec.lock', 'replayglowz_app/test/**') }}
+          restore-keys: |
+            replayglowz-app-test-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-
+            replayglowz-app-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-
+            replayglowz-app-pub-${{ runner.os }}-
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test
+
+  build-debug-apk:
+    name: Build Debug APK
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 45
+    needs:
+      - changes
+      - analyze
+      - test
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.android == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+          cache-key: replayglowz-app-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('replayglowz_app/pubspec.lock') }}
+
+      - name: Cache Pub, Dart tool state, and Flutter build outputs
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.pub-cache
+            replayglowz_app/.dart_tool
+            replayglowz_app/build/native_assets
+            replayglowz_app/build/app/intermediates
+            replayglowz_app/build/app/kotlin
+          key: replayglowz-app-build-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('replayglowz_app/pubspec.lock', 'replayglowz_app/android/**/*.gradle*', 'replayglowz_app/android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            replayglowz-app-build-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-
+            replayglowz-app-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-
+            replayglowz-app-pub-${{ runner.os }}-
+
+      - name: Cache Gradle build state
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            replayglowz_app/android/.gradle
+            replayglowz_app/android/app/build
+          key: replayglowz-app-gradle-${{ runner.os }}-${{ hashFiles('replayglowz_app/android/**/*.gradle*', 'replayglowz_app/android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            replayglowz-app-gradle-${{ runner.os }}-
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Build metadata
+        id: meta
+        working-directory: .
+        run: echo "build_timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Validate required build configuration
+        env:
+          CONVEX_URL: ${{ secrets.CONVEX_URL }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_DEV_API_KEY: ${{ secrets.FIREBASE_DEV_API_KEY }}
+          FIREBASE_DEV_APP_ID: ${{ secrets.FIREBASE_DEV_APP_ID }}
+          FIREBASE_DEV_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_DEV_MESSAGING_SENDER_ID }}
+          SUITE_IDENTITY_BRIDGE_URL: ${{ secrets.SUITE_IDENTITY_BRIDGE_URL }}
+          REPLAYGLOWZ_APP_URL: ${{ secrets.REPLAYGLOWZ_APP_URL || vars.REPLAYGLOWZ_APP_URL }}
+        run: |
+          missing=()
+          for name in CONVEX_URL FIREBASE_PROJECT_ID FIREBASE_DEV_API_KEY FIREBASE_DEV_APP_ID FIREBASE_DEV_MESSAGING_SENDER_ID SUITE_IDENTITY_BRIDGE_URL REPLAYGLOWZ_APP_URL; do
+            if [ -z "${!name}" ]; then
+              missing+=("$name")
+            fi
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Missing ReplayGlowz Android build configuration: ${missing[*]}"
+            exit 1
+          fi
+
+      - name: Build debug APK
+        env:
+          CONVEX_URL: ${{ secrets.CONVEX_URL }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_DEV_API_KEY: ${{ secrets.FIREBASE_DEV_API_KEY }}
+          FIREBASE_DEV_APP_ID: ${{ secrets.FIREBASE_DEV_APP_ID }}
+          FIREBASE_DEV_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_DEV_MESSAGING_SENDER_ID }}
+          FIREBASE_DEV_AUTH_DOMAIN: ${{ secrets.FIREBASE_DEV_AUTH_DOMAIN }}
+          FIREBASE_DEV_STORAGE_BUCKET: ${{ secrets.FIREBASE_DEV_STORAGE_BUCKET }}
+          FIREBASE_WEB_CLIENT_ID: ${{ secrets.FIREBASE_WEB_CLIENT_ID }}
+          SUITE_IDENTITY_BRIDGE_URL: ${{ secrets.SUITE_IDENTITY_BRIDGE_URL }}
+          REPLAYGLOWZ_APP_URL: ${{ secrets.REPLAYGLOWZ_APP_URL || vars.REPLAYGLOWZ_APP_URL }}
+          REPLAYGLOWZ_ACCOUNT_CENTER_URL: ${{ secrets.REPLAYGLOWZ_ACCOUNT_CENTER_URL || vars.REPLAYGLOWZ_ACCOUNT_CENTER_URL }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SENTRY_ENVIRONMENT: ${{ secrets.SENTRY_ENVIRONMENT || vars.SENTRY_ENVIRONMENT }}
+        run: |
+          if [ -z "$REPLAYGLOWZ_ACCOUNT_CENTER_URL" ]; then
+            REPLAYGLOWZ_ACCOUNT_CENTER_URL="https://winflows.com/account"
+          fi
+          if [ -z "$SENTRY_ENVIRONMENT" ]; then
+            SENTRY_ENVIRONMENT="github-actions"
+          fi
+
+          flutter build apk --debug \
+            --dart-define=CONVEX_URL="$CONVEX_URL" \
+            --dart-define=FIREBASE_PROJECT_ID="$FIREBASE_PROJECT_ID" \
+            --dart-define=FIREBASE_DEV_API_KEY="$FIREBASE_DEV_API_KEY" \
+            --dart-define=FIREBASE_DEV_APP_ID="$FIREBASE_DEV_APP_ID" \
+            --dart-define=FIREBASE_DEV_MESSAGING_SENDER_ID="$FIREBASE_DEV_MESSAGING_SENDER_ID" \
+            --dart-define=FIREBASE_DEV_AUTH_DOMAIN="${FIREBASE_DEV_AUTH_DOMAIN:-}" \
+            --dart-define=FIREBASE_DEV_STORAGE_BUCKET="${FIREBASE_DEV_STORAGE_BUCKET:-}" \
+            --dart-define=FIREBASE_WEB_CLIENT_ID="${FIREBASE_WEB_CLIENT_ID:-}" \
+            --dart-define=SUITE_IDENTITY_BRIDGE_URL="${SUITE_IDENTITY_BRIDGE_URL:-}" \
+            --dart-define=CLERK_SIGN_IN_URL="/sign-in" \
+            --dart-define=CLERK_SIGN_UP_URL="/sign-up" \
+            --dart-define=REPLAYGLOWZ_PRODUCT_ID="replayglowz" \
+            --dart-define=REPLAYGLOWZ_LEGACY_PRODUCT_IDS="tubeflow" \
+            --dart-define=REPLAYGLOWZ_ACCOUNT_CENTER_URL="$REPLAYGLOWZ_ACCOUNT_CENTER_URL" \
+            --dart-define=REPLAYGLOWZ_APP_URL="$REPLAYGLOWZ_APP_URL" \
+            --dart-define=SENTRY_DSN="$SENTRY_DSN" \
+            --dart-define=SENTRY_ENVIRONMENT="$SENTRY_ENVIRONMENT" \
+            --dart-define=BUILD_COMMIT_SHA="${GITHUB_SHA}" \
+            --dart-define=BUILD_ENVIRONMENT="github-actions" \
+            --dart-define=BUILD_TIMESTAMP="${{ steps.meta.outputs.build_timestamp }}"
+
+      - name: Verify debug APK exists
+        run: test -f build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Upload debug APK
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v7
+        with:
+          name: replayglowz-app-debug-apk
+          path: replayglowz_app/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+          retention-days: 1

@@ -1,11 +1,11 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import 'package:replayglowz_app/app/build_info.dart';
-import 'package:replayglowz_app/auth/clerk_js_bridge.dart';
+import 'package:replayglowz_app/auth/auth_session_adapter.dart';
 import 'package:replayglowz_app/auth/auth_state.dart';
+import 'package:replayglowz_app/convex/convex_client.dart';
 import 'package:replayglowz_app/utils/app_logger.dart';
 
 class AuthService {
@@ -14,7 +14,7 @@ class AuthService {
   }
 
   final AuthNotifier authNotifier;
-  final ClerkJsBridge _bridge = createClerkJsBridge();
+  final AuthSessionAdapter _adapter = createAuthSessionAdapter();
   final Completer<void> _ready = Completer<void>();
 
   AuthUser? _currentUser;
@@ -30,40 +30,39 @@ class AuthService {
 
   Future<void> _initialise() async {
     try {
-      if (!hasClerkConfig) {
-        authNotifier.setUnauthenticated(
-          error: 'ReplayGlowz sign-in is not configured for this build.',
-        );
+      await _adapter.initialise();
+
+      _isInitialised = true;
+
+      _syncSessionUser(_adapter.currentUser);
+
+      if (_adapter.statusMessage != null) {
+        authNotifier.setUnauthenticated(error: _adapter.statusMessage);
         AppLogger.instance.log(
-          'Clerk auth skipped: missing CLERK_PUBLISHABLE_KEY dart-define',
+          _adapter.statusMessage!,
           source: 'AuthService',
           level: LogLevel.warning,
         );
-        _ready.complete();
-        return;
       }
 
-      final session = await _bridge.load(
-        const ClerkBridgeConfig(
-          publishableKey: clerkPublishableKey,
-          signInUrl: clerkSignInUrl,
-          signUpUrl: clerkSignUpUrl,
-          accountCenterUrl: replayGlowzAccountCenterUrl,
-        ),
-      );
-      _syncBridgeUser(session.user, isSignedIn: session.isSignedIn);
-      _isInitialised = true;
       AppLogger.instance.log(
-        'Clerk auth initialised via ClerkJS bridge',
+        kIsWeb
+            ? 'AuthService initialised with ClerkJS'
+            : 'AuthService initialised with native Firebase session adapter',
         source: 'AuthService',
       );
-      _ready.complete();
+
+      if (!_ready.isCompleted) {
+        _ready.complete();
+      }
+
+      return;
     } catch (e, st) {
       authNotifier.setUnauthenticated(
         error: 'ReplayGlowz sign-in is unavailable.',
       );
       AppLogger.instance.log(
-        'Clerk auth initialisation failed',
+        'AuthService initialisation failed',
         source: 'AuthService',
         level: LogLevel.error,
         error: e,
@@ -75,32 +74,27 @@ class AuthService {
     }
   }
 
-  void _syncBridgeUser(ClerkBridgeUser? user, {required bool isSignedIn}) {
-    if (!isSignedIn || user == null || user.id.isEmpty) {
+  void _syncSessionUser(AuthUser? user) {
+    if (user == null || user.id.isEmpty) {
       _currentUser = null;
       authNotifier.setUnauthenticated();
       return;
     }
 
-    final authUser = AuthUser(
-      id: user.id,
-      email: user.email,
-      displayName: user.displayName,
-      imageUrl: user.imageUrl,
-    );
+    final authUser = user;
     _currentUser = authUser;
     authNotifier.setAuthenticated(authUser);
   }
 
   Future<void> signIn({String? redirectTo}) async {
     await ready;
-    if (!hasClerkConfig) {
+    if (!_adapter.hasConfig) {
       throw StateError('ReplayGlowz sign-in is not configured for this build.');
     }
 
     authNotifier.setLoading();
     try {
-      await _bridge.openSignIn(redirectTo: redirectTo);
+      await _adapter.signIn(redirectTo: redirectTo);
       await refreshSession();
     } catch (e, st) {
       authNotifier.setUnauthenticated(error: 'ReplayGlowz sign-in failed.');
@@ -118,14 +112,8 @@ class AuthService {
   Future<void> refreshSession() async {
     await ready;
     try {
-      final signedIn = await _bridge.isSignedIn();
-      if (!signedIn) {
-        _currentUser = null;
-        authNotifier.setUnauthenticated();
-        return;
-      }
-      final bridgeUser = await _bridge.getUser();
-      _syncBridgeUser(bridgeUser, isSignedIn: true);
+      final sessionUser = await _adapter.refreshSession();
+      _syncSessionUser(sessionUser);
     } catch (e, st) {
       _currentUser = null;
       authNotifier.setUnauthenticated(
@@ -143,12 +131,12 @@ class AuthService {
 
   Future<String?> getConvexToken({bool forceRefresh = false}) async {
     await ready;
-    return _bridge.getConvexToken(skipCache: forceRefresh);
+    return _adapter.getConvexToken(forceRefresh: forceRefresh);
   }
 
   Future<String?> getSessionToken({bool forceRefresh = false}) async {
     await ready;
-    return _bridge.getSessionToken(skipCache: forceRefresh);
+    return _adapter.getSessionToken(forceRefresh: forceRefresh);
   }
 
   Future<bool> waitForConvexTokenReady() async {
@@ -177,24 +165,29 @@ class AuthService {
 
   Future<void> openUserProfile() async {
     await ready;
-    await _bridge.openUserProfile();
+    await _adapter.openUserProfile();
   }
 
   Future<bool> openAccountCenter() async {
-    final url = Uri.tryParse(replayGlowzAccountCenterUrl);
-    if (url == null || !url.hasScheme || url.host.isEmpty) {
-      return false;
-    }
-    return launchUrl(url, webOnlyWindowName: '_self');
+    await ready;
+    return _adapter.openAccountCenter();
   }
 
   Future<void> signOut() async {
-    await _bridge.signOut(redirectTo: clerkSignInUrl);
+    await ready;
+    await _adapter.signOut();
+    try {
+      ConvexService.instance.clearAuth();
+    } catch (_) {
+      // Convex service is optional during early bootstrap.
+    }
     _currentUser = null;
     authNotifier.setUnauthenticated();
   }
 
-  void dispose() {}
+  void dispose() {
+    _adapter.dispose();
+  }
 }
 
 final authServiceProvider = Provider<AuthService>((ref) {

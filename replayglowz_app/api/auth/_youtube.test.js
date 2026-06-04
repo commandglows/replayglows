@@ -8,6 +8,8 @@ const {
   getRequestOrigin,
   sendRedirect,
   parseLegacyProductIds,
+  createOAuthTicket,
+  openOAuthTicket,
 } = require('./_youtube');
 const youtubeStartHandler = require('./youtube');
 const youtubeCallbackHandler = require('./youtube/callback');
@@ -306,14 +308,22 @@ test(
       assert.ok(Array.isArray(setCookie));
       assert.ok(
         setCookie.some((value) =>
-          value.includes('replayglowz_youtube_suite_session_token='),
+          value.includes('replayglowz_youtube_oauth_ticket='),
         ),
       );
-      assert.ok(
-        setCookie.some((value) =>
-          value.includes('replayglowz_youtube_global_user_id=gu_123'),
-        ),
+      assert.equal(
+        setCookie.some((value) => value.includes('suite-session-token')),
+        false,
       );
+      const ticketCookie = setCookie.find((value) =>
+        value.includes('replayglowz_youtube_oauth_ticket='),
+      );
+      const ticketValue = decodeURIComponent(
+        ticketCookie.split('replayglowz_youtube_oauth_ticket=')[1].split(';')[0],
+      );
+      const opened = openOAuthTicket(ticketValue, 'secret');
+      assert.equal(opened.sessionToken, 'suite-session-token');
+      assert.equal(opened.globalUserId, 'gu_123');
     },
   );
   },
@@ -436,7 +446,7 @@ test(
       assert.equal(res.statusCode, 302);
       const location = res.getHeader('location');
       assert.ok(location.includes('youtube_error='));
-      assert.ok(location.includes('auth+handoff'));
+      assert.ok(location.includes('handoff+ticket'));
     },
   );
   },
@@ -525,7 +535,18 @@ test(
         headers: {
           cookie:
             'youtube_oauth_state=s1; youtube_oauth_return_to=%2F%23%2Fplaylists;' +
-            ` replayglowz_youtube_suite_session_token=${encodeURIComponent(suiteToken)}`,
+            ` replayglowz_youtube_oauth_ticket=${encodeURIComponent(
+              createOAuthTicket(
+                {
+                  state: 's1',
+                  sessionToken: suiteToken,
+                  globalUserId: 'gu_123',
+                  matchedProductId: 'replayglowz',
+                  localConvexVerified: false,
+                },
+                'secret',
+              ),
+            )}`,
           host: 'app.example.com',
           'x-forwarded-proto': 'https',
           'x-forwarded-host': 'app.example.com',
@@ -545,7 +566,7 @@ test(
       const setCookie = res.getHeader('set-cookie');
       assert.ok(
         setCookie.some((value) =>
-          value.includes('replayglowz_youtube_suite_session_token='),
+          value.includes('replayglowz_youtube_oauth_ticket='),
         ),
       );
     },
