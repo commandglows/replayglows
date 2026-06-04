@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -61,22 +60,12 @@ class AppShell extends ConsumerStatefulWidget {
 
 class _AppShellState extends ConsumerState<AppShell> {
   static const _bottomNavIconSize = 28.0;
-  static const _temporaryPlaybackControlsDuration = Duration(seconds: 5);
   static const _verticalSwipeVelocityThreshold = 220.0;
-  Timer? _temporaryPlaybackControlsTimer;
-  bool _persistentPlaybackControls = false;
-  bool _temporaryPlaybackControls = false;
   bool _playbackSeekControlsVisible = false;
   double? _activeSeekDragSeconds;
 
   StatefulNavigationShell get navigationShell => widget.navigationShell;
   GoRouterState get shellState => widget.shellState;
-
-  @override
-  void dispose() {
-    _temporaryPlaybackControlsTimer?.cancel();
-    super.dispose();
-  }
 
   // ---------------------------------------------------------------------------
   // Navigation destinations
@@ -124,7 +113,6 @@ class _AppShellState extends ConsumerState<AppShell> {
     if (destination.path == Routes.play &&
         navigationShell.currentIndex == index &&
         playbackController.hasActiveVideo) {
-      _showTemporaryPlaybackControls();
       return;
     }
 
@@ -135,7 +123,6 @@ class _AppShellState extends ConsumerState<AppShell> {
     if (destination.path == Routes.play) {
       final activeVideoId = ref.read(activePlayVideoIdProvider);
       if (activeVideoId != null && activeVideoId.isNotEmpty) {
-        _showTemporaryPlaybackControls();
         context.go(
           Uri(
             path: Routes.play,
@@ -149,32 +136,8 @@ class _AppShellState extends ConsumerState<AppShell> {
     navigationShell.goBranch(index);
   }
 
-  void _showTemporaryPlaybackControls() {
-    _temporaryPlaybackControlsTimer?.cancel();
-    if (!mounted) return;
-    setState(() => _temporaryPlaybackControls = true);
-    _temporaryPlaybackControlsTimer = Timer(
-      _temporaryPlaybackControlsDuration,
-      () {
-        if (!mounted || _persistentPlaybackControls) return;
-        setState(() => _temporaryPlaybackControls = false);
-      },
-    );
-  }
-
-  void _togglePersistentPlaybackControls() {
-    _temporaryPlaybackControlsTimer?.cancel();
-    setState(() {
-      _persistentPlaybackControls = !_persistentPlaybackControls;
-      _temporaryPlaybackControls = false;
-    });
-  }
-
   void _handlePlaybackControl(VoidCallback action) {
     action();
-    if (!_persistentPlaybackControls) {
-      _showTemporaryPlaybackControls();
-    }
   }
 
   void _handleAdvancedPlaybackControl(
@@ -269,13 +232,9 @@ class _AppShellState extends ConsumerState<AppShell> {
       activeVideoId: activeVideoId,
       hasActiveVideo: playbackController.hasActiveVideo,
     );
-    final showPlaybackControls =
-        location.startsWith(Routes.play) &&
-        playbackController.hasActiveVideo &&
-        (_persistentPlaybackControls || _temporaryPlaybackControls);
     final showPlaybackSeekControls =
         hasPlayVideoContext && _playbackSeekControlsVisible;
-    final primaryBottomBar = showPlaybackControls
+    final primaryBottomBar = showPlaybackSeekControls
         ? _buildPlaybackBottomBar(context, ref, playbackController)
         : NavigationBar(
             selectedIndex: selected,
@@ -535,7 +494,6 @@ class _AppShellState extends ConsumerState<AppShell> {
               onPressed: () => _handlePlaybackControl(
                 ref.read(appPlaybackControllerProvider.notifier).requestToggle,
               ),
-              onLongPress: _togglePersistentPlaybackControls,
               onVerticalSwipe: _handlePlaybackSeekControlsSwipe,
             ),
             _PlaybackBarButton(
@@ -602,9 +560,6 @@ class _AppShellState extends ConsumerState<AppShell> {
             ? () => ref
                   .read(appPlaybackControllerProvider.notifier)
                   .requestToggle()
-            : null,
-        onLongPress: playbackController.hasActiveVideo
-            ? _togglePersistentPlaybackControls
             : null,
         onVerticalDragEnd: playbackController.hasActiveVideo
             ? (details) =>
@@ -713,7 +668,6 @@ class _PlaybackBarButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onPressed,
-    this.onLongPress,
     this.onLongPressStart,
     this.onLongPressEnd,
     this.onLongPressCancel,
@@ -724,7 +678,6 @@ class _PlaybackBarButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onPressed;
-  final VoidCallback? onLongPress;
   final GestureLongPressStartCallback? onLongPressStart;
   final GestureLongPressEndCallback? onLongPressEnd;
   final VoidCallback? onLongPressCancel;
@@ -751,7 +704,6 @@ class _PlaybackBarButton extends StatelessWidget {
             type: MaterialType.transparency,
             child: InkWell(
               onTap: onPressed,
-              onLongPress: onLongPress,
               overlayColor: WidgetStateProperty.resolveWith(
                 (states) => _playbackBarButtonOverlayColor(
                   colorScheme,
