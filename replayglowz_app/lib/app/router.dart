@@ -143,10 +143,19 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: Routes.videos,
-                pageBuilder: (context, state) => NoTransitionPage(
-                  key: state.pageKey,
-                  child: const VideosScreen(),
-                ),
+                pageBuilder: (context, state) {
+                  final activeVideoScrollToken =
+                      state.uri.queryParameters['focusActive'];
+                  final activeVideoScrollId =
+                      state.uri.queryParameters['focusVideo'];
+                  return NoTransitionPage(
+                    key: state.pageKey,
+                    child: VideosScreen(
+                      activeVideoScrollToken: activeVideoScrollToken,
+                      activeVideoScrollId: activeVideoScrollId,
+                    ),
+                  );
+                },
               ),
             ],
           ),

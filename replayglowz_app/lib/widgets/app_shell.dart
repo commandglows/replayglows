@@ -122,6 +122,24 @@ class _AppShellState extends ConsumerState<AppShell> {
       return;
     }
 
+    if (destination.path == Routes.videos &&
+        shellState.uri.path.startsWith(Routes.play)) {
+      final activeVideoId =
+          ref.read(playbackSessionProvider).currentVideoId ??
+          ref.read(activePlayVideoIdProvider);
+      context.go(
+        Uri(
+          path: Routes.videos,
+          queryParameters: {
+            'focusActive': DateTime.now().microsecondsSinceEpoch.toString(),
+            if (activeVideoId != null && activeVideoId.isNotEmpty)
+              'focusVideo': activeVideoId,
+          },
+        ).toString(),
+      );
+      return;
+    }
+
     if (destination.path == Routes.play) {
       final activeVideoId = ref.read(activePlayVideoIdProvider);
       if (activeVideoId != null && activeVideoId.isNotEmpty) {

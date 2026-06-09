@@ -30,7 +30,14 @@ import 'package:replayglowz_app/widgets/youtube_connect.dart';
 /// - `notes.getNotes` — fetch notes count per video for badge display
 /// - `settings.getSettings` — load user preferences (default view mode, etc.)
 class VideosScreen extends ConsumerStatefulWidget {
-  const VideosScreen({super.key});
+  const VideosScreen({
+    super.key,
+    this.activeVideoScrollToken,
+    this.activeVideoScrollId,
+  });
+
+  final String? activeVideoScrollToken;
+  final String? activeVideoScrollId;
 
   @override
   ConsumerState<VideosScreen> createState() => _VideosScreenState();
@@ -72,8 +79,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   bool _feedActionRefreshMode = false;
   final Set<String> _feedFilterIds = <String>{};
   bool _prefsLoaded = false;
-  String? _lastAutoScrolledVideoId;
-  int? _lastAutoScrolledTabIndex;
+  String? _handledActiveVideoScrollToken;
   int _lastSyncedTabIndex = 0;
   _FeedScrollAnchor? _lastFeedScrollAnchor;
   final List<_FeedScrollAnchor?> _pendingFeedScrollAnchorsByTab =
@@ -281,34 +287,38 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     };
   }
 
-  void _scheduleScrollToActiveFeedVideo(
+  void _scheduleEntryScrollToActiveFeedVideo(
     List<YouTubeVideo> visibleVideos,
     String? activeVideoId,
   ) {
-    if (activeVideoId == null || activeVideoId.isEmpty) {
+    final token = widget.activeVideoScrollToken;
+    if (token == null || token.isEmpty) {
       return;
     }
-    if (_lastAutoScrolledVideoId == activeVideoId &&
-        _lastAutoScrolledTabIndex == _tabController.index) {
+    if (_handledActiveVideoScrollToken == token) {
+      return;
+    }
+    final targetVideoId = widget.activeVideoScrollId ?? activeVideoId;
+    if (targetVideoId == null || targetVideoId.isEmpty) {
       return;
     }
 
     final index = visibleVideos.indexWhere(
-      (video) => video.youtubeVideoId == activeVideoId,
+      (video) => video.youtubeVideoId == targetVideoId,
     );
     if (index == -1) {
       return;
     }
 
-    _lastAutoScrolledVideoId = activeVideoId;
-    _lastAutoScrolledTabIndex = _tabController.index;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      if (_handledActiveVideoScrollToken == token) return;
       final controller = _activeScrollController();
       if (!controller.hasClients) return;
       final target = _estimatedScrollOffsetForIndex(
         index,
       ).clamp(0.0, controller.position.maxScrollExtent);
+      _handledActiveVideoScrollToken = token;
       controller.animateTo(
         target,
         duration: const Duration(milliseconds: 320),
@@ -1119,7 +1129,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
               _pruneFeedItemKeys(visibleVideos);
               _schedulePendingFeedScrollAnchors();
               if (_prefsLoaded) {
-                _scheduleScrollToActiveFeedVideo(
+                _scheduleEntryScrollToActiveFeedVideo(
                   visibleVideos,
                   activeFeedVideoId,
                 );
@@ -1173,9 +1183,21 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                   : TabBarView(
                       controller: _tabController,
                       children: [
-                        _buildCardView(visibleVideos, watchedIds),
-                        _buildListView(visibleVideos, watchedIds),
-                        _buildSummaryView(visibleVideos, notesByVideo),
+                        _buildCardView(
+                          visibleVideos,
+                          watchedIds,
+                          activeFeedVideoId,
+                        ),
+                        _buildListView(
+                          visibleVideos,
+                          watchedIds,
+                          activeFeedVideoId,
+                        ),
+                        _buildSummaryView(
+                          visibleVideos,
+                          notesByVideo,
+                          activeFeedVideoId,
+                        ),
                       ],
                     );
 
@@ -1385,7 +1407,11 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     return video.cachedAt;
   }
 
-  Widget _buildCardView(List<YouTubeVideo> videos, Set<String> watchedIds) {
+  Widget _buildCardView(
+    List<YouTubeVideo> videos,
+    Set<String> watchedIds,
+    String? activeVideoId,
+  ) {
     return _buildFeedScrollSurface(
       tabIndex: 0,
       child: LayoutBuilder(
@@ -1406,6 +1432,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 key: _feedItemKeyForTab(0, video),
                 child: VideoCard(
                   video: video,
+                  isActive: video.youtubeVideoId == activeVideoId,
                   trailing: _buildVideoActionMenu(video, watchedIds),
                   onTap: () => _openVideo(context, video.youtubeVideoId),
                 ),
@@ -1417,7 +1444,11 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     );
   }
 
-  Widget _buildListView(List<YouTubeVideo> videos, Set<String> watchedIds) {
+  Widget _buildListView(
+    List<YouTubeVideo> videos,
+    Set<String> watchedIds,
+    String? activeVideoId,
+  ) {
     return _buildFeedScrollSurface(
       tabIndex: 1,
       child: LayoutBuilder(
@@ -1435,6 +1466,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 key: _feedItemKeyForTab(1, video),
                 child: VideoListTile(
                   video: video,
+                  isActive: video.youtubeVideoId == activeVideoId,
                   trailing: _buildVideoActionMenu(video, watchedIds),
                   onTap: () => _openVideo(context, video.youtubeVideoId),
                 ),
@@ -1449,6 +1481,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   Widget _buildSummaryView(
     List<YouTubeVideo> videos,
     Map<String, int> notesByVideo,
+    String? activeVideoId,
   ) {
     return _buildFeedScrollSurface(
       tabIndex: 2,
@@ -1466,55 +1499,93 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
             itemCount: videos.length,
             itemBuilder: (context, index) {
               final video = videos[index];
+              final isActive = video.youtubeVideoId == activeVideoId;
               final noteCount = notesByVideo[video.youtubeVideoId] ?? 0;
               final durationSec = parseDuration(video.duration);
+              final theme = Theme.of(context);
+              final colorScheme = theme.colorScheme;
 
               return KeyedSubtree(
                 key: _feedItemKeyForTab(2, video),
-                child: Card(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
                   margin: const EdgeInsets.only(bottom: 12),
-                  child: InkWell(
-                    onTap: () {
-                      _openVideo(context, video.youtubeVideoId);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            video.title,
-                            style: Theme.of(context).textTheme.titleSmall,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            video.description ??
-                                'No description available for this video.',
-                            style: Theme.of(context).textTheme.bodySmall,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              const Icon(Icons.notes, size: 16),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$noteCount note${noteCount == 1 ? '' : 's'}',
-                                style: Theme.of(context).textTheme.labelSmall,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isActive
+                          ? colorScheme.primary.withValues(alpha: 0.52)
+                          : Colors.transparent,
+                      width: 1.5,
+                    ),
+                    boxShadow: isActive
+                        ? [
+                            BoxShadow(
+                              color: colorScheme.primary.withValues(
+                                alpha: 0.12,
                               ),
-                              const SizedBox(width: 16),
-                              if (durationSec != null) ...[
-                                const Icon(Icons.schedule, size: 16),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Card(
+                    margin: EdgeInsets.zero,
+                    color: isActive
+                        ? Color.alphaBlend(
+                            colorScheme.primary.withValues(alpha: 0.08),
+                            colorScheme.surface,
+                          )
+                        : null,
+                    child: InkWell(
+                      onTap: () {
+                        _openVideo(context, video.youtubeVideoId);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (isActive) ...[
+                              _NowPlayingBadge(colorScheme: colorScheme),
+                              const SizedBox(height: 8),
+                            ],
+                            Text(
+                              video.title,
+                              style: theme.textTheme.titleSmall,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              video.description ??
+                                  'No description available for this video.',
+                              style: theme.textTheme.bodySmall,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(Icons.notes, size: 16),
                                 const SizedBox(width: 4),
                                 Text(
-                                  formatDuration(durationSec),
-                                  style: Theme.of(context).textTheme.labelSmall,
+                                  '$noteCount note${noteCount == 1 ? '' : 's'}',
+                                  style: theme.textTheme.labelSmall,
                                 ),
+                                const SizedBox(width: 16),
+                                if (durationSec != null) ...[
+                                  const Icon(Icons.schedule, size: 16),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    formatDuration(durationSec),
+                                    style: theme.textTheme.labelSmall,
+                                  ),
+                                ],
                               ],
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -1952,6 +2023,33 @@ class _SortMenuItem extends PopupMenuItem<String> {
            ],
          ),
        );
+}
+
+class _NowPlayingBadge extends StatelessWidget {
+  const _NowPlayingBadge({required this.colorScheme});
+
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconTheme(
+      data: IconThemeData(color: colorScheme.primary, size: 14),
+      child: DefaultTextStyle(
+        style: Theme.of(context).textTheme.labelSmall!.copyWith(
+          color: colorScheme.primary,
+          fontWeight: FontWeight.w700,
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.graphic_eq_rounded),
+            SizedBox(width: 4),
+            Text('Now playing'),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _FeedScrollAnchor {

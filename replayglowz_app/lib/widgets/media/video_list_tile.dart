@@ -9,6 +9,7 @@ class VideoListTile extends StatelessWidget {
     super.key,
     required this.video,
     required this.onTap,
+    this.isActive = false,
     this.leadingWidth = 120,
     this.leadingHeight = 68,
     this.trailing,
@@ -16,6 +17,7 @@ class VideoListTile extends StatelessWidget {
 
   final YouTubeVideo video;
   final VoidCallback onTap;
+  final bool isActive;
   final double leadingWidth;
   final double leadingHeight;
   final Widget? trailing;
@@ -27,18 +29,56 @@ class VideoListTile extends StatelessWidget {
         ? (durationSec != null ? formatDuration(durationSec) : '')
         : '${video.channelTitle}'
               '${durationSec != null ? ' - ${formatDuration(durationSec)}' : ''}';
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    return ListTile(
-      leading: MediaThumbnail(
-        imageUrl: video.thumbnailUrl,
-        width: leadingWidth,
-        height: leadingHeight,
-        borderRadius: BorderRadius.circular(4),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color: isActive
+            ? colorScheme.primary.withValues(alpha: 0.08)
+            : Colors.transparent,
+        border: Border(
+          left: BorderSide(
+            color: isActive ? colorScheme.primary : Colors.transparent,
+            width: 3,
+          ),
+        ),
       ),
-      title: Text(video.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-      subtitle: subtitle.isEmpty ? null : Text(subtitle),
-      trailing: trailing,
-      onTap: onTap,
+      child: ListTile(
+        leading: MediaThumbnail(
+          imageUrl: video.thumbnailUrl,
+          width: leadingWidth,
+          height: leadingHeight,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                video.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (isActive) ...[
+              const SizedBox(width: 8),
+              Tooltip(
+                message: 'Now playing',
+                child: Icon(
+                  Icons.graphic_eq_rounded,
+                  size: 18,
+                  color: colorScheme.primary,
+                ),
+              ),
+            ],
+          ],
+        ),
+        subtitle: subtitle.isEmpty ? null : Text(subtitle),
+        trailing: trailing,
+        onTap: onTap,
+      ),
     );
   }
 }

@@ -10,11 +10,13 @@ class VideoCard extends StatelessWidget {
     super.key,
     required this.video,
     required this.onTap,
+    this.isActive = false,
     this.trailing,
   });
 
   final YouTubeVideo video;
   final VoidCallback onTap;
+  final bool isActive;
   final Widget? trailing;
 
   @override
@@ -22,81 +24,143 @@ class VideoCard extends StatelessWidget {
     final duration = parseDuration(video.duration);
     final theme = Theme.of(context);
 
-    return Card(
+    final colorScheme = theme.colorScheme;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
       margin: const EdgeInsets.only(bottom: 16),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            MediaThumbnail(
-              imageUrl: video.thumbnailUrl,
-              height: 200,
-              width: double.infinity,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          video.title,
-                          style: theme.textTheme.titleMedium,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isActive
+              ? colorScheme.primary.withValues(alpha: 0.52)
+              : Colors.transparent,
+          width: 1.5,
+        ),
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.12),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : null,
+      ),
+      child: Card(
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        color: isActive
+            ? Color.alphaBlend(
+                colorScheme.primary.withValues(alpha: 0.08),
+                colorScheme.surface,
+              )
+            : null,
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              MediaThumbnail(
+                imageUrl: video.thumbnailUrl,
+                height: 200,
+                width: double.infinity,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (isActive) ...[
+                      _NowPlayingBadge(colorScheme: colorScheme),
+                      const SizedBox(height: 8),
+                    ],
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            video.title,
+                            style: theme.textTheme.titleMedium,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                      if (trailing != null) ...[
-                        const SizedBox(width: 8),
-                        trailing!,
+                        if (trailing != null) ...[
+                          const SizedBox(width: 8),
+                          trailing!,
+                        ],
                       ],
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          video.channelTitle,
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ),
-                      if (duration != null)
-                        Text(
-                          formatDuration(duration),
-                          style: theme.textTheme.labelSmall,
-                        ),
-                    ],
-                  ),
-                  if (video.playlistTitle != null) ...[
+                    ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        if (video.playlistColor != null)
-                          Container(
-                            width: 8,
-                            height: 8,
-                            margin: const EdgeInsets.only(right: 4),
-                            decoration: BoxDecoration(
-                              color: parseHexColor(video.playlistColor!),
-                              shape: BoxShape.circle,
-                            ),
+                        Expanded(
+                          child: Text(
+                            video.channelTitle,
+                            style: theme.textTheme.bodySmall,
                           ),
-                        Text(
-                          video.playlistTitle!,
-                          style: theme.textTheme.labelSmall,
                         ),
+                        if (duration != null)
+                          Text(
+                            formatDuration(duration),
+                            style: theme.textTheme.labelSmall,
+                          ),
                       ],
                     ),
+                    if (video.playlistTitle != null) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          if (video.playlistColor != null)
+                            Container(
+                              width: 8,
+                              height: 8,
+                              margin: const EdgeInsets.only(right: 4),
+                              decoration: BoxDecoration(
+                                color: parseHexColor(video.playlistColor!),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          Text(
+                            video.playlistTitle!,
+                            style: theme.textTheme.labelSmall,
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NowPlayingBadge extends StatelessWidget {
+  const _NowPlayingBadge({required this.colorScheme});
+
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconTheme(
+      data: IconThemeData(color: colorScheme.primary, size: 14),
+      child: DefaultTextStyle(
+        style: Theme.of(context).textTheme.labelSmall!.copyWith(
+          color: colorScheme.primary,
+          fontWeight: FontWeight.w700,
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.graphic_eq_rounded),
+            SizedBox(width: 4),
+            Text('Now playing'),
           ],
         ),
       ),

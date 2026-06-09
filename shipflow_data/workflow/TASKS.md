@@ -41,7 +41,7 @@
 
 🟠 [replayglowz] task: Fix Feed video snap so slow vertical scroll release visibly aligns to the nearest video in cards, list, and notes views | status: fixed-pending-verify | area: app | bug: BUG-2026-06-01-002 | evidence: `flutter analyze`, `flutter test`, metadata lint | next: /sf-test --retest BUG-2026-06-01-002
 🟠 [replayglowz] task: Stop the watched visibility toggle from refreshing the whole Feed; filter watched videos locally instead | status: fixed-pending-verify | area: app | bug: BUG-2026-06-01-003 | evidence: `flutter analyze`, `flutter test`, metadata lint, `git diff --check`
-🟠 [replayglowz] task: Keep Feed cards, list, and notes scroll positions synchronized continuously, including near the last videos | status: needs-info | area: app | bug: BUG-2026-06-01-004 | evidence: operator retest failed on 2026-06-02 but exact symptom is missing | next: ask operator which synchronization behavior fails
+🟠 [replayglowz] task: Keep Feed cards, list, and notes scroll positions synchronized continuously, including near the last videos | status: fixed-pending-verify | area: app | bug: BUG-2026-06-01-004 | evidence: `flutter analyze`, `flutter test`, `git diff --check`; active-video scroll is now limited to explicit Play-to-Feed entry and Feed items highlight the current video | next: /sf-test --retest BUG-2026-06-01-004
 
 ---
 
