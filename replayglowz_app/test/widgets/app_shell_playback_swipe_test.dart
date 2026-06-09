@@ -65,27 +65,45 @@ void main() {
     },
   );
 
-  test(
-    'playback seek controls stay unavailable without Play video context',
-    () {
-      expect(
-        playbackSeekControlsAvailableForPlayContext(
-          location: '/videos',
-          routeVideoId: 'youtube-id',
-          activeVideoId: 'last-video-id',
-          hasActiveVideo: true,
-        ),
-        isFalse,
-      );
-      expect(
-        playbackSeekControlsAvailableForPlayContext(
-          location: '/play',
-          routeVideoId: null,
-          activeVideoId: null,
-          hasActiveVideo: false,
-        ),
-        isFalse,
-      );
-    },
-  );
+  test('playback seek controls are globally available with active video', () {
+    expect(
+      playbackSeekControlsAvailableForPlayContext(
+        location: '/videos',
+        routeVideoId: null,
+        activeVideoId: 'last-video-id',
+        hasActiveVideo: false,
+      ),
+      isTrue,
+    );
+    expect(
+      playbackSeekControlsAvailableForPlayContext(
+        location: '/notes',
+        routeVideoId: null,
+        activeVideoId: null,
+        hasActiveVideo: true,
+      ),
+      isTrue,
+    );
+  });
+
+  test('playback seek controls stay unavailable without video context', () {
+    expect(
+      playbackSeekControlsAvailableForPlayContext(
+        location: '/videos',
+        routeVideoId: null,
+        activeVideoId: null,
+        hasActiveVideo: false,
+      ),
+      isFalse,
+    );
+    expect(
+      playbackSeekControlsAvailableForPlayContext(
+        location: '/play',
+        routeVideoId: null,
+        activeVideoId: null,
+        hasActiveVideo: false,
+      ),
+      isFalse,
+    );
+  });
 }

@@ -319,6 +319,8 @@ class _VirtualFeedDetailScreenState
             currentVideoId: videoId,
           );
     }
+    ref.read(activePlayVideoIdProvider.notifier).setVideoId(videoId);
+    ref.read(appPlaybackControllerProvider.notifier).setActiveVideo(true);
 
     if (mounted) {
       context.go(

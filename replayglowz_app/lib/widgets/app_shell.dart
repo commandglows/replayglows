@@ -32,7 +32,9 @@ bool playbackSeekControlsAvailableForPlayContext({
   required String? activeVideoId,
   required bool hasActiveVideo,
 }) {
-  if (!location.startsWith(Routes.play)) return false;
+  if (!location.startsWith(Routes.play)) {
+    return hasActiveVideo || (activeVideoId?.trim().isNotEmpty ?? false);
+  }
   return hasActiveVideo ||
       (routeVideoId?.trim().isNotEmpty ?? false) ||
       (activeVideoId?.trim().isNotEmpty ?? false);

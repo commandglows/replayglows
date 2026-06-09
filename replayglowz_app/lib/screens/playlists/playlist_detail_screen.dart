@@ -843,6 +843,8 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
             currentVideoId: youtubeVideoId,
           );
     }
+    ref.read(activePlayVideoIdProvider.notifier).setVideoId(youtubeVideoId);
+    ref.read(appPlaybackControllerProvider.notifier).setActiveVideo(true);
 
     context.go(
       Uri(
