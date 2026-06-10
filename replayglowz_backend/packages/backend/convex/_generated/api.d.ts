@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as access from "../access.js";
 import type * as channelLinks from "../channelLinks.js";
 import type * as channels from "../channels.js";
 import type * as comments from "../comments.js";
@@ -48,6 +49,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  access: typeof access;
   channelLinks: typeof channelLinks;
   channels: typeof channels;
   comments: typeof comments;

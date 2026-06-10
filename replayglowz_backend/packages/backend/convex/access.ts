@@ -68,7 +68,10 @@ async function getReplayGlowzAccessDecisionFromDb(
     if (snapshot.status === "revoked") {
       revokedSnapshot = {
         productId: acceptedProductId,
-        reasonCode: snapshot.reasonCode,
+        reasonCode:
+          snapshot.reasonCode === DEFAULT_FREE_ACCESS_REASON
+            ? undefined
+            : snapshot.reasonCode,
         globalUserId: snapshot.globalUserId,
       };
     }
