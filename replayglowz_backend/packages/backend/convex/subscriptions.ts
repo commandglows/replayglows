@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
-import { getUserId } from "./utils";
+import { requireReplayGlowzAccess } from "./access";
 
 // Plan types and their features
 export const PLANS = {
@@ -37,8 +37,7 @@ export const PLANS = {
 export const getSubscription = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
-    if (!userId) return null;
+    const userId = await requireReplayGlowzAccess(ctx);
 
     const subscription = await ctx.db
       .query("subscriptions")
@@ -66,8 +65,7 @@ export const getSubscription = query({
 export const getSubscriptionLimits = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
-    if (!userId) return PLANS.free;
+    const userId = await requireReplayGlowzAccess(ctx);
 
     const subscription = await ctx.db
       .query("subscriptions")
@@ -93,8 +91,7 @@ export const checkLimit = query({
     currentCount: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) return { allowed: false, reason: "Unauthorized" };
+    const userId = await requireReplayGlowzAccess(ctx);
 
     const subscription = await ctx.db
       .query("subscriptions")
@@ -337,8 +334,7 @@ export const linkCustomerToUser = internalMutation({
 export const cancelSubscription = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Unauthorized");
+    const userId = await requireReplayGlowzAccess(ctx);
 
     const subscription = await ctx.db
       .query("subscriptions")
@@ -370,8 +366,7 @@ export const getPlans = query({
 export const getPolarCheckoutInfo = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
-    if (!userId) return null;
+    const userId = await requireReplayGlowzAccess(ctx);
 
     const user = await ctx.db
       .query("users")

@@ -354,10 +354,7 @@ export const syncPastVideosFromChannel = action({
     youtubePlaylistId: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-
-    const userId = identity.subject;
+    const userId = await requireReplayGlowzAccess(ctx);
 
     // Check current quota before syncing
     const quota = await ctx.runQuery(
@@ -449,10 +446,7 @@ export const syncPastVideosFromChannel = action({
 export const syncAllLinkedChannels = action({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-
-    const userId = identity.subject;
+    const userId = await requireReplayGlowzAccess(ctx);
 
     // Get all active links
     const links = await ctx.runQuery(channelLinksInternal.getLinksForUser, {
@@ -517,10 +511,7 @@ export const getVideosToSyncCount = action({
     youtubePlaylistId: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-
-    const userId = identity.subject;
+    const userId = await requireReplayGlowzAccess(ctx);
 
     // Get videos from this channel in cache
     const channelVideos = await ctx.runQuery(
