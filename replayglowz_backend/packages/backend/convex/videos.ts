@@ -1,12 +1,12 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getUserId } from "./utils";
+import { requireReplayGlowzAccess } from "./access";
 
 // YouTube feed functions
 export const getYouTubeFeed = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return [];
 
     // In a real implementation, this would fetch from YouTube API
@@ -36,7 +36,7 @@ export const getYouTubeFeed = query({
 export const getVideos = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return [];
     return await ctx.db
       .query("videos")
@@ -48,15 +48,19 @@ export const getVideos = query({
 export const getVideo = query({
   args: { id: v.id("videos") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const userId = await requireReplayGlowzAccess(ctx);
+    const video = await ctx.db.get(args.id);
+    if (!video || video.userId !== userId) return null;
+    return video;
   },
 });
 
 export const updateVideoViews = mutation({
   args: { id: v.id("videos") },
   handler: async (ctx, args) => {
+    const userId = await requireReplayGlowzAccess(ctx);
     const video = await ctx.db.get(args.id);
-    if (!video) throw new Error("Video not found");
+    if (!video || video.userId !== userId) throw new Error("Video not found");
 
     await ctx.db.patch(args.id, { views: video.views + 1 });
   },
@@ -65,7 +69,7 @@ export const updateVideoViews = mutation({
 export const deleteVideo = mutation({
   args: { id: v.id("videos") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     const video = await ctx.db.get(args.id);
     if (!video || video.userId !== userId) throw new Error("Unauthorized");
 

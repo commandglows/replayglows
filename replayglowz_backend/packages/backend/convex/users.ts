@@ -2,14 +2,12 @@ import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { getUserId } from "./utils";
 import { defaultTranscriptSettings } from "./settings";
-
-const REPLAYGLOWZ_PRODUCT_ID = "replayglowz";
-const REPLAYGLOWZ_LEGACY_PRODUCT_IDS = ["tubeflow"];
-const DEFAULT_FREE_ACCESS_REASON = "default_free_entitlement";
-
-function isActiveAccessStatus(status: string) {
-  return status === "active" || status === "trialing";
-}
+import {
+  ensureDefaultReplayGlowzAccessSnapshot,
+  getProductAccessStatusForUser,
+  REPLAYGLOWZ_LEGACY_PRODUCT_IDS,
+  REPLAYGLOWZ_PRODUCT_ID,
+} from "./access";
 
 // Get current user from Convex (synced from Clerk)
 export const getCurrentUser = query({
@@ -44,86 +42,21 @@ export const getProductAccessStatus = query({
       };
     }
 
-    const productId = args.productId ?? REPLAYGLOWZ_PRODUCT_ID;
     const legacyProductIds =
       args.legacyProductIds && args.legacyProductIds.length > 0
         ? args.legacyProductIds
         : REPLAYGLOWZ_LEGACY_PRODUCT_IDS;
-    const acceptedProductIds = [productId, ...legacyProductIds];
-    const now = Date.now();
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_clerk_id", (q) => q.eq("clerkId", userId))
-      .first();
-
-    let revokedSnapshot:
-      | {
-          productId: string;
-          reasonCode?: string;
-          globalUserId?: string;
-        }
-      | null = null;
-
-    for (const acceptedProductId of acceptedProductIds) {
-      const snapshot = await ctx.db
-        .query("productAccessSnapshots")
-        .withIndex("by_user_product", (q) =>
-          q.eq("userId", userId).eq("productId", acceptedProductId)
-        )
-        .first();
-
-      if (!snapshot || snapshot.expiresAt <= now) continue;
-
-      if (isActiveAccessStatus(snapshot.status)) {
-        return {
-          loading: false,
-          hasAccess: true,
-          accountRecognized: true,
-          productId,
-          matchedProductId: acceptedProductId,
-          globalUserId: snapshot.globalUserId,
-        };
-      }
-
-      if (snapshot.status === "revoked") {
-        revokedSnapshot = {
-          productId: acceptedProductId,
-          reasonCode: snapshot.reasonCode,
-          globalUserId: snapshot.globalUserId,
-        };
-      }
-    }
-
-    if (revokedSnapshot) {
-      return {
-        loading: false,
-        hasAccess: false,
-        accountRecognized: true,
-        productId,
-        matchedProductId: revokedSnapshot.productId,
-        globalUserId: revokedSnapshot.globalUserId,
-        reasonCode: revokedSnapshot.reasonCode ?? "product_access_revoked",
-      };
-    }
-
-    if (user !== null && productId === REPLAYGLOWZ_PRODUCT_ID) {
-      return {
-        loading: false,
-        hasAccess: true,
-        accountRecognized: true,
-        productId,
-        matchedProductId: REPLAYGLOWZ_PRODUCT_ID,
-        reasonCode: DEFAULT_FREE_ACCESS_REASON,
-      };
-    }
+    const productId = args.productId ?? REPLAYGLOWZ_PRODUCT_ID;
+    const status = await getProductAccessStatusForUser(
+      ctx,
+      userId,
+      productId,
+      legacyProductIds,
+    );
 
     return {
       loading: false,
-      hasAccess: false,
-      accountRecognized: user !== null,
-      productId,
-      reasonCode: user === null ? "account_not_found" : "missing_product_entitlement",
+      ...status,
     };
   },
 });
@@ -208,6 +141,8 @@ export const upsertUser = internalMutation({
         updatedAt: now,
       });
 
+      await ensureDefaultReplayGlowzAccessSnapshot(ctx, args.clerkId);
+
       return userId;
     }
   },
@@ -252,6 +187,7 @@ export const deleteUser = internalMutation({
       transcriptSelections,
       transcriptSecrets,
       apiMetrics,
+      productAccessSnapshots,
     ] = await Promise.all([
       ctx.db.query("settings").withIndex("by_user_id", (q) => q.eq("userId", uid)).collect(),
       ctx.db.query("subscriptions").withIndex("by_user_id", (q) => q.eq("userId", uid)).collect(),
@@ -277,6 +213,7 @@ export const deleteUser = internalMutation({
       ctx.db.query("transcriptSelections").withIndex("by_user_video_lang", (q) => q.eq("userId", uid)).collect(),
       ctx.db.query("transcriptProviderSecrets").withIndex("by_user_and_provider", (q) => q.eq("userId", uid)).collect(),
       ctx.db.query("apiMetrics").withIndex("by_user", (q) => q.eq("userId", uid)).collect(),
+      ctx.db.query("productAccessSnapshots").withIndex("by_user_product", (q) => q.eq("userId", uid)).collect(),
     ]);
 
     // Delete all records across all tables
@@ -287,6 +224,7 @@ export const deleteUser = internalMutation({
       ...hiddenItems, ...watchedVideos, ...videoProgress, ...playlistOrder,
       ...videoOrder, ...transcriptVersions, ...transcriptJobs,
       ...transcriptSelections, ...transcriptSecrets, ...apiMetrics,
+      ...productAccessSnapshots,
     ];
 
     await Promise.all(allRecords.map((record) => ctx.db.delete(record._id)));
@@ -342,6 +280,7 @@ export const ensureUser = mutation({
     const now = Date.now();
 
     if (existingUser) {
+      await ensureDefaultReplayGlowzAccessSnapshot(ctx, userId);
       return existingUser._id;
     }
 
@@ -387,6 +326,8 @@ export const ensureUser = mutation({
       createdAt: now,
       updatedAt: now,
     });
+
+    await ensureDefaultReplayGlowzAccessSnapshot(ctx, userId);
 
     return newUserId;
   },

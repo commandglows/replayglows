@@ -5,7 +5,7 @@ import {
   mutation,
   query,
 } from "./_generated/server";
-import { getUserId } from "./utils";
+import { requireReplayGlowzAccess } from "./access";
 import { defaultTranscriptSettings } from "./settings";
 import { buildTranscriptProviderCatalog } from "./transcriptCatalog.helpers";
 
@@ -59,7 +59,7 @@ export const getProviderCatalogInternal = internalQuery({
 export const getProviderCatalog = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return [];
     return await buildProviderCatalog(ctx, userId);
   },
@@ -71,7 +71,7 @@ export const getTranscriptVersions = query({
     language: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return [];
 
     const versions = await ctx.db
@@ -118,7 +118,7 @@ export const getLatestTranscriptJob = query({
     language: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return null;
 
     const jobs = await ctx.db
@@ -155,7 +155,7 @@ export const getActiveTranscript = query({
     language: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return null;
 
     const selection = await ctx.db
@@ -368,7 +368,7 @@ export const selectTranscriptVersion = mutation({
     versionId: v.id("transcriptVersions"),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const version = await ctx.db.get(args.versionId);

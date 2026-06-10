@@ -6,7 +6,7 @@ import {
   internalMutation,
   internalQuery,
 } from "./_generated/server";
-import { getUserId } from "./utils";
+import { requireReplayGlowzAccess } from "./access";
 import { internal, api } from "./_generated/api";
 import { Doc } from "./_generated/dataModel";
 import { YOUTUBE_QUOTA_COSTS } from "./metrics";
@@ -33,7 +33,7 @@ const channelLinksApi: any = (api as any).channelLinks;
 export const getChannelLinks = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return [];
 
     const links = await ctx.db
@@ -59,7 +59,7 @@ export const getChannelLinks = query({
 export const getChannelLinksForPlaylist = query({
   args: { playlistId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return [];
 
     const links = await ctx.db
@@ -87,7 +87,7 @@ export const getChannelLinksForPlaylist = query({
 export const getChannelLinkByChannel = query({
   args: { youtubeChannelId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return null;
 
     const link = await ctx.db
@@ -125,7 +125,7 @@ export const linkChannelToPlaylist = mutation({
     youtubePlaylistId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     // Check if link already exists
@@ -174,7 +174,7 @@ export const linkChannelToPlaylist = mutation({
 export const unlinkChannel = mutation({
   args: { linkId: v.id("channelPlaylistLinks") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const link = await ctx.db.get(args.linkId);
@@ -192,7 +192,7 @@ export const unlinkChannel = mutation({
 export const toggleLinkStatus = mutation({
   args: { linkId: v.id("channelPlaylistLinks") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const link = await ctx.db.get(args.linkId);
@@ -214,7 +214,7 @@ export const toggleLinkStatus = mutation({
 export const updateLinkSyncTime = mutation({
   args: { linkId: v.id("channelPlaylistLinks") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const link = await ctx.db.get(args.linkId);

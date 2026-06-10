@@ -1,12 +1,12 @@
 import { query } from "./_generated/server";
-import { getUserId } from "./utils";
+import { requireReplayGlowzAccess } from "./access";
 
 /**
  * Diagnostic query to check for videos without channel IDs
  */
 export const checkVideosWithoutChannelId = query({
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return { total: 0, withoutChannelId: 0, videos: [] };
 
     const allVideos = await ctx.db
@@ -34,7 +34,7 @@ export const checkVideosWithoutChannelId = query({
  */
 export const checkChannelLinks = query({
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return [];
 
     const links = await ctx.db

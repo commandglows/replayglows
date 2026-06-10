@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getUserId } from "./utils";
+import { requireReplayGlowzAccess } from "./access";
 
 /**
  * Get the saved playlist display order for the current user.
@@ -9,7 +9,7 @@ import { getUserId } from "./utils";
 export const getPlaylistOrder = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return null;
 
     const order = await ctx.db
@@ -30,7 +30,7 @@ export const savePlaylistOrder = mutation({
     orderedIds: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const existing = await ctx.db

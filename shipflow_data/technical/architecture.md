@@ -1,10 +1,10 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.1.1"
 project: "replayglowz"
 created: "2026-05-10"
-updated: "2026-05-10"
+updated: "2026-06-10"
 status: "draft"
 source_skill: "sf-docs"
 scope: "architecture"
@@ -59,6 +59,8 @@ next_step: "/sf-docs technical audit"
 
 - The ReplayGlowz product Convex backend lives inside this monorepo under `replayglowz_backend`.
 - Flutter app code under `lib/convex/` is client transport/state, not backend schema or functions.
+- Private product Convex reads, writes, and actions must use the shared backend access guard before touching product data or spending YouTube quota. The guard validates the Clerk/Convex identity and an active `replayglowz` product-access snapshot; client product-access UI state is not authorization.
+- Recognized accounts that receive ReplayGlowz free access are represented by a server-owned `productAccessSnapshots` row with `reasonCode=default_free_entitlement`. Revoked snapshots block access and must not be overwritten by the default-free bootstrap.
 - Public site content must use app/product contracts as claim boundaries.
 - Worker secrets, provider keys, cookies, and raw logs must not be copied into docs.
 

@@ -1,12 +1,12 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getUserId } from "./utils";
+import { requireReplayGlowzAccess } from "./access";
 
 // Get all playlists for the current user
 export const getPlaylists = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return [];
 
     return await ctx.db
@@ -20,7 +20,7 @@ export const getPlaylists = query({
 export const getPlaylist = query({
   args: { id: v.id("playlists") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return null;
 
     const playlist = await ctx.db.get(args.id);
@@ -37,7 +37,7 @@ export const getPlaylist = query({
 export const getPlaylistWithVideos = query({
   args: { id: v.id("playlists") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return null;
 
     const playlist = await ctx.db.get(args.id);
@@ -65,7 +65,7 @@ export const createPlaylist = mutation({
     isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
     if (args.name.length > 200) throw new Error("Name too long (max 200 chars)");
     if (args.description && args.description.length > 2000) throw new Error("Description too long (max 2,000 chars)");
@@ -93,7 +93,7 @@ export const updatePlaylist = mutation({
     isPublic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const playlist = await ctx.db.get(args.id);
@@ -124,7 +124,7 @@ export const addVideoToPlaylist = mutation({
     videoId: v.id("videos"),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const playlist = await ctx.db.get(args.playlistId);
@@ -134,7 +134,7 @@ export const addVideoToPlaylist = mutation({
 
     // Check if video exists
     const video = await ctx.db.get(args.videoId);
-    if (!video) throw new Error("Video not found");
+    if (!video || video.userId !== userId) throw new Error("Video not found");
 
     // Add video ID if not already in playlist
     if (!playlist.videoIds.includes(args.videoId)) {
@@ -155,7 +155,7 @@ export const removeVideoFromPlaylist = mutation({
     videoId: v.id("videos"),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const playlist = await ctx.db.get(args.playlistId);
@@ -179,7 +179,7 @@ export const reorderPlaylistVideos = mutation({
     videoIds: v.array(v.id("videos")),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const playlist = await ctx.db.get(args.playlistId);
@@ -214,7 +214,7 @@ export const reorderPlaylistVideos = mutation({
 export const deletePlaylist = mutation({
   args: { id: v.id("playlists") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const playlist = await ctx.db.get(args.id);

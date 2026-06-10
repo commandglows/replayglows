@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query, QueryCtx, MutationCtx } from "./_generated/server";
-import { getUserId } from "./utils";
+import { requireReplayGlowzAccess } from "./access";
 import { Doc, Id } from "./_generated/dataModel";
 
 const SUBSCRIPTIONS_SOURCE_ID = "__subscriptions__";
@@ -350,7 +350,7 @@ export const listFeeds = query({
     includeInactive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return [];
 
     const includeInactive = args.includeInactive === true;
@@ -404,7 +404,7 @@ export const getFeedDetails = query({
     pageSize: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) {
       return {
         feed: null,
@@ -619,7 +619,7 @@ export const getFeedDetails = query({
 export const getFeed = query({
   args: { virtualFeedId: v.id("virtualFeeds") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return null;
 
     return getUserOwnedFeed(ctx, userId, args.virtualFeedId);
@@ -632,7 +632,7 @@ export const listPlaylistChannelCandidates = query({
     youtubePlaylistId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return null;
 
     const feed = await getUserOwnedFeed(ctx, userId, args.virtualFeedId);
@@ -749,7 +749,7 @@ export const createFeed = mutation({
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const title = args.title.trim();
@@ -792,7 +792,7 @@ export const updateFeed = mutation({
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const feed = await getUserOwnedFeed(ctx, userId, args.virtualFeedId);
@@ -840,7 +840,7 @@ export const updateFeed = mutation({
 export const deleteFeed = mutation({
   args: { virtualFeedId: v.id("virtualFeeds") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const feed = await getUserOwnedFeed(ctx, userId, args.virtualFeedId);
@@ -865,7 +865,7 @@ export const addFeedSource = mutation({
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const feed = await getUserOwnedFeed(ctx, userId, args.virtualFeedId);
@@ -940,7 +940,7 @@ export const addFeedSources = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const feed = await getUserOwnedFeed(ctx, userId, args.virtualFeedId);
@@ -1076,7 +1076,7 @@ export const addFeedSources = mutation({
 export const removeFeedSource = mutation({
   args: { virtualFeedSourceId: v.id("virtualFeedSources") },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const source = await ctx.db.get(args.virtualFeedSourceId);
@@ -1122,7 +1122,7 @@ export const reorderFeedSources = mutation({
     sourceIds: v.array(v.id("virtualFeedSources")),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const feed = await getUserOwnedFeed(ctx, userId, args.virtualFeedId);
@@ -1161,7 +1161,7 @@ export const toggleFeedSource = mutation({
     isActive: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const source = await ctx.db.get(args.virtualFeedSourceId);

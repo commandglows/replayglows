@@ -1,7 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { getUserId } from "./utils";
+import { requireReplayGlowzAccess } from "./access";
 import { PLANS } from "./subscriptions";
 
 // =============================================================================
@@ -12,7 +12,7 @@ import { PLANS } from "./subscriptions";
 export const getNotes = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return null;
 
     const notes = await ctx.db
@@ -32,9 +32,11 @@ export const getNote = query({
     id: v.optional(v.id("notes")),
   },
   handler: async (ctx, args) => {
+    const userId = await requireReplayGlowzAccess(ctx);
     const { id } = args;
     if (!id) return null;
     const note = await ctx.db.get(id);
+    if (!note || note.userId !== userId) return null;
     return note;
   },
 });
@@ -47,7 +49,7 @@ export const createNote = mutation({
     isSummary: v.boolean(),
   },
   handler: async (ctx, { title, content, isSummary }) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("User not found");
     if (title.length > 500) throw new Error("Title too long (max 500 chars)");
     if (content.length > 50000)
@@ -82,7 +84,7 @@ export const deleteNote = mutation({
     const noteId = args.noteId ?? args.id;
     if (!noteId) throw new Error("Note ID required");
 
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const note = await ctx.db.get(noteId);
@@ -102,7 +104,7 @@ export const deleteNote = mutation({
 export const getNotesByYoutubeVideo = query({
   args: { youtubeVideoId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return [];
 
     const notes = await ctx.db
@@ -130,7 +132,7 @@ export const createNoteForYoutubeVideo = mutation({
     timestamp: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
     if (args.content.length > 50000)
       throw new Error("Content too long (max 50,000 chars)");
@@ -156,7 +158,7 @@ export const updateNote = mutation({
     timestamp: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const note = await ctx.db.get(args.id);
@@ -181,7 +183,7 @@ export const updateNote = mutation({
 export const getNoteCountForVideo = query({
   args: { youtubeVideoId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return 0;
 
     const notes = await ctx.db
@@ -202,7 +204,7 @@ export const searchNotes = query({
     youtubeVideoId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return [];
 
     const searchTerm = args.query.toLowerCase();
@@ -227,7 +229,7 @@ export const searchNotes = query({
 export const exportNotesForVideo = query({
   args: { youtubeVideoId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
+    const userId = await requireReplayGlowzAccess(ctx);
     if (!userId) return null;
 
     const subscription = await ctx.db
