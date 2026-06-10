@@ -816,96 +816,83 @@ class _ChannelAutomationSettingsCard extends ConsumerWidget {
           );
         }
         return Column(
-          children:
-              channels
-                  .take(12)
-                  .map((channel) {
-                    ChannelPlaylistLink? link;
-                    for (final item
-                        in linksAsync.asData?.value ??
-                            const <ChannelPlaylistLink>[]) {
-                      if (item.youtubeChannelId == channel.youtubeChannelId) {
-                        link = item;
-                        break;
+          children: channels.take(12).map((channel) {
+            ChannelPlaylistLink? link;
+            for (final item
+                in linksAsync.asData?.value ?? const <ChannelPlaylistLink>[]) {
+              if (item.youtubeChannelId == channel.youtubeChannelId) {
+                link = item;
+                break;
+              }
+            }
+            final currentLink = link;
+            return ListTile(
+              leading: const Icon(Icons.account_circle_outlined),
+              title: Text(channel.title),
+              subtitle: Text(
+                currentLink == null
+                    ? 'Not linked'
+                    : '${currentLink.isActive ? 'Active' : 'Paused'} · ${currentLink.youtubePlaylistId}',
+              ),
+              trailing: Wrap(
+                spacing: 4,
+                children: [
+                  if (currentLink != null)
+                    IconButton(
+                      tooltip: currentLink.isActive
+                          ? 'Pause link'
+                          : 'Resume link',
+                      icon: Icon(
+                        currentLink.isActive ? Icons.pause : Icons.play_arrow,
+                      ),
+                      onPressed: () async {
+                        await toggleChannelLinkStatus(ref, currentLink.id);
+                      },
+                    ),
+                  IconButton(
+                    tooltip: currentLink == null
+                        ? 'Link to playlist'
+                        : 'Sync channel',
+                    icon: Icon(
+                      currentLink == null ? Icons.add_link : Icons.sync,
+                    ),
+                    onPressed: () async {
+                      if (currentLink == null) {
+                        await _showLinkDialog(
+                          context,
+                          ref,
+                          channel,
+                          playlistsAsync.asData?.value ?? const [],
+                        );
+                        return;
                       }
-                    }
-                    final currentLink = link;
-                    return ListTile(
-                      leading: const Icon(Icons.account_circle_outlined),
-                      title: Text(channel.title),
-                      subtitle: Text(
-                        currentLink == null
-                            ? 'Not linked'
-                            : '${currentLink.isActive ? 'Active' : 'Paused'} · ${currentLink.youtubePlaylistId}',
-                      ),
-                      trailing: Wrap(
-                        spacing: 4,
-                        children: [
-                          if (currentLink != null)
-                            IconButton(
-                              tooltip: currentLink.isActive
-                                  ? 'Pause link'
-                                  : 'Resume link',
-                              icon: Icon(
-                                currentLink.isActive
-                                    ? Icons.pause
-                                    : Icons.play_arrow,
-                              ),
-                              onPressed: () async {
-                                await toggleChannelLinkStatus(
-                                  ref,
-                                  currentLink.id,
-                                );
-                              },
-                            ),
-                          IconButton(
-                            tooltip: currentLink == null
-                                ? 'Link to playlist'
-                                : 'Sync channel',
-                            icon: Icon(
-                              currentLink == null ? Icons.add_link : Icons.sync,
-                            ),
-                            onPressed: () async {
-                              if (currentLink == null) {
-                                await _showLinkDialog(
-                                  context,
-                                  ref,
-                                  channel,
-                                  playlistsAsync.asData?.value ?? const [],
-                                );
-                                return;
-                              }
-                              final result = await syncPastVideosFromChannel(
-                                ref,
-                                youtubeChannelId: currentLink.youtubeChannelId,
-                                channelTitle: currentLink.channelTitle,
-                                youtubePlaylistId:
-                                    currentLink.youtubePlaylistId,
-                              );
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    result.message ??
-                                        'Synced ${result.addedCount} video(s).',
-                                  ),
-                                ),
-                              );
-                            },
+                      final result = await syncPastVideosFromChannel(
+                        ref,
+                        youtubeChannelId: currentLink.youtubeChannelId,
+                        channelTitle: currentLink.channelTitle,
+                        youtubePlaylistId: currentLink.youtubePlaylistId,
+                      );
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            result.message ??
+                                'Synced ${result.addedCount} video(s).',
                           ),
-                          if (currentLink != null)
-                            IconButton(
-                              tooltip: 'Unlink channel',
-                              icon: const Icon(Icons.link_off),
-                              onPressed: () =>
-                                  unlinkChannel(ref, currentLink.id),
-                            ),
-                        ],
-                      ),
-                    );
-                  })
-                  .toList()
-                ..insert(0, header),
+                        ),
+                      );
+                    },
+                  ),
+                  if (currentLink != null)
+                    IconButton(
+                      tooltip: 'Unlink channel',
+                      icon: const Icon(Icons.link_off),
+                      onPressed: () => unlinkChannel(ref, currentLink.id),
+                    ),
+                ],
+              ),
+            );
+          }).toList()..insert(0, header),
         );
       },
       loading: () => const ListTile(
@@ -1091,7 +1078,8 @@ class _DiagnosticsCard extends ConsumerWidget {
       'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}',
       'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
       'CONVEX_URL: ${convexUrl.isNotEmpty ? convexUrl : '(missing)'}',
-      'CLERK_PUBLISHABLE_KEY: ${clerkPublishableKey.isNotEmpty ? maskValue(clerkPublishableKey) : '(missing)'}',
+      'Auth owner: ${authConfigOwnerLabel()}',
+      'CLERK_PUBLISHABLE_KEY: ${clerkPublishableKeyStatusLabel()}',
       'CLERK_SIGN_IN_URL: $clerkSignInUrl',
       'CLERK_SIGN_UP_URL: $clerkSignUpUrl',
       'REPLAYGLOWZ_PRODUCT_ID: $replayGlowzProductId',
@@ -1132,10 +1120,8 @@ class _DiagnosticsCard extends ConsumerWidget {
       ),
       (
         key: 'CLERK_PUBLISHABLE_KEY',
-        value: clerkPublishableKey.isNotEmpty
-            ? maskValue(clerkPublishableKey)
-            : '(missing)',
-        ok: clerkPublishableKey.isNotEmpty,
+        value: clerkPublishableKeyStatusLabel(),
+        ok: !requiresClerkConfig || clerkPublishableKey.isNotEmpty,
       ),
       (
         key: 'CLERK_SIGN_IN_URL',

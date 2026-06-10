@@ -143,10 +143,19 @@ String sentryStatusLabel() {
 
 bool get hasClerkConfig => clerkPublishableKey.isNotEmpty;
 
+bool get requiresClerkConfig => kIsWeb;
+
+String authConfigOwnerLabel() => kIsWeb ? 'Clerk web' : 'Firebase native';
+
 String maskValue(String value, {int head = 10, int tail = 5}) {
   if (value.isEmpty) return '(missing)';
   if (value.length <= head + tail + 3) return value;
   return '${value.substring(0, head)}...${value.substring(value.length - tail)}';
+}
+
+String clerkPublishableKeyStatusLabel() {
+  if (!requiresClerkConfig) return 'not required on native';
+  return maskValue(clerkPublishableKey);
 }
 
 String hostForUrl(String value) {

@@ -277,7 +277,8 @@ class _ConfigFallbackScreen extends StatelessWidget {
       'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}',
       'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
       'CONVEX_URL: ${convexUrl.isNotEmpty ? convexUrl : '(missing)'}',
-      'CLERK_PUBLISHABLE_KEY: ${clerkPublishableKey.isNotEmpty ? maskValue(clerkPublishableKey) : '(missing)'}',
+      'Auth owner: ${authConfigOwnerLabel()}',
+      'CLERK_PUBLISHABLE_KEY: ${clerkPublishableKeyStatusLabel()}',
       'FIREBASE_PROJECT_ID: ${firebaseProjectId.isNotEmpty ? maskValue(firebaseProjectId) : '(missing)'}',
       'FIREBASE_DEV_API_KEY: ${firebaseDevApiKey.isNotEmpty ? maskValue(firebaseDevApiKey) : '(missing)'}',
       'FIREBASE_DEV_APP_ID: ${firebaseDevAppId.isNotEmpty ? maskValue(firebaseDevAppId) : '(missing)'}',
@@ -315,104 +316,112 @@ class _ConfigFallbackScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.settings_rounded, size: 28),
-                        SizedBox(width: 12),
-                        Text(
-                          'ReplayGlowz configuration required',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.settings_rounded, size: 28),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'ReplayGlowz bootstrap failed',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      missing.isEmpty
-                          ? 'The app started, but bootstrap failed.'
-                          : 'This build succeeded, but the app is running in '
-                                'fallback mode because required environment '
-                                'variables are missing.',
-                    ),
-                    if (missing.isNotEmpty) ...[
+                        ],
+                      ),
                       const SizedBox(height: 16),
                       Text(
-                        'Missing variables: ${missing.join(', ')}',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        missing.isEmpty
+                            ? 'The app started, but bootstrap failed.'
+                            : 'This build succeeded, but the app is running in '
+                                  'fallback mode because required environment '
+                                  'variables are missing.',
                       ),
-                    ],
-                    const SizedBox(height: 12),
-                    const SelectableText(
-                      'Set these at build time with --dart-define or in Vercel '
-                      'project environment variables.',
-                    ),
-                    const SizedBox(height: 16),
-                    SelectableText(
-                      'Build commit: $buildCommitSha\n'
-                      'Build environment: $buildEnvironment\n'
-                      'Build timestamp: $buildTimestamp\n'
-                      'Build mode: ${buildModeLabel()}\n'
-                      'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}\n'
-                      'CONVEX_URL: ${convexUrl.isNotEmpty ? convexUrl : '(missing)'}\n'
-                      'CLERK_PUBLISHABLE_KEY: ${clerkPublishableKey.isNotEmpty ? maskValue(clerkPublishableKey) : '(missing)'}\n'
-                      'FIREBASE_PROJECT_ID: ${firebaseProjectId.isNotEmpty ? maskValue(firebaseProjectId) : '(missing)'}\n'
-                      'FIREBASE_DEV_API_KEY: ${firebaseDevApiKey.isNotEmpty ? maskValue(firebaseDevApiKey) : '(missing)'}\n'
-                      'FIREBASE_DEV_APP_ID: ${firebaseDevAppId.isNotEmpty ? maskValue(firebaseDevAppId) : '(missing)'}\n'
-                      'FIREBASE_DEV_MESSAGING_SENDER_ID: ${firebaseDevMessagingSenderId.isNotEmpty ? maskValue(firebaseDevMessagingSenderId) : '(missing)'}\n'
-                      'FIREBASE_DEV_AUTH_DOMAIN: ${firebaseDevAuthDomain.isNotEmpty ? firebaseDevAuthDomain : '(missing)'}\n'
-                      'FIREBASE_DEV_STORAGE_BUCKET: ${firebaseDevStorageBucket.isNotEmpty ? firebaseDevStorageBucket : '(missing)'}\n'
-                      'SUITE_IDENTITY_BRIDGE_URL: ${trimmedSuiteIdentityBridgeUrl.isNotEmpty ? trimmedSuiteIdentityBridgeUrl : '(missing)'}\n'
-                      'CLERK_SIGN_IN_URL: $clerkSignInUrl\n'
-                      'CLERK_SIGN_UP_URL: $clerkSignUpUrl\n'
-                      'REPLAYGLOWZ_PRODUCT_ID: $replayGlowzProductId\n'
-                      'REPLAYGLOWZ_LEGACY_PRODUCT_IDS: $replayGlowzLegacyProductIds\n'
-                      'REPLAYGLOWZ_ACCOUNT_CENTER_URL: $replayGlowzAccountCenterUrl\n'
-                      'REPLAYGLOWZ_APP_URL: ${replayGlowzAppUrl.isNotEmpty ? replayGlowzAppUrl : '(missing)'}\n'
-                      'REPLAYGLOWZ_APP_URL host match: ${hostMatchLabel(replayGlowzAppUrl)}\n'
-                      'SENTRY: ${sentryStatusLabel()}',
-                    ),
-                    const SizedBox(height: 12),
-                    OutlinedButton.icon(
-                      onPressed: () => _copyDiagnostics(context),
-                      icon: const Icon(Icons.copy, size: 16),
-                      label: const Text('Copy diagnostics'),
-                    ),
-                    if (bootstrapError != null) ...[
-                      const SizedBox(height: 16),
-                      SelectableText(
-                        'Bootstrap error: $bootstrapError',
-                        style: const TextStyle(color: Colors.red),
+                      if (missing.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          'Missing variables: ${missing.join(', ')}',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      const SelectableText(
+                        kIsWeb
+                            ? 'Set these at build time with --dart-define or '
+                                  'web project environment variables.'
+                            : 'Set these at build time with --dart-define in '
+                                  'the Android CI workflow secrets.',
                       ),
                       const SizedBox(height: 8),
                       OutlinedButton.icon(
-                        onPressed: () => copyErrorToClipboard(
-                          context,
-                          bootstrapError!,
-                          prefix: 'Bootstrap error',
-                        ),
+                        onPressed: () => _copyDiagnostics(context),
                         icon: const Icon(Icons.copy, size: 16),
-                        label: Text(
-                          Localizations.localeOf(context).languageCode == 'fr'
-                              ? 'Copier'
-                              : 'Copy',
-                        ),
+                        label: const Text('Copy diagnostics'),
                       ),
+                      const SizedBox(height: 16),
+                      SelectableText(
+                        'Build commit: $buildCommitSha\n'
+                        'Build environment: $buildEnvironment\n'
+                        'Build timestamp: $buildTimestamp\n'
+                        'Build mode: ${buildModeLabel()}\n'
+                        'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}\n'
+                        'CONVEX_URL: ${convexUrl.isNotEmpty ? convexUrl : '(missing)'}\n'
+                        'Auth owner: ${authConfigOwnerLabel()}\n'
+                        'CLERK_PUBLISHABLE_KEY: ${clerkPublishableKeyStatusLabel()}\n'
+                        'FIREBASE_PROJECT_ID: ${firebaseProjectId.isNotEmpty ? maskValue(firebaseProjectId) : '(missing)'}\n'
+                        'FIREBASE_DEV_API_KEY: ${firebaseDevApiKey.isNotEmpty ? maskValue(firebaseDevApiKey) : '(missing)'}\n'
+                        'FIREBASE_DEV_APP_ID: ${firebaseDevAppId.isNotEmpty ? maskValue(firebaseDevAppId) : '(missing)'}\n'
+                        'FIREBASE_DEV_MESSAGING_SENDER_ID: ${firebaseDevMessagingSenderId.isNotEmpty ? maskValue(firebaseDevMessagingSenderId) : '(missing)'}\n'
+                        'FIREBASE_DEV_AUTH_DOMAIN: ${firebaseDevAuthDomain.isNotEmpty ? firebaseDevAuthDomain : '(missing)'}\n'
+                        'FIREBASE_DEV_STORAGE_BUCKET: ${firebaseDevStorageBucket.isNotEmpty ? firebaseDevStorageBucket : '(missing)'}\n'
+                        'SUITE_IDENTITY_BRIDGE_URL: ${trimmedSuiteIdentityBridgeUrl.isNotEmpty ? trimmedSuiteIdentityBridgeUrl : '(missing)'}\n'
+                        'CLERK_SIGN_IN_URL: $clerkSignInUrl\n'
+                        'CLERK_SIGN_UP_URL: $clerkSignUpUrl\n'
+                        'REPLAYGLOWZ_PRODUCT_ID: $replayGlowzProductId\n'
+                        'REPLAYGLOWZ_LEGACY_PRODUCT_IDS: $replayGlowzLegacyProductIds\n'
+                        'REPLAYGLOWZ_ACCOUNT_CENTER_URL: $replayGlowzAccountCenterUrl\n'
+                        'REPLAYGLOWZ_APP_URL: ${replayGlowzAppUrl.isNotEmpty ? replayGlowzAppUrl : '(missing)'}\n'
+                        'REPLAYGLOWZ_APP_URL host match: ${hostMatchLabel(replayGlowzAppUrl)}\n'
+                        'SENTRY: ${sentryStatusLabel()}',
+                      ),
+                      if (bootstrapError != null) ...[
+                        const SizedBox(height: 16),
+                        SelectableText(
+                          'Bootstrap error: $bootstrapError',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          onPressed: () => copyErrorToClipboard(
+                            context,
+                            bootstrapError!,
+                            prefix: 'Bootstrap error',
+                          ),
+                          icon: const Icon(Icons.copy, size: 16),
+                          label: Text(
+                            Localizations.localeOf(context).languageCode == 'fr'
+                                ? 'Copier'
+                                : 'Copy',
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),

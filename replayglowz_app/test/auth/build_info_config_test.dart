@@ -49,4 +49,12 @@ void main() {
       expect(config.missingEnvironmentNames, isEmpty);
     });
   });
+
+  group('platform auth diagnostics', () {
+    test('does not report Clerk as required on native runtimes', () {
+      expect(requiresClerkConfig, isFalse);
+      expect(authConfigOwnerLabel(), 'Firebase native');
+      expect(clerkPublishableKeyStatusLabel(), 'not required on native');
+    });
+  });
 }
