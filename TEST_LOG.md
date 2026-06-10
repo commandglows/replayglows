@@ -1,3 +1,17 @@
+## 2026-06-10 - ReplayGlowz Feed View Mode Scroll Sync Retest
+
+- Scope: BUG-2026-06-01-004 / Feed cards-list-notes scroll synchronization
+- Environment: production build `ef45c77`
+- Tester: user
+- Source: sf-test
+- Status: fail
+- Confidence: high
+- Result summary: Horizontal swiping between Feed view modes still rebounds the feed to the first video, breaking cross-mode position synchronization.
+- Bug pointer: BUG-2026-06-01-004 -> shipflow_data/workflow/bugs/BUG-2026-06-01-004.md
+- Evidence pointer: operator diagnostics supplied in chat; private identifiers and keys were not stored.
+- Deploy note: Vercel production is now READY for `735135631e0c3ea10381a0bc26fb180d4551b377`; `https://app.replayglowz.com` returns HTTP 200 and serves Flutter boot files modified after the reported `ef45c77` build.
+- Follow-up: hard reload or restart app, confirm diagnostics show `735135631e0c3ea10381a0bc26fb180d4551b377`, then /sf-test --prod --retest BUG-2026-06-01-004
+
 ## 2026-06-10 - ReplayGlowz Feed Subscription Channel Picker
 
 - Scope: BUG-2026-06-10-001 / Convex entitlement guard production smoke
