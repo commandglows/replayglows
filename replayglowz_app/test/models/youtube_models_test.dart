@@ -167,6 +167,16 @@ void main() {
       expect(channel.description, 'Channel description');
       expect(channel.thumbnailUrl, contains('thumb.jpg'));
     });
+
+    test('accepts Convex channel id projection as channel id fallback', () {
+      final channel = YouTubeChannel.fromJson({
+        'id': 'UC_FROM_ID',
+        'title': 'Creator from id',
+      });
+
+      expect(channel.youtubeChannelId, 'UC_FROM_ID');
+      expect(channel.title, 'Creator from id');
+    });
   });
 
   group('ChannelPlaylistLink.fromJson', () {

@@ -1,3 +1,16 @@
+## 2026-06-10 - ReplayGlowz Feed Subscription Channel Picker
+
+- Scope: BUG-2026-06-10-001 / Convex entitlement guard production smoke
+- Environment: production
+- Tester: user
+- Source: sf-test
+- Status: fail
+- Confidence: medium
+- Result summary: In the Feed source picker, clicking one channel under `Channels from my subscriptions` selects every channel; deselecting one deselects every channel, so a single subscription channel cannot be selected.
+- Bug pointer: BUG-2026-06-10-001 -> bugs/BUG-2026-06-10-001.md
+- Evidence pointer: operator report in chat; no private evidence stored.
+- Follow-up: /sf-fix BUG-2026-06-10-001
+
 ## 2026-05-27 - ReplayGlowz Authenticated Playlists FAB Retest
 
 - Scope: BUG-2026-05-26-002 / replayglowz-youtube-parity-stabilization-qa-closure

@@ -13,7 +13,8 @@ class YouTubeChannel {
 
   factory YouTubeChannel.fromJson(Map<String, dynamic> json) {
     return YouTubeChannel(
-      youtubeChannelId: json['youtubeChannelId']?.toString() ?? '',
+      youtubeChannelId:
+          json['youtubeChannelId']?.toString() ?? json['id']?.toString() ?? '',
       title: json['title']?.toString() ?? 'Untitled channel',
       description: json['description']?.toString(),
       thumbnailUrl: json['thumbnailUrl']?.toString(),

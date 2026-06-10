@@ -138,8 +138,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
 
     final sourceTab = _lastSyncedTabIndex.clamp(0, 2);
     final anchor =
-        _lastFeedScrollAnchor ??
-        _anchorForVisibleVideo(sourceTab, snapToNearest: true);
+        _anchorForVisibleVideo(sourceTab, snapToNearest: true) ??
+        _lastFeedScrollAnchor;
     if (anchor == null) return;
 
     for (final tabIndex in {lowerTab, upperTab}) {
@@ -427,7 +427,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   _FeedScrollAnchor? _estimatedAnchorForTab(int tabIndex) {
     if (_visibleFeedQueue.isEmpty) return null;
     final controller = _scrollControllerForTab(tabIndex);
-    final offset = controller.hasClients ? controller.offset : 0.0;
+    if (!controller.hasClients) return null;
+
+    final offset = controller.offset;
     final index = _estimatedIndexForScrollOffset(
       offset,
       tabIndex,

@@ -752,6 +752,7 @@ export const getYoutubeChannels = query({
 
     return channels.map((c) => ({
       id: c.youtubeChannelId,
+      youtubeChannelId: c.youtubeChannelId,
       title: c.title,
       description: c.description,
       thumbnailUrl: c.thumbnailUrl,
