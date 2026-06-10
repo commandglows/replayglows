@@ -54,5 +54,11 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
 
+dependency_overrides:
+  # convex_flutter 3.0.1 ships FRB-generated native bindings for 2.11.1.
+  # Allowing pub to resolve flutter_rust_bridge 2.12.0 trips the runtime
+  # sanity check before the app can initialise Convex on Android.
+  flutter_rust_bridge: 2.11.1
+
 flutter:
   uses-material-design: true

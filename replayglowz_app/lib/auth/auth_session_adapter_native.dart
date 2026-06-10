@@ -38,7 +38,7 @@ class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
     GoogleSignIn? googleSignIn,
     SuiteIdentityBridgeClient? suiteIdentityBridgeClient,
     SuiteIdentityBridgeRuntimeConfig? bridgeConfig,
-  }) : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance,
+  }) : _firebaseAuthOverride = firebaseAuth,
        _googleSignIn =
            googleSignIn ??
            GoogleSignIn(
@@ -49,7 +49,7 @@ class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
        _bridgeConfig =
            bridgeConfig ?? suiteIdentityBridgeRuntimeConfigFromBuildInfo();
 
-  final firebase_auth.FirebaseAuth _firebaseAuth;
+  final firebase_auth.FirebaseAuth? _firebaseAuthOverride;
   final GoogleSignIn _googleSignIn;
   final SuiteIdentityBridgeClient _suiteIdentityBridgeClient;
   final SuiteIdentityBridgeRuntimeConfig _bridgeConfig;
@@ -59,6 +59,9 @@ class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
   String? _statusMessage;
   SuiteIdentitySnapshot? _suiteIdentitySnapshot;
   StreamSubscription<firebase_auth.User?>? _authSubscription;
+
+  firebase_auth.FirebaseAuth get _firebaseAuth =>
+      _firebaseAuthOverride ?? firebase_auth.FirebaseAuth.instance;
 
   @override
   bool get isInitialised => _initialised;
