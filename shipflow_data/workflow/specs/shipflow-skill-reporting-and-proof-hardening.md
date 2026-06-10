@@ -1,18 +1,18 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "1.0.0"
 project: "replayglowz"
 created: "2026-06-09"
 created_at: "2026-06-09 21:02:45 UTC"
-updated: "2026-06-09"
-updated_at: "2026-06-09 21:02:45 UTC"
-status: draft
+updated: "2026-06-10"
+updated_at: "2026-06-10 07:36:06 UTC"
+status: ready
 source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "workflow"
 owner: "Diane"
-user_story: "En tant qu'operatrice ShipFlow qui lance directement une skill, je veux recevoir un retour court, clair et actionnable, avec des questions rares et comprehensibles, afin que ShipFlow reste autonome et professionnel sans me demander de suivre toute sa mecanique interne."
+user_story: "En tant qu'opératrice ShipFlow qui lance directement une skill, je veux recevoir un retour court, clair et actionnable, avec des questions rares et compréhensibles, afin que ShipFlow reste autonome et professionnel sans me demander de suivre toute sa mécanique interne."
 confidence: high
 risk_level: high
 security_impact: yes
@@ -51,7 +51,7 @@ evidence:
   - "User decision 2026-06-09: sf-ready is too verbose, asks unclear questions, and should become more autonomous and professionally effective."
   - "Existing reporting-contract.md already distinguishes report=user and report=agent but needs stronger enforcement scenarios."
   - "Existing question-contract.md already limits questions but does not yet force autonomy strongly enough in lifecycle skills."
-next_step: "/sf-ready shipflow-skill-reporting-and-proof-hardening"
+next_step: "/sf-ship shipflow-skill-reporting-and-proof-hardening"
 ---
 
 # Spec: ShipFlow Skill Reporting And Proof Hardening
@@ -62,11 +62,11 @@ ShipFlow skill reporting and proof hardening
 
 ## Status
 
-draft
+ready
 
 ## User Story
 
-En tant qu'operatrice ShipFlow qui lance directement une skill, je veux recevoir un retour court, clair et actionnable, avec des questions rares et comprehensibles, afin que ShipFlow reste autonome et professionnel sans me demander de suivre toute sa mecanique interne.
+En tant qu'opératrice ShipFlow qui lance directement une skill, je veux recevoir un retour court, clair et actionnable, avec des questions rares et compréhensibles, afin que ShipFlow reste autonome et professionnel sans me demander de suivre toute sa mécanique interne.
 
 ## Minimal Behavior Contract
 
@@ -229,19 +229,27 @@ Harden the shared ShipFlow contracts and the high-risk lifecycle skills so user-
   - Validate with: `rg -n "report=user|report=agent|compact|Checklist|Verdict" /home/claude/shipflow/templates/artifacts/readiness_report.md`
   - Notes: Preserve machine-readable fields for durable reports.
 
-- [ ] Task 7: Add pressure-scenario validation.
+- [ ] Task 7: Create the manual pressure-scenario checklist.
+  - File: `shipflow_data/workflow/test-checklists/shipflow-skill-reporting-and-proof-hardening.md`
+  - Action: Create the checklist artifact for `SSRP-001` through `SSRP-008`, with expected evidence, pass/fail/block status fields, and notes for human-readable versus agent-readable output.
+  - User story link: Makes the required manual proof concrete and repeatable.
+  - Depends on: Tasks 1-6
+  - Validate with: `/home/claude/shipflow/tools/shipflow_metadata_lint.py shipflow_data/workflow/test-checklists/shipflow-skill-reporting-and-proof-hardening.md`
+  - Notes: Use the existing manual checklist template if it fits; keep scenarios concise and deterministic.
+
+- [ ] Task 8: Add pressure-scenario validation.
   - File: `/home/claude/shipflow/skills/references/reporting-contract.md`
   - Action: Add or reference pressure scenarios covering human success report, human not-ready report, human blocked safety report, agent handoff report, safe-default autonomy, and required numbered question.
   - User story link: Makes the behavior testable beyond wording changes.
-  - Depends on: Tasks 1-6
+  - Depends on: Tasks 1-7
   - Validate with: `rg -n "pressure|scenario|safe default|not ready|blocked" /home/claude/shipflow/skills/references/reporting-contract.md /home/claude/shipflow/skills/references/question-contract.md`
   - Notes: If a separate scenario reference is cleaner, create it under `/home/claude/shipflow/skills/references/` and list it in `depends_on` during implementation.
 
-- [ ] Task 8: Run ShipFlow skill validation.
+- [ ] Task 9: Run ShipFlow skill validation.
   - File: `/home/claude/shipflow`
   - Action: Run metadata/skill checks and targeted scans after edits.
   - User story link: Ensures the contract changes are installable and synchronized.
-  - Depends on: Tasks 1-7
+  - Depends on: Tasks 1-8
   - Validate with: `python3 tools/skill_budget_audit.py --skills-root skills --format markdown` and `tools/shipflow_sync_skills.sh --check --all`
   - Notes: If sync fails because installed skill copies differ, report the exact sync action needed instead of claiming complete.
 
@@ -337,14 +345,19 @@ None
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
 | 2026-06-09 21:02:45 UTC | sf-spec | GPT-5 Codex | Created spec from conversation audit and user confirmation | draft | /sf-ready shipflow-skill-reporting-and-proof-hardening |
+| 2026-06-09 21:52:38 UTC | sf-ready | GPT-5 Codex | Reviewed readiness, corrected mechanical checklist/language gaps, and applied ready transition | ready | /sf-start shipflow-skill-reporting-and-proof-hardening |
+| 2026-06-09 22:01:52 UTC | sf-start | GPT-5 Codex | Implemented shared reporting, question, proof, readiness, template, and checklist changes | implemented | /sf-verify shipflow-skill-reporting-and-proof-hardening |
+| 2026-06-09 22:01:52 UTC | sf-verify | GPT-5 Codex | Verified targeted scans, metadata lint, skill budget audit, sync check, and checklist scenarios | verified | /sf-end shipflow-skill-reporting-and-proof-hardening |
+| 2026-06-09 22:01:52 UTC | sf-build | GPT-5 Codex | Orchestrated ready spec implementation and verification; stopped before ship scope decision | partial | /sf-end shipflow-skill-reporting-and-proof-hardening |
+| 2026-06-10 07:36:06 UTC | sf-end | GPT-5 Codex | Closed workflow bookkeeping with tracker, changelog, and chantier flow updates | closed | /sf-ship shipflow-skill-reporting-and-proof-hardening |
 
 ## Current Chantier Flow
 
 - `sf-spec`: done, draft spec created.
-- `sf-ready`: not launched.
-- `sf-start`: not launched.
-- `sf-verify`: not launched.
-- `sf-end`: not launched.
+- `sf-ready`: ready.
+- `sf-start`: implemented.
+- `sf-verify`: verified.
+- `sf-end`: closed.
 - `sf-ship`: not launched.
 
-Next step: `/sf-ready shipflow-skill-reporting-and-proof-hardening`
+Next step: `/sf-ship shipflow-skill-reporting-and-proof-hardening`

@@ -20,6 +20,7 @@
 ## Documentation Governance
 
 🟢 [replayglowz] task: Align root and subproject ShipFlow docs under canonical `shipflow_data/` paths | status: done | area: docs
+🟢 [ShipFlow] task: Close local governance spec for ShipFlow skill reporting and proof hardening | status: done | area: workflow | spec: shipflow_data/workflow/specs/shipflow-skill-reporting-and-proof-hardening.md | next: /sf-ship shipflow-skill-reporting-and-proof-hardening
 
 ## Audit: Perf
 
