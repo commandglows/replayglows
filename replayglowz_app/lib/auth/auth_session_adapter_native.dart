@@ -42,7 +42,9 @@ class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
        _googleSignIn =
            googleSignIn ??
            GoogleSignIn(
-             clientId: firebaseWebClientId.isEmpty ? null : firebaseWebClientId,
+             serverClientId: firebaseWebClientId.isEmpty
+                 ? null
+                 : firebaseWebClientId,
            ),
        _suiteIdentityBridgeClient =
            suiteIdentityBridgeClient ?? const SuiteIdentityBridgeClient(),

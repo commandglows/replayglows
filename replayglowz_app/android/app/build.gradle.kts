@@ -27,6 +27,15 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("replayglowz-debug.keystore")
+            storePassword = "android"
+            keyAlias = "replayglowzdebug"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.

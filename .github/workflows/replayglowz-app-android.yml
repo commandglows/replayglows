@@ -266,6 +266,11 @@ jobs:
       - name: Verify debug APK exists
         run: test -f build/app/outputs/flutter-apk/app-debug.apk
 
+      - name: Print debug APK signing certificate fingerprints
+        run: |
+          keytool -printcert -jarfile build/app/outputs/flutter-apk/app-debug.apk \
+            | sed -n '/SHA1:/p;/SHA256:/p'
+
       - name: Upload debug APK
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
