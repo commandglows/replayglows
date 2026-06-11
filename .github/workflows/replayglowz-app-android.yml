@@ -268,8 +268,9 @@ jobs:
 
       - name: Print debug APK signing certificate fingerprints
         run: |
-          keytool -printcert -jarfile build/app/outputs/flutter-apk/app-debug.apk \
-            | sed -n '/SHA1:/p;/SHA256:/p'
+          apksigner="$(find "${ANDROID_HOME}/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
+          "$apksigner" verify --print-certs build/app/outputs/flutter-apk/app-debug.apk \
+            | sed -n '/SHA-1 digest:/p;/SHA-256 digest:/p'
 
       - name: Upload debug APK
         if: github.event_name == 'workflow_dispatch'
