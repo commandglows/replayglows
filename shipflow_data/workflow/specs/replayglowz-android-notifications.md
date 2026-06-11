@@ -417,6 +417,7 @@ None.
 | 2026-06-11 15:55:00 UTC | sf-start | GPT-5 Codex | Implemented backend Android push settings/device/delivery/cadence logic, Flutter Android FCM permission/token/foreground/tap handling, precise Preferences controls, Android channels, and setup docs. | implemented | `/103-sf-verify replayglowz-android-notifications` |
 | 2026-06-11 14:54:05 UTC | sf-verify | GPT-5 Codex | Re-ran Flutter/backend checks after verification pass; local quality holds but Android-hosted proof remains missing and a verified route/read gap for system pushes persists. | partial | `005-sf-ship replayglowz-android-notifications` |
 | 2026-06-11 15:07:21 UTC | 103-sf-verify | GPT-5 Codex | Re-verified Android push routing/read path: local Flutter analyze + tests + backend typecheck pass. Android-hosted end-to-end proof still missing. | partial | `005-sf-ship replayglowz-android-notifications` |
+| 2026-06-11 17:18:18 UTC | 405-sf-prod | GPT-5 Codex | Diagnosed failed Blacksmith Android APK build, enabled Android core library desugaring required by `flutter_local_notifications`, pushed the fix, and verified push + workflow_dispatch CI runs. | APK CI green; artifact uploaded | real-device Android notification QA |
 
 ## Current Chantier Flow
 
