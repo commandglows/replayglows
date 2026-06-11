@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart';
 import 'package:http/testing.dart';
+import 'package:replayglowz_app/auth/product_entitlement.dart';
 import 'package:replayglowz_app/auth/suite_identity.dart';
 import 'package:replayglowz_app/auth/suite_identity_bridge_client.dart';
 
@@ -97,6 +98,21 @@ void main() {
         expect(snapshot.entitlements.single.grantsAccess, isTrue);
       },
     );
+
+    test('treats legacy tubeflow entitlement as ReplayGlowz access', () {
+      const snapshot = SuiteIdentitySnapshot(
+        status: SuiteIdentityStatus.accessActive,
+        entitlements: [
+          ProductEntitlement(
+            productId: 'tubeflow',
+            status: ProductEntitlementStatus.active,
+          ),
+        ],
+        productToken: 'bridge-token',
+      );
+
+      expect(snapshot.hasReplayGlowzAccess, isTrue);
+    });
 
     test('returns issue on non-200 bridge response', () async {
       final client = MockClient((Request request) async {

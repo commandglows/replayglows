@@ -1,3 +1,4 @@
+import 'package:replayglowz_app/app/build_info.dart';
 import 'package:replayglowz_app/auth/product_entitlement.dart';
 
 enum SuiteIdentityStatus {
@@ -51,9 +52,19 @@ class SuiteIdentitySnapshot {
       status != SuiteIdentityStatus.unavailable &&
       status != SuiteIdentityStatus.unknown;
 
-  bool get hasReplayGlowzAccess => entitlements.any(
-    (entry) => entry.productId == 'replayglowz' && entry.grantsAccess,
-  );
+  bool get hasReplayGlowzAccess {
+    final productIds = {
+      replayGlowzProductId.trim(),
+      ...replayGlowzLegacyProductIds
+          .split(',')
+          .map((value) => value.trim())
+          .where((value) => value.isNotEmpty),
+    }..removeWhere((value) => value.isEmpty);
+
+    return entitlements.any(
+      (entry) => productIds.contains(entry.productId) && entry.grantsAccess,
+    );
+  }
 }
 
 class SuiteIdentityBridgeRuntimeConfig {
