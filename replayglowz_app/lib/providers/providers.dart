@@ -561,11 +561,25 @@ Map<String, dynamic> _normalizeSettingsMap(
   json['language'] ??= 'en';
   json['notifications'] ??= <String, dynamic>{
     'email': true,
-    'push': true,
+    'push': false,
     'newComments': true,
     'newLikes': false,
     'newVideos': true,
     'feedRefreshIntervalMinutes': 60,
+    'androidPush': <String, dynamic>{
+      'enabled': false,
+      'cadence': 'daily',
+      'types': <String, dynamic>{
+        'new_video': true,
+        'transcript_ready': true,
+        'system': true,
+      },
+      'sourceTargeting': <String, dynamic>{
+        'mode': 'all',
+        'selectedFeedIds': <String>[],
+        'selectedChannelSourceIds': <String>[],
+      },
+    },
   };
   json['playback'] ??= <String, dynamic>{
     'autoplay': true,

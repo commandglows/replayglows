@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { requireReplayGlowzAccess } from "./access";
+import { internal } from "./_generated/api";
 
 // Notifications retention period (30 days in milliseconds)
 const NOTIFICATIONS_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
@@ -107,7 +108,7 @@ export const createNotification = internalMutation({
     thumbnailUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("notifications", {
+    const notificationId = await ctx.db.insert("notifications", {
       userId: args.userId,
       type: args.type,
       title: args.title,
@@ -118,6 +119,12 @@ export const createNotification = internalMutation({
       read: false,
       createdAt: Date.now(),
     });
+
+    await ctx.scheduler.runAfter(0, internal.pushDelivery.deliverNotification, {
+      notificationId,
+    });
+
+    return notificationId;
   },
 });
 

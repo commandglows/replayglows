@@ -65,6 +65,10 @@ String _resolvedRedirectTarget(GoRouterState state) {
 // Router provider
 // ---------------------------------------------------------------------------
 
+final rootNavigatorKey = GlobalKey<NavigatorState>(
+  debugLabel: 'replayglowz-root',
+);
+
 final routerProvider = Provider<GoRouter>((ref) {
   // Keep one router instance alive and refresh redirects from auth updates.
   final authStateListenable = ValueNotifier<AuthState>(
@@ -75,6 +79,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   });
 
   final router = GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: Routes.videos,
     refreshListenable: authStateListenable,
     redirect: (BuildContext context, GoRouterState state) {

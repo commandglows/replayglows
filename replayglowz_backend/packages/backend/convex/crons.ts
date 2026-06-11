@@ -24,6 +24,13 @@ crons.interval(
   internal.feedChecker.checkAllUserFeeds
 );
 
+// Re-check canonical notification rows that were deferred by Android push cadence.
+crons.interval(
+  "deliver due Android push notifications",
+  { minutes: 15 },
+  internal.pushDelivery.deliverDueAndroidPushNotifications
+);
+
 // Cleanup old notifications (older than 30 days)
 crons.daily(
   "cleanup old notifications",

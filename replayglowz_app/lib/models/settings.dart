@@ -169,12 +169,52 @@ List<String>? _asStringList(dynamic value) {
 // ---------------------------------------------------------------------------
 
 /// Notification preferences.
+enum PushCadence {
+  hourly,
+  every6Hours,
+  daily,
+  every3Days;
+
+  static PushCadence fromJson(String? value) {
+    switch (value) {
+      case 'hourly':
+        return PushCadence.hourly;
+      case 'every_6_hours':
+        return PushCadence.every6Hours;
+      case 'every_3_days':
+        return PushCadence.every3Days;
+      case 'daily':
+      default:
+        return PushCadence.daily;
+    }
+  }
+
+  String toJson() {
+    switch (this) {
+      case PushCadence.hourly:
+        return 'hourly';
+      case PushCadence.every6Hours:
+        return 'every_6_hours';
+      case PushCadence.daily:
+        return 'daily';
+      case PushCadence.every3Days:
+        return 'every_3_days';
+    }
+  }
+}
+
 class NotificationSettings {
   final bool email;
   final bool push;
   final bool newComments;
   final bool newLikes;
   final bool newVideos;
+  final bool transcriptReady;
+  final bool system;
+  final PushCadence pushCadence;
+  final bool notifyAllSources;
+  final List<String> selectedFeedIds;
+  final List<String> selectedChannelSourceIds;
 
   /// Feed refresh interval in minutes. 0 means disabled.
   /// Typical values: 0, 30, 60, 120, 360, 1440.
@@ -182,21 +222,53 @@ class NotificationSettings {
 
   const NotificationSettings({
     this.email = true,
-    this.push = true,
+    this.push = false,
     this.newComments = true,
     this.newLikes = true,
     this.newVideos = true,
+    this.transcriptReady = true,
+    this.system = true,
+    this.pushCadence = PushCadence.daily,
+    this.notifyAllSources = true,
+    this.selectedFeedIds = const [],
+    this.selectedChannelSourceIds = const [],
     this.feedRefreshIntervalMinutes = 60,
   });
 
   factory NotificationSettings.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const NotificationSettings();
+    final androidPush = _asMap(json['androidPush']);
+    final androidPushTypes = _asMap(androidPush?['types']);
+    final sourceTargeting = _asMap(androidPush?['sourceTargeting']);
+    final sourceTargetingMode = sourceTargeting?['mode'] as String?;
     return NotificationSettings(
       email: json['email'] as bool? ?? true,
-      push: json['push'] as bool? ?? true,
+      push: json['push'] as bool? ?? androidPush?['enabled'] as bool? ?? false,
       newComments: json['newComments'] as bool? ?? true,
       newLikes: json['newLikes'] as bool? ?? true,
       newVideos: json['newVideos'] as bool? ?? true,
+      transcriptReady:
+          json['transcriptReady'] as bool? ??
+          androidPushTypes?['transcript_ready'] as bool? ??
+          true,
+      system:
+          json['system'] as bool? ??
+          androidPushTypes?['system'] as bool? ??
+          true,
+      pushCadence: PushCadence.fromJson(
+        json['pushCadence'] as String? ?? androidPush?['cadence'] as String?,
+      ),
+      notifyAllSources:
+          json['notifyAllSources'] as bool? ??
+          sourceTargetingMode != 'selected',
+      selectedFeedIds:
+          _asStringList(json['selectedFeedIds']) ??
+          _asStringList(sourceTargeting?['selectedFeedIds']) ??
+          const [],
+      selectedChannelSourceIds:
+          _asStringList(json['selectedChannelSourceIds']) ??
+          _asStringList(sourceTargeting?['selectedChannelSourceIds']) ??
+          const [],
       feedRefreshIntervalMinutes:
           json['feedRefreshIntervalMinutes'] as int? ?? 60,
     );
@@ -210,6 +282,20 @@ class NotificationSettings {
       'newLikes': newLikes,
       'newVideos': newVideos,
       'feedRefreshIntervalMinutes': feedRefreshIntervalMinutes,
+      'androidPush': {
+        'enabled': push,
+        'cadence': pushCadence.toJson(),
+        'types': {
+          'new_video': newVideos,
+          'transcript_ready': transcriptReady,
+          'system': system,
+        },
+        'sourceTargeting': {
+          'mode': notifyAllSources ? 'all' : 'selected',
+          'selectedFeedIds': selectedFeedIds,
+          'selectedChannelSourceIds': selectedChannelSourceIds,
+        },
+      },
     };
   }
 
@@ -219,6 +305,12 @@ class NotificationSettings {
     bool? newComments,
     bool? newLikes,
     bool? newVideos,
+    bool? transcriptReady,
+    bool? system,
+    PushCadence? pushCadence,
+    bool? notifyAllSources,
+    List<String>? selectedFeedIds,
+    List<String>? selectedChannelSourceIds,
     int? feedRefreshIntervalMinutes,
   }) {
     return NotificationSettings(
@@ -227,6 +319,13 @@ class NotificationSettings {
       newComments: newComments ?? this.newComments,
       newLikes: newLikes ?? this.newLikes,
       newVideos: newVideos ?? this.newVideos,
+      transcriptReady: transcriptReady ?? this.transcriptReady,
+      system: system ?? this.system,
+      pushCadence: pushCadence ?? this.pushCadence,
+      notifyAllSources: notifyAllSources ?? this.notifyAllSources,
+      selectedFeedIds: selectedFeedIds ?? this.selectedFeedIds,
+      selectedChannelSourceIds:
+          selectedChannelSourceIds ?? this.selectedChannelSourceIds,
       feedRefreshIntervalMinutes:
           feedRefreshIntervalMinutes ?? this.feedRefreshIntervalMinutes,
     );

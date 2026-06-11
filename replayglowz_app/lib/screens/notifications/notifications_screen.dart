@@ -127,9 +127,15 @@ class _NotificationTile extends ConsumerWidget {
         }
 
         // Navigate based on type
-        if (notification.type == NotificationType.newVideo &&
+        if ((notification.type == NotificationType.newVideo ||
+                notification.type == NotificationType.transcriptReady) &&
             notification.youtubeVideoId != null) {
-          context.go('${Routes.play}?videoId=${notification.youtubeVideoId}');
+          context.go(
+            Uri(
+              path: Routes.play,
+              queryParameters: {'videoId': notification.youtubeVideoId!},
+            ).toString(),
+          );
         }
       },
     );

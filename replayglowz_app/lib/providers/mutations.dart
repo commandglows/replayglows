@@ -870,6 +870,27 @@ Future<dynamic> markAllNotificationsRead(WidgetRef ref) async {
   return service.mutate<dynamic>('notifications:markAllAsRead', {});
 }
 
+/// Registers or refreshes the current device push token for this user.
+Future<dynamic> registerPushDevice(
+  Ref ref, {
+  required String token,
+  String? appVersion,
+}) async {
+  final service = ref.read(convexServiceProvider);
+  return service.mutate<dynamic>('androidPush:registerAndroidDevice', {
+    'token': token,
+    if (appVersion != null) 'appVersion': appVersion,
+  });
+}
+
+/// Deactivates the current device push token for this user.
+Future<dynamic> deactivatePushDevice(Ref ref, {required String token}) async {
+  final service = ref.read(convexServiceProvider);
+  return service.mutate<dynamic>('androidPush:deactivateAndroidDevice', {
+    'token': token,
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Settings
 // ---------------------------------------------------------------------------

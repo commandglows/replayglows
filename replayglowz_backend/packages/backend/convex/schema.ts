@@ -37,6 +37,27 @@ export default defineSchema({
         newVideos: v.optional(v.boolean()),
         feedRefreshIntervalMinutes: v.optional(v.number()), // 0=disabled, 30, 60, 120, 360, 1440
         lastFeedCheckAt: v.optional(v.number()),
+        androidPush: v.optional(
+          v.object({
+            enabled: v.boolean(),
+            cadence: v.union(
+              v.literal("hourly"),
+              v.literal("every_6_hours"),
+              v.literal("daily"),
+              v.literal("every_3_days"),
+            ),
+            types: v.object({
+              new_video: v.boolean(),
+              transcript_ready: v.boolean(),
+              system: v.boolean(),
+            }),
+            sourceTargeting: v.object({
+              mode: v.union(v.literal("all"), v.literal("selected")),
+              selectedFeedIds: v.array(v.id("virtualFeeds")),
+              selectedChannelSourceIds: v.array(v.id("virtualFeedSources")),
+            }),
+          }),
+        ),
       }),
     ),
     playback: v.optional(
@@ -622,6 +643,60 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_and_read", ["userId", "read"])
     .index("by_user_and_created", ["userId", "createdAt"]),
+
+  androidPushDeviceRegistrations: defineTable({
+    userId: v.string(),
+    platform: v.literal("android"),
+    token: v.string(),
+    appInstallationId: v.optional(v.string()),
+    deviceName: v.optional(v.string()),
+    appVersion: v.optional(v.string()),
+    active: v.boolean(),
+    lastSeenAt: v.number(),
+    tokenUpdatedAt: v.number(),
+    deactivatedAt: v.optional(v.number()),
+    deactivationReason: v.optional(
+      v.union(
+        v.literal("sign_out"),
+        v.literal("token_rotated"),
+        v.literal("fcm_invalid"),
+        v.literal("user_switched"),
+        v.literal("user_disabled"),
+        v.literal("stale"),
+      ),
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_active", ["userId", "active"])
+    .index("by_active", ["active"])
+    .index("by_token", ["token"])
+    .index("by_user_token", ["userId", "token"]),
+
+  androidPushDeliveryAttempts: defineTable({
+    userId: v.string(),
+    notificationId: v.id("notifications"),
+    deviceRegistrationId: v.id("androidPushDeviceRegistrations"),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("sent"),
+      v.literal("failed"),
+    ),
+    fcmMessageId: v.optional(v.string()),
+    errorCode: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    sentAt: v.optional(v.number()),
+    failedAt: v.optional(v.number()),
+  })
+    .index("by_notification_device", [
+      "notificationId",
+      "deviceRegistrationId",
+    ])
+    .index("by_user_notification", ["userId", "notificationId"])
+    .index("by_status", ["status"])
+    .index("by_user_status_created", ["userId", "status", "createdAt"]),
 
   // =============================================================================
   // FEEDBACK

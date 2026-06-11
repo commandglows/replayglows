@@ -1,7 +1,10 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { getUserId } from "./utils";
-import { defaultTranscriptSettings } from "./settings";
+import {
+  defaultNotificationSettings,
+  defaultTranscriptSettings,
+} from "./settings";
 import {
   ensureDefaultReplayGlowzAccessSnapshot,
   getProductAccessStatusForUser,
@@ -113,12 +116,7 @@ export const upsertUser = internalMutation({
         userId: args.clerkId,
         theme: "system",
         language: "en",
-        notifications: {
-          email: true,
-          push: true,
-          newComments: true,
-          newLikes: false,
-        },
+        notifications: defaultNotificationSettings,
         playback: {
           autoplay: true,
           defaultQuality: "auto",
@@ -299,12 +297,7 @@ export const ensureUser = mutation({
       userId: userId,
       theme: "system",
       language: "en",
-      notifications: {
-        email: true,
-        push: true,
-        newComments: true,
-        newLikes: false,
-      },
+      notifications: defaultNotificationSettings,
       playback: {
         autoplay: true,
         defaultQuality: "auto",

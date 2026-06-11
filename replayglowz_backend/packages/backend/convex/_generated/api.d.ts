@@ -9,6 +9,7 @@
  */
 
 import type * as access from "../access.js";
+import type * as androidPush from "../androidPush.js";
 import type * as channelLinks from "../channelLinks.js";
 import type * as channels from "../channels.js";
 import type * as comments from "../comments.js";
@@ -26,6 +27,7 @@ import type * as openai from "../openai.js";
 import type * as playlistOrder from "../playlistOrder.js";
 import type * as playlists from "../playlists.js";
 import type * as progress from "../progress.js";
+import type * as pushDelivery from "../pushDelivery.js";
 import type * as settings from "../settings.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as transcriptGeneration from "../transcriptGeneration.js";
@@ -50,6 +52,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   access: typeof access;
+  androidPush: typeof androidPush;
   channelLinks: typeof channelLinks;
   channels: typeof channels;
   comments: typeof comments;
@@ -67,6 +70,7 @@ declare const fullApi: ApiFromModules<{
   playlistOrder: typeof playlistOrder;
   playlists: typeof playlists;
   progress: typeof progress;
+  pushDelivery: typeof pushDelivery;
   settings: typeof settings;
   subscriptions: typeof subscriptions;
   transcriptGeneration: typeof transcriptGeneration;

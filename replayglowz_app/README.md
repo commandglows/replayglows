@@ -93,6 +93,47 @@ instead of storing raw session tokens in callback cookies.
 Play Store release builds are not enabled yet. They need Android keystore
 secrets and a signed AAB workflow before publication.
 
+## Android Push Notifications
+
+ReplayGlowz Android push uses Firebase Cloud Messaging as transport. The
+ReplayGlowz Convex backend remains the source of truth for notification rows,
+cadence, source targeting, type toggles, device registration ownership, and
+delivery attempts.
+
+Client build-time Firebase values are the same native Firebase values used by
+Firebase Auth:
+
+- `FIREBASE_PROJECT_ID`
+- `FIREBASE_DEV_API_KEY`
+- `FIREBASE_DEV_APP_ID`
+- `FIREBASE_DEV_MESSAGING_SENDER_ID`
+- `FIREBASE_DEV_AUTH_DOMAIN` (optional)
+- `FIREBASE_DEV_STORAGE_BUCKET` (optional)
+
+Server-side delivery requires Firebase Admin credentials in the Convex backend
+environment:
+
+- `FIREBASE_PROJECT_ID`
+- either `FIREBASE_CLIENT_EMAIL` plus `FIREBASE_PRIVATE_KEY`
+- or `FIREBASE_CLIENT_EMAIL` plus `FIREBASE_PRIVATE_KEY_BASE64`
+- or `GOOGLE_APPLICATION_CREDENTIALS` with application-default credentials
+
+Android QA checklist:
+
+- Sign in on a real Android 13+ device with active ReplayGlowz access.
+- Open Preferences, enable Push notifications, and grant the Android runtime
+  notification permission.
+- Confirm the backend has an active Android device registration for the user.
+- Test cadence values: Every hour, Every 6 hours, Daily, Every 3 days.
+- Test source targeting with all sources, selected Replay Feeds, and selected
+  channel sources.
+- Verify foreground, background, and cold-start notification taps open Play for
+  `new_video` and `transcript_ready` notifications.
+- Verify sign-out deactivates the current device registration before another
+  user signs in.
+- Verify Android system notification channels exist for Transcript ready, New
+  videos, and System.
+
 ## YouTube OAuth Contract
 
 - `/api/auth/youtube` requires a Clerk session bearer token.

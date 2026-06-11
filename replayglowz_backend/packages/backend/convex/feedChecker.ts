@@ -19,7 +19,12 @@ export const checkAllUserFeeds = internalAction({
     );
 
     const now = Date.now();
-    const eligible = allSettings.filter((s) => {
+    const eligible = allSettings.filter((s: {
+      notifications?: {
+        feedRefreshIntervalMinutes?: number;
+        lastFeedCheckAt?: number;
+      };
+    }) => {
       const interval = s.notifications!.feedRefreshIntervalMinutes! * 60 * 1000;
       const lastCheck = s.notifications!.lastFeedCheckAt ?? 0;
       return now - lastCheck >= interval;

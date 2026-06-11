@@ -10,6 +10,7 @@ import 'package:replayglowz_app/auth/auth_state.dart';
 import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/auth/auth_service.dart';
 import 'package:replayglowz_app/models/models.dart';
+import 'package:replayglowz_app/notifications/push_notification_service.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
 import 'package:replayglowz_app/utils/app_logger.dart';
@@ -46,6 +47,48 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
         showErrorSnackBar(context, error: e, prefix: 'Failed to save setting');
       }
     }
+  }
+
+  Future<void> _setPushNotifications(
+    BuildContext context,
+    NotificationSettings notifications,
+    bool enabled,
+  ) async {
+    if (!enabled) {
+      try {
+        await ref
+            .read(pushNotificationServiceProvider)
+            .unregisterCurrentDevice();
+      } catch (e, st) {
+        AppLogger.instance.log(
+          'Failed to unregister push device',
+          source: 'Preferences',
+          level: LogLevel.warning,
+          error: e,
+          stackTrace: st,
+        );
+      }
+      await _persistSettings({
+        'notifications': notifications.copyWith(push: false).toJson(),
+      });
+      return;
+    }
+
+    final granted = await ref
+        .read(pushNotificationServiceProvider)
+        .requestPermissionAndRegister();
+    if (!mounted || !context.mounted) return;
+    if (!granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Android notification permission was not granted.'),
+        ),
+      );
+      return;
+    }
+    await _persistSettings({
+      'notifications': notifications.copyWith(push: true).toJson(),
+    });
   }
 
   @override
@@ -266,11 +309,37 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
         SettingsSwitchTile(
           icon: Icons.notifications,
           title: 'Push notifications',
-          subtitle: 'Master notification toggle',
+          subtitle: 'Enable Android push delivery',
           value: notifications.push,
-          onChanged: (value) => _persistSettings({
-            'notifications': notifications.copyWith(push: value).toJson(),
-          }),
+          onChanged: (value) =>
+              _setPushNotifications(context, notifications, value),
+        ),
+        SettingsChoiceTile(
+          icon: Icons.schedule_send_outlined,
+          title: 'New video cadence',
+          value: _pushCadenceLabel(notifications.pushCadence),
+          onTap: () => showSettingsChoiceDialog(
+            context,
+            title: 'New video cadence',
+            options: const [
+              'Every hour',
+              'Every 6 hours',
+              'Daily',
+              'Every 3 days',
+            ],
+            currentValue: _pushCadenceLabel(notifications.pushCadence),
+            onSelected: (value) => _persistSettings({
+              'notifications': notifications
+                  .copyWith(pushCadence: _pushCadenceFromLabel(value))
+                  .toJson(),
+            }),
+          ),
+        ),
+        SettingsChoiceTile(
+          icon: Icons.filter_alt_outlined,
+          title: 'Notification sources',
+          value: _notificationSourceLabel(notifications),
+          onTap: () => _showNotificationSourcesSheet(context, notifications),
         ),
         SettingsSwitchTile(
           icon: Icons.comment_outlined,
@@ -295,10 +364,30 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
         SettingsSwitchTile(
           icon: Icons.video_library_outlined,
           title: 'New video alerts',
-          subtitle: 'Notify when subscribed channels upload',
+          subtitle: 'Notify when selected sources publish',
           value: notifications.newVideos,
           onChanged: (value) => _persistSettings({
             'notifications': notifications.copyWith(newVideos: value).toJson(),
+          }),
+        ),
+        SettingsSwitchTile(
+          icon: Icons.auto_awesome_motion_outlined,
+          title: 'Transcript ready',
+          subtitle: 'Notify as soon as a transcript is available',
+          value: notifications.transcriptReady,
+          onChanged: (value) => _persistSettings({
+            'notifications': notifications
+                .copyWith(transcriptReady: value)
+                .toJson(),
+          }),
+        ),
+        SettingsSwitchTile(
+          icon: Icons.info_outline,
+          title: 'System notifications',
+          subtitle: 'Notify about account, sync, and service updates',
+          value: notifications.system,
+          onChanged: (value) => _persistSettings({
+            'notifications': notifications.copyWith(system: value).toJson(),
           }),
         ),
         SettingsChoiceTile(
@@ -570,6 +659,211 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
         return 1440;
       default:
         return 60;
+    }
+  }
+
+  String _pushCadenceLabel(PushCadence cadence) {
+    switch (cadence) {
+      case PushCadence.hourly:
+        return 'Every hour';
+      case PushCadence.every6Hours:
+        return 'Every 6 hours';
+      case PushCadence.daily:
+        return 'Daily';
+      case PushCadence.every3Days:
+        return 'Every 3 days';
+    }
+  }
+
+  PushCadence _pushCadenceFromLabel(String label) {
+    switch (label) {
+      case 'Every hour':
+        return PushCadence.hourly;
+      case 'Every 6 hours':
+        return PushCadence.every6Hours;
+      case 'Every 3 days':
+        return PushCadence.every3Days;
+      case 'Daily':
+      default:
+        return PushCadence.daily;
+    }
+  }
+
+  String _notificationSourceLabel(NotificationSettings notifications) {
+    if (notifications.notifyAllSources) return 'All feeds and channels';
+    final total =
+        notifications.selectedFeedIds.length +
+        notifications.selectedChannelSourceIds.length;
+    if (total == 0) return 'No source selected';
+    return '$total selected';
+  }
+
+  Future<void> _showNotificationSourcesSheet(
+    BuildContext context,
+    NotificationSettings notifications,
+  ) async {
+    try {
+      final feeds = await ref.read(virtualFeedsProvider.future);
+      final channelSources = <VirtualFeedSource>[];
+      final seenChannelSourceIds = <String>{};
+      for (final feed in feeds) {
+        final details = await ref.read(
+          virtualFeedDetailsProvider(
+            VirtualFeedDetailsArgs(feedId: feed.id),
+          ).future,
+        );
+        for (final source in details.sources.where(
+          (source) => source.isChannelSource,
+        )) {
+          if (seenChannelSourceIds.add(source.id)) {
+            channelSources.add(source);
+          }
+        }
+      }
+      if (!mounted || !context.mounted) return;
+
+      var notifyAll = notifications.notifyAllSources;
+      final selectedFeedIds = notifications.selectedFeedIds.toSet();
+      final selectedChannelIds = notifications.selectedChannelSourceIds.toSet();
+
+      await showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        builder: (sheetContext) {
+          return StatefulBuilder(
+            builder: (context, setSheetState) {
+              return SafeArea(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.sizeOf(context).height * 0.82,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const ListTile(
+                        leading: Icon(Icons.filter_alt_outlined),
+                        title: Text('Notification sources'),
+                        subtitle: Text(
+                          'Choose which Replay Feeds and synced channels can send new video alerts.',
+                        ),
+                      ),
+                      SwitchListTile(
+                        secondary: const Icon(Icons.all_inclusive),
+                        title: const Text('All feeds and channels'),
+                        value: notifyAll,
+                        onChanged: (value) =>
+                            setSheetState(() => notifyAll = value),
+                      ),
+                      const Divider(height: 1),
+                      Expanded(
+                        child: ListView(
+                          children: [
+                            const SettingsSection(title: 'Replay Feeds'),
+                            if (feeds.isEmpty)
+                              const ListTile(title: Text('No Replay Feed yet'))
+                            else
+                              for (final feed in feeds)
+                                CheckboxListTile(
+                                  secondary: const Icon(
+                                    Icons.dynamic_feed_outlined,
+                                  ),
+                                  title: Text(feed.title),
+                                  subtitle: Text(
+                                    '${feed.activeSourceCount} active sources',
+                                  ),
+                                  value: selectedFeedIds.contains(feed.id),
+                                  enabled: !notifyAll,
+                                  onChanged: (value) => setSheetState(() {
+                                    if (value ?? false) {
+                                      selectedFeedIds.add(feed.id);
+                                    } else {
+                                      selectedFeedIds.remove(feed.id);
+                                    }
+                                  }),
+                                ),
+                            const SettingsSection(title: 'Synced channels'),
+                            if (channelSources.isEmpty)
+                              const ListTile(
+                                title: Text('No synced channel yet'),
+                              )
+                            else
+                              for (final channel in channelSources)
+                                CheckboxListTile(
+                                  secondary: const Icon(
+                                    Icons.smart_display_outlined,
+                                  ),
+                                  title: Text(channel.sourceTitle),
+                                  subtitle: Text(channel.sourceId),
+                                  value: selectedChannelIds.contains(
+                                    channel.id,
+                                  ),
+                                  enabled:
+                                      !notifyAll &&
+                                      channel.isActive &&
+                                      channel.isAvailable,
+                                  onChanged: (value) => setSheetState(() {
+                                    if (value ?? false) {
+                                      selectedChannelIds.add(channel.id);
+                                    } else {
+                                      selectedChannelIds.remove(channel.id);
+                                    }
+                                  }),
+                                ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Cancel'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () async {
+                                  Navigator.of(context).pop();
+                                  await _persistSettings({
+                                    'notifications': notifications
+                                        .copyWith(
+                                          notifyAllSources: notifyAll,
+                                          selectedFeedIds: selectedFeedIds
+                                              .toList(growable: false),
+                                          selectedChannelSourceIds:
+                                              selectedChannelIds.toList(
+                                                growable: false,
+                                              ),
+                                        )
+                                        .toJson(),
+                                  });
+                                },
+                                child: const Text('Save'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+    } catch (e) {
+      if (context.mounted) {
+        showErrorSnackBar(
+          context,
+          error: e,
+          prefix: 'Failed to load notification sources',
+        );
+      }
     }
   }
 }
@@ -998,6 +1292,19 @@ class _AccountTile extends ConsumerWidget {
                   icon: const Icon(Icons.logout, size: 18),
                   label: const Text('Sign out'),
                   onPressed: () async {
+                    try {
+                      await ref
+                          .read(pushNotificationServiceProvider)
+                          .unregisterCurrentDevice();
+                    } catch (e, st) {
+                      AppLogger.instance.log(
+                        'Failed to unregister push device during sign out',
+                        source: 'Preferences',
+                        level: LogLevel.warning,
+                        error: e,
+                        stackTrace: st,
+                      );
+                    }
                     await ref.read(authServiceProvider).signOut();
                     if (context.mounted) context.go(Routes.signIn);
                   },

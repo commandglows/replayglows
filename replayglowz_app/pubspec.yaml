@@ -48,6 +48,8 @@ dependencies:
   record: ^6.2.0
   url_launcher: ^6.3.0
   sentry_flutter: ^9.20.0
+  firebase_messaging: ^15.2.10
+  flutter_local_notifications: ^22.0.0
 
 dev_dependencies:
   flutter_test:

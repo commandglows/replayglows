@@ -18,6 +18,25 @@
 - [x] Tighten Dart analyzer settings (`strict-casts`, `strict-inference`, `strict-raw-types`)
 - [ ] Verify Clerk + Convex bootstrap and WebSocket startup end-to-end in a real Flutter environment
 
+### Backlog
+
+#### Android-native opportunities
+- [ ] Add Android share-to-ReplayGlowz entry for YouTube URLs
+  - Context: Let users open a shared YouTube URL directly in ReplayGlowz to take notes, access transcripts, or continue a workflow without first adding the video to a YouTube playlist.
+  - Notes: This is an Android-native workflow entry point, not a duplicate playlist-import feature.
+- [ ] Add Android home screen widgets for continue-watching and new-feed visibility
+  - Context: Expose ReplayGlowz resume state, playback progress, and recent feed items directly on the Android home screen.
+  - Notes: Revisit only if the Android app becomes a primary re-entry surface rather than a thin companion to YouTube.
+- [ ] Add Android launcher shortcuts for high-frequency ReplayGlowz actions
+  - Context: Support direct entry points such as `Resume last video`, `Open Notes`, `Open My Feeds`, and `Refresh YouTube cache`.
+  - Notes: Depends on stable Android deep links and validated high-frequency actions.
+- [ ] Add an Android Quick Settings tile for quota-safe sync
+  - Context: Let users trigger `youtube:startQuotaSafeSync` and inspect idle/syncing/failed state without opening the app.
+  - Notes: Depends on native tile wiring and a trustworthy sync-state contract.
+- [ ] Add offline-first transcript and notes search on Android with AppSearch
+  - Context: Index cached transcripts, notes, video titles, and feed names locally for fast mobile search even with weak connectivity.
+  - Notes: Depends on an Android-local indexing model and reindex triggers after sync and transcript updates.
+
 ### Audit: Perf
 
 #### Critical

@@ -1,7 +1,60 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { MutationCtx, mutation, query } from "./_generated/server";
 import { requireReplayGlowzAccess } from "./access";
 import { DEFAULT_TRANSCRIPT_PROVIDER } from "./transcriptProviders";
+import { Id } from "./_generated/dataModel";
+
+export type AndroidPushCadence =
+  | "hourly"
+  | "every_6_hours"
+  | "daily"
+  | "every_3_days";
+
+export type AndroidPushSettings = {
+  enabled: boolean;
+  cadence: AndroidPushCadence;
+  types: {
+    new_video: boolean;
+    transcript_ready: boolean;
+    system: boolean;
+  };
+  sourceTargeting: {
+    mode: "all" | "selected";
+    selectedFeedIds: Id<"virtualFeeds">[];
+    selectedChannelSourceIds: Id<"virtualFeedSources">[];
+  };
+};
+
+export type NotificationSettings = {
+  email: boolean;
+  push: boolean;
+  newComments: boolean;
+  newLikes: boolean;
+  newVideos?: boolean;
+  feedRefreshIntervalMinutes?: number;
+  lastFeedCheckAt?: number;
+  androidPush?: AndroidPushSettings;
+};
+
+const androidPushSettingsValidator = v.object({
+  enabled: v.boolean(),
+  cadence: v.union(
+    v.literal("hourly"),
+    v.literal("every_6_hours"),
+    v.literal("daily"),
+    v.literal("every_3_days"),
+  ),
+  types: v.object({
+    new_video: v.boolean(),
+    transcript_ready: v.boolean(),
+    system: v.boolean(),
+  }),
+  sourceTargeting: v.object({
+    mode: v.union(v.literal("all"), v.literal("selected")),
+    selectedFeedIds: v.array(v.id("virtualFeeds")),
+    selectedChannelSourceIds: v.array(v.id("virtualFeedSources")),
+  }),
+});
 
 // Settings validators
 const notificationsValidator = v.object({
@@ -12,6 +65,7 @@ const notificationsValidator = v.object({
   newVideos: v.optional(v.boolean()),
   feedRefreshIntervalMinutes: v.optional(v.number()),
   lastFeedCheckAt: v.optional(v.number()),
+  androidPush: v.optional(androidPushSettingsValidator),
 });
 
 const playbackValidator = v.object({
@@ -112,6 +166,79 @@ export const defaultTranscriptSettings = {
   sortBy: "recommended" as const,
 };
 
+export const defaultAndroidPushSettings: AndroidPushSettings = {
+  enabled: false,
+  cadence: "daily" as const,
+  types: {
+    new_video: true,
+    transcript_ready: true,
+    system: true,
+  },
+  sourceTargeting: {
+    mode: "all" as const,
+    selectedFeedIds: [] as Id<"virtualFeeds">[],
+    selectedChannelSourceIds: [] as Id<"virtualFeedSources">[],
+  },
+};
+
+export const defaultNotificationSettings: NotificationSettings = {
+  email: true,
+  push: false,
+  newComments: true,
+  newLikes: false,
+  newVideos: true,
+  feedRefreshIntervalMinutes: 60,
+  androidPush: defaultAndroidPushSettings,
+};
+
+async function validateAndroidPushSourceTargets(
+  ctx: MutationCtx,
+  userId: string,
+  androidPush: AndroidPushSettings | undefined,
+) {
+  if (!androidPush) return;
+
+  for (const feedId of androidPush.sourceTargeting.selectedFeedIds) {
+    const feed = await ctx.db.get(feedId);
+    if (!feed || feed.userId !== userId || feed.isActive === false) {
+      throw new Error("Invalid Android push feed target");
+    }
+  }
+
+  for (const sourceId of androidPush.sourceTargeting.selectedChannelSourceIds) {
+    const source = await ctx.db.get(sourceId);
+    if (
+      !source ||
+      source.userId !== userId ||
+      source.sourceType !== "channel" ||
+      source.isActive === false
+    ) {
+      throw new Error("Invalid Android push channel source target");
+    }
+  }
+}
+
+export function normalizeNotifications(
+  notifications: NotificationSettings | undefined,
+): NotificationSettings & { androidPush: AndroidPushSettings } {
+  return {
+    ...defaultNotificationSettings,
+    ...notifications,
+    androidPush: {
+      ...defaultAndroidPushSettings,
+      ...notifications?.androidPush,
+      types: {
+        ...defaultAndroidPushSettings.types,
+        ...notifications?.androidPush?.types,
+      },
+      sourceTargeting: {
+        ...defaultAndroidPushSettings.sourceTargeting,
+        ...notifications?.androidPush?.sourceTargeting,
+      },
+    },
+  };
+}
+
 // Get current user's settings
 export const getSettings = query({
   args: {},
@@ -130,12 +257,7 @@ export const getSettings = query({
         theme: "system" as const,
         language: "en",
         notifications: {
-          email: true,
-          push: true,
-          newComments: true,
-          newLikes: false,
-          newVideos: true,
-          feedRefreshIntervalMinutes: 60,
+          ...defaultNotificationSettings,
         },
         playback: {
           autoplay: true,
@@ -161,7 +283,10 @@ export const getSettings = query({
       };
     }
 
-    return settings;
+    return {
+      ...settings,
+      notifications: normalizeNotifications(settings.notifications),
+    };
   },
 });
 
@@ -237,15 +362,21 @@ export const updateNotifications = mutation({
       .withIndex("by_user_id", (q) => q.eq("userId", userId))
       .first();
 
+    await validateAndroidPushSourceTargets(
+      ctx,
+      userId,
+      args.notifications.androidPush,
+    );
+
     if (settings) {
       await ctx.db.patch(settings._id, {
-        notifications: args.notifications,
+        notifications: normalizeNotifications(args.notifications),
         updatedAt: Date.now(),
       });
     } else {
       await ctx.db.insert("settings", {
         userId,
-        notifications: args.notifications,
+        notifications: normalizeNotifications(args.notifications),
         updatedAt: Date.now(),
       });
     }
@@ -418,6 +549,14 @@ export const updateAllSettings = mutation({
       .withIndex("by_user_id", (q) => q.eq("userId", userId))
       .first();
 
+    if (args.notifications !== undefined) {
+      await validateAndroidPushSourceTargets(
+        ctx,
+        userId,
+        args.notifications.androidPush,
+      );
+    }
+
     const updateData: Record<string, unknown> = {
       updatedAt: Date.now(),
     };
@@ -425,7 +564,7 @@ export const updateAllSettings = mutation({
     if (args.theme !== undefined) updateData.theme = args.theme;
     if (args.language !== undefined) updateData.language = args.language;
     if (args.notifications !== undefined)
-      updateData.notifications = args.notifications;
+      updateData.notifications = normalizeNotifications(args.notifications);
     if (args.playback !== undefined) updateData.playback = args.playback;
     if (args.notes !== undefined) updateData.notes = args.notes;
     if (args.channelSync !== undefined)
@@ -450,6 +589,10 @@ export const updateAllSettings = mutation({
           push: boolean;
           newComments: boolean;
           newLikes: boolean;
+          newVideos?: boolean;
+          feedRefreshIntervalMinutes?: number;
+          lastFeedCheckAt?: number;
+          androidPush?: typeof defaultAndroidPushSettings;
         };
         playback?: {
           autoplay: boolean;

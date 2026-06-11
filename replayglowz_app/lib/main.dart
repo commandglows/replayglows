@@ -13,6 +13,7 @@ import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/auth/auth_service.dart';
 import 'package:replayglowz_app/convex/convex_client.dart';
 import 'package:replayglowz_app/convex/convex_provider.dart';
+import 'package:replayglowz_app/notifications/push_notification_service.dart';
 import 'package:replayglowz_app/utils/app_logger.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
 
@@ -20,6 +21,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (kIsWeb) {
     usePathUrlStrategy();
+  } else {
+    registerReplayGlowzBackgroundMessageHandler();
   }
 
   if (sentryDsn.isEmpty) {
@@ -202,6 +205,7 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
         final convex = ref.read(convexServiceProvider);
         await convex.setAuth(() => auth.getConvexToken());
         AppLogger.instance.log('Convex auth wired', source: 'bootstrap');
+        await ref.read(pushNotificationServiceProvider).initialize();
         if (auth.isAuthenticated) {
           final convexAuthReady = await auth.waitForConvexTokenReady();
           AppLogger.instance.log(
