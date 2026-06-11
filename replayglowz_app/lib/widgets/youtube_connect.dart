@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:replayglowz_app/app/build_info.dart';
 import 'package:replayglowz_app/app/router.dart';
 import 'package:replayglowz_app/auth/auth_service.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
@@ -48,7 +49,12 @@ String _formatYoutubeDiagnostics(Map<String, dynamic>? status) {
       .toList();
 
   final lines = <String>[
+    ...buildIdentityHeader(),
     'ReplayGlowz YouTube diagnostics',
+    'Build id: $buildId',
+    'Build commit: $buildCommitSha',
+    'Build environment: $buildEnvironment',
+    'Build timestamp: $buildTimestamp',
     'Current URL: ${kIsWeb ? Uri.base.toString() : 'not-web'}',
     'Current host: ${kIsWeb ? Uri.base.host : 'not-web'}',
     'Current path: ${kIsWeb ? Uri.base.path : 'not-web'}',

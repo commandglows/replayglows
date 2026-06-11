@@ -143,10 +143,11 @@ class _AuthDebugPanelState extends State<_AuthDebugPanel> {
         .take(8)
         .toList()
         .reversed;
+    final header = buildIdentityHeader();
     if (entries.isEmpty) {
-      return 'No auth logs yet.';
+      return [...header, 'No auth logs yet.'].join('\n');
     }
-    return entries.map(_formatLogEntry).join('\n\n');
+    return [...header, entries.map(_formatLogEntry).join('\n\n')].join('\n');
   }
 
   String _formatLogEntry(LogEntry entry) {

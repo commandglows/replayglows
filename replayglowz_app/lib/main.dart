@@ -59,6 +59,7 @@ Future<void> _runApp() async {
   AppLogger.instance.log(
     'main() start — CONVEX_URL=${const bool.hasEnvironment('CONVEX_URL')} '
     'has_auth_config=$hasAuthConfig '
+    'BUILD_ID=$buildId '
     'BUILD_COMMIT_SHA=$buildCommitSha '
     'BUILD_ENVIRONMENT=$buildEnvironment',
     source: 'main',
@@ -269,7 +270,9 @@ class _ConfigFallbackScreen extends StatelessWidget {
 
   Future<void> _copyDiagnostics(BuildContext context) async {
     final lines = <String>[
+      ...buildIdentityHeader(),
       'ReplayGlowz bootstrap diagnostics',
+      'Build id: $buildId',
       'Build commit: $buildCommitSha',
       'Build environment: $buildEnvironment',
       'Build timestamp: $buildTimestamp',
@@ -375,6 +378,8 @@ class _ConfigFallbackScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       SelectableText(
+                        '${buildIdentityHeader().join('\n')}\n'
+                        'Build id: $buildId\n'
                         'Build commit: $buildCommitSha\n'
                         'Build environment: $buildEnvironment\n'
                         'Build timestamp: $buildTimestamp\n'

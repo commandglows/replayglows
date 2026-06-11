@@ -101,6 +101,8 @@ const buildCommitSha = String.fromEnvironment(
   defaultValue: 'unknown',
 );
 
+const buildId = String.fromEnvironment('BUILD_ID', defaultValue: 'unknown');
+
 const buildEnvironment = String.fromEnvironment(
   'BUILD_ENVIRONMENT',
   defaultValue: 'unknown',
@@ -110,6 +112,31 @@ const buildTimestamp = String.fromEnvironment(
   'BUILD_TIMESTAMP',
   defaultValue: 'unknown',
 );
+
+const buildAtParis = String.fromEnvironment(
+  'BUILD_AT_PARIS',
+  defaultValue: 'unknown',
+);
+
+const buildAtUtc = String.fromEnvironment(
+  'BUILD_AT_UTC',
+  defaultValue: buildTimestamp,
+);
+
+String buildIdentityValue() {
+  if (buildId.isNotEmpty && buildId != 'unknown') {
+    return buildId;
+  }
+  return buildCommitSha;
+}
+
+List<String> buildIdentityHeader() {
+  return <String>[
+    'commit/build: ${buildIdentityValue()}',
+    'build_at_paris: $buildAtParis',
+    'build_at_utc: $buildAtUtc',
+  ];
+}
 
 String buildModeLabel() {
   if (kReleaseMode) return 'release';

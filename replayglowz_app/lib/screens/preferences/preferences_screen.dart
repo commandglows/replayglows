@@ -1070,7 +1070,9 @@ class _DiagnosticsCard extends ConsumerWidget {
     }
 
     return [
+      ...buildIdentityHeader(),
       'ReplayGlowz preferences diagnostics',
+      'Build id: $buildId',
       'Build commit: $buildCommitSha',
       'Build environment: $buildEnvironment',
       'Build timestamp: $buildTimestamp',
