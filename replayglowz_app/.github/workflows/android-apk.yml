@@ -1,6 +1,28 @@
 name: Android APK
 
 on:
+  push:
+    branches: [main, master, android-ci]
+    paths:
+      - "android/**"
+      - "assets/**"
+      - "lib/**"
+      - "test/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - "analysis_options.yaml"
+      - ".github/workflows/android-apk.yml"
+  pull_request:
+    branches: [main, master, android-ci]
+    paths:
+      - "android/**"
+      - "assets/**"
+      - "lib/**"
+      - "test/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - "analysis_options.yaml"
+      - ".github/workflows/android-apk.yml"
   workflow_dispatch:
 
 concurrency:
@@ -8,8 +30,44 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  flutter-checks:
+    name: Android checks
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.41.7'
+          cache: true
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
   build-apk:
-    if: github.ref == 'refs/heads/android-ci'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/android-ci'
+    needs:
+      - flutter-checks
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 30
 
@@ -82,3 +140,4 @@ jobs:
           name: tubeflow-android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
+          retention-days: 1

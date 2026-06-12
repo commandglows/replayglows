@@ -1,4 +1,4 @@
-name: ReplayGlowz App Android CI
+name: ReplayGlowz Android Checks and Manual APK
 
 on:
   push:
@@ -46,7 +46,7 @@ jobs:
               - ".github/workflows/replayglowz-app-android.yml"
 
   analyze:
-    name: Flutter Analyze
+    name: Android analyze
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 20
     needs:
@@ -89,7 +89,7 @@ jobs:
         run: flutter analyze
 
   test:
-    name: Flutter Test
+    name: Android tests
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 25
     needs:
@@ -135,14 +135,14 @@ jobs:
         run: flutter test
 
   build-debug-apk:
-    name: Build Debug APK
+    name: Manual Android debug APK build
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 45
     needs:
       - changes
       - analyze
       - test
-    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.android == 'true'
+    if: github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Checkout
