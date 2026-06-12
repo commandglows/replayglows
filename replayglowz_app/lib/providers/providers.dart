@@ -890,6 +890,26 @@ class VirtualFeedDetailsArgs {
   final String? cursor;
   final int? pageSize;
 
+  VirtualFeedDetailsArgs copyWith({
+    String? feedId,
+    bool? includeHidden,
+    bool? includeWatched,
+    String? sortOrder,
+    String? cursor,
+    int? pageSize,
+    bool clearCursor = false,
+    bool clearPageSize = false,
+  }) {
+    return VirtualFeedDetailsArgs(
+      feedId: feedId ?? this.feedId,
+      includeHidden: includeHidden ?? this.includeHidden,
+      includeWatched: includeWatched ?? this.includeWatched,
+      sortOrder: sortOrder ?? this.sortOrder,
+      cursor: clearCursor ? null : (cursor ?? this.cursor),
+      pageSize: clearPageSize ? null : (pageSize ?? this.pageSize),
+    );
+  }
+
   @override
   bool operator ==(Object other) {
     return other is VirtualFeedDetailsArgs &&

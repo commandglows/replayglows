@@ -610,12 +610,7 @@ Future<dynamic> createPlaylist(
 
 void _invalidateVirtualFeedProviders(WidgetRef ref, String feedId) {
   ref.invalidate(virtualFeedsProvider);
-  for (final args in [
-    VirtualFeedDetailsArgs(feedId: feedId),
-    VirtualFeedDetailsArgs(feedId: feedId, pageSize: 100),
-  ]) {
-    ref.invalidate(virtualFeedDetailsProvider(args));
-  }
+  ref.invalidate(virtualFeedDetailsProvider);
 }
 
 Future<dynamic> createVirtualFeed(

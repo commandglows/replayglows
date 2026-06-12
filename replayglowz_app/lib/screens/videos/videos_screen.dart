@@ -46,6 +46,8 @@ class VideosScreen extends ConsumerStatefulWidget {
 class _VideosScreenState extends ConsumerState<VideosScreen>
     with SingleTickerProviderStateMixin {
   static const _compactViewBreakpoint = 640.0;
+  static const _filteredFeedPageSize = 60;
+  static const _filteredFeedLoadMoreExtent = 960.0;
   static const _feedSnapAnimationDuration = Duration(milliseconds: 300);
   static const _feedSyncAnimationDuration = Duration(milliseconds: 360);
   static const _feedSlowSnapVelocity = 420.0;
@@ -72,6 +74,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     3,
     (_) => GlobalKey(),
   );
+  final Map<String, List<String?>> _requestedFeedCursorsByFeedId =
+      <String, List<String?>>{};
   List<YouTubeVideo> _visibleFeedQueue = const <YouTubeVideo>[];
   Offset _feedActionDragDelta = Offset.zero;
   String _sortOrder = 'desc';
@@ -92,6 +96,23 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
 
   VideosArgs get _videosArgs =>
       VideosArgs(sortOrder: _sortOrder, includeWatched: true);
+
+  VirtualFeedDetailsArgs _filteredFeedDetailsArgs(
+    String feedId, {
+    String? cursor,
+  }) {
+    return VirtualFeedDetailsArgs(
+      feedId: feedId,
+      includeWatched: true,
+      sortOrder: _sortOrder,
+      cursor: cursor,
+      pageSize: _filteredFeedPageSize,
+    );
+  }
+
+  List<String?> _requestedFeedCursors(String feedId) {
+    return _requestedFeedCursorsByFeedId[feedId] ?? const <String?>[null];
+  }
 
   @override
   void initState() {
@@ -214,6 +235,122 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   }
 
   bool get _hasFeedFilters => _feedFilterIds.isNotEmpty;
+
+  void _resetFilteredFeedPagination({Iterable<String>? feedIds}) {
+    if (feedIds == null) {
+      _requestedFeedCursorsByFeedId.clear();
+      return;
+    }
+    for (final feedId in feedIds) {
+      _requestedFeedCursorsByFeedId.remove(feedId);
+    }
+  }
+
+  void _pruneFilteredFeedPaginationState(Iterable<String> selectedFeedIds) {
+    final selected = selectedFeedIds.toSet();
+    _requestedFeedCursorsByFeedId.removeWhere(
+      (feedId, _) => !selected.contains(feedId),
+    );
+  }
+
+  void _requestNextFilteredFeedPage(String feedId) {
+    final cursors = _requestedFeedCursors(feedId);
+    if (cursors.isEmpty) return;
+
+    final lastCursor = cursors.last;
+    final lastPage = ref.read(
+      virtualFeedDetailsProvider(
+        _filteredFeedDetailsArgs(feedId, cursor: lastCursor),
+      ),
+    );
+    final details = lastPage.asData?.value;
+    final nextCursor = details?.continueCursor;
+    if (details == null ||
+        details.isDone ||
+        nextCursor == null ||
+        nextCursor.isEmpty ||
+        cursors.contains(nextCursor)) {
+      return;
+    }
+
+    setState(() {
+      _requestedFeedCursorsByFeedId[feedId] = <String?>[...cursors, nextCursor];
+    });
+  }
+
+  void _retryFilteredFeedPage(String feedId, String? cursor) {
+    ref.invalidate(
+      virtualFeedDetailsProvider(
+        _filteredFeedDetailsArgs(feedId, cursor: cursor),
+      ),
+    );
+  }
+
+  void _maybePrefetchFilteredFeedPagesForActiveVideo(
+    Iterable<String> selectedFeedIds,
+    String? activeVideoId,
+  ) {
+    final targetId = activeVideoId?.trim();
+    if (targetId == null || targetId.isEmpty) return;
+    if (_visibleFeedQueue.any((video) => video.youtubeVideoId == targetId)) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      for (final feedId in selectedFeedIds) {
+        final cursors = _requestedFeedCursors(feedId);
+        if (cursors.isEmpty) continue;
+        final lastPage = ref.read(
+          virtualFeedDetailsProvider(
+            _filteredFeedDetailsArgs(feedId, cursor: cursors.last),
+          ),
+        );
+        final details = lastPage.asData?.value;
+        if (details == null || details.isDone) continue;
+        final nextCursor = details.continueCursor;
+        if (nextCursor == null ||
+            nextCursor.isEmpty ||
+            cursors.contains(nextCursor)) {
+          continue;
+        }
+        _requestNextFilteredFeedPage(feedId);
+        break;
+      }
+    });
+  }
+
+  void _maybeLoadMoreFilteredFeeds() {
+    if (!_hasFeedFilters) return;
+    final controller = _activeScrollController();
+    if (!controller.hasClients) return;
+
+    final remainingExtent =
+        controller.position.maxScrollExtent - controller.position.pixels;
+    if (remainingExtent > _filteredFeedLoadMoreExtent) {
+      return;
+    }
+
+    for (final feedId in _feedFilterIds) {
+      final cursors = _requestedFeedCursors(feedId);
+      if (cursors.isEmpty) continue;
+      final lastPage = ref.read(
+        virtualFeedDetailsProvider(
+          _filteredFeedDetailsArgs(feedId, cursor: cursors.last),
+        ),
+      );
+      if (lastPage.isLoading) continue;
+      final details = lastPage.asData?.value;
+      if (details == null || details.isDone) continue;
+      final nextCursor = details.continueCursor;
+      if (nextCursor == null ||
+          nextCursor.isEmpty ||
+          cursors.contains(nextCursor)) {
+        continue;
+      }
+      _requestNextFilteredFeedPage(feedId);
+    }
+  }
 
   void _jumpFeedViewsToTop() {
     _lastFeedScrollAnchor = null;
@@ -849,6 +986,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     if (notification is ScrollUpdateNotification ||
         notification is UserScrollNotification) {
       _recordFeedScrollVelocity(notification.metrics);
+      _maybeLoadMoreFilteredFeeds();
       final anchor = _anchorForVisibleVideo(tabIndex, snapToNearest: false);
       if (anchor != null) {
         _lastFeedScrollAnchor = anchor;
@@ -858,6 +996,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     }
 
     if (notification is ScrollEndNotification) {
+      _maybeLoadMoreFilteredFeeds();
       _feedSnapIdleTimer?.cancel();
       _snapFeedViewToNearestVideo(
         tabIndex,
@@ -993,21 +1132,20 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
         ? ref.watch(virtualFeedsProvider)
         : const AsyncValue<List<VirtualFeed>>.data(<VirtualFeed>[]);
     final selectedFeedIds = _feedFilterIds.toList()..sort();
-    final selectedFeedDetails = youtubeConnected
-        ? [
+    _pruneFilteredFeedPaginationState(selectedFeedIds);
+    final selectedFeedDetailsByFeedId = youtubeConnected
+        ? <String, List<AsyncValue<VirtualFeedDetails>>>{
             for (final feedId in selectedFeedIds)
-              ref.watch(
-                virtualFeedDetailsProvider(
-                  VirtualFeedDetailsArgs(
-                    feedId: feedId,
-                    includeWatched: true,
-                    sortOrder: _sortOrder,
-                    pageSize: 500,
+              feedId: [
+                for (final cursor in _requestedFeedCursors(feedId))
+                  ref.watch(
+                    virtualFeedDetailsProvider(
+                      _filteredFeedDetailsArgs(feedId, cursor: cursor),
+                    ),
                   ),
-                ),
-              ),
-          ]
-        : const <AsyncValue<VirtualFeedDetails>>[];
+              ],
+          }
+        : const <String, List<AsyncValue<VirtualFeedDetails>>>{};
     final notesAsync = youtubeConnected && isNotesView
         ? ref.watch(notesProvider)
         : null;
@@ -1049,7 +1187,10 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
             tooltip: 'Sort videos',
             icon: const Icon(Icons.sort),
             onSelected: (value) {
-              setState(() => _sortOrder = value);
+              setState(() {
+                _sortOrder = value;
+                _resetFilteredFeedPagination(feedIds: _feedFilterIds);
+              });
               _persistLocalPrefs();
             },
             itemBuilder: (context) => [
@@ -1111,8 +1252,31 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 }
               });
 
-              if (selectedFeedDetails.any((details) => details.isLoading)) {
+              final filteredFeedInitialLoading = selectedFeedIds.any((feedId) {
+                final pages = selectedFeedDetailsByFeedId[feedId];
+                if (pages == null || pages.isEmpty) return true;
+                return pages.first.isLoading;
+              });
+              if (filteredFeedInitialLoading) {
                 return _buildShimmerLoading();
+              }
+
+              final filteredFeedErrors = <({String feedId, String? cursor})>[];
+              var isLoadingMoreFilteredFeeds = false;
+              for (final entry in selectedFeedDetailsByFeedId.entries) {
+                final cursors = _requestedFeedCursors(entry.key);
+                for (var index = 0; index < entry.value.length; index++) {
+                  final pageAsync = entry.value[index];
+                  if (pageAsync.isLoading && index > 0) {
+                    isLoadingMoreFilteredFeeds = true;
+                  }
+                  if (pageAsync.hasError) {
+                    filteredFeedErrors.add((
+                      feedId: entry.key,
+                      cursor: index < cursors.length ? cursors[index] : null,
+                    ));
+                  }
+                }
               }
 
               final watchedIds =
@@ -1122,7 +1286,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                   const <String>{};
               final sourceVideos = _feedFilterIds.isEmpty
                   ? videos
-                  : _mergeFeedVideos(selectedFeedDetails);
+                  : _mergeFeedVideos(selectedFeedDetailsByFeedId);
               final visibleVideos = _filterWatchedVideos(
                 sourceVideos,
                 watchedIds,
@@ -1130,6 +1294,10 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
               _visibleFeedQueue = visibleVideos;
               _pruneFeedItemKeys(visibleVideos);
               _schedulePendingFeedScrollAnchors();
+              _maybePrefetchFilteredFeedPagesForActiveVideo(
+                selectedFeedIds,
+                activeFeedVideoId,
+              );
               if (_prefsLoaded) {
                 _scheduleEntryScrollToActiveFeedVideo(
                   visibleVideos,
@@ -1165,23 +1333,44 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                       ],
                     )
                   : visibleVideos.isEmpty
-                  ? AppEmptyState(
-                      icon: Icons.filter_list_off,
-                      title: t('p3.videos.noFilterMatchTitle', locale: l),
-                      description: t('p3.videos.noFilterMatchDesc', locale: l),
-                      action: FilledButton.tonalIcon(
-                        onPressed: () {
-                          setState(() {
-                            _feedFilterIds.clear();
-                            _includeWatched = true;
-                          });
-                          _jumpFeedViewsToTop();
-                          _persistLocalPrefs();
-                        },
-                        icon: const Icon(Icons.clear),
-                        label: Text(t('p3.common.clearFilters', locale: l)),
-                      ),
-                    )
+                  ? (_feedFilterIds.isNotEmpty && filteredFeedErrors.isNotEmpty)
+                        ? ErrorStateView(
+                            error: filteredFeedErrors.length == 1
+                                ? 'Failed to load this feed page.'
+                                : 'Failed to load one or more filtered feeds.',
+                            prefix: 'Filtered feeds unavailable',
+                            onRetry: () {
+                              for (final failure in filteredFeedErrors) {
+                                _retryFilteredFeedPage(
+                                  failure.feedId,
+                                  failure.cursor,
+                                );
+                              }
+                            },
+                          )
+                        : AppEmptyState(
+                            icon: Icons.filter_list_off,
+                            title: t('p3.videos.noFilterMatchTitle', locale: l),
+                            description: t(
+                              'p3.videos.noFilterMatchDesc',
+                              locale: l,
+                            ),
+                            action: FilledButton.tonalIcon(
+                              onPressed: () {
+                                setState(() {
+                                  _feedFilterIds.clear();
+                                  _includeWatched = true;
+                                  _resetFilteredFeedPagination();
+                                });
+                                _jumpFeedViewsToTop();
+                                _persistLocalPrefs();
+                              },
+                              icon: const Icon(Icons.clear),
+                              label: Text(
+                                t('p3.common.clearFilters', locale: l),
+                              ),
+                            ),
+                          )
                   : TabBarView(
                       controller: _tabController,
                       children: [
@@ -1205,6 +1394,39 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
 
               return Column(
                 children: [
+                  if (_hasFeedFilters && filteredFeedErrors.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.warning_amber_rounded),
+                          title: Text(
+                            filteredFeedErrors.length == 1
+                                ? 'A filtered feed page failed to load.'
+                                : '${filteredFeedErrors.length} filtered feed pages failed to load.',
+                          ),
+                          subtitle: const Text(
+                            'Visible videos stay available. Retry the failed pages only.',
+                          ),
+                          trailing: TextButton(
+                            onPressed: () {
+                              for (final failure in filteredFeedErrors) {
+                                _retryFilteredFeedPage(
+                                  failure.feedId,
+                                  failure.cursor,
+                                );
+                              }
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (_hasFeedFilters && isLoadingMoreFilteredFeeds)
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: LinearProgressIndicator(minHeight: 3),
+                    ),
                   UiHintCard(
                     hintId: 'videos-first-actions',
                     icon: Icons.tips_and_updates_outlined,
@@ -1362,18 +1584,20 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   }
 
   List<YouTubeVideo> _mergeFeedVideos(
-    List<AsyncValue<VirtualFeedDetails>> feedDetails,
+    Map<String, List<AsyncValue<VirtualFeedDetails>>> feedDetailsByFeedId,
   ) {
     final videosById = <String, YouTubeVideo>{};
-    for (final detailsAsync in feedDetails) {
-      detailsAsync.whenData((details) {
-        for (final video in details.videos) {
-          final key = video.youtubeVideoId.isNotEmpty
-              ? video.youtubeVideoId
-              : video.id;
-          videosById.putIfAbsent(key, () => video);
-        }
-      });
+    for (final feedDetails in feedDetailsByFeedId.values) {
+      for (final detailsAsync in feedDetails) {
+        detailsAsync.whenData((details) {
+          for (final video in details.videos) {
+            final key = video.youtubeVideoId.isNotEmpty
+                ? video.youtubeVideoId
+                : video.id;
+            videosById.putIfAbsent(key, () => video);
+          }
+        });
+      }
     }
     final videos = videosById.values.toList(growable: false);
     videos.sort((a, b) {
@@ -1986,6 +2210,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                                   _feedFilterIds
                                     ..clear()
                                     ..addAll(draftFeedIds);
+                                  _resetFilteredFeedPagination();
                                 });
                                 _jumpFeedViewsToTop();
                                 _persistLocalPrefs();

@@ -6,8 +6,8 @@ project: "replayglowz"
 created: "2026-06-12"
 created_at: "2026-06-12 12:55:03 UTC"
 updated: "2026-06-12"
-updated_at: "2026-06-12 12:58:19 UTC"
-status: reviewed
+updated_at: "2026-06-12 13:49:58 UTC"
+status: active
 source_skill: 100-sf-spec
 source_model: "GPT-5 Codex"
 scope: "android-feed-pagination-and-virtualization"
@@ -54,12 +54,12 @@ evidence:
   - "Flutter docs checked 2026-06-12: https://docs.flutter.dev/perf/best-practices and https://docs.flutter.dev/cookbook/lists/long-lists recommend lazy list builders and careful long-list handling."
   - "Android docs checked 2026-06-12: https://developer.android.com/topic/performance/app-optimization/enable-app-optimization and https://developer.android.com/topic/performance/reduce-apk-size describe R8 code shrinking and resource shrinking for release builds."
   - "`flutter analyze` passed after enabling release shrinking and thumbnail cache bounds on 2026-06-12."
-next_step: "/100-sf-spec replayglowz-android-feed-pagination-and-virtualization"
+next_step: "/005-sf-ship replayglowz-android-feed-pagination-and-virtualization"
 ---
 
 # Spec: ReplayGlowz Android Feed Pagination And Virtualization
 
-🟢 [replayglowz] spec: ReplayGlowz Android Feed Pagination And Virtualization | status: reviewed | path: shipflow_data/workflow/specs/replayglowz-android-feed-pagination-and-virtualization.md | next: /100-sf-spec replayglowz-android-feed-pagination-and-virtualization
+🟢 [replayglowz] spec: ReplayGlowz Android Feed Pagination And Virtualization | status: active | path: shipflow_data/workflow/specs/replayglowz-android-feed-pagination-and-virtualization.md | next: /005-sf-ship replayglowz-android-feed-pagination-and-virtualization
 
 ## Title
 
@@ -67,7 +67,7 @@ ReplayGlowz Android feed pagination and virtualization
 
 ## Status
 
-reviewed
+active
 
 This chantier turns the Android performance audit into an implementation contract. It covers production artifact shrinkage, long-feed loading pressure, and the list-windowing proof needed to keep ReplayGlowz usable as feed size grows.
 
@@ -162,7 +162,7 @@ La spec autorise une petite extension backend dans `replayglowz_backend` si le c
   - `RGAF-007`: Android release build succeeds with shrinking enabled and no known runtime regression from removed resources/classes.
   - `RGAF-008`: Thumbnail-heavy scrolling does not decode/cache full-size remote images for small cards/list rows.
 - `required_results`: all scenarios above must pass or be explicitly documented as blocked with a real owner decision before `/103-sf-verify` can pass.
-- `manual_checklist_path`: `shipflow_data/workflow/test-checklists/replayglowz-android-feed-pagination-and-virtualization.md`
+- `checklist_path`: `shipflow_data/workflow/test-checklists/replayglowz-android-feed-pagination-and-virtualization.md`
 - `exception_with_proof`: smooth-scroll proof and APK/AAB size comparison need an emulator or Android device plus release artifacts; static analysis alone is insufficient.
 - `exception_without_proof`: none.
 
@@ -301,16 +301,21 @@ La spec autorise une petite extension backend dans `replayglowz_backend` si le c
 |----------|-------|-------|--------|--------|-----------|
 | 2026-06-12 12:55:03 UTC | 100-sf-spec | GPT-5 Codex | Created a ready Android performance chantier from the 403-sf-perf audit findings, preserving the proposed title, severity, scope, and evidence. | Ready. | `/102-sf-start replayglowz-android-feed-pagination-and-virtualization` |
 | 2026-06-12 12:58:19 UTC | 101-sf-ready | GPT-5 Codex | Ran readiness review against the Android performance spec and challenged the proof contract and pre-gate status. | Not ready. Missing the checklist artifact named in the manual proof path, and the spec should not remain `ready` before that proof contract is fully formed. | `/100-sf-spec replayglowz-android-feed-pagination-and-virtualization` |
+| 2026-06-12 13:12:03 UTC | 101-sf-ready | GPT-5 Codex | Reran readiness review after adding the missing manual checklist artifact and aligning checklist field names/flow. | Ready. Structural blockers resolved for this pre-gate rerun; proof execution remains to be performed in implementation/verify steps. | `/102-sf-start replayglowz-android-feed-pagination-and-virtualization` |
+| 2026-06-12 13:49:58 UTC | 102-sf-start | GPT-5 Codex | Reworked Flutter virtual-feed loading to use bounded progressive pages in `VideosScreen` and `VirtualFeedDetailScreen`, while broadening invalidation coverage for paged provider args. | Implemented. Local pagination contract now uses bounded pages instead of eager `pageSize: 500`; preview/device/manual proof is still pending. | `/103-sf-verify replayglowz-android-feed-pagination-and-virtualization` |
+| 2026-06-12 13:49:58 UTC | 103-sf-verify | GPT-5 Codex | Verified the local Android feed pagination implementation against the spec, local checks, and project validation mode. | Partial. `flutter analyze` passed, but the required manual checklist and preview/device proof remain unrun in this `vercel-preview-push` project, so ship-readiness is not yet proven. | `/005-sf-ship replayglowz-android-feed-pagination-and-virtualization -> /405-sf-prod replayglowz_app` |
+| 2026-06-12 13:49:58 UTC | 104-sf-end | GPT-5 Codex | Closed the local implementation pass without shipping, updated workflow tracking, and kept the chantier open for preview/device validation. | Deferred. Code and spec progress are recorded, but the chantier remains active until ship plus preview/manual proof complete. | `/005-sf-ship replayglowz-android-feed-pagination-and-virtualization -> /405-sf-prod replayglowz_app` |
+| 2026-06-12 13:49:58 UTC | 001-sf-build | GPT-5 Codex | Orchestrated readiness repair, delegated implementation, local validation, verify triage, and pre-ship closure for the Android feed pagination chantier. | Partial. The implementation pass is complete locally, but preview/device/manual proof remains outstanding before ship. | `/005-sf-ship replayglowz-android-feed-pagination-and-virtualization -> /405-sf-prod replayglowz_app` |
 
 ## Current Chantier Flow
 
 | Step | Status | Notes |
 |------|--------|-------|
-| 100-sf-spec | reviewed | Spec exists, but the readiness gate sent it back for contract repair. |
-| 101-sf-ready | not ready | Manual-proof checklist artifact is missing and the pre-gate ready status was reverted. |
-| 102-sf-start | pending | Implementation has not started from this spec. |
-| 103-sf-verify | pending | Verification awaits implementation and proof artifacts. |
-| 104-sf-end | pending | Closure not started. |
-| 005-sf-ship | pending | Ship not requested. |
+| 100-sf-spec | reviewed | Spec exists and now has a matching manual checklist artifact plus a repaired readiness contract. |
+| 101-sf-ready | ready | Checklist artifact exists and the spec is structurally ready for execution. |
+| 102-sf-start | implemented | Flutter feed surfaces now request bounded pages and append progressively instead of eagerly merging 500-item feed reads. |
+| 103-sf-verify | partial | Local proof passed via `flutter analyze`, but manual checklist execution and preview/device validation remain open. |
+| 104-sf-end | deferred | Local bookkeeping is updated, but the chantier stays active until post-ship proof runs. |
+| 005-sf-ship | pending | Next lifecycle owner must push the bounded scope, then route to preview/device proof. |
 
-Next command: `/100-sf-spec replayglowz-android-feed-pagination-and-virtualization`
+Next command: `/005-sf-ship replayglowz-android-feed-pagination-and-virtualization -> /405-sf-prod replayglowz_app`

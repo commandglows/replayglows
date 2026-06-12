@@ -80,16 +80,28 @@ class VirtualFeedDetailScreen extends ConsumerStatefulWidget {
 
 class _VirtualFeedDetailScreenState
     extends ConsumerState<VirtualFeedDetailScreen> {
+  static const _feedPageSize = 60;
+  static const _loadMoreExtent = 720.0;
+
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _videoItemKeys = {};
   final Map<String, GlobalKey> _sourceTileKeys = {};
 
   final List<VirtualFeedSource> _editableSources = [];
+  List<String?> _requestedPageCursors = const <String?>[null];
   String? _lastScrolledCursor;
   bool _isReorderingSources = false;
   bool _isRefreshing = false;
   bool _isSavingOrder = false;
   List<String>? _pendingSourceOrder;
+
+  VirtualFeedDetailsArgs _detailsArgs({String? cursor}) {
+    return VirtualFeedDetailsArgs(
+      feedId: widget.feedId,
+      pageSize: _feedPageSize,
+      cursor: cursor,
+    );
+  }
 
   AppLocale _locale(BuildContext context) =>
       Localizations.localeOf(context).languageCode == 'fr'
@@ -116,6 +128,21 @@ class _VirtualFeedDetailScreenState
       if (sourceIds[i] != sources[i].id) return false;
     }
     return true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_handleScroll);
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final remainingExtent = position.maxScrollExtent - position.pixels;
+    if (remainingExtent <= _loadMoreExtent) {
+      _maybeLoadMorePages();
+    }
   }
 
   void _syncSourceList(List<VirtualFeedSource> detailsSources) {
@@ -239,12 +266,60 @@ class _VirtualFeedDetailScreenState
         '';
   }
 
+  void _resetPageCursors() {
+    _requestedPageCursors = const <String?>[null];
+  }
+
   void _invalidateFeedDetails() {
-    ref.invalidate(
-      virtualFeedDetailsProvider(
-        VirtualFeedDetailsArgs(feedId: widget.feedId, pageSize: 100),
-      ),
+    ref.invalidate(virtualFeedDetailsProvider);
+    if (mounted) {
+      setState(_resetPageCursors);
+    } else {
+      _resetPageCursors();
+    }
+  }
+
+  void _retryPage(String? cursor) {
+    ref.invalidate(virtualFeedDetailsProvider(_detailsArgs(cursor: cursor)));
+  }
+
+  void _maybeLoadMorePages() {
+    if (_requestedPageCursors.isEmpty) return;
+    final lastCursor = _requestedPageCursors.last;
+    final lastPage = ref.read(
+      virtualFeedDetailsProvider(_detailsArgs(cursor: lastCursor)),
     );
+    if (lastPage.isLoading) return;
+
+    final details = lastPage.asData?.value;
+    final nextCursor = details?.continueCursor;
+    if (details == null ||
+        details.isDone ||
+        nextCursor == null ||
+        nextCursor.isEmpty ||
+        _requestedPageCursors.contains(nextCursor)) {
+      return;
+    }
+
+    setState(() {
+      _requestedPageCursors = <String?>[..._requestedPageCursors, nextCursor];
+    });
+  }
+
+  void _maybePrefetchPagesForActiveVideo(
+    List<YouTubeVideo> videos,
+    String activeVideoId,
+  ) {
+    if (activeVideoId.isEmpty ||
+        videos.any((video) => video.youtubeVideoId == activeVideoId)) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _maybeLoadMorePages();
+      }
+    });
   }
 
   Future<bool> _confirmDeleteFeed(BuildContext context, AppLocale l) async {
@@ -530,6 +605,9 @@ class _VirtualFeedDetailScreenState
   ) async {
     try {
       await updateVirtualFeed(ref, feedId: feed.id, sortOrder: sortOrder);
+      if (mounted) {
+        setState(_resetPageCursors);
+      }
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(t('virtualFeedDetail.sortUpdated', locale: l))),
@@ -1460,6 +1538,7 @@ class _VirtualFeedDetailScreenState
 
   @override
   void dispose() {
+    _scrollController.removeListener(_handleScroll);
     _scrollController.dispose();
     super.dispose();
   }
@@ -1467,11 +1546,11 @@ class _VirtualFeedDetailScreenState
   @override
   Widget build(BuildContext context) {
     final l = _locale(context);
-    final details = ref.watch(
-      virtualFeedDetailsProvider(
-        VirtualFeedDetailsArgs(feedId: widget.feedId, pageSize: 100),
-      ),
-    );
+    final detailPages = [
+      for (final cursor in _requestedPageCursors)
+        ref.watch(virtualFeedDetailsProvider(_detailsArgs(cursor: cursor))),
+    ];
+    final details = detailPages.first;
     final channelsAsync = ref.watch(subscribedChannelsProvider);
     final playlistsAsync = ref.watch(playlistsProvider);
     final activeVideoId = _queueActiveVideoId();
@@ -1499,28 +1578,49 @@ class _VirtualFeedDetailScreenState
             ),
             body: ErrorStateView(
               error: t('virtualFeedDetail.feedUnavailable', locale: l),
-              onRetry: () => ref.invalidate(
-                virtualFeedDetailsProvider(
-                  VirtualFeedDetailsArgs(feedId: widget.feedId, pageSize: 100),
-                ),
-              ),
+              onRetry: () => _retryPage(null),
               prefix: t('virtualFeedDetail.feedUnavailable', locale: l),
             ),
           );
         }
 
-        _syncSourceList(detailsData.sources);
+        final loadedPages = detailPages
+            .where((page) => page.hasValue)
+            .map((page) => page.requireValue)
+            .toList(growable: false);
+        final feedBundle = loadedPages.isNotEmpty ? loadedPages.first : detailsData;
+        final allVideos = <YouTubeVideo>[];
+        for (final page in loadedPages) {
+          allVideos.addAll(page.videos);
+        }
+        final pageErrors = <String?>[];
+        var isLoadingMore = false;
+        for (var index = 0; index < detailPages.length; index += 1) {
+          final page = detailPages[index];
+          if (page.hasError) {
+            pageErrors.add(
+              index < _requestedPageCursors.length
+                  ? _requestedPageCursors[index]
+                  : null,
+            );
+          }
+          if (index > 0 && page.isLoading) {
+            isLoadingMore = true;
+          }
+        }
+
+        _syncSourceList(feedBundle.sources);
         final color = feed.color != null
             ? parseHexColor(feed.color!)
             : Theme.of(context).colorScheme.primary;
         final sources = _editableSources.toList(growable: false);
-        final videos = _videosForSources(detailsData.videos, sources);
-        final sortOrder = detailsData.sortOrder;
+        final videos = _videosForSources(allVideos, sources);
+        final sortOrder = feedBundle.sortOrder;
         final videoListItems = _videoListItems(
           videos,
           sortOrder == 'sourceOrder',
         );
-        final feedStats = detailsData.stats;
+        final feedStats = feedBundle.stats;
 
         final hasCacheError = sources.any((source) => source.isStale);
 
@@ -1539,6 +1639,7 @@ class _VirtualFeedDetailScreenState
         }
 
         final activeFeedVideoId = activeVideoId;
+        _maybePrefetchPagesForActiveVideo(videos, activeFeedVideoId);
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (activeFeedVideoId.isEmpty) return;
           _scrollToActiveVideo(videos, activeFeedVideoId);
@@ -1615,6 +1716,33 @@ class _VirtualFeedDetailScreenState
           body: CustomScrollView(
             controller: _scrollController,
             slivers: [
+              if (pageErrors.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.warning_amber_rounded),
+                        title: Text(
+                          pageErrors.length == 1
+                              ? 'A feed page failed to load.'
+                              : '${pageErrors.length} feed pages failed to load.',
+                        ),
+                        subtitle: const Text(
+                          'Loaded videos stay visible while you retry the failed pages.',
+                        ),
+                        trailing: TextButton(
+                          onPressed: () {
+                            for (final cursor in pageErrors) {
+                              _retryPage(cursor);
+                            }
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               SliverToBoxAdapter(
                 child: Card(
                   margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -1687,7 +1815,7 @@ class _VirtualFeedDetailScreenState
                             ElevatedButton.icon(
                               onPressed: () => _showSourcePicker(
                                 context,
-                                detailsData,
+                                feedBundle,
                                 l,
                                 channelsAsync,
                                 playlistsAsync,
@@ -1918,6 +2046,27 @@ class _VirtualFeedDetailScreenState
                     );
                   },
                 ),
+              if (isLoadingMore)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    child: LinearProgressIndicator(minHeight: 3),
+                  ),
+                )
+              else if (!feedBundle.isDone &&
+                  feedBundle.continueCursor != null &&
+                  feedBundle.continueCursor!.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    child: Center(
+                      child: OutlinedButton(
+                        onPressed: _maybeLoadMorePages,
+                        child: const Text('Load more'),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         );
@@ -1947,11 +2096,7 @@ class _VirtualFeedDetailScreenState
         body: ErrorStateView(
           error: error,
           prefix: t('virtualFeedDetail.feedUnavailable', locale: l),
-          onRetry: () => ref.invalidate(
-            virtualFeedDetailsProvider(
-              VirtualFeedDetailsArgs(feedId: widget.feedId, pageSize: 100),
-            ),
-          ),
+          onRetry: () => _retryPage(null),
         ),
       ),
     );
