@@ -22,6 +22,9 @@ class MediaThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final devicePixelRatio = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth = (width * devicePixelRatio).round();
+    final cacheHeight = (height * devicePixelRatio).round();
     final fallback = Container(
       width: width,
       height: height,
@@ -38,6 +41,11 @@ class MediaThumbnail extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
+        memCacheWidth: cacheWidth,
+        memCacheHeight: cacheHeight,
+        maxWidthDiskCache: cacheWidth,
+        maxHeightDiskCache: cacheHeight,
+        filterQuality: FilterQuality.low,
         placeholder: (context, url) => Container(
           width: width,
           height: height,

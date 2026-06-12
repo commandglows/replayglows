@@ -1,5 +1,8 @@
 # Audit Log
 
+🟠 [replayglowz] audit: backend dependency refresh | date: 2026-06-12 | overall: C+ | issues: 0 critical / 0 high / 8 moderate after non-major updates; remaining lane is `firebase-admin` 14.x | scope: replayglowz_backend
+🟠 [replayglowz] audit: dependencies monorepo recheck | date: 2026-06-12 | overall: C | issues: 0 critical / 0 high / 10 moderate backend advisories / 3 configuration proof gaps | scope: replayglowz_backend, replayglowz_site, replayglowz_lab
+🟠 [replayglowz] audit: replayglowz_app android performance | date: 2026-06-12 | overall: B | issues: 0 critical / 1 high / 2 medium | scope: replayglowz_app android
 🟠 [replayglowz] audit: dependencies monorepo | date: 2026-05-31 | overall: C | issues: 0 critical / 2 high / 1 medium / 4 low | scope: replayglowz_app, replayglowz_site, replayglowz_lab
 🟢 [replayglowz] audit: dependencies security fixes | date: 2026-05-31 | overall: A- | issues: 0 known vulnerabilities after npm audit and pip-audit | scope: replayglowz_site, replayglowz_lab
 🟢 [replayglowz] migration: youtube_player_flutter 9.1.3 to 10.0.1 | date: 2026-05-31 | overall: A- | issues: Flutter analyze passed after API migration | scope: replayglowz_app

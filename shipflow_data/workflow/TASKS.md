@@ -6,6 +6,9 @@
 
 ## Audit: Deps
 
+🟢 [replayglowz] task: Upgrade `replayglowz_backend/packages/backend` to the latest non-major `convex`, `openai`, and `svix` releases, rerun `npm audit`, and verify Convex backend typecheck/runtime behavior | status: done | area: deps | evidence: `npm install`, `npm audit --json`, `npm run typecheck`
+🟡 [replayglowz] task: Open a migration lane for `firebase-admin` 14.x so the backend can clear the remaining `uuid` / `google-gax` advisory chain without forcing an unreviewed major jump | status: todo | area: deps | next: /404-sf-migrate ReplayGlowz backend firebase-admin 14 upgrade
+🟢 [replayglowz] task: Add `replayglowz_backend/packages/backend` to `.github/dependabot.yml` and pin its Node/package-manager policy so backend dependency drift is monitored like the site and worker | status: done | area: deps | evidence: `.github/dependabot.yml`, `replayglowz_backend/packages/backend/package.json`
 🟢 [replayglowz] task: Patch `replayglowz_lab` Starlette advisory GHSA-86qp-5c8j-p5mr by updating the FastAPI/Starlette lock lane and validating worker auth/routing behavior | status: done | area: deps
 🟢 [replayglowz] task: Patch `replayglowz_site` transitive `devalue` advisory GHSA-77vg-94rm-hx3p through the Astro/Vite dependency lane and rebuild the marketing site | status: done | area: deps
 🟢 [replayglowz] task: Patch `replayglowz_lab` transitive `idna` advisory CVE-2026-45409 while preserving hash-checked `requirements.lock` installs | status: done | area: deps
@@ -24,6 +27,9 @@
 
 ## Audit: Perf
 
+🟢 [replayglowz] task: Enable Android release shrinking in `replayglowz_app/android/app/build.gradle.kts` so dead Java/Kotlin code and unused resources are removed from production artifacts | status: done | area: perf | evidence: `flutter analyze`
+🟢 [replayglowz] task: Constrain `CachedNetworkImage` decode/cache dimensions in `replayglowz_app/lib/widgets/media/media_thumbnail.dart` to the rendered thumbnail size on device-density screens | status: done | area: perf | evidence: `flutter analyze`
+🟡 [replayglowz] task: Reduce large filtered-feed fetch pressure in `VideosScreen` where each selected virtual feed currently requests up to 500 entries before merge | status: todo | area: perf | next: /100-sf-spec ReplayGlowz Android feed pagination and virtualization
 🟢 [replayglowz] task: Remove unused `replayglowz_site/public/professional-headshot-*.png` payloads that were copied into every static build despite having no source references | status: done | area: perf
 🟢 [replayglowz] task: Remove global `lenis` smooth-scroll dependency and layout script so the Astro site build emits no client JavaScript chunks | status: done | area: perf
 🟢 [replayglowz] task: Batch `youtube:fetchPlaylistItems` calls in `syncAllPlaylists` instead of waiting for each playlist sync sequentially | status: done | area: perf
