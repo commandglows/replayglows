@@ -12,6 +12,7 @@ class PlayerPanel extends StatelessWidget {
     required this.controller,
     required this.onReady,
     required this.onEnded,
+    this.aspectRatio = 16 / 9,
     this.webController,
     this.onWebStateChanged,
     this.showPoster = false,
@@ -26,6 +27,7 @@ class PlayerPanel extends StatelessWidget {
   final YoutubePlayerController controller;
   final VoidCallback onReady;
   final VoidCallback onEnded;
+  final double aspectRatio;
   final WebYoutubePlayerController? webController;
   final ValueChanged<WebYoutubePlayerSnapshot>? onWebStateChanged;
   final bool showPoster;
@@ -38,7 +40,7 @@ class PlayerPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 16 / 9,
+      aspectRatio: aspectRatio,
       child: kIsWeb
           ? Stack(
               fit: StackFit.expand,

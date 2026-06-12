@@ -1,5 +1,9 @@
 import 'dart:convert';
 
+import 'package:replayglowz_app/utils/duration_utils.dart';
+
+enum ShortFormVideoFilter { all, excludeShorts, onlyShorts }
+
 /// Model representing a YouTube video cached from a user's playlist.
 ///
 /// Maps to the `youtubeVideosCache` table in Convex, with additional
@@ -26,6 +30,10 @@ class YouTubeVideo {
   /// URL of the video thumbnail.
   final String? thumbnailUrl;
 
+  /// Best known thumbnail dimensions when provided by the backend.
+  final int? thumbnailWidth;
+  final int? thumbnailHeight;
+
   /// Name of the YouTube channel that uploaded this video.
   final String channelTitle;
 
@@ -40,6 +48,10 @@ class YouTubeVideo {
 
   /// ISO 8601 publish date from YouTube.
   final String? publishedAt;
+
+  /// Backend-derived short-form classification and score when available.
+  final bool? isShortForm;
+  final int? shortFormSignalScoreOverride;
 
   /// Timestamp (ms since epoch) when this entry was cached.
   final int cachedAt;
@@ -63,11 +75,15 @@ class YouTubeVideo {
     required this.title,
     this.description,
     this.thumbnailUrl,
+    this.thumbnailWidth,
+    this.thumbnailHeight,
     required this.channelTitle,
     this.channelThumbnailUrl,
     this.youtubeChannelId,
     this.duration,
     this.publishedAt,
+    this.isShortForm,
+    this.shortFormSignalScoreOverride,
     required this.cachedAt,
     this.playlistColor,
     this.playlistTitle,
@@ -96,11 +112,15 @@ class YouTubeVideo {
       title: _optionalString(json['title']) ?? 'Untitled video',
       description: _optionalString(json['description']),
       thumbnailUrl: _optionalString(json['thumbnailUrl']),
+      thumbnailWidth: _intOrNull(json['thumbnailWidth']),
+      thumbnailHeight: _intOrNull(json['thumbnailHeight']),
       channelTitle: _optionalString(json['channelTitle']) ?? '',
       channelThumbnailUrl: _optionalString(json['channelThumbnailUrl']),
       youtubeChannelId: _optionalString(json['youtubeChannelId']),
       duration: _optionalString(json['duration']),
       publishedAt: _optionalString(json['publishedAt']),
+      isShortForm: json['isShortForm'] as bool?,
+      shortFormSignalScoreOverride: _intOrNull(json['shortFormSignalScore']),
       cachedAt: _intValue(json['cachedAt']),
       playlistColor: _optionalString(json['playlistColor']),
       playlistTitle: _optionalString(json['playlistTitle']),
@@ -119,12 +139,17 @@ class YouTubeVideo {
       'title': title,
       if (description != null) 'description': description,
       if (thumbnailUrl != null) 'thumbnailUrl': thumbnailUrl,
+      if (thumbnailWidth != null) 'thumbnailWidth': thumbnailWidth,
+      if (thumbnailHeight != null) 'thumbnailHeight': thumbnailHeight,
       'channelTitle': channelTitle,
       if (channelThumbnailUrl != null)
         'channelThumbnailUrl': channelThumbnailUrl,
       if (youtubeChannelId != null) 'youtubeChannelId': youtubeChannelId,
       if (duration != null) 'duration': duration,
       if (publishedAt != null) 'publishedAt': publishedAt,
+      if (isShortForm != null) 'isShortForm': isShortForm,
+      if (shortFormSignalScoreOverride != null)
+        'shortFormSignalScore': shortFormSignalScoreOverride,
       'cachedAt': cachedAt,
       if (playlistColor != null) 'playlistColor': playlistColor,
       if (playlistTitle != null) 'playlistTitle': playlistTitle,
@@ -142,11 +167,15 @@ class YouTubeVideo {
     String? title,
     String? description,
     String? thumbnailUrl,
+    int? thumbnailWidth,
+    int? thumbnailHeight,
     String? channelTitle,
     String? channelThumbnailUrl,
     String? youtubeChannelId,
     String? duration,
     String? publishedAt,
+    bool? isShortForm,
+    int? shortFormSignalScoreOverride,
     int? cachedAt,
     String? playlistColor,
     String? playlistTitle,
@@ -162,11 +191,16 @@ class YouTubeVideo {
       title: title ?? this.title,
       description: description ?? this.description,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      thumbnailWidth: thumbnailWidth ?? this.thumbnailWidth,
+      thumbnailHeight: thumbnailHeight ?? this.thumbnailHeight,
       channelTitle: channelTitle ?? this.channelTitle,
       channelThumbnailUrl: channelThumbnailUrl ?? this.channelThumbnailUrl,
       youtubeChannelId: youtubeChannelId ?? this.youtubeChannelId,
       duration: duration ?? this.duration,
       publishedAt: publishedAt ?? this.publishedAt,
+      isShortForm: isShortForm ?? this.isShortForm,
+      shortFormSignalScoreOverride:
+          shortFormSignalScoreOverride ?? this.shortFormSignalScoreOverride,
       cachedAt: cachedAt ?? this.cachedAt,
       playlistColor: playlistColor ?? this.playlistColor,
       playlistTitle: playlistTitle ?? this.playlistTitle,
@@ -188,6 +222,57 @@ class YouTubeVideo {
 
   @override
   String toString() => 'YouTubeVideo(id: $id, title: $title)';
+
+  int get shortFormSignalScore {
+    if (shortFormSignalScoreOverride != null) {
+      return shortFormSignalScoreOverride!;
+    }
+
+    var score = 0;
+    final metadata = [
+      title,
+      description,
+      thumbnailUrl,
+    ].whereType<String>().join(' ').toLowerCase();
+
+    if (metadata.contains('#shorts') || metadata.contains('/shorts/')) {
+      score += 3;
+    }
+
+    if (thumbnailUrl != null) {
+      final thumbnail = thumbnailUrl!.toLowerCase();
+      if (thumbnail.contains('oar2') ||
+          thumbnail.contains('hq2.jpg') ||
+          thumbnail.contains('shorts')) {
+        score += 2;
+      }
+    }
+
+    if (thumbnailWidth != null &&
+        thumbnailHeight != null &&
+        thumbnailWidth! > 0 &&
+        thumbnailHeight! > 0) {
+      final ratio = thumbnailHeight! / thumbnailWidth!;
+      if (ratio >= 1.35) {
+        score += 2;
+      } else if (ratio >= 1.1) {
+        score += 1;
+      }
+    }
+
+    final durationSeconds = parseDuration(duration);
+    if (durationSeconds != null) {
+      if (durationSeconds <= 60) {
+        score += 2;
+      } else if (durationSeconds <= 180) {
+        score += 1;
+      }
+    }
+
+    return score;
+  }
+
+  bool get isProbablyShortForm => isShortForm ?? shortFormSignalScore >= 2;
 }
 
 String? _optionalString(Object? value) {
@@ -201,6 +286,14 @@ int _intValue(Object? value) {
   if (value is num) return value.toInt();
   if (value is String) return int.tryParse(value) ?? 0;
   return 0;
+}
+
+int? _intOrNull(Object? value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
 }
 
 /// Decodes video responses from Convex queries.

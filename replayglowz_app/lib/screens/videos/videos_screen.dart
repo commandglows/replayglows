@@ -57,6 +57,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   static const _prefsTab = 'videos.pref.tab';
   static const _prefsSort = 'videos.pref.sort';
   static const _prefsWatched = 'videos.pref.watched';
+  static const _prefsShorts = 'videos.pref.shorts';
   static const _prefsPlaylist = 'videos.pref.playlist';
   static const _prefsPlaylists = 'videos.pref.playlists';
   static const _prefsFeedFilter = 'videos.pref.feedFilter';
@@ -80,6 +81,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   Offset _feedActionDragDelta = Offset.zero;
   String _sortOrder = 'desc';
   bool _includeWatched = true;
+  ShortFormVideoFilter _shortFormFilter = ShortFormVideoFilter.all;
   bool _feedActionRefreshMode = false;
   final Set<String> _feedFilterIds = <String>{};
   bool _prefsLoaded = false;
@@ -174,6 +176,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     final tab = prefs.getInt(_prefsTab) ?? 0;
     final sort = prefs.getString(_prefsSort) ?? 'desc';
     final watched = prefs.getBool(_prefsWatched) ?? true;
+    final shorts = _shortFormFilterFromPrefs(
+      prefs.getString(_prefsShorts) ?? 'all',
+    );
     final feedFilter = prefs.getString(_prefsFeedFilter);
     final feedFilters = prefs.getStringList(_prefsFeedFilters);
     final scroll = prefs.getDouble(_prefsScroll) ?? 0;
@@ -185,6 +190,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     setState(() {
       _sortOrder = sort;
       _includeWatched = watched;
+      _shortFormFilter = shorts;
       _feedFilterIds
         ..clear()
         ..addAll(selectedFeeds);
@@ -205,6 +211,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     await prefs.setInt(_prefsTab, _tabController.index);
     await prefs.setString(_prefsSort, _sortOrder);
     await prefs.setBool(_prefsWatched, _includeWatched);
+    await prefs.setString(_prefsShorts, _shortFormFilterPrefsValue);
     final feedIds = _feedFilterIds.toList()..sort();
     await prefs.setStringList(_prefsFeedFilters, feedIds);
     await prefs.setString(
@@ -235,6 +242,20 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   }
 
   bool get _hasFeedFilters => _feedFilterIds.isNotEmpty;
+
+  String get _shortFormFilterPrefsValue => switch (_shortFormFilter) {
+    ShortFormVideoFilter.all => 'all',
+    ShortFormVideoFilter.excludeShorts => 'exclude',
+    ShortFormVideoFilter.onlyShorts => 'only',
+  };
+
+  ShortFormVideoFilter _shortFormFilterFromPrefs(String value) {
+    return switch (value) {
+      'exclude' => ShortFormVideoFilter.excludeShorts,
+      'only' => ShortFormVideoFilter.onlyShorts,
+      _ => ShortFormVideoFilter.all,
+    };
+  }
 
   void _resetFilteredFeedPagination({Iterable<String>? feedIds}) {
     if (feedIds == null) {
@@ -1183,6 +1204,36 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
               _persistLocalPrefs();
             },
           ),
+          PopupMenuButton<ShortFormVideoFilter>(
+            tooltip: 'Filter shorts',
+            icon: Icon(switch (_shortFormFilter) {
+              ShortFormVideoFilter.all => Icons.smart_display_outlined,
+              ShortFormVideoFilter.excludeShorts =>
+                Icons.smart_display_outlined,
+              ShortFormVideoFilter.onlyShorts => Icons.smart_display_rounded,
+            }),
+            onSelected: (value) {
+              setState(() => _shortFormFilter = value);
+              _persistLocalPrefs();
+            },
+            itemBuilder: (context) => [
+              CheckedPopupMenuItem(
+                value: ShortFormVideoFilter.all,
+                checked: _shortFormFilter == ShortFormVideoFilter.all,
+                child: const Text('All videos'),
+              ),
+              CheckedPopupMenuItem(
+                value: ShortFormVideoFilter.excludeShorts,
+                checked: _shortFormFilter == ShortFormVideoFilter.excludeShorts,
+                child: const Text('Without Shorts'),
+              ),
+              CheckedPopupMenuItem(
+                value: ShortFormVideoFilter.onlyShorts,
+                checked: _shortFormFilter == ShortFormVideoFilter.onlyShorts,
+                child: const Text('Shorts only'),
+              ),
+            ],
+          ),
           PopupMenuButton<String>(
             tooltip: 'Sort videos',
             icon: const Icon(Icons.sort),
@@ -1291,8 +1342,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 sourceVideos,
                 watchedIds,
               );
-              _visibleFeedQueue = visibleVideos;
-              _pruneFeedItemKeys(visibleVideos);
+              final shortFilteredVideos = _filterShortFormVideos(visibleVideos);
+              _visibleFeedQueue = shortFilteredVideos;
+              _pruneFeedItemKeys(shortFilteredVideos);
               _schedulePendingFeedScrollAnchors();
               _maybePrefetchFilteredFeedPagesForActiveVideo(
                 selectedFeedIds,
@@ -1300,7 +1352,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
               );
               if (_prefsLoaded) {
                 _scheduleEntryScrollToActiveFeedVideo(
-                  visibleVideos,
+                  shortFilteredVideos,
                   activeFeedVideoId,
                 );
               }
@@ -1332,7 +1384,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                         ),
                       ],
                     )
-                  : visibleVideos.isEmpty
+                  : shortFilteredVideos.isEmpty
                   ? (_feedFilterIds.isNotEmpty && filteredFeedErrors.isNotEmpty)
                         ? ErrorStateView(
                             error: filteredFeedErrors.length == 1
@@ -1360,6 +1412,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                                 setState(() {
                                   _feedFilterIds.clear();
                                   _includeWatched = true;
+                                  _shortFormFilter = ShortFormVideoFilter.all;
                                   _resetFilteredFeedPagination();
                                 });
                                 _jumpFeedViewsToTop();
@@ -1375,17 +1428,17 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                       controller: _tabController,
                       children: [
                         _buildCardView(
-                          visibleVideos,
+                          shortFilteredVideos,
                           watchedIds,
                           activeFeedVideoId,
                         ),
                         _buildListView(
-                          visibleVideos,
+                          shortFilteredVideos,
                           watchedIds,
                           activeFeedVideoId,
                         ),
                         _buildSummaryView(
-                          visibleVideos,
+                          shortFilteredVideos,
                           notesByVideo,
                           activeFeedVideoId,
                         ),
@@ -1620,6 +1673,20 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     return videos
         .where((video) => !watchedIds.contains(video.youtubeVideoId))
         .toList(growable: false);
+  }
+
+  List<YouTubeVideo> _filterShortFormVideos(List<YouTubeVideo> videos) {
+    return switch (_shortFormFilter) {
+      ShortFormVideoFilter.all => videos,
+      ShortFormVideoFilter.excludeShorts =>
+        videos
+            .where((video) => !video.isProbablyShortForm)
+            .toList(growable: false),
+      ShortFormVideoFilter.onlyShorts =>
+        videos
+            .where((video) => video.isProbablyShortForm)
+            .toList(growable: false),
+    };
   }
 
   int _videoSortTimestamp(YouTubeVideo video) {

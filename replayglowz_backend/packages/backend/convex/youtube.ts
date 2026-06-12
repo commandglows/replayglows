@@ -77,6 +77,118 @@ function formatSyncError(error: unknown): string {
   return String(error);
 }
 
+function parseDisplayDurationSeconds(
+  duration: string | undefined,
+): number | null {
+  if (!duration) return null;
+  const parts = duration
+    .split(":")
+    .map((part) => Number.parseInt(part, 10))
+    .filter((part) => Number.isFinite(part));
+  if (parts.length === 0) return null;
+  if (parts.length === 3) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }
+  if (parts.length === 2) {
+    return parts[0] * 60 + parts[1];
+  }
+  if (parts.length === 1) {
+    return parts[0];
+  }
+  return null;
+}
+
+function computeShortFormSignals(video: {
+  title: string;
+  description?: string;
+  thumbnailUrl?: string;
+  thumbnailWidth?: number;
+  thumbnailHeight?: number;
+  duration?: string;
+}): { shortFormSignalScore: number; isShortForm: boolean } {
+  let score = 0;
+  const metadata = [video.title, video.description, video.thumbnailUrl]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (metadata.includes("#shorts") || metadata.includes("/shorts/")) {
+    score += 3;
+  }
+
+  if (video.thumbnailUrl) {
+    const thumbnail = video.thumbnailUrl.toLowerCase();
+    if (
+      thumbnail.includes("oar2") ||
+      thumbnail.includes("hq2.jpg") ||
+      thumbnail.includes("shorts")
+    ) {
+      score += 2;
+    }
+  }
+
+  if (
+    typeof video.thumbnailWidth === "number" &&
+    typeof video.thumbnailHeight === "number" &&
+    video.thumbnailWidth > 0 &&
+    video.thumbnailHeight > 0
+  ) {
+    const ratio = video.thumbnailHeight / video.thumbnailWidth;
+    if (ratio >= 1.35) {
+      score += 2;
+    } else if (ratio >= 1.1) {
+      score += 1;
+    }
+  }
+
+  const durationSeconds = parseDisplayDurationSeconds(video.duration);
+  if (durationSeconds != null) {
+    if (durationSeconds <= 60) {
+      score += 2;
+    } else if (durationSeconds <= 180) {
+      score += 1;
+    }
+  }
+
+  return {
+    shortFormSignalScore: score,
+    isShortForm: score >= 2,
+  };
+}
+
+function toCachedVideoRecord<
+  T extends {
+    title: string;
+    description?: string;
+    thumbnailUrl?: string;
+    thumbnailWidth?: number;
+    thumbnailHeight?: number;
+    duration?: string;
+  },
+>(video: T) {
+  return {
+    ...video,
+    ...computeShortFormSignals(video),
+  };
+}
+
+function pickBestThumbnail(
+  thumbnails: any,
+): { url?: string; width?: number; height?: number } | undefined {
+  const candidate =
+    thumbnails?.maxres ||
+    thumbnails?.standard ||
+    thumbnails?.high ||
+    thumbnails?.medium ||
+    thumbnails?.default;
+  if (!candidate) return undefined;
+  return {
+    url: candidate.url,
+    width: typeof candidate.width === "number" ? candidate.width : undefined,
+    height: typeof candidate.height === "number" ? candidate.height : undefined,
+  };
+}
+
 async function parseYoutubeErrorResponse(response: Response): Promise<{
   message: string;
   reasons: string[];
@@ -367,7 +479,11 @@ export const getCachedVideoDetailsByIds = internalQuery({
       channelTitle: entry.channelTitle,
       youtubeChannelId: entry.youtubeChannelId,
       thumbnailUrl: entry.thumbnailUrl,
+      thumbnailWidth: entry.thumbnailWidth,
+      thumbnailHeight: entry.thumbnailHeight,
       description: entry.description,
+      shortFormSignalScore: entry.shortFormSignalScore,
+      isShortForm: entry.isShortForm,
       cachedAt: entry.cachedAt,
     }));
   },
@@ -687,11 +803,15 @@ export const getPlaylistVideos = query({
         title: v.title,
         description: v.description,
         thumbnailUrl: v.thumbnailUrl,
+        thumbnailWidth: v.thumbnailWidth,
+        thumbnailHeight: v.thumbnailHeight,
         channelTitle: v.channelTitle,
         channelThumbnailUrl: v.youtubeChannelId
           ? channelThumbnails.get(v.youtubeChannelId)
           : undefined,
         duration: v.duration,
+        shortFormSignalScore: v.shortFormSignalScore,
+        isShortForm: v.isShortForm,
         position: v.position,
         publishedAt: v.publishedAt,
         cachedAt: v.cachedAt,
@@ -814,7 +934,11 @@ export const getVideoByYoutubeId = query({
       channelTitle: video.channelTitle,
       youtubeChannelId: video.youtubeChannelId,
       thumbnailUrl: video.thumbnailUrl,
+      thumbnailWidth: video.thumbnailWidth,
+      thumbnailHeight: video.thumbnailHeight,
       duration: video.duration,
+      shortFormSignalScore: video.shortFormSignalScore,
+      isShortForm: video.isShortForm,
     };
   },
 });
@@ -992,11 +1116,15 @@ export const getAllVideos = query({
         title: v.title,
         description: v.description,
         thumbnailUrl: v.thumbnailUrl,
+        thumbnailWidth: v.thumbnailWidth,
+        thumbnailHeight: v.thumbnailHeight,
         channelTitle: v.channelTitle,
         channelThumbnailUrl: v.youtubeChannelId
           ? channelThumbnails.get(v.youtubeChannelId)
           : undefined,
         duration: v.duration,
+        shortFormSignalScore: v.shortFormSignalScore,
+        isShortForm: v.isShortForm,
         publishedAt: v.publishedAt,
         cachedAt: v.cachedAt,
         playlistColor: playlist?.color,
@@ -1100,11 +1228,15 @@ export const getUncategorizedVideos = query({
       title: v.title,
       description: v.description,
       thumbnailUrl: v.thumbnailUrl,
+      thumbnailWidth: v.thumbnailWidth,
+      thumbnailHeight: v.thumbnailHeight,
       channelTitle: v.channelTitle,
       channelThumbnailUrl: v.youtubeChannelId
         ? channelThumbnails.get(v.youtubeChannelId)
         : undefined,
       duration: v.duration,
+      shortFormSignalScore: v.shortFormSignalScore,
+      isShortForm: v.isShortForm,
       publishedAt: v.publishedAt,
       cachedAt: v.cachedAt,
     }));
@@ -1200,11 +1332,15 @@ export const getAllCategorizedVideos = query({
         title: v.title,
         description: v.description,
         thumbnailUrl: v.thumbnailUrl,
+        thumbnailWidth: v.thumbnailWidth,
+        thumbnailHeight: v.thumbnailHeight,
         channelTitle: v.channelTitle,
         channelThumbnailUrl: v.youtubeChannelId
           ? channelThumbnails.get(v.youtubeChannelId)
           : undefined,
         duration: v.duration,
+        shortFormSignalScore: v.shortFormSignalScore,
+        isShortForm: v.isShortForm,
         publishedAt: v.publishedAt,
         cachedAt: v.cachedAt,
         playlistColor: playlist?.color,
@@ -1583,6 +1719,8 @@ export const updateVideosCache = mutation({
         title: v.string(),
         description: v.optional(v.string()),
         thumbnailUrl: v.optional(v.string()),
+        thumbnailWidth: v.optional(v.number()),
+        thumbnailHeight: v.optional(v.number()),
         channelTitle: v.string(),
         youtubeChannelId: v.optional(v.string()),
         duration: v.optional(v.string()),
@@ -1615,7 +1753,7 @@ export const updateVideosCache = mutation({
 
       if (existing) {
         await ctx.db.patch(existing._id, {
-          ...video,
+          ...toCachedVideoRecord(video),
           youtubePlaylistId: args.playlistId,
           cachedAt: now,
         });
@@ -1624,7 +1762,7 @@ export const updateVideosCache = mutation({
         await ctx.db.insert("youtubeVideosCache", {
           userId,
           youtubePlaylistId: args.playlistId,
-          ...video,
+          ...toCachedVideoRecord(video),
           cachedAt: now,
         });
       }
@@ -1649,6 +1787,8 @@ export const updateCachedVideoChannelMetadata = internalMutation({
         channelTitle: v.string(),
         youtubeChannelId: v.string(),
         thumbnailUrl: v.optional(v.string()),
+        thumbnailWidth: v.optional(v.number()),
+        thumbnailHeight: v.optional(v.number()),
         duration: v.optional(v.string()),
         publishedAt: v.optional(v.string()),
       }),
@@ -1660,17 +1800,31 @@ export const updateCachedVideoChannelMetadata = internalMutation({
       const entries = await ctx.db
         .query("youtubeVideosCache")
         .withIndex("by_user_and_video", (q) =>
-          q.eq("userId", args.userId).eq("youtubeVideoId", video.youtubeVideoId),
+          q
+            .eq("userId", args.userId)
+            .eq("youtubeVideoId", video.youtubeVideoId),
         )
         .collect();
 
       for (const entry of entries) {
+        const nextVideo = toCachedVideoRecord({
+          title: entry.title,
+          description: entry.description,
+          thumbnailUrl: entry.thumbnailUrl || video.thumbnailUrl,
+          thumbnailWidth: entry.thumbnailWidth || video.thumbnailWidth,
+          thumbnailHeight: entry.thumbnailHeight || video.thumbnailHeight,
+          duration: entry.duration || video.duration,
+        });
         await ctx.db.patch(entry._id, {
           channelTitle: video.channelTitle,
           youtubeChannelId: video.youtubeChannelId,
           thumbnailUrl: entry.thumbnailUrl || video.thumbnailUrl,
+          thumbnailWidth: entry.thumbnailWidth || video.thumbnailWidth,
+          thumbnailHeight: entry.thumbnailHeight || video.thumbnailHeight,
           duration: entry.duration || video.duration,
           publishedAt: entry.publishedAt || video.publishedAt,
+          shortFormSignalScore: nextVideo.shortFormSignalScore,
+          isShortForm: nextVideo.isShortForm,
           cachedAt: Date.now(),
         });
         updatedCount += 1;
@@ -1753,6 +1907,8 @@ export const insertVideoToCache = internalMutation({
       channelTitle: v.string(),
       youtubeChannelId: v.optional(v.string()),
       thumbnailUrl: v.optional(v.string()),
+      thumbnailWidth: v.optional(v.number()),
+      thumbnailHeight: v.optional(v.number()),
       description: v.optional(v.string()),
       duration: v.optional(v.string()),
       position: v.number(),
@@ -1773,12 +1929,16 @@ export const insertVideoToCache = internalMutation({
       // Update existing entry
       await ctx.db.patch(existing._id, {
         playlistItemId: args.video.playlistItemId,
-        title: args.video.title,
+        ...toCachedVideoRecord({
+          title: args.video.title,
+          description: args.video.description,
+          thumbnailUrl: args.video.thumbnailUrl,
+          thumbnailWidth: args.video.thumbnailWidth,
+          thumbnailHeight: args.video.thumbnailHeight,
+          duration: args.video.duration,
+        }),
         channelTitle: args.video.channelTitle,
         youtubeChannelId: args.video.youtubeChannelId,
-        thumbnailUrl: args.video.thumbnailUrl,
-        description: args.video.description,
-        duration: args.video.duration,
         position: args.video.position,
         publishedAt: args.video.publishedAt,
         cachedAt: Date.now(),
@@ -1790,12 +1950,16 @@ export const insertVideoToCache = internalMutation({
         youtubePlaylistId: args.playlistId,
         youtubeVideoId: args.video.videoId,
         playlistItemId: args.video.playlistItemId,
-        title: args.video.title,
+        ...toCachedVideoRecord({
+          title: args.video.title,
+          description: args.video.description,
+          thumbnailUrl: args.video.thumbnailUrl,
+          thumbnailWidth: args.video.thumbnailWidth,
+          thumbnailHeight: args.video.thumbnailHeight,
+          duration: args.video.duration,
+        }),
         channelTitle: args.video.channelTitle,
         youtubeChannelId: args.video.youtubeChannelId,
-        thumbnailUrl: args.video.thumbnailUrl,
-        description: args.video.description,
-        duration: args.video.duration,
         position: args.video.position,
         publishedAt: args.video.publishedAt,
         cachedAt: Date.now(),
@@ -2286,23 +2450,25 @@ export const fetchPlaylistItems = action({
       }
     }
 
-    const videos = (data.items || []).map((item: any, index: number) => ({
-      youtubeVideoId: item.contentDetails?.videoId,
-      playlistItemId: item.id,
-      title: item.snippet.title,
-      description: item.snippet.description || "",
-      thumbnailUrl:
-        item.snippet.thumbnails?.high?.url ||
-        item.snippet.thumbnails?.medium?.url ||
-        item.snippet.thumbnails?.default?.url,
-      channelTitle: item.snippet.videoOwnerChannelTitle || "",
-      youtubeChannelId: item.snippet.videoOwnerChannelId || undefined,
-      duration: durations[item.contentDetails?.videoId] || "",
-      position: item.snippet.position ?? index,
-      publishedAt:
-        videoPublishDates[item.contentDetails?.videoId] ||
-        item.snippet.publishedAt,
-    }));
+    const videos = (data.items || []).map((item: any, index: number) => {
+      const thumbnail = pickBestThumbnail(item.snippet?.thumbnails);
+      return {
+        youtubeVideoId: item.contentDetails?.videoId,
+        playlistItemId: item.id,
+        title: item.snippet.title,
+        description: item.snippet.description || "",
+        thumbnailUrl: thumbnail?.url,
+        thumbnailWidth: thumbnail?.width,
+        thumbnailHeight: thumbnail?.height,
+        channelTitle: item.snippet.videoOwnerChannelTitle || "",
+        youtubeChannelId: item.snippet.videoOwnerChannelId || undefined,
+        duration: durations[item.contentDetails?.videoId] || "",
+        position: item.snippet.position ?? index,
+        publishedAt:
+          videoPublishDates[item.contentDetails?.videoId] ||
+          item.snippet.publishedAt,
+      };
+    });
 
     // Update cache
     await ctx.runMutation(api.youtube.updateVideosCache, {
@@ -2496,15 +2662,15 @@ export const importPlaylistByUrl = action({
       .filter((item: any) => item.contentDetails?.videoId)
       .map((item: any, index: number) => {
         const videoId = item.contentDetails?.videoId;
+        const thumbnail = pickBestThumbnail(item.snippet?.thumbnails);
         return {
           youtubeVideoId: videoId,
           playlistItemId: item.id,
           title: item.snippet?.title || "Untitled video",
           description: item.snippet?.description || "",
-          thumbnailUrl:
-            item.snippet?.thumbnails?.high?.url ||
-            item.snippet?.thumbnails?.medium?.url ||
-            item.snippet?.thumbnails?.default?.url,
+          thumbnailUrl: thumbnail?.url,
+          thumbnailWidth: thumbnail?.width,
+          thumbnailHeight: thumbnail?.height,
           channelTitle: item.snippet?.videoOwnerChannelTitle || "",
           youtubeChannelId: item.snippet?.videoOwnerChannelId || undefined,
           duration: durations[videoId] || "",
@@ -3593,8 +3759,13 @@ export const backfillPlaylistVideoChannelMetadata = action({
       throw new Error("Playlist not found in your cache.");
     }
 
-    const videoIds = [...new Set(plan.videos.map((video: { youtubeVideoId: string }) => video.youtubeVideoId))]
-      .filter(Boolean);
+    const videoIds = [
+      ...new Set(
+        plan.videos.map(
+          (video: { youtubeVideoId: string }) => video.youtubeVideoId,
+        ),
+      ),
+    ].filter(Boolean);
 
     if (videoIds.length === 0) {
       return {
@@ -3934,21 +4105,23 @@ export const fetchSubscriptionFeed = action({
             if (!response.ok) return [];
 
             const data = await response.json();
-            return (data.items || []).map((item: any, index: number) => ({
-              youtubeVideoId: item.contentDetails?.videoId,
-              title: item.snippet?.title || "",
-              description: item.snippet?.description || "",
-              thumbnailUrl:
-                item.snippet?.thumbnails?.high?.url ||
-                item.snippet?.thumbnails?.medium?.url ||
-                item.snippet?.thumbnails?.default?.url,
-              channelTitle:
-                item.snippet?.videoOwnerChannelTitle || channel.channelTitle,
-              youtubeChannelId:
-                item.snippet?.videoOwnerChannelId || channel.channelId,
-              position: index,
-              publishedAt: item.snippet?.publishedAt,
-            }));
+            return (data.items || []).map((item: any, index: number) => {
+              const thumbnail = pickBestThumbnail(item.snippet?.thumbnails);
+              return {
+                youtubeVideoId: item.contentDetails?.videoId,
+                title: item.snippet?.title || "",
+                description: item.snippet?.description || "",
+                thumbnailUrl: thumbnail?.url,
+                thumbnailWidth: thumbnail?.width,
+                thumbnailHeight: thumbnail?.height,
+                channelTitle:
+                  item.snippet?.videoOwnerChannelTitle || channel.channelTitle,
+                youtubeChannelId:
+                  item.snippet?.videoOwnerChannelId || channel.channelId,
+                position: index,
+                publishedAt: item.snippet?.publishedAt,
+              };
+            });
           },
         ),
       );
@@ -4214,6 +4387,8 @@ export const internalUpdateVideosCache = internalMutation({
         title: v.string(),
         description: v.optional(v.string()),
         thumbnailUrl: v.optional(v.string()),
+        thumbnailWidth: v.optional(v.number()),
+        thumbnailHeight: v.optional(v.number()),
         channelTitle: v.string(),
         youtubeChannelId: v.optional(v.string()),
         duration: v.optional(v.string()),
@@ -4241,7 +4416,7 @@ export const internalUpdateVideosCache = internalMutation({
 
       if (existing) {
         await ctx.db.patch(existing._id, {
-          ...video,
+          ...toCachedVideoRecord(video),
           youtubePlaylistId: args.playlistId,
           cachedAt: now,
         });
@@ -4250,7 +4425,7 @@ export const internalUpdateVideosCache = internalMutation({
         await ctx.db.insert("youtubeVideosCache", {
           userId: args.userId,
           youtubePlaylistId: args.playlistId,
-          ...video,
+          ...toCachedVideoRecord(video),
           cachedAt: now,
         });
       }

@@ -110,6 +110,54 @@ void main() {
       expect(video.playlistId, 'PL456');
       expect(video.channelTitle, '');
     });
+
+    test('flags strong short metadata as short-form', () {
+      final video = YouTubeVideo.fromJson({
+        'id': 'vidShort',
+        'youtubeVideoId': 'vidShort',
+        'playlistId': 'PL456',
+        'title': 'Quick tip #shorts',
+        'description': '',
+        'duration': 'PT45S',
+        'cachedAt': 1760000000000,
+      });
+
+      expect(video.shortFormSignalScore, greaterThanOrEqualTo(2));
+      expect(video.isProbablyShortForm, isTrue);
+    });
+
+    test('does not flag normal long-form video as short-form', () {
+      final video = YouTubeVideo.fromJson({
+        'id': 'vidLong',
+        'youtubeVideoId': 'vidLong',
+        'playlistId': 'PL456',
+        'title': 'Deep dive walkthrough',
+        'description': 'A normal tutorial episode',
+        'duration': 'PT12M15S',
+        'cachedAt': 1760000000000,
+      });
+
+      expect(video.shortFormSignalScore, lessThan(2));
+      expect(video.isProbablyShortForm, isFalse);
+    });
+
+    test('prefers backend short classification when present', () {
+      final video = YouTubeVideo.fromJson({
+        'id': 'vidBackendShort',
+        'youtubeVideoId': 'vidBackendShort',
+        'playlistId': 'PL456',
+        'title': 'Clip',
+        'duration': '4:20',
+        'thumbnailWidth': 720,
+        'thumbnailHeight': 1280,
+        'shortFormSignalScore': 3,
+        'isShortForm': true,
+        'cachedAt': 1760000000000,
+      });
+
+      expect(video.shortFormSignalScore, 3);
+      expect(video.isProbablyShortForm, isTrue);
+    });
   });
 
   group('decodeYouTubeVideoList', () {

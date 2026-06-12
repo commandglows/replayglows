@@ -52,6 +52,13 @@
 
 ---
 
+## Backlog
+
+🟡 [replayglowz] task: Explore focus-time controls for video feeds so work sessions can stay bounded with reminders, playback caps, or auto-stop after a user-defined watch duration | status: todo | area: product | next: /100-sf-spec ReplayGlowz focus-time controls for feed playback
+🟡 [replayglowz] task: Show per-video watch progress directly in the feed so cards or rows expose the current playback position with a visible progress bar before reopening the video | status: todo | area: app | next: /100-sf-spec ReplayGlowz feed watch progress indicators
+
+---
+
 ## Audit Findings
 
 <!-- Populated by /sf-audit with traffic-first task records when findings become tasks. -->

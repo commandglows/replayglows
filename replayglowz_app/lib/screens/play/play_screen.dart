@@ -45,6 +45,34 @@ class _TranscriptEntry {
   double get endSeconds => startSeconds + durationSeconds;
 }
 
+class _ShortSurfaceButton extends StatelessWidget {
+  const _ShortSurfaceButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(44),
+        textStyle: theme.textTheme.labelMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
 class _VideoPlaylistActionTarget {
   const _VideoPlaylistActionTarget({
     required this.youtubeVideoId,
@@ -66,6 +94,8 @@ class _ChannelFeedActionTarget {
   final String sourceId;
   final String sourceTitle;
 }
+
+enum _ShortPanelKind { notes, transcript, comments }
 
 class _TranscriptControlHeader extends StatelessWidget {
   const _TranscriptControlHeader({
@@ -630,6 +660,12 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         currentVideo?.title ??
         (playerTitle.isEmpty ? 'Now Playing' : playerTitle);
     final l = _locale(context);
+    final mediaQuery = MediaQuery.of(context);
+    final useShortLayout =
+        !_focusMode &&
+        mediaQuery.size.width < 600 &&
+        mediaQuery.orientation == Orientation.portrait &&
+        _isShortFormVideo(currentVideo);
 
     return Scaffold(
       appBar: AppBar(
@@ -722,56 +758,70 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
             bindings: _shortcutBindings(l),
             child: Focus(
               autofocus: true,
-              child: Column(
-                children: [
-                  _buildPlayerSurface(libraryVideosAsync),
-                  if (!_focusMode && MediaQuery.sizeOf(context).width < 600)
-                    UiHintCard(
-                      hintId: 'play-mobile-bottom-bar-actions',
-                      icon: Icons.touch_app_outlined,
-                      title: t('playPage.mobileControlsHintTitle', locale: l),
-                      message: t(
-                        'playPage.mobileControlsHintMessage',
-                        locale: l,
-                      ),
-                    ),
-                  if (!_focusMode)
-                    UiHintCard(
-                      hintId: 'play-shortcuts-hint',
-                      icon: Icons.keyboard,
-                      title: t('p3.play.hintTitle', locale: l),
-                      message: t('p3.play.hintMessage', locale: l),
-                      actionLabel: t('p3.play.shortcuts', locale: l),
-                      onAction: () => _showShortcutsOverlay(l),
-                    ),
-                  if (!_focusMode)
-                    TabBar(
-                      controller: _tabController,
-                      tabs: const [
-                        Tab(text: 'Notes'),
-                        Tab(text: 'Transcript'),
-                        Tab(text: 'Comments'),
-                      ],
-                    ),
-                  Expanded(
-                    child: _focusMode
-                        ? _buildNotesTab(notesAsync)
-                        : TabBarView(
+              child: useShortLayout
+                  ? _buildShortMobileLayout(
+                      currentVideo: currentVideo,
+                      libraryVideosAsync: libraryVideosAsync,
+                      notesAsync: notesAsync,
+                      transcriptLanguage: transcriptLanguage,
+                    )
+                  : Column(
+                      children: [
+                        _buildPlayerSurface(
+                          libraryVideosAsync,
+                          useShortAspectRatio: false,
+                        ),
+                        if (!_focusMode &&
+                            MediaQuery.sizeOf(context).width < 600)
+                          UiHintCard(
+                            hintId: 'play-mobile-bottom-bar-actions',
+                            icon: Icons.touch_app_outlined,
+                            title: t(
+                              'playPage.mobileControlsHintTitle',
+                              locale: l,
+                            ),
+                            message: t(
+                              'playPage.mobileControlsHintMessage',
+                              locale: l,
+                            ),
+                          ),
+                        if (!_focusMode)
+                          UiHintCard(
+                            hintId: 'play-shortcuts-hint',
+                            icon: Icons.keyboard,
+                            title: t('p3.play.hintTitle', locale: l),
+                            message: t('p3.play.hintMessage', locale: l),
+                            actionLabel: t('p3.play.shortcuts', locale: l),
+                            onAction: () => _showShortcutsOverlay(l),
+                          ),
+                        if (!_focusMode)
+                          TabBar(
                             controller: _tabController,
-                            children: [
-                              _buildNotesTab(notesAsync),
-                              isTranscriptTabActive
-                                  ? _buildTranscriptTab(
-                                      transcriptAsync,
-                                      language: transcriptLanguage,
-                                    )
-                                  : const SizedBox.shrink(),
-                              _buildCommentsTab(),
+                            tabs: const [
+                              Tab(text: 'Notes'),
+                              Tab(text: 'Transcript'),
+                              Tab(text: 'Comments'),
                             ],
                           ),
-                  ),
-                ],
-              ),
+                        Expanded(
+                          child: _focusMode
+                              ? _buildNotesTab(notesAsync)
+                              : TabBarView(
+                                  controller: _tabController,
+                                  children: [
+                                    _buildNotesTab(notesAsync),
+                                    isTranscriptTabActive
+                                        ? _buildTranscriptTab(
+                                            transcriptAsync,
+                                            language: transcriptLanguage,
+                                          )
+                                        : const SizedBox.shrink(),
+                                    _buildCommentsTab(),
+                                  ],
+                                ),
+                        ),
+                      ],
+                    ),
             ),
           );
         },
@@ -852,8 +902,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   }
 
   Widget _buildPlayerSurface(
-    AsyncValue<List<YouTubeVideo>> libraryVideosAsync,
-  ) {
+    AsyncValue<List<YouTubeVideo>> libraryVideosAsync, {
+    required bool useShortAspectRatio,
+  }) {
     final session = ref.watch(playbackSessionProvider);
     final previousVideoId = session.previousBefore(widget.videoId);
     final nextVideoId = session.nextAfter(widget.videoId);
@@ -888,7 +939,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
 
     return Stack(
       children: [
-        _buildPlayerArea(currentVideo),
+        _buildPlayerArea(
+          currentVideo,
+          aspectRatio: useShortAspectRatio ? 9 / 16 : 16 / 9,
+        ),
         if (previewVideoId != null &&
             previewIcon != null &&
             previewLabel != null)
@@ -1013,9 +1067,13 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     );
   }
 
-  Widget _buildPlayerArea(YouTubeVideo? currentVideo) {
+  Widget _buildPlayerArea(
+    YouTubeVideo? currentVideo, {
+    required double aspectRatio,
+  }) {
     return PlayerPanel(
       videoId: _loadedVideoId,
+      aspectRatio: aspectRatio,
       controller: _playerController,
       webController: _webPlayerController,
       onWebStateChanged: _handleWebPlayerSnapshot,
@@ -1061,6 +1119,182 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         _handlePlaybackEnded();
       },
     );
+  }
+
+  Widget _buildShortMobileLayout({
+    required YouTubeVideo? currentVideo,
+    required AsyncValue<List<YouTubeVideo>> libraryVideosAsync,
+    required AsyncValue<List<Note>> notesAsync,
+    required String transcriptLanguage,
+  }) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: Center(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final playerWidth = math.min(
+                    constraints.maxWidth,
+                    constraints.maxHeight * (9 / 16),
+                  );
+                  return SizedBox(
+                    width: playerWidth,
+                    child: _buildPlayerSurface(
+                      libraryVideosAsync,
+                      useShortAspectRatio: true,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _ShortSurfaceButton(
+                    icon: Icons.note_alt_outlined,
+                    label: 'Notes',
+                    onPressed: () => _showShortPanelSheet(
+                      _ShortPanelKind.notes,
+                      notesAsync: notesAsync,
+                      transcriptLanguage: transcriptLanguage,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _ShortSurfaceButton(
+                    icon: Icons.subtitles_outlined,
+                    label: 'Transcript',
+                    onPressed: () => _showShortPanelSheet(
+                      _ShortPanelKind.transcript,
+                      notesAsync: notesAsync,
+                      transcriptLanguage: transcriptLanguage,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _ShortSurfaceButton(
+                    icon: Icons.forum_outlined,
+                    label: 'Comments',
+                    onPressed: () => _showShortPanelSheet(
+                      _ShortPanelKind.comments,
+                      notesAsync: notesAsync,
+                      transcriptLanguage: transcriptLanguage,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+          child: Text(
+            currentVideo?.title ?? 'Short',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showShortPanelSheet(
+    _ShortPanelKind kind, {
+    required AsyncValue<List<Note>> notesAsync,
+    required String transcriptLanguage,
+  }) async {
+    final title = switch (kind) {
+      _ShortPanelKind.notes => 'Notes',
+      _ShortPanelKind.transcript => 'Transcript',
+      _ShortPanelKind.comments => 'Comments',
+    };
+
+    if (kind == _ShortPanelKind.transcript && _activeTabIndex != 1) {
+      setState(() => _activeTabIndex = 1);
+    }
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: SizedBox(
+            height: MediaQuery.sizeOf(sheetContext).height * 0.72,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: Theme.of(sheetContext).textTheme.titleMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      switch (kind) {
+                        case _ShortPanelKind.notes:
+                          return _buildNotesTab(notesAsync);
+                        case _ShortPanelKind.transcript:
+                          final transcriptAsync = ref.watch(
+                            activeTranscriptProvider(
+                              TranscriptArgs(
+                                youtubeVideoId: widget.videoId,
+                                language: transcriptLanguage,
+                              ),
+                            ),
+                          );
+                          return _buildTranscriptTab(
+                            transcriptAsync,
+                            language: transcriptLanguage,
+                          );
+                        case _ShortPanelKind.comments:
+                          return _buildCommentsTab();
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  bool _isShortFormVideo(YouTubeVideo? currentVideo) {
+    if (currentVideo?.isProbablyShortForm == true) {
+      return true;
+    }
+
+    final fallbackDuration = _resolvedDurationSeconds(currentVideo);
+    if (fallbackDuration > 0 && fallbackDuration <= 60) {
+      return true;
+    }
+
+    final playerTitle = _playerController.metadata.title.toLowerCase();
+    return playerTitle.contains('#shorts') || playerTitle.contains('/shorts/');
   }
 
   Widget _buildNotesTab(AsyncValue<List<Note>> notesAsync) {

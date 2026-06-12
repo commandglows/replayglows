@@ -12,7 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "audit-fix"
 owner: "Diane"
-user_story: "As the TubeFlow maintainer, I want the Flutter app, Astro site, and transcript worker dependencies patched, pinned, audited, and automatically monitored so security fixes and deploys are reproducible without weakening runtime behavior."
+user_story: "As the ReplayGlowz maintainer, I want the Flutter app, Astro site, and transcript worker dependencies patched, pinned, audited, and automatically monitored so security fixes and deploys are reproducible without weakening runtime behavior."
 confidence: "high"
 risk_level: "medium"
 security_impact: "yes"
@@ -51,12 +51,12 @@ evidence:
   - "Requests vendor advisory: https://github.com/psf/requests/security/advisories/GHSA-gc5v-m9x4-r6x2"
   - "replayglowz_app/flutter pub outdated --json reports no current pub advisories but multiple patch/minor/major upgrade lanes."
   - "No .github/dependabot.yml, renovate.json, .node-version, .nvmrc, .python-version, pyproject.toml, uv.lock, Pipfile.lock, poetry.lock, or Python hash lockfile is present."
-next_step: "/sf-ship TubeFlow dependency stabilization --bounded-scope"
+next_step: "/sf-ship ReplayGlowz dependency stabilization --bounded-scope"
 ---
 
 # Title
 
-TubeFlow Dependency Stabilization
+ReplayGlowz Dependency Stabilization
 
 # Status
 
@@ -64,7 +64,7 @@ active
 
 # User Story
 
-As the TubeFlow maintainer, I want the Flutter app, Astro site, and transcript worker dependencies patched, pinned, audited, and automatically monitored so security fixes and deploys are reproducible without weakening runtime behavior.
+As the ReplayGlowz maintainer, I want the Flutter app, Astro site, and transcript worker dependencies patched, pinned, audited, and automatically monitored so security fixes and deploys are reproducible without weakening runtime behavior.
 
 # Minimal Behavior Contract
 
@@ -91,15 +91,15 @@ When dependency maintenance is triggered from this spec, the system updates only
 
 # Problem
 
-The dependency audit found a cross-project maintenance gap in the canonical TubeFlow monorepo. The public Astro site has two moderate XSS advisories, the transcript worker pins a vulnerable Requests version, update automation is absent, and runtime/package-manager pins are incomplete. The risk is not one isolated package: dependency health currently depends on manual scans and moving toolchains, while the app, site, and worker all feed user-facing TubeFlow flows.
+The dependency audit found a cross-project maintenance gap in the canonical ReplayGlowz monorepo. The public Astro site has two moderate XSS advisories, the transcript worker pins a vulnerable Requests version, update automation is absent, and runtime/package-manager pins are incomplete. The risk is not one isolated package: dependency health currently depends on manual scans and moving toolchains, while the app, site, and worker all feed user-facing ReplayGlowz flows.
 
 Source-de-chantier intake preserved from `sf-deps`:
 
-- Titre propose: TubeFlow dependency stabilization
+- Titre propose: ReplayGlowz dependency stabilization
 - Raison: cross-project dependency/security work spans the site, Flutter app, Python worker, CI/deploy tooling, and update automation.
 - Severite: P2
 - Scope: `replayglowz_site`, `replayglowz_app`, `replayglowz_lab`, CI/deploy dependency policy
-- Spec recommandee: `/sf-spec TubeFlow dependency stabilization: patch Astro/PostCSS and requests advisories, add update automation, pin package/tool versions, and add reproducible Python locking/auditing`
+- Spec recommandee: `/sf-spec ReplayGlowz dependency stabilization: patch Astro/PostCSS and requests advisories, add update automation, pin package/tool versions, and add reproducible Python locking/auditing`
 
 # Solution
 
@@ -318,7 +318,7 @@ Stabilize dependencies in three layers: first patch the known security advisorie
   - Action: Run focused checks for all changed subprojects and record any proof gaps.
   - User story link: Dependency stabilization is proven rather than assumed.
   - Depends on: Tasks 1-14.
-  - Validate with: `cd replayglowz_site && npm audit --json && npm run build`; `cd replayglowz_lab && pip-audit -r requirements.lock --require-hashes -f json && python -m py_compile main.py server.py`; `cd replayglowz_app && flutter pub outdated --json && flutter analyze`; `/home/claude/shipflow/tools/shipflow_metadata_lint.py AGENT.md shipflow_data shipflow_data/workflow/specs/tubeflow-dependency-stabilization.md`.
+  - Validate with: `cd replayglowz_site && npm audit --json && npm run build`; `cd replayglowz_lab && pip-audit -r requirements.lock --require-hashes -f json && python -m py_compile main.py server.py`; `cd replayglowz_app && flutter pub outdated --json && flutter analyze`; `/home/claude/shipflow/tools/shipflow_metadata_lint.py AGENT.md shipflow_data shipflow_data/workflow/specs/replayglowz-dependency-stabilization.md`.
   - Notes: If Docker is available, include `docker build` for the worker; if not, list Docker as unverified.
 
 # Acceptance Criteria
@@ -365,7 +365,7 @@ Stabilize dependencies in three layers: first patch the known security advisorie
   - `cd replayglowz_app && flutter pub outdated --json`
   - `cd replayglowz_app && flutter analyze`
 - Governance/docs:
-  - `/home/claude/shipflow/tools/shipflow_metadata_lint.py AGENT.md shipflow_data shipflow_data/workflow/specs/tubeflow-dependency-stabilization.md`
+  - `/home/claude/shipflow/tools/shipflow_metadata_lint.py AGENT.md shipflow_data shipflow_data/workflow/specs/replayglowz-dependency-stabilization.md`
   - `git diff --check`
 
 # Risks
@@ -452,7 +452,7 @@ These batches authorize spec-gated parallelism only after `sf-ready` marks this 
 
 ## Batch D: Automation, Shared Docs, And Final Integration
 
-- Write ownership: `.github/dependabot.yml`, root `README.md`, `shipflow_data/workflow/specs/tubeflow-dependency-stabilization.md`, and final integration notes only.
+- Write ownership: `.github/dependabot.yml`, root `README.md`, `shipflow_data/workflow/specs/replayglowz-dependency-stabilization.md`, and final integration notes only.
 - Forbidden files: `bugs/**`, `replayglowz_app/lib/auth/auth_gate.dart`, and any subproject files already owned by active Batch A, B, or C workers.
 - Tasks covered: Task 1, Task 14, Task 15, status/checklist updates, and final docs coherence.
 - Dependency order: Start after A, B, and C have returned, unless only `.github/dependabot.yml` is edited before the wave with no overlap.
@@ -467,10 +467,10 @@ None.
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-10 21:05:58 UTC | sf-spec | GPT-5 Codex | Created dependency stabilization chantier spec from sf-deps intake and local/external evidence. | Draft spec saved. | /sf-ready TubeFlow dependency stabilization |
-| 2026-05-10 21:16:26 UTC | sf-ready | GPT-5.5 medium subagent + GPT-5 Codex | Validated required sections, documentation freshness, security review, and added safe Execution Batches for spec-gated parallelism. | Ready. | /sf-start TubeFlow dependency stabilization |
-| 2026-05-10 21:39:16 UTC | sf-start | GPT-5.5 medium subagents + GPT-5 Codex | Implemented dependency patches, automation, toolchain pins, Python hash lock, changelogs, and docs through safe batches A-D. | Implemented with Docker proof gap. | /sf-verify TubeFlow dependency stabilization |
-| 2026-05-10 21:39:16 UTC | sf-verify | GPT-5 Codex | Ran site, worker, app, metadata, YAML, audit, and diff validations against the spec. | Partial: local checks pass; Docker image build unavailable. | /sf-ship TubeFlow dependency stabilization --bounded-scope |
+| 2026-05-10 21:05:58 UTC | sf-spec | GPT-5 Codex | Created dependency stabilization chantier spec from sf-deps intake and local/external evidence. | Draft spec saved. | /sf-ready ReplayGlowz dependency stabilization |
+| 2026-05-10 21:16:26 UTC | sf-ready | GPT-5.5 medium subagent + GPT-5 Codex | Validated required sections, documentation freshness, security review, and added safe Execution Batches for spec-gated parallelism. | Ready. | /sf-start ReplayGlowz dependency stabilization |
+| 2026-05-10 21:39:16 UTC | sf-start | GPT-5.5 medium subagents + GPT-5 Codex | Implemented dependency patches, automation, toolchain pins, Python hash lock, changelogs, and docs through safe batches A-D. | Implemented with Docker proof gap. | /sf-verify ReplayGlowz dependency stabilization |
+| 2026-05-10 21:39:16 UTC | sf-verify | GPT-5 Codex | Ran site, worker, app, metadata, YAML, audit, and diff validations against the spec. | Partial: local checks pass; Docker image build unavailable. | /sf-ship ReplayGlowz dependency stabilization --bounded-scope |
 | 2026-05-10 21:39:16 UTC | sf-build | GPT-5 Codex | Orchestrated readiness, spec-gated parallel implementation, integration, changelogs, and final local verification. | Partial: ship blocked by Docker proof gap and unrelated dirty files. | Confirm bounded ship scope or run Docker build where available. |
 | 2026-05-11 13:57:33 UTC | sf-deps | GPT-5 Codex | Re-audited `replayglowz_app` Pub graph with Flutter 3.41.7 / Dart 3.11.5, OSV batch query, license pass, import usage checks, and `flutter analyze`. | B-: no advisories; medium follow-ups remain for Clerk beta patch, unused codegen deps, and Sentry/lints major lanes. | Decide whether to patch Clerk beta and remove unused codegen packages in a bounded app dependency pass. |
 | 2026-05-11 14:20:00 UTC | direct deps pass | GPT-5 Codex | Removed beta Clerk Flutter SDKs, disabled sign-in with no-op auth facade, removed unused codegen deps, upgraded direct non-beta deps, fixed new lints, and regenerated plugin registrants. | A-: direct deps current; no beta packages in lock/package config; `flutter analyze` and `flutter build web` pass. | Choose a stable auth provider before restoring protected app flows. |
@@ -479,13 +479,13 @@ None.
 | 2026-05-28 14:16:07 UTC | sf-tasks | GPT-5 Codex | Migrated the project-local task tracker to canonical traffic-first task records and reconciled evidence-backed task status. | Tracker updated; chantier state unchanged. | Set/verify `FIREBASE_PROJECT_ID` on Convex prod deployment `joyous-chipmunk-990`, deploy Convex, then `/sf-prod replayglowz_app`. |
 | 2026-06-12 12:35:00 UTC | sf-deps | GPT-5 Codex | Re-audited the backend, site, and worker dependency posture, including `npm audit`, outdated checks, lock/config review, and tracker refresh. | Partial: site and worker remain broadly healthy; backend now carries 10 moderate npm advisories plus backend automation and pinning gaps. | Patch the backend non-major lanes, then open a migration lane for `firebase-admin` 14.x. |
 | 2026-06-12 12:55:00 UTC | sf-start | GPT-5 Codex | Updated backend non-major npm lanes, pinned Node/package-manager policy, added backend Dependabot coverage, regenerated the lockfile, and reran backend validation. | Partial: backend typecheck passes and audit drops to 8 moderate findings; remaining issues are chained to `firebase-admin` 14.x. | /404-sf-migrate ReplayGlowz backend firebase-admin 14 upgrade |
-| 2026-06-12 13:40:00 UTC | sf-migrate | GPT-5 Codex + Codex Spark explorer | Researched the official `firebase-admin` 14.0.0 breaking changes, created backup branch `migrate/firebase-admin-14-backup`, mapped local FCM usage, and completed the major upgrade with a command-scoped override of the npm release-age gate after explicit operator approval. | Partial: `firebase-admin@14.0.0` is installed, backend typecheck passes, and the audit drops from 8 to 5 moderate findings; remaining advisories are transitive under `@google-cloud/storage` / `uuid`, not a local API break. | /104-sf-end TubeFlow dependency stabilization |
+| 2026-06-12 13:40:00 UTC | sf-migrate | GPT-5 Codex + Codex Spark explorer | Researched the official `firebase-admin` 14.0.0 breaking changes, created backup branch `migrate/firebase-admin-14-backup`, mapped local FCM usage, and completed the major upgrade with a command-scoped override of the npm release-age gate after explicit operator approval. | Partial: `firebase-admin@14.0.0` is installed, backend typecheck passes, and the audit drops from 8 to 5 moderate findings; remaining advisories are transitive under `@google-cloud/storage` / `uuid`, not a local API break. | /104-sf-end ReplayGlowz dependency stabilization |
 
 # Current Chantier Flow
 
 | Step | Status | Notes |
 |------|--------|-------|
-| sf-spec | done | Draft spec created in `shipflow_data/workflow/specs/tubeflow-dependency-stabilization.md`. |
+| sf-spec | done | Draft spec created in `shipflow_data/workflow/specs/replayglowz-dependency-stabilization.md`. |
 | sf-ready | done | Spec marked ready after metadata, Open Questions, and Execution Batches were corrected. |
 | sf-start | done | Safe batches A-D implemented site, worker, app, automation, and docs changes. |
 | sf-verify | partial | Local validation passed; Docker image build could not run because Docker is unavailable. |

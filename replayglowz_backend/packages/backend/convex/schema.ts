@@ -360,9 +360,13 @@ export default defineSchema({
     title: v.string(),
     description: v.optional(v.string()),
     thumbnailUrl: v.optional(v.string()),
+    thumbnailWidth: v.optional(v.number()),
+    thumbnailHeight: v.optional(v.number()),
     channelTitle: v.string(),
     youtubeChannelId: v.optional(v.string()),
     duration: v.optional(v.string()),
+    shortFormSignalScore: v.optional(v.number()),
+    isShortForm: v.optional(v.boolean()),
     position: v.number(),
     publishedAt: v.optional(v.string()),
     cachedAt: v.number(),
@@ -690,10 +694,7 @@ export default defineSchema({
     sentAt: v.optional(v.number()),
     failedAt: v.optional(v.number()),
   })
-    .index("by_notification_device", [
-      "notificationId",
-      "deviceRegistrationId",
-    ])
+    .index("by_notification_device", ["notificationId", "deviceRegistrationId"])
     .index("by_user_notification", ["userId", "notificationId"])
     .index("by_status", ["status"])
     .index("by_user_status_created", ["userId", "status", "createdAt"]),
