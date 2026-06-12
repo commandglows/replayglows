@@ -9,7 +9,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-reveal>
       <!-- Smart Organization (large card) -->
-      <div class="md:col-span-2 animate-fade-up group relative p-6 rounded-2xl bg-card border border-border hover:border-foreground/25 hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+      <div class="md:col-span-2 animate-fade-up group marketing-card marketing-card--hover-border bg-card border-border overflow-hidden">
         <div class="flex items-start justify-between">
           <div>
             <h3 class="text-lg sm:text-xl font-semibold text-foreground mb-2">Smart Organization</h3>
@@ -18,27 +18,27 @@
             </p>
           </div>
           <!-- Playlist organizer animation -->
-          <div class="hidden sm:block w-[260px] shrink-0" id="playlist-organizer">
+          <div class="hidden sm:block marketing-bento-preview" id="playlist-organizer">
             <div class="flex flex-col gap-1" id="playlist-unsorted">
               <div class="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50">
                 <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-blue-500"></div>
-                <span class="text-[10px] text-muted-foreground truncate">React Hooks Deep Dive</span>
+                <span class="marketing-card-kicker text-muted-foreground truncate">React Hooks Deep Dive</span>
               </div>
               <div class="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50">
                 <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-purple-500"></div>
-                <span class="text-[10px] text-muted-foreground truncate">Lo-fi Study Beats</span>
+                <span class="marketing-card-kicker text-muted-foreground truncate">Lo-fi Study Beats</span>
               </div>
               <div class="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50">
                 <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-blue-500"></div>
-                <span class="text-[10px] text-muted-foreground truncate">Advanced TypeScript</span>
+                <span class="marketing-card-kicker text-muted-foreground truncate">Advanced TypeScript</span>
               </div>
               <div class="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50">
                 <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-purple-500"></div>
-                <span class="text-[10px] text-muted-foreground truncate">Jazz for Coding</span>
+                <span class="marketing-card-kicker text-muted-foreground truncate">Jazz for Coding</span>
               </div>
               <div class="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/50">
                 <div class="w-1.5 h-1.5 rounded-full shrink-0 bg-blue-500"></div>
-                <span class="text-[10px] text-muted-foreground truncate">CSS Grid Mastery</span>
+                <span class="marketing-card-kicker text-muted-foreground truncate">CSS Grid Mastery</span>
               </div>
             </div>
           </div>
@@ -47,7 +47,7 @@
       </div>
 
       <!-- Feed Sources -->
-      <div class="animate-fade-up delay-100 group relative p-6 rounded-2xl bg-card border border-border hover:border-foreground/25 hover:scale-[1.02] transition-all duration-300">
+      <div class="animate-fade-up delay-100 group marketing-card marketing-card--hover-border bg-card border-border">
         <h3 class="text-lg sm:text-xl font-semibold text-foreground mb-2">Feed Sources</h3>
         <p class="text-sm text-muted-foreground mb-4 leading-relaxed">
           Build focused feeds from playlists, channels, or all subscriptions as a source, then switch the main feed to the views you actually want.
@@ -56,7 +56,7 @@
       </div>
 
       <!-- Intelligent Search -->
-      <div class="animate-fade-up delay-200 group relative p-6 rounded-2xl bg-card border border-border hover:border-foreground/25 hover:scale-[1.02] transition-all duration-300">
+      <div class="animate-fade-up delay-200 group marketing-card marketing-card--hover-border bg-card border-border">
         <h3 class="text-lg sm:text-xl font-semibold text-foreground mb-2">Intelligent Search</h3>
         <p class="text-sm text-muted-foreground mb-4 leading-relaxed">
           Search across all your saved content, playlists, and subscriptions. Filter by duration, date, channel, or custom tags.
@@ -69,7 +69,7 @@
       </div>
 
       <!-- Distraction-Free Viewing -->
-      <div class="animate-fade-up delay-300 group relative p-6 rounded-2xl bg-card border border-border hover:border-foreground/25 hover:scale-[1.02] transition-all duration-300">
+      <div class="animate-fade-up delay-300 group marketing-card marketing-card--hover-border bg-card border-border">
         <h3 class="text-lg sm:text-xl font-semibold text-foreground mb-2">Distraction-Free Viewing</h3>
         <p class="text-sm text-muted-foreground mb-4 leading-relaxed">
           No suggested videos pulling you away. No autoplay to random content. Just your curated playlists and intentional viewing.
@@ -78,7 +78,7 @@
       </div>
 
       <!-- Cross-Device Sync -->
-      <div class="animate-fade-up delay-400 group relative p-6 rounded-2xl bg-card border border-border hover:border-foreground/25 hover:scale-[1.02] transition-all duration-300">
+      <div class="animate-fade-up delay-400 group marketing-card marketing-card--hover-border bg-card border-border">
         <h3 class="text-lg sm:text-xl font-semibold text-foreground mb-2">Cross-Device Sync</h3>
         <p class="text-sm text-muted-foreground mb-4 leading-relaxed">
           Your playlists, feeds, watch history, and preferences sync across devices. Web playback depends on the browser today; native apps are the path toward watching anywhere, anytime.
@@ -86,18 +86,18 @@
         <svg viewBox="0 0 100 70" class="w-full h-24">
           <defs>
             <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="rgb(255,255,255)" stop-opacity="0.2" />
-              <stop offset="100%" stop-color="rgb(255,255,255)" stop-opacity="0" />
+              <stop class="marketing-chart-gradient-line" offset="0%" stop-color="currentColor" stop-opacity="0.2" />
+              <stop class="marketing-chart-gradient-line" offset="100%" stop-color="currentColor" stop-opacity="0" />
             </linearGradient>
           </defs>
-          <path d="M 0 60 L 20 45 L 40 55 L 60 30 L 80 40 L 100 15 L 100 70 L 0 70 Z" fill="url(#chartGradient)" class="opacity-50" />
-          <path d="M 0 60 L 20 45 L 40 55 L 60 30 L 80 40 L 100 15" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" class="draw-line" />
+          <path d="M 0 60 L 20 45 L 40 55 L 60 30 L 80 40 L 100 15 L 100 70 L 0 70 Z" fill="url(#chartGradient)" class="opacity-50 text-foreground" />
+          <path d="M 0 60 L 20 45 L 40 55 L 60 30 L 80 40 L 100 15" fill="none" class="draw-line marketing-chart-gradient-line text-foreground" stroke-width="2" stroke-linecap="round" />
         </svg>
         <span class="inline-block bg-foreground/10 text-foreground rounded-full px-3 py-1 text-sm">Watch anywhere, anytime</span>
       </div>
 
       <!-- Privacy-First -->
-      <div class="animate-fade-up delay-500 group relative p-6 rounded-2xl bg-card border border-border hover:border-foreground/25 hover:scale-[1.02] transition-all duration-300">
+      <div class="animate-fade-up delay-500 group marketing-card marketing-card--hover-border bg-card border-border">
         <h3 class="text-lg sm:text-xl font-semibold text-foreground mb-2">Privacy-First</h3>
         <p class="text-sm text-muted-foreground mb-4 leading-relaxed">
           We don't track your viewing habits for advertising. No data selling. No creepy recommendations. Just a tool that works for you.

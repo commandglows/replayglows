@@ -63,17 +63,16 @@ const plans = [
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-reveal>
       {plans.map((plan, index) => (
         <div
-          class={`animate-fade-up-slow delay-${300 + index * 100} relative p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.02] ${
+          class={`animate-fade-up-slow delay-${300 + index * 100} marketing-card ${
             plan.highlighted
               ? 'bg-card border-foreground/30'
-              : 'bg-card/70 border-border hover:border-foreground/25'
+              : 'bg-card/70 border-border marketing-card--hover-border'
           }`}
         >
           {plan.highlighted && (
             <div class="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
               <div
-                class="absolute w-24 h-24 bg-white/20 blur-xl border-beam"
-                style="offset-path: rect(0 100% 100% 0 round 16px);"
+                class="absolute w-24 h-24 bg-white/20 blur-xl border-beam marketing-card-glow"
               />
             </div>
           )}
@@ -116,7 +115,7 @@ const plans = [
             href={appSignInRedirectUrl('/videos')}
             class={`block w-full text-center rounded-full py-3 text-sm font-medium transition-colors ${
               plan.highlighted
-                ? 'shimmer-btn bg-white text-zinc-950 hover:bg-zinc-200'
+                ? 'shimmer-btn marketing-cta-solid'
                 : 'bg-card text-foreground hover:bg-muted border border-border'
             }`}
           >

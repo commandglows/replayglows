@@ -38,7 +38,7 @@ const problems = [
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-reveal>
       {problems.map((problem, index) => (
         <div
-          class={`animate-fade-up delay-${(index + 1) * 100} group relative p-6 rounded-2xl bg-background border border-border hover:border-foreground/25 hover:scale-[1.02] transition-all duration-300 ${
+          class={`animate-fade-up delay-${(index + 1) * 100} group marketing-card marketing-card--hover-border bg-background border-border ${
             problem.wide ? 'md:col-span-2' : ''
           }`}
         >

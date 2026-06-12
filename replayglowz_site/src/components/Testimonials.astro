@@ -39,17 +39,16 @@ const testimonials = [
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-reveal>
       {testimonials.map((item, index) => (
         <div
-          class={`animate-fade-up delay-${(index + 1) * 100} relative p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.02] ${
+          class={`animate-fade-up delay-${(index + 1) * 100} marketing-card ${
             item.featured
               ? 'bg-background border-border'
-              : 'bg-background/50 border-border hover:border-foreground/25'
+              : 'bg-background/50 border-border marketing-card--hover-border'
           }`}
         >
           {item.featured && (
             <div class="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
               <div
-                class="absolute w-24 h-24 bg-white/20 blur-xl border-beam"
-                style="offset-path: rect(0 100% 100% 0 round 16px);"
+                class="absolute w-24 h-24 bg-white/20 blur-xl border-beam marketing-card-glow"
               ></div>
             </div>
           )}

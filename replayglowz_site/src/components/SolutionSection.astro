@@ -32,7 +32,7 @@ const solutions = [
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-reveal>
       {solutions.map((solution, index) => (
         <div
-          class={`animate-fade-up delay-${(index + 1) * 100} group relative p-6 rounded-2xl bg-card border border-border hover:border-foreground/25 hover:scale-[1.02] transition-all duration-300 text-center`}
+          class={`animate-fade-up delay-${(index + 1) * 100} group marketing-card marketing-card--hover-border bg-card border-border text-center`}
         >
           <span class="text-4xl sm:text-5xl block mb-4">{solution.icon}</span>
           <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">{solution.title}</h3>

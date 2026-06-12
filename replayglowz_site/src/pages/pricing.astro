@@ -102,7 +102,7 @@ const jsonLd = [
               href={plan.href}
               class={`block w-full text-center rounded-full py-3 text-sm font-medium transition-colors ${
                 plan.popular
-                  ? 'shimmer-btn bg-white text-zinc-950 hover:bg-zinc-200'
+                  ? 'shimmer-btn marketing-cta-solid'
                   : 'bg-card text-foreground hover:bg-muted border border-border'
               }`}
             >
@@ -138,7 +138,7 @@ const jsonLd = [
     <section class="max-w-3xl mx-auto px-4 py-16 sm:py-24 text-center">
       <h2 class="text-3xl font-bold text-foreground mb-4">Ready to start learning smarter?</h2>
       <p class="text-lg text-muted-foreground mb-8">Join thousands of learners who use ReplayGlowz every day.</p>
-      <a href={appSignInRedirectUrl('/videos')} class="shimmer-btn inline-flex items-center bg-white text-zinc-950 hover:bg-zinc-200 rounded-full px-8 py-3 text-base font-medium transition-colors">Get Started Free</a>
+      <a href={appSignInRedirectUrl('/videos')} class="shimmer-btn inline-flex items-center marketing-cta-solid rounded-full px-8 py-3 text-base font-medium transition-colors">Get Started Free</a>
     </section>
 
     <Newsletter />

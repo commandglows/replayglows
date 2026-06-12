@@ -38,7 +38,7 @@ const benefits = [
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4" data-reveal>
       {benefits.map((benefit, index) => (
         <div
-          class={`animate-fade-up delay-${(index + 1) * 100} group flex gap-4 sm:gap-6 items-center p-6 rounded-2xl bg-background border border-border hover:border-foreground/25 hover:scale-[1.02] transition-all duration-300`}
+          class={`animate-fade-up delay-${(index + 1) * 100} group flex gap-4 sm:gap-6 items-center marketing-card marketing-card--hover-border bg-background border-border`}
         >
           <div class="shrink-0 bg-muted rounded-lg p-3 text-3xl">
             {benefit.icon}
