@@ -1,0 +1,7 @@
+# Monorepo root transient files
+.DS_Store
+*.log
+.claude/
+.flox/
+.playwright-mcp/
+.vercel/

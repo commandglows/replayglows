@@ -22,3 +22,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# local tooling artifacts
+.claude/
+.flox/
+.playwright-mcp/
+.vercel/

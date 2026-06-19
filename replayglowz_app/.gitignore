@@ -22,3 +22,4 @@ Thumbs.db
 # Pub
 # pubspec.lock should be committed for apps (reproducible builds)
 .vercel
+.playwright-mcp/

@@ -117,6 +117,11 @@ const allSchemas = [...defaultSchemas, ...jsonLd]
     </a>
     <div class="noise-overlay" aria-hidden="true"></div>
     <slot />
+    {
+      import.meta.env.PROD && (
+        <script is:inline async src="https://cdn.onthe.io/io.js/YyAMWtaLLPUi" />
+      )
+    }
     <script>
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
