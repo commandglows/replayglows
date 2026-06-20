@@ -167,4 +167,28 @@ void main() {
     expect(state.addCurrentVideoToPlaylistRequestId, 1);
     expect(state.addCurrentChannelToFeedRequestId, 1);
   });
+
+  test(
+    'playback controller emits navigation requests before active video latch',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final controller = container.read(appPlaybackControllerProvider.notifier);
+
+      controller.requestPrevious();
+      controller.requestNext();
+      controller.showPreviousPreview();
+      var state = container.read(appPlaybackControllerProvider);
+      expect(state.previousRequestId, 1);
+      expect(state.nextRequestId, 1);
+      expect(state.previewDirection, PlaybackPreviewDirection.previous);
+
+      controller.showNextPreview();
+      state = container.read(appPlaybackControllerProvider);
+      expect(state.previousRequestId, 1);
+      expect(state.nextRequestId, 1);
+      expect(state.previewDirection, PlaybackPreviewDirection.next);
+    },
+  );
 }

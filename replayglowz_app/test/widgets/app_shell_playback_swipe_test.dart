@@ -32,6 +32,36 @@ void main() {
     );
   });
 
+  test('playback seek controls swipe action is deterministic from drag offset', () {
+    expect(
+      playbackSeekControlsSwipeActionForOffset(-30),
+      PlaybackSeekControlsSwipeAction.show,
+    );
+    expect(
+      playbackSeekControlsSwipeActionForOffset(30),
+      PlaybackSeekControlsSwipeAction.hide,
+    );
+    expect(
+      playbackSeekControlsSwipeActionForOffset(8),
+      PlaybackSeekControlsSwipeAction.none,
+    );
+  });
+
+  test('playback seek controls drag offset respects threshold', () {
+    expect(
+      playbackSeekControlsSwipeActionForOffset(-18, threshold: 16),
+      PlaybackSeekControlsSwipeAction.show,
+    );
+    expect(
+      playbackSeekControlsSwipeActionForOffset(18, threshold: 16),
+      PlaybackSeekControlsSwipeAction.hide,
+    );
+    expect(
+      playbackSeekControlsSwipeActionForOffset(12, threshold: 16),
+      PlaybackSeekControlsSwipeAction.none,
+    );
+  });
+
   test(
     'playback seek controls are available on Play before active playback',
     () {

@@ -26,6 +26,16 @@ PlaybackSeekControlsSwipeAction playbackSeekControlsSwipeActionForVelocity(
 }
 
 @visibleForTesting
+PlaybackSeekControlsSwipeAction playbackSeekControlsSwipeActionForOffset(
+  double offset, {
+  double threshold = 24.0,
+}) {
+  if (offset <= -threshold) return PlaybackSeekControlsSwipeAction.show;
+  if (offset >= threshold) return PlaybackSeekControlsSwipeAction.hide;
+  return PlaybackSeekControlsSwipeAction.none;
+}
+
+@visibleForTesting
 bool playbackSeekControlsAvailableForPlayContext({
   required String location,
   required String? routeVideoId,
@@ -63,8 +73,15 @@ class AppShell extends ConsumerStatefulWidget {
 class _AppShellState extends ConsumerState<AppShell> {
   static const _bottomNavIconSize = 28.0;
   static const _verticalSwipeVelocityThreshold = 220.0;
+  static const _verticalSwipeOffsetThreshold = 24.0;
   bool _playbackSeekControlsVisible = false;
   double? _activeSeekDragSeconds;
+  int? _trackedBottomBarPointer;
+  double _bottomBarSwipeOffset = 0;
+  bool _bottomBarSwipeHandled = false;
+  int? _trackedSeekBarPointer;
+  double _seekBarSwipeOffset = 0;
+  bool _seekBarSwipeHandled = false;
 
   StatefulNavigationShell get navigationShell => widget.navigationShell;
   GoRouterState get shellState => widget.shellState;
@@ -197,6 +214,75 @@ class _AppShellState extends ConsumerState<AppShell> {
     }
   }
 
+  void _startBottomBarSwipeTracking(PointerDownEvent event) {
+    _trackedBottomBarPointer = event.pointer;
+    _bottomBarSwipeOffset = 0;
+    _bottomBarSwipeHandled = false;
+  }
+
+  void _updateBottomBarSwipeTracking(PointerMoveEvent event) {
+    if (_trackedBottomBarPointer != event.pointer || _bottomBarSwipeHandled) {
+      return;
+    }
+    _bottomBarSwipeOffset += event.delta.dy;
+    final action = playbackSeekControlsSwipeActionForOffset(
+      _bottomBarSwipeOffset,
+      threshold: _verticalSwipeOffsetThreshold,
+    );
+    if (action == PlaybackSeekControlsSwipeAction.none) {
+      return;
+    }
+    _bottomBarSwipeHandled = true;
+    switch (action) {
+      case PlaybackSeekControlsSwipeAction.show:
+        _showPlaybackSeekControls();
+      case PlaybackSeekControlsSwipeAction.hide:
+        _hidePlaybackSeekControls();
+      case PlaybackSeekControlsSwipeAction.none:
+        break;
+    }
+  }
+
+  void _resetBottomBarSwipeTracking([PointerEvent? event]) {
+    if (event != null && _trackedBottomBarPointer != event.pointer) {
+      return;
+    }
+    _trackedBottomBarPointer = null;
+    _bottomBarSwipeOffset = 0;
+    _bottomBarSwipeHandled = false;
+  }
+
+  void _startSeekBarSwipeTracking(PointerDownEvent event) {
+    _trackedSeekBarPointer = event.pointer;
+    _seekBarSwipeOffset = 0;
+    _seekBarSwipeHandled = false;
+  }
+
+  void _updateSeekBarSwipeTracking(PointerMoveEvent event) {
+    if (_trackedSeekBarPointer != event.pointer || _seekBarSwipeHandled) {
+      return;
+    }
+    _seekBarSwipeOffset += event.delta.dy;
+    final action = playbackSeekControlsSwipeActionForOffset(
+      _seekBarSwipeOffset,
+      threshold: _verticalSwipeOffsetThreshold,
+    );
+    if (action != PlaybackSeekControlsSwipeAction.hide) {
+      return;
+    }
+    _seekBarSwipeHandled = true;
+    _hidePlaybackSeekControls();
+  }
+
+  void _resetSeekBarSwipeTracking([PointerEvent? event]) {
+    if (event != null && _trackedSeekBarPointer != event.pointer) {
+      return;
+    }
+    _trackedSeekBarPointer = null;
+    _seekBarSwipeOffset = 0;
+    _seekBarSwipeHandled = false;
+  }
+
   // ---------------------------------------------------------------------------
   // Build
   // ---------------------------------------------------------------------------
@@ -282,10 +368,12 @@ class _AppShellState extends ConsumerState<AppShell> {
             ],
           );
     final swipeablePrimaryBottomBar = hasPlayVideoContext
-        ? GestureDetector(
+        ? Listener(
             behavior: HitTestBehavior.translucent,
-            onVerticalDragEnd: (details) =>
-                _handlePlaybackSeekControlsSwipe(details.primaryVelocity ?? 0),
+            onPointerDown: _startBottomBarSwipeTracking,
+            onPointerMove: _updateBottomBarSwipeTracking,
+            onPointerUp: _resetBottomBarSwipeTracking,
+            onPointerCancel: _resetBottomBarSwipeTracking,
             child: primaryBottomBar,
           )
         : primaryBottomBar;
@@ -346,15 +434,13 @@ class _AppShellState extends ConsumerState<AppShell> {
         (_activeSeekDragSeconds ?? playbackController.currentSeconds)
             .clamp(0, maxSeconds)
             .toDouble();
-    return GestureDetector(
+    return Listener(
       key: const ValueKey('playback-seek-bottom-bar'),
       behavior: HitTestBehavior.opaque,
-      onVerticalDragEnd: (details) {
-        final velocity = details.primaryVelocity ?? 0;
-        if (velocity > _verticalSwipeVelocityThreshold) {
-          _hidePlaybackSeekControls();
-        }
-      },
+      onPointerDown: _startSeekBarSwipeTracking,
+      onPointerMove: _updateSeekBarSwipeTracking,
+      onPointerUp: _resetSeekBarSwipeTracking,
+      onPointerCancel: _resetSeekBarSwipeTracking,
       child: Container(
         height: 176,
         decoration: BoxDecoration(
@@ -514,7 +600,6 @@ class _AppShellState extends ConsumerState<AppShell> {
               onPressed: () => _handlePlaybackControl(
                 ref.read(appPlaybackControllerProvider.notifier).requestToggle,
               ),
-              onVerticalSwipe: _handlePlaybackSeekControlsSwipe,
             ),
             _PlaybackBarButton(
               icon: Icons.skip_next_rounded,
@@ -691,7 +776,6 @@ class _PlaybackBarButton extends StatelessWidget {
     this.onLongPressStart,
     this.onLongPressEnd,
     this.onLongPressCancel,
-    this.onVerticalSwipe,
     this.selected = false,
   });
 
@@ -701,7 +785,6 @@ class _PlaybackBarButton extends StatelessWidget {
   final GestureLongPressStartCallback? onLongPressStart;
   final GestureLongPressEndCallback? onLongPressEnd;
   final VoidCallback? onLongPressCancel;
-  final ValueChanged<double>? onVerticalSwipe;
   final bool selected;
 
   @override
@@ -717,9 +800,6 @@ class _PlaybackBarButton extends StatelessWidget {
           onLongPressStart: onLongPressStart,
           onLongPressEnd: onLongPressEnd,
           onLongPressCancel: onLongPressCancel,
-          onVerticalDragEnd: onVerticalSwipe == null
-              ? null
-              : (details) => onVerticalSwipe!(details.primaryVelocity ?? 0),
           child: Material(
             type: MaterialType.transparency,
             child: InkWell(

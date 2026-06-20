@@ -168,7 +168,6 @@ class AppPlaybackControllerNotifier
   }
 
   void requestToggle() {
-    if (!state.hasActiveVideo) return;
     state = state.copyWith(
       controllerMode: true,
       toggleRequestId: state.toggleRequestId + 1,
@@ -176,7 +175,6 @@ class AppPlaybackControllerNotifier
   }
 
   void requestPrevious() {
-    if (!state.hasActiveVideo) return;
     state = state.copyWith(
       controllerMode: true,
       previousRequestId: state.previousRequestId + 1,
@@ -184,7 +182,6 @@ class AppPlaybackControllerNotifier
   }
 
   void requestNext() {
-    if (!state.hasActiveVideo) return;
     state = state.copyWith(
       controllerMode: true,
       nextRequestId: state.nextRequestId + 1,
@@ -192,7 +189,6 @@ class AppPlaybackControllerNotifier
   }
 
   void showPreviousPreview() {
-    if (!state.hasActiveVideo) return;
     state = state.copyWith(
       controllerMode: true,
       previewDirection: PlaybackPreviewDirection.previous,
@@ -200,7 +196,6 @@ class AppPlaybackControllerNotifier
   }
 
   void showNextPreview() {
-    if (!state.hasActiveVideo) return;
     state = state.copyWith(
       controllerMode: true,
       previewDirection: PlaybackPreviewDirection.next,
@@ -220,7 +215,6 @@ class AppPlaybackControllerNotifier
   }
 
   void requestHideCurrentVideo() {
-    if (!state.hasActiveVideo) return;
     state = state.copyWith(
       controllerMode: true,
       hideCurrentVideoRequestId: state.hideCurrentVideoRequestId + 1,
@@ -228,7 +222,6 @@ class AppPlaybackControllerNotifier
   }
 
   void requestMarkCurrentVideoWatched() {
-    if (!state.hasActiveVideo) return;
     state = state.copyWith(
       controllerMode: true,
       markCurrentVideoWatchedRequestId:
@@ -237,7 +230,6 @@ class AppPlaybackControllerNotifier
   }
 
   void requestAddCurrentVideoToPlaylist() {
-    if (!state.hasActiveVideo) return;
     state = state.copyWith(
       controllerMode: true,
       addCurrentVideoToPlaylistRequestId:
@@ -246,7 +238,6 @@ class AppPlaybackControllerNotifier
   }
 
   void requestAddCurrentChannelToFeed() {
-    if (!state.hasActiveVideo) return;
     state = state.copyWith(
       controllerMode: true,
       addCurrentChannelToFeedRequestId:
@@ -255,7 +246,6 @@ class AppPlaybackControllerNotifier
   }
 
   void requestSpeedUp() {
-    if (!state.hasActiveVideo) return;
     state = state.copyWith(
       controllerMode: true,
       speedUpRequestId: state.speedUpRequestId + 1,
@@ -263,7 +253,6 @@ class AppPlaybackControllerNotifier
   }
 
   void requestSpeedDown() {
-    if (!state.hasActiveVideo) return;
     state = state.copyWith(
       controllerMode: true,
       speedDownRequestId: state.speedDownRequestId + 1,
@@ -271,7 +260,7 @@ class AppPlaybackControllerNotifier
   }
 
   void requestSpeedDelta(double delta) {
-    if (!state.hasActiveVideo || !delta.isFinite || delta == 0) return;
+    if (!delta.isFinite || delta == 0) return;
     state = state.copyWith(
       controllerMode: true,
       speedDelta: delta,
@@ -303,7 +292,6 @@ class AppPlaybackControllerNotifier
   }
 
   void requestSeekTo(double seconds) {
-    if (!state.hasActiveVideo) return;
     final max = state.durationSeconds > 0
         ? state.durationSeconds
         : math.max(seconds, 0.0);

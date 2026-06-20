@@ -95,7 +95,19 @@ class _ChannelFeedActionTarget {
   final String sourceTitle;
 }
 
+class _ChannelFeedActionSelection {
+  const _ChannelFeedActionSelection({
+    required this.target,
+    required this.feed,
+  });
+
+  final _ChannelFeedActionTarget target;
+  final VirtualFeed feed;
+}
+
 enum _ShortPanelKind { notes, transcript, comments }
+
+enum _PlaybackMenuAction { hide, watched, playlist, channel }
 
 class _TranscriptControlHeader extends StatelessWidget {
   const _TranscriptControlHeader({
@@ -262,6 +274,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   bool _wasPlayingBeforeBackground = false;
   bool _playerPausedDuringBackground = false;
   DateTime? _backgroundedAt;
+  _PlaybackMenuAction? _activePlaybackMenuAction;
   int _lastHandledPlaybackToggleRequestId = 0;
   int _lastHandledPlaybackPreviousRequestId = 0;
   int _lastHandledPlaybackNextRequestId = 0;
@@ -535,6 +548,62 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _syncAppPlaybackPosition(currentSeconds: _currentTimestamp);
   }
 
+  String _playbackMenuActionLabel(_PlaybackMenuAction action) {
+    return switch (action) {
+      _PlaybackMenuAction.hide => 'Hide',
+      _PlaybackMenuAction.watched => 'Watched',
+      _PlaybackMenuAction.playlist => 'Playlist',
+      _PlaybackMenuAction.channel => 'Channel',
+    };
+  }
+
+  bool _tryStartPlaybackMenuAction(_PlaybackMenuAction action) {
+    final activeAction = _activePlaybackMenuAction;
+    if (activeAction != null) {
+      if (mounted && activeAction != action) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${_playbackMenuActionLabel(activeAction)} is still in progress.',
+            ),
+          ),
+        );
+      }
+      return false;
+    }
+    if (mounted) {
+      setState(() => _activePlaybackMenuAction = action);
+    } else {
+      _activePlaybackMenuAction = action;
+    }
+    return true;
+  }
+
+  void _finishPlaybackMenuAction(_PlaybackMenuAction action) {
+    if (_activePlaybackMenuAction != action) {
+      return;
+    }
+    if (mounted) {
+      setState(() => _activePlaybackMenuAction = null);
+    } else {
+      _activePlaybackMenuAction = null;
+    }
+  }
+
+  Future<void> _runPlaybackMenuAction(
+    _PlaybackMenuAction action,
+    Future<void> Function() operation,
+  ) async {
+    if (!_tryStartPlaybackMenuAction(action)) {
+      return;
+    }
+    try {
+      await operation();
+    } finally {
+      _finishPlaybackMenuAction(action);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen<AppPlaybackControllerState>(appPlaybackControllerProvider, (
@@ -563,25 +632,45 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       if (next.hideCurrentVideoRequestId !=
           _lastHandledHideCurrentVideoRequestId) {
         _lastHandledHideCurrentVideoRequestId = next.hideCurrentVideoRequestId;
-        _hideCurrentVideoFromPlaybackBar();
+        unawaited(
+          _runPlaybackMenuAction(
+            _PlaybackMenuAction.hide,
+            _hideCurrentVideoFromPlaybackBar,
+          ),
+        );
       }
       if (next.markCurrentVideoWatchedRequestId !=
           _lastHandledMarkCurrentVideoWatchedRequestId) {
         _lastHandledMarkCurrentVideoWatchedRequestId =
             next.markCurrentVideoWatchedRequestId;
-        _markCurrentVideoWatchedFromPlaybackBar();
+        unawaited(
+          _runPlaybackMenuAction(
+            _PlaybackMenuAction.watched,
+            _markCurrentVideoWatchedFromPlaybackBar,
+          ),
+        );
       }
       if (next.addCurrentVideoToPlaylistRequestId !=
           _lastHandledAddCurrentVideoToPlaylistRequestId) {
         _lastHandledAddCurrentVideoToPlaylistRequestId =
             next.addCurrentVideoToPlaylistRequestId;
-        _showAddCurrentVideoToPlaylistSheet();
+        unawaited(
+          _runPlaybackMenuAction(
+            _PlaybackMenuAction.playlist,
+            _showAddCurrentVideoToPlaylistSheet,
+          ),
+        );
       }
       if (next.addCurrentChannelToFeedRequestId !=
           _lastHandledAddCurrentChannelToFeedRequestId) {
         _lastHandledAddCurrentChannelToFeedRequestId =
             next.addCurrentChannelToFeedRequestId;
-        _showAddCurrentChannelToFeedSheet();
+        unawaited(
+          _runPlaybackMenuAction(
+            _PlaybackMenuAction.channel,
+            _showAddCurrentChannelToFeedSheet,
+          ),
+        );
       }
       if (next.speedUpRequestId != _lastHandledSpeedUpRequestId) {
         _lastHandledSpeedUpRequestId = next.speedUpRequestId;
@@ -1714,65 +1803,95 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       );
       return;
     }
-
-    List<YouTubePlaylist> playlists;
-    try {
-      playlists = await ref.read(playlistsProvider.future);
-    } catch (e) {
-      if (!mounted) return;
-      showErrorSnackBar(context, error: e, prefix: 'Could not load playlists');
-      return;
-    }
-
     if (!mounted) return;
-    final eligiblePlaylists = playlists
-        .where((playlist) => playlist.youtubePlaylistId.isNotEmpty)
-        .toList();
-    if (eligiblePlaylists.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('No playlist available.')));
-      return;
-    }
 
     final selectedPlaylist = await showModalBottomSheet<YouTubePlaylist>(
       context: context,
       showDragHandle: true,
       builder: (sheetContext) {
         final theme = Theme.of(sheetContext);
+        final maxHeight = MediaQuery.sizeOf(sheetContext).height * 0.72;
         return SafeArea(
-          child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            children: [
-              Text(
-                'Add video to playlist',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                target.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 12),
-              for (final playlist in eligiblePlaylists)
-                ListTile(
-                  leading: const CircleAvatar(
-                    child: Icon(Icons.queue_music_rounded),
+          child: Consumer(
+            builder: (context, ref, _) {
+              final playlistsAsync = ref.watch(playlistsProvider);
+              return ConstrainedBox(
+                constraints: BoxConstraints(minHeight: 240, maxHeight: maxHeight),
+                child: playlistsAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, stack) => Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ErrorStateView(
+                      error: error,
+                      prefix: 'Could not load playlists',
+                    ),
                   ),
-                  title: Text(playlist.title),
-                  subtitle: Text(
-                    '${playlist.videoCount} video${playlist.videoCount == 1 ? '' : 's'}',
-                  ),
-                  onTap: () => Navigator.of(sheetContext).pop(playlist),
+                  data: (playlists) {
+                    final eligiblePlaylists = playlists
+                        .where(
+                          (playlist) => playlist.youtubePlaylistId.isNotEmpty,
+                        )
+                        .toList();
+                    if (eligiblePlaylists.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Add video to playlist',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'No playlist available yet.',
+                              style: theme.textTheme.bodyMedium,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    return ListView(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      children: [
+                        Text(
+                          'Add video to playlist',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          target.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        for (final playlist in eligiblePlaylists)
+                          ListTile(
+                            leading: const CircleAvatar(
+                              child: Icon(Icons.queue_music_rounded),
+                            ),
+                            title: Text(playlist.title),
+                            subtitle: Text(
+                              '${playlist.videoCount} video${playlist.videoCount == 1 ? '' : 's'}',
+                            ),
+                            onTap: () =>
+                                Navigator.of(sheetContext).pop(playlist),
+                          ),
+                      ],
+                    );
+                  },
                 ),
-            ],
+              );
+            },
           ),
         );
       },
@@ -1814,25 +1933,6 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
           youtubeVideoId: routeVideoId,
           title: _titleForPlaylistAction(video: cached, videoId: routeVideoId),
         );
-      }
-
-      try {
-        final video = await ref.read(
-          videoByYoutubeIdProvider(routeVideoId).future,
-        );
-        if (video != null && video.youtubeVideoId.trim().isNotEmpty) {
-          final resolvedVideoId = video.youtubeVideoId.trim();
-          return _VideoPlaylistActionTarget(
-            youtubeVideoId: resolvedVideoId,
-            title: _titleForPlaylistAction(
-              video: video,
-              videoId: resolvedVideoId,
-            ),
-          );
-        }
-      } catch (_) {
-        // Playlist insertion only needs the YouTube video id; metadata can
-        // still arrive later through the normal Play page providers.
       }
 
       return _VideoPlaylistActionTarget(
@@ -1877,101 +1977,20 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   }
 
   Future<void> _showAddCurrentChannelToFeedSheet() async {
-    final target = await _resolveCurrentChannelForFeedAction();
-    if (target == null || target.youtubeVideoId.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Current video metadata is not ready.')),
-      );
-      return;
-    }
-
-    const sourceType = 'channel';
-    final sourceId = target.sourceId.trim();
-    final sourceTitle = target.sourceTitle.trim();
-
-    if (sourceId.isEmpty || sourceTitle.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Current video channel metadata is not ready.'),
-        ),
-      );
-      return;
-    }
-
-    List<VirtualFeed> feeds;
-    try {
-      feeds = await ref.read(virtualFeedsProvider.future);
-    } catch (e) {
-      if (!mounted) return;
-      showErrorSnackBar(context, error: e, prefix: 'Could not load feeds');
-      return;
-    }
-
-    if (!mounted) return;
-    final activeFeeds = feeds.where((feed) => feed.isActive).toList();
-    if (activeFeeds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Create a ReplayGlowz feed first.')),
-      );
-      return;
-    }
-
-    final selectedFeed = await showModalBottomSheet<VirtualFeed>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) {
-        final theme = Theme.of(sheetContext);
-        return SafeArea(
-          child: ListView(
-            shrinkWrap: true,
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            children: [
-              Text(
-                'Add channel to feed',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                sourceTitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 12),
-              for (final feed in activeFeeds)
-                ListTile(
-                  leading: CircleAvatar(child: Text(feed.initials)),
-                  title: Text(feed.title),
-                  subtitle: Text(
-                    '${feed.sourceCount} source${feed.sourceCount == 1 ? '' : 's'}',
-                  ),
-                  onTap: () => Navigator.of(sheetContext).pop(feed),
-                ),
-            ],
-          ),
-        );
-      },
-    );
-
-    if (selectedFeed == null || !mounted) return;
+    final selected = await _showAddCurrentChannelToFeedPickerSheet();
+    if (selected == null || !mounted) return;
 
     try {
       await addVirtualFeedSource(
         ref,
-        feedId: selectedFeed.id,
-        sourceType: sourceType,
-        sourceId: sourceId,
-        sourceTitle: sourceTitle,
+        feedId: selected.feed.id,
+        sourceType: 'channel',
+        sourceId: selected.target.sourceId,
+        sourceTitle: selected.target.sourceTitle,
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Channel added to ${selectedFeed.title}.')),
+        SnackBar(content: Text('Channel added to ${selected.feed.title}.')),
       );
     } catch (e) {
       if (!mounted) return;
@@ -1983,38 +2002,154 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
   }
 
-  Future<_ChannelFeedActionTarget?>
-  _resolveCurrentChannelForFeedAction() async {
+  Future<_ChannelFeedActionSelection?> _showAddCurrentChannelToFeedPickerSheet() {
     final routeVideoId = widget.videoId.trim();
-    if (routeVideoId.isNotEmpty) {
-      final cached = _latestCurrentVideo;
-      final cachedTarget =
-          cached != null && cached.youtubeVideoId.trim() == routeVideoId
-          ? _channelFeedActionTargetFromVideo(cached)
-          : null;
-      if (cachedTarget != null) return cachedTarget;
-
-      final sessionItem = ref
-          .read(playbackSessionProvider)
-          .itemFor(routeVideoId);
-      final sessionTarget = _channelFeedActionTargetFromQueueItem(sessionItem);
-      if (sessionTarget != null) return sessionTarget;
-
-      try {
-        final video = await ref.read(
-          videoByYoutubeIdProvider(routeVideoId).future,
-        );
-        final backendTarget = _channelFeedActionTargetFromVideo(video);
-        if (backendTarget != null) return backendTarget;
-      } catch (_) {
-        return null;
-      }
-
-      return null;
-    }
-
     final cached = _latestCurrentVideo;
-    return _channelFeedActionTargetFromVideo(cached);
+    final immediateTarget =
+        cached != null && cached.youtubeVideoId.trim() == routeVideoId
+        ? _channelFeedActionTargetFromVideo(cached)
+        : _channelFeedActionTargetFromQueueItem(
+            ref.read(playbackSessionProvider).itemFor(routeVideoId),
+          );
+
+    return showModalBottomSheet<_ChannelFeedActionSelection>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        final theme = Theme.of(sheetContext);
+        final maxHeight = MediaQuery.sizeOf(sheetContext).height * 0.72;
+        return SafeArea(
+          child: Consumer(
+            builder: (context, ref, _) {
+              final backendVideoAsync =
+                  immediateTarget == null && routeVideoId.isNotEmpty
+                  ? ref.watch(videoByYoutubeIdProvider(routeVideoId))
+                  : const AsyncValue<YouTubeVideo?>.data(null);
+              final resolvedTarget =
+                  immediateTarget ??
+                  _channelFeedActionTargetFromVideo(
+                    backendVideoAsync.asData?.value,
+                  );
+
+              Widget child;
+              if (backendVideoAsync.isLoading && resolvedTarget == null) {
+                child = const Center(child: CircularProgressIndicator());
+              } else if (backendVideoAsync.hasError && resolvedTarget == null) {
+                child = Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: ErrorStateView(
+                    error: backendVideoAsync.error!,
+                    prefix: 'Could not resolve channel metadata',
+                  ),
+                );
+              } else if (resolvedTarget == null ||
+                  resolvedTarget.youtubeVideoId.isEmpty ||
+                  resolvedTarget.sourceId.trim().isEmpty ||
+                  resolvedTarget.sourceTitle.trim().isEmpty) {
+                child = Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Add channel to feed',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Current video channel metadata is not ready yet.',
+                        style: theme.textTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                final feedsAsync = ref.watch(virtualFeedsProvider);
+                child = feedsAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, stack) => Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ErrorStateView(
+                      error: error,
+                      prefix: 'Could not load feeds',
+                    ),
+                  ),
+                  data: (feeds) {
+                    final activeFeeds = feeds.where((feed) => feed.isActive).toList();
+                    if (activeFeeds.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Add channel to feed',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Create a ReplayGlowz feed first.',
+                              style: theme.textTheme.bodyMedium,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    return ListView(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      children: [
+                        Text(
+                          'Add channel to feed',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          resolvedTarget.sourceTitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        for (final feed in activeFeeds)
+                          ListTile(
+                            leading: CircleAvatar(child: Text(feed.initials)),
+                            title: Text(feed.title),
+                            subtitle: Text(
+                              '${feed.sourceCount} source${feed.sourceCount == 1 ? '' : 's'}',
+                            ),
+                            onTap: () => Navigator.of(sheetContext).pop(
+                              _ChannelFeedActionSelection(
+                                target: resolvedTarget,
+                                feed: feed,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                );
+              }
+
+              return ConstrainedBox(
+                constraints: BoxConstraints(minHeight: 240, maxHeight: maxHeight),
+                child: child,
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 
   _ChannelFeedActionTarget? _channelFeedActionTargetFromVideo(
