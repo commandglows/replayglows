@@ -48,6 +48,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   static const _compactViewBreakpoint = 640.0;
   static const _filteredFeedPageSize = 60;
   static const _filteredFeedLoadMoreExtent = 960.0;
+  static const _watchTransitionDuration = Duration(milliseconds: 320);
   static const _feedSnapAnimationDuration = Duration(milliseconds: 300);
   static const _feedSyncAnimationDuration = Duration(milliseconds: 360);
   static const _feedSlowSnapVelocity = 420.0;
@@ -77,6 +78,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   );
   final Map<String, List<String?>> _requestedFeedCursorsByFeedId =
       <String, List<String?>>{};
+  final Map<String, bool> _watchOverrides = <String, bool>{};
+  final Set<String> _exitingWatchedVideoIds = <String>{};
+  final Set<String> _enteringWatchedVideoIds = <String>{};
   List<YouTubeVideo> _visibleFeedQueue = const <YouTubeVideo>[];
   Offset _feedActionDragDelta = Offset.zero;
   String _sortOrder = 'desc';
@@ -242,6 +246,88 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   }
 
   bool get _hasFeedFilters => _feedFilterIds.isNotEmpty;
+
+  Set<String> _effectiveWatchedIds(Set<String> watchedIds) {
+    if (_watchOverrides.isEmpty) return watchedIds;
+    final effective = Set<String>.of(watchedIds);
+    for (final entry in _watchOverrides.entries) {
+      if (entry.value) {
+        effective.add(entry.key);
+      } else {
+        effective.remove(entry.key);
+      }
+    }
+    return effective;
+  }
+
+  void _clearWatchTransitionIds(
+    Set<String> videoIds, {
+    required bool entering,
+  }) {
+    if (videoIds.isEmpty) return;
+    Future<void>.delayed(_watchTransitionDuration, () {
+      if (!mounted) return;
+      setState(() {
+        if (entering) {
+          _enteringWatchedVideoIds.removeAll(videoIds);
+        } else {
+          _exitingWatchedVideoIds.removeAll(videoIds);
+        }
+      });
+    });
+  }
+
+  void _toggleWatchedVisibilityFilter(
+    Set<String> watchedIds,
+    List<YouTubeVideo> sourceVideos,
+  ) {
+    final transitioningIds = sourceVideos
+        .where((video) => watchedIds.contains(video.youtubeVideoId))
+        .map((video) => video.youtubeVideoId)
+        .toSet();
+    final nextIncludeWatched = !_includeWatched;
+    setState(() {
+      _includeWatched = nextIncludeWatched;
+      if (nextIncludeWatched) {
+        _exitingWatchedVideoIds.removeAll(transitioningIds);
+        _enteringWatchedVideoIds.addAll(transitioningIds);
+      } else {
+        _enteringWatchedVideoIds.removeAll(transitioningIds);
+        _exitingWatchedVideoIds.addAll(transitioningIds);
+      }
+    });
+    _persistLocalPrefs();
+    _clearWatchTransitionIds(
+      transitioningIds,
+      entering: nextIncludeWatched,
+    );
+  }
+
+  void _stageWatchStateTransition(
+    String videoId, {
+    required bool watched,
+    required bool animateVisibility,
+  }) {
+    setState(() {
+      _watchOverrides[videoId] = watched;
+      if (!animateVisibility) {
+        _exitingWatchedVideoIds.remove(videoId);
+        _enteringWatchedVideoIds.remove(videoId);
+        return;
+      }
+      if (watched) {
+        _enteringWatchedVideoIds.remove(videoId);
+        _exitingWatchedVideoIds.add(videoId);
+      } else {
+        _exitingWatchedVideoIds.remove(videoId);
+        _enteringWatchedVideoIds.add(videoId);
+      }
+    });
+    _clearWatchTransitionIds({videoId}, entering: !watched);
+    if (watched) {
+      _clearWatchTransitionIds({videoId}, entering: false);
+    }
+  }
 
   String get _shortFormFilterPrefsValue => switch (_shortFormFilter) {
     ShortFormVideoFilter.all => 'all',
@@ -1173,6 +1259,17 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     final watchedAsync = youtubeConnected
         ? ref.watch(watchedVideosProvider)
         : const AsyncValue<List<WatchedVideo>>.data(<WatchedVideo>[]);
+    final watchedIds = _effectiveWatchedIds(
+      watchedAsync.asData?.value
+              .map((item) => item.youtubeVideoId)
+              .toSet() ??
+          const <String>{},
+    );
+    final currentSourceVideos = videosAsync?.asData?.value == null
+        ? const <YouTubeVideo>[]
+        : _feedFilterIds.isEmpty
+        ? videosAsync!.asData!.value
+        : _mergeFeedVideos(selectedFeedDetailsByFeedId);
     final activeFeedVideoId =
         ref.watch(playbackSessionProvider).currentVideoId ??
         ref.watch(activePlayVideoIdProvider);
@@ -1199,10 +1296,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
               _includeWatched ? Icons.visibility : Icons.visibility_off,
             ),
             tooltip: _includeWatched ? 'Hide watched' : 'Show watched',
-            onPressed: () {
-              setState(() => _includeWatched = !_includeWatched);
-              _persistLocalPrefs();
-            },
+            onPressed: () =>
+                _toggleWatchedVisibilityFilter(watchedIds, currentSourceVideos),
           ),
           PopupMenuButton<ShortFormVideoFilter>(
             tooltip: 'Filter shorts',
@@ -1330,11 +1425,6 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 }
               }
 
-              final watchedIds =
-                  watchedAsync.asData?.value
-                      .map((item) => item.youtubeVideoId)
-                      .toSet() ??
-                  const <String>{};
               final sourceVideos = _feedFilterIds.isEmpty
                   ? videos
                   : _mergeFeedVideos(selectedFeedDetailsByFeedId);
@@ -1430,11 +1520,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                         _buildCardView(
                           shortFilteredVideos,
                           watchedIds,
+                          sourceVideos,
                           activeFeedVideoId,
                         ),
                         _buildListView(
                           shortFilteredVideos,
                           watchedIds,
+                          sourceVideos,
                           activeFeedVideoId,
                         ),
                         _buildSummaryView(
@@ -1671,8 +1763,45 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       return videos;
     }
     return videos
-        .where((video) => !watchedIds.contains(video.youtubeVideoId))
+        .where(
+          (video) =>
+              !watchedIds.contains(video.youtubeVideoId) ||
+              _exitingWatchedVideoIds.contains(video.youtubeVideoId),
+        )
         .toList(growable: false);
+  }
+
+  Widget _buildAnimatedWatchTransition({
+    required String videoId,
+    required Widget child,
+  }) {
+    final isExiting = _exitingWatchedVideoIds.contains(videoId);
+    final isEntering = _enteringWatchedVideoIds.contains(videoId);
+    final begin = isEntering ? 0.0 : 1.0;
+    final end = isExiting ? 0.0 : 1.0;
+    return TweenAnimationBuilder<double>(
+      duration: _watchTransitionDuration,
+      curve: Curves.easeOutCubic,
+      tween: Tween<double>(begin: begin, end: end),
+      child: child,
+      builder: (context, value, builtChild) {
+        final clamped = value.clamp(0.0, 1.0);
+        return ClipRect(
+          child: Align(
+            alignment: Alignment.topCenter,
+            heightFactor: clamped,
+            child: Opacity(
+              opacity: clamped,
+              child: Transform.scale(
+                scale: 0.96 + (clamped * 0.04),
+                alignment: Alignment.topCenter,
+                child: builtChild,
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   List<YouTubeVideo> _filterShortFormVideos(List<YouTubeVideo> videos) {
@@ -1703,6 +1832,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   Widget _buildCardView(
     List<YouTubeVideo> videos,
     Set<String> watchedIds,
+    List<YouTubeVideo> sourceVideos,
     String? activeVideoId,
   ) {
     return _buildFeedScrollSurface(
@@ -1721,13 +1851,20 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
             itemCount: videos.length,
             itemBuilder: (context, index) {
               final video = videos[index];
-              return KeyedSubtree(
-                key: _feedItemKeyForTab(0, video),
-                child: VideoCard(
-                  video: video,
-                  isActive: video.youtubeVideoId == activeVideoId,
-                  trailing: _buildVideoActionMenu(video, watchedIds),
-                  onTap: () => _openVideo(context, video.youtubeVideoId),
+              return _buildAnimatedWatchTransition(
+                videoId: video.youtubeVideoId,
+                child: KeyedSubtree(
+                  key: _feedItemKeyForTab(0, video),
+                  child: VideoCard(
+                    video: video,
+                    isActive: video.youtubeVideoId == activeVideoId,
+                    trailing: _buildVideoActionMenu(
+                      video,
+                      watchedIds,
+                      sourceVideos,
+                    ),
+                    onTap: () => _openVideo(context, video.youtubeVideoId),
+                  ),
                 ),
               );
             },
@@ -1740,6 +1877,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   Widget _buildListView(
     List<YouTubeVideo> videos,
     Set<String> watchedIds,
+    List<YouTubeVideo> sourceVideos,
     String? activeVideoId,
   ) {
     return _buildFeedScrollSurface(
@@ -1755,13 +1893,20 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
             itemCount: videos.length,
             itemBuilder: (context, index) {
               final video = videos[index];
-              return KeyedSubtree(
-                key: _feedItemKeyForTab(1, video),
-                child: VideoListTile(
-                  video: video,
-                  isActive: video.youtubeVideoId == activeVideoId,
-                  trailing: _buildVideoActionMenu(video, watchedIds),
-                  onTap: () => _openVideo(context, video.youtubeVideoId),
+              return _buildAnimatedWatchTransition(
+                videoId: video.youtubeVideoId,
+                child: KeyedSubtree(
+                  key: _feedItemKeyForTab(1, video),
+                  child: VideoListTile(
+                    video: video,
+                    isActive: video.youtubeVideoId == activeVideoId,
+                    trailing: _buildVideoActionMenu(
+                      video,
+                      watchedIds,
+                      sourceVideos,
+                    ),
+                    onTap: () => _openVideo(context, video.youtubeVideoId),
+                  ),
                 ),
               );
             },
@@ -1798,86 +1943,89 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
               final theme = Theme.of(context);
               final colorScheme = theme.colorScheme;
 
-              return KeyedSubtree(
-                key: _feedItemKeyForTab(2, video),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOutCubic,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isActive
-                          ? colorScheme.primary.withValues(alpha: 0.52)
-                          : Colors.transparent,
-                      width: 1.5,
-                    ),
-                    boxShadow: isActive
-                        ? [
-                            BoxShadow(
-                              color: colorScheme.primary.withValues(
-                                alpha: 0.12,
-                              ),
-                              blurRadius: 16,
-                              offset: const Offset(0, 8),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Card(
-                    margin: EdgeInsets.zero,
-                    color: isActive
-                        ? Color.alphaBlend(
-                            colorScheme.primary.withValues(alpha: 0.08),
-                            colorScheme.surface,
-                          )
-                        : null,
-                    child: InkWell(
-                      onTap: () {
-                        _openVideo(context, video.youtubeVideoId);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (isActive) ...[
-                              _NowPlayingBadge(colorScheme: colorScheme),
-                              const SizedBox(height: 8),
-                            ],
-                            Text(
-                              video.title,
-                              style: theme.textTheme.titleSmall,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              video.description ??
-                                  'No description available for this video.',
-                              style: theme.textTheme.bodySmall,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Icon(Icons.notes, size: 16),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '$noteCount note${noteCount == 1 ? '' : 's'}',
-                                  style: theme.textTheme.labelSmall,
+              return _buildAnimatedWatchTransition(
+                videoId: video.youtubeVideoId,
+                child: KeyedSubtree(
+                  key: _feedItemKeyForTab(2, video),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isActive
+                            ? colorScheme.primary.withValues(alpha: 0.52)
+                            : Colors.transparent,
+                        width: 1.5,
+                      ),
+                      boxShadow: isActive
+                          ? [
+                              BoxShadow(
+                                color: colorScheme.primary.withValues(
+                                  alpha: 0.12,
                                 ),
-                                const SizedBox(width: 16),
-                                if (durationSec != null) ...[
-                                  const Icon(Icons.schedule, size: 16),
+                                blurRadius: 16,
+                                offset: const Offset(0, 8),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Card(
+                      margin: EdgeInsets.zero,
+                      color: isActive
+                          ? Color.alphaBlend(
+                              colorScheme.primary.withValues(alpha: 0.08),
+                              colorScheme.surface,
+                            )
+                          : null,
+                      child: InkWell(
+                        onTap: () {
+                          _openVideo(context, video.youtubeVideoId);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (isActive) ...[
+                                _NowPlayingBadge(colorScheme: colorScheme),
+                                const SizedBox(height: 8),
+                              ],
+                              Text(
+                                video.title,
+                                style: theme.textTheme.titleSmall,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                video.description ??
+                                    'No description available for this video.',
+                                style: theme.textTheme.bodySmall,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const Icon(Icons.notes, size: 16),
                                   const SizedBox(width: 4),
                                   Text(
-                                    formatDuration(durationSec),
+                                    '$noteCount note${noteCount == 1 ? '' : 's'}',
                                     style: theme.textTheme.labelSmall,
                                   ),
+                                  const SizedBox(width: 16),
+                                  if (durationSec != null) ...[
+                                    const Icon(Icons.schedule, size: 16),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      formatDuration(durationSec),
+                                      style: theme.textTheme.labelSmall,
+                                    ),
+                                  ],
                                 ],
-                              ],
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -1930,11 +2078,16 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     );
   }
 
-  Widget _buildVideoActionMenu(YouTubeVideo video, Set<String> watchedIds) {
+  Widget _buildVideoActionMenu(
+    YouTubeVideo video,
+    Set<String> watchedIds,
+    List<YouTubeVideo> sourceVideos,
+  ) {
     final isWatched = watchedIds.contains(video.youtubeVideoId);
     return PopupMenuButton<String>(
-      tooltip: 'Video actions',
-      onSelected: (value) => _handleVideoAction(value, video, isWatched),
+      tooltip: isWatched ? 'Watched video actions' : 'Video actions',
+      onSelected: (value) =>
+          _handleVideoAction(value, video, isWatched, sourceVideos),
       itemBuilder: (context) => [
         const PopupMenuItem(
           value: 'play',
@@ -1978,6 +2131,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     String action,
     YouTubeVideo video,
     bool isWatched,
+    List<YouTubeVideo> sourceVideos,
   ) async {
     switch (action) {
       case 'play':
@@ -1998,6 +2152,14 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       case 'watched':
       case 'unwatched':
         try {
+          final animateVisibility =
+              !_includeWatched &&
+              sourceVideos.any((item) => item.youtubeVideoId == video.youtubeVideoId);
+          _stageWatchStateTransition(
+            video.youtubeVideoId,
+            watched: !isWatched,
+            animateVisibility: animateVisibility,
+          );
           if (isWatched) {
             await unmarkWatched(ref, video.youtubeVideoId);
           } else {
@@ -2015,6 +2177,13 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
             ),
           );
         } catch (e) {
+          if (mounted) {
+            setState(() {
+              _watchOverrides[video.youtubeVideoId] = isWatched;
+              _exitingWatchedVideoIds.remove(video.youtubeVideoId);
+              _enteringWatchedVideoIds.remove(video.youtubeVideoId);
+            });
+          }
           if (!mounted) return;
           showErrorSnackBar(context, error: e, prefix: 'Watch state failed');
         }
