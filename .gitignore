@@ -5,3 +5,5 @@
 .flox/
 .playwright-mcp/
 .vercel/
+.vercel
+.env*.local
