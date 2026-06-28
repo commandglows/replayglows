@@ -14,12 +14,12 @@ risk_level: "medium"
 docs_impact: "yes"
 security_impact: "yes"
 evidence:
-  - "shipflow_data/technical/apps/replayglowz_app/guidelines.md"
-  - "shipflow_data/technical/apps/replayglowz_site/guidelines.md"
-  - "shipflow_data/technical/apps/replayglowz_lab/guidelines.md"
-  - "replayglowz_app/pubspec.yaml"
-  - "replayglowz_site/package.json"
-  - "replayglowz_lab/requirements.txt"
+  - "shipflow_data/technical/app/guidelines.md"
+  - "shipflow_data/technical/site/guidelines.md"
+  - "shipflow_data/technical/lab/guidelines.md"
+  - "app/pubspec.yaml"
+  - "site/package.json"
+  - "lab/requirements.txt"
 linked_systems:
   - "Flutter"
   - "Dart"
@@ -48,12 +48,12 @@ next_step: "/sf-docs technical audit"
 ## Flutter App
 
 - Use build-time `--dart-define` values for Flutter web configuration.
-- Keep Clerk session handling and Convex JWT minting aligned with `replayglowz_app/README.md` and `shipflow_data/technical/apps/replayglowz_app/architecture.md`.
+- Keep Clerk session handling and Convex JWT minting aligned with `app/README.md` and `shipflow_data/technical/app/architecture.md`.
 - Treat the shared Convex backend as external unless `REPLAYGLOWZ_BACKEND_ROOT` points to a local checkout.
 
 ## Astro Site
 
-- Route URLs, CTA destinations, and public domains through `replayglowz_site/src/config/site.ts`.
+- Route URLs, CTA destinations, and public domains through `site/src/config/site.ts`.
 - Preserve Astro content collection schemas before editing blog frontmatter.
 - Keep English and French public promises aligned.
 

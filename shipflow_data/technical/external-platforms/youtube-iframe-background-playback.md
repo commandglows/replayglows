@@ -14,12 +14,12 @@ risk_level: medium
 security_impact: none
 docs_impact: yes
 linked_systems:
-  - "replayglowz_app"
+  - "app"
   - "YouTube IFrame Player API"
   - "Firefox for Android"
   - "Vivaldi for Android"
 depends_on:
-  - "shipflow_data/technical/apps/replayglowz_app/architecture.md"
+  - "shipflow_data/technical/app/architecture.md"
 supersedes: []
 evidence:
   - "https://developers.google.com/youtube/iframe_api_reference"

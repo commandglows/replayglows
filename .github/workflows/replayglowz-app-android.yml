@@ -4,12 +4,12 @@ on:
   push:
     branches: [main, master]
     paths:
-      - "replayglowz_app/**"
+      - "app/**"
       - ".github/workflows/replayglowz-app-android.yml"
   pull_request:
     branches: [main, master]
     paths:
-      - "replayglowz_app/**"
+      - "app/**"
       - ".github/workflows/replayglowz-app-android.yml"
   workflow_dispatch:
 
@@ -19,7 +19,7 @@ env:
 
 defaults:
   run:
-    working-directory: replayglowz_app
+    working-directory: app
 
 jobs:
   changes:
@@ -38,11 +38,11 @@ jobs:
         with:
           filters: |
             android:
-              - "replayglowz_app/android/**"
-              - "replayglowz_app/lib/**"
-              - "replayglowz_app/test/**"
-              - "replayglowz_app/pubspec.yaml"
-              - "replayglowz_app/pubspec.lock"
+              - "app/android/**"
+              - "app/lib/**"
+              - "app/test/**"
+              - "app/pubspec.yaml"
+              - "app/pubspec.lock"
               - ".github/workflows/replayglowz-app-android.yml"
 
   analyze:
@@ -69,15 +69,15 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: replayglowz-app-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('replayglowz_app/pubspec.lock') }}
+          cache-key: replayglowz-app-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('app/pubspec.lock') }}
 
       - name: Cache Pub and Dart tool state
         uses: actions/cache@v5
         with:
           path: |
             ~/.pub-cache
-            replayglowz_app/.dart_tool
-          key: replayglowz-app-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('replayglowz_app/pubspec.lock') }}
+            app/.dart_tool
+          key: replayglowz-app-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('app/pubspec.lock') }}
           restore-keys: |
             replayglowz-app-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-
             replayglowz-app-pub-${{ runner.os }}-
@@ -112,17 +112,17 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: replayglowz-app-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('replayglowz_app/pubspec.lock') }}
+          cache-key: replayglowz-app-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('app/pubspec.lock') }}
 
       - name: Cache Pub and Dart tool state
         uses: actions/cache@v5
         with:
           path: |
             ~/.pub-cache
-            replayglowz_app/.dart_tool
-            replayglowz_app/build/test_cache
-            replayglowz_app/build/unit_test_assets
-          key: replayglowz-app-test-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('replayglowz_app/pubspec.lock', 'replayglowz_app/test/**') }}
+            app/.dart_tool
+            app/build/test_cache
+            app/build/unit_test_assets
+          key: replayglowz-app-test-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('app/pubspec.lock', 'app/test/**') }}
           restore-keys: |
             replayglowz-app-test-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-
             replayglowz-app-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-
@@ -160,18 +160,18 @@ jobs:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
-          cache-key: replayglowz-app-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('replayglowz_app/pubspec.lock') }}
+          cache-key: replayglowz-app-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('app/pubspec.lock') }}
 
       - name: Cache Pub, Dart tool state, and Flutter build outputs
         uses: actions/cache@v5
         with:
           path: |
             ~/.pub-cache
-            replayglowz_app/.dart_tool
-            replayglowz_app/build/native_assets
-            replayglowz_app/build/app/intermediates
-            replayglowz_app/build/app/kotlin
-          key: replayglowz-app-build-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('replayglowz_app/pubspec.lock', 'replayglowz_app/android/**/*.gradle*', 'replayglowz_app/android/gradle/wrapper/gradle-wrapper.properties') }}
+            app/.dart_tool
+            app/build/native_assets
+            app/build/app/intermediates
+            app/build/app/kotlin
+          key: replayglowz-app-build-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('app/pubspec.lock', 'app/android/**/*.gradle*', 'app/android/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: |
             replayglowz-app-build-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-
             replayglowz-app-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-
@@ -183,9 +183,9 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-            replayglowz_app/android/.gradle
-            replayglowz_app/android/app/build
-          key: replayglowz-app-gradle-${{ runner.os }}-${{ hashFiles('replayglowz_app/android/**/*.gradle*', 'replayglowz_app/android/gradle/wrapper/gradle-wrapper.properties') }}
+            app/android/.gradle
+            app/android/app/build
+          key: replayglowz-app-gradle-${{ runner.os }}-${{ hashFiles('app/android/**/*.gradle*', 'app/android/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: |
             replayglowz-app-gradle-${{ runner.os }}-
 
@@ -277,6 +277,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: replayglowz-app-debug-apk
-          path: replayglowz_app/build/app/outputs/flutter-apk/app-debug.apk
+          path: app/build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
           retention-days: 1

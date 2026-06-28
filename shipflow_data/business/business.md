@@ -11,7 +11,7 @@ scope: "business"
 owner: "Diane"
 confidence: "medium"
 risk_level: "medium"
-business_model: "LTD offer plus recurring subscription, with app-level pricing and entitlement truth owned by replayglowz_app."
+business_model: "LTD offer plus recurring subscription, with app-level pricing and entitlement truth owned by app."
 market: "Bilingual English/French web audience for learning-centric YouTube workflows."
 target_audience: "Solo creators, students, educators, and learning-driven professionals who use YouTube for structured learning and ongoing veille."
 value_proposition: "Turn YouTube watch time into organized, timestamped, revisitable learning workflows."
@@ -19,9 +19,9 @@ docs_impact: "yes"
 security_impact: "unknown"
 evidence:
   - "README.md"
-  - "shipflow_data/business/apps/replayglowz_app/business.md"
-  - "shipflow_data/business/apps/replayglowz_site/business.md"
-  - "shipflow_data/business/apps/replayglowz_lab/business.md"
+  - "shipflow_data/business/app/business.md"
+  - "shipflow_data/business/site/business.md"
+  - "shipflow_data/business/lab/business.md"
 depends_on:
   - "shipflow_data/business/product.md"
 supersedes: []
@@ -39,9 +39,9 @@ ReplayGlowz helps learning-focused YouTube users turn watch sessions into struct
 
 This repository consolidates three active surfaces:
 
-- `replayglowz_app`: the authenticated Flutter application and primary product contract.
-- `replayglowz_site`: the public acquisition and education site.
-- `replayglowz_lab`: the transcript worker and backend experimentation surface.
+- `app`: the authenticated Flutter application and primary product contract.
+- `site`: the public acquisition and education site.
+- `lab`: the transcript worker and backend experimentation surface.
 
 ## Audience
 
@@ -53,4 +53,4 @@ The subproject contracts describe an LTD offer plus recurring subscription. Pric
 
 ## Decision Boundary
 
-This root contract coordinates the monorepo. Product-level truth remains in `replayglowz_app`; public claims are routed through `replayglowz_site`; transcript-worker operational claims are routed through `replayglowz_lab`.
+This root contract coordinates the monorepo. Product-level truth remains in `app`; public claims are routed through `site`; transcript-worker operational claims are routed through `lab`.

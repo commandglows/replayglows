@@ -4,9 +4,10 @@ This file provides root-level guidance for agents working in the ReplayGlowz mon
 
 ## Project Overview
 
-- `replayglowz_app/`: Flutter web app and Vercel API handlers.
-- `replayglowz_site/`: Astro public marketing site.
-- `replayglowz_lab/`: FastAPI transcript worker.
+- `app/`: Flutter web app and Vercel API handlers.
+- `backend/`: Convex backend package and product data contracts.
+- `site/`: Astro public marketing site.
+- `lab/`: FastAPI transcript worker.
 - `shipflow_data/`: project governance, workflow, audit, task, and spec artifacts.
 
 ## ShipFlow Development Mode
@@ -26,9 +27,10 @@ This file provides root-level guidance for agents working in the ReplayGlowz mon
 Use focused checks from the changed subproject:
 
 ```bash
-(cd replayglowz_app && flutter analyze)
-(cd replayglowz_site && npm run build)
-(cd replayglowz_lab && python3 -m py_compile main.py server.py)
+(cd app && flutter analyze)
+(cd backend/packages/backend && npm run typecheck)
+(cd site && npm run build)
+(cd lab && python3 -m py_compile main.py server.py)
 ```
 
 Run ShipFlow metadata validation for governance docs:

@@ -15,9 +15,9 @@ docs_impact: "yes"
 security_impact: "yes"
 evidence:
   - "README.md"
-  - "shipflow_data/technical/apps/replayglowz_app/architecture.md"
-  - "shipflow_data/technical/apps/replayglowz_site/architecture.md"
-  - "shipflow_data/technical/apps/replayglowz_lab/architecture.md"
+  - "shipflow_data/technical/app/architecture.md"
+  - "shipflow_data/technical/site/architecture.md"
+  - "shipflow_data/technical/lab/architecture.md"
 linked_systems:
   - "Flutter Web"
   - "Vercel"
@@ -37,7 +37,7 @@ external_dependencies:
   - "ffmpeg"
 invariants:
   - "AGENTS.md remains a compatibility symlink to AGENT.md."
-  - "Astro runtime content frontmatter follows replayglowz_site/src/content.config.ts."
+  - "Astro runtime content frontmatter follows site/src/content.config.ts."
   - "Public site claims stay bounded by app/product contracts and the claim register."
 depends_on:
   - "shipflow_data/technical/guidelines.md"
@@ -50,14 +50,14 @@ next_step: "/sf-docs technical audit"
 
 ## System Map
 
-- `replayglowz_app`: Flutter web client with Riverpod, go_router, Clerk auth, Convex client state, Vercel static deployment, and Vercel API handlers for YouTube OAuth.
-- `replayglowz_backend`: Convex product backend for ReplayGlowz product data, YouTube tokens, preferences, playlists, transcripts, and product access snapshots.
-- `replayglowz_site`: Astro static marketing site with English/French routes, blog content collection, public pricing/comparison/trust pages, and app CTA routing through `src/config/site.ts`.
-- `replayglowz_lab`: FastAPI transcript worker for media download, normalization, provider transcription, health checks, and operational deployment.
+- `app`: Flutter web client with Riverpod, go_router, Clerk auth, Convex client state, Vercel static deployment, and Vercel API handlers for YouTube OAuth.
+- `backend`: Convex product backend for ReplayGlowz product data, YouTube tokens, preferences, playlists, transcripts, and product access snapshots.
+- `site`: Astro static marketing site with English/French routes, blog content collection, public pricing/comparison/trust pages, and app CTA routing through `src/config/site.ts`.
+- `lab`: FastAPI transcript worker for media download, normalization, provider transcription, health checks, and operational deployment.
 
 ## Integration Boundaries
 
-- The ReplayGlowz product Convex backend lives inside this monorepo under `replayglowz_backend`.
+- The ReplayGlowz product Convex backend lives inside this monorepo under `backend`.
 - Flutter app code under `lib/convex/` is client transport/state, not backend schema or functions.
 - Private product Convex reads, writes, and actions must use the shared backend access guard before touching product data or spending YouTube quota. The guard validates the Clerk/Convex identity and an active `replayglowz` product-access snapshot; client product-access UI state is not authorization.
 - Recognized accounts that receive ReplayGlowz free access are represented by a server-owned `productAccessSnapshots` row with `reasonCode=default_free_entitlement`. Revoked snapshots block access and must not be overwritten by the default-free bootstrap.
@@ -67,5 +67,5 @@ next_step: "/sf-docs technical audit"
 ## Invariants
 
 - `AGENTS.md`, when present, is a compatibility symlink to `AGENT.md`.
-- Astro runtime content frontmatter follows `replayglowz_site/src/content.config.ts`.
+- Astro runtime content frontmatter follows `site/src/content.config.ts`.
 - YouTube OAuth callback behavior must stay aligned across Flutter app routes and Vercel handlers.

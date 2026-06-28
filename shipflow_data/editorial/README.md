@@ -20,14 +20,14 @@ content_surfaces:
 claim_register: "shipflow_data/editorial/claim-register.md"
 page_intent: "shipflow_data/editorial/page-intent-map.md"
 linked_systems:
-  - "replayglowz_site/src/pages"
-  - "replayglowz_site/src/content/blog"
+  - "site/src/pages"
+  - "site/src/content/blog"
 depends_on:
   - "shipflow_data/editorial/content-map.md"
 supersedes: []
 evidence:
-  - "replayglowz_site/src/pages"
-  - "replayglowz_site/src/content.config.ts"
+  - "site/src/pages"
+  - "site/src/content.config.ts"
 next_review: "2026-06-10"
 next_step: "/sf-docs editorial audit"
 ---

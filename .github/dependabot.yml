@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/replayglowz_backend/packages/backend"
+    directory: "/backend/packages/backend"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -10,7 +10,7 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
-      - "replayglowz_backend"
+      - "backend"
     groups:
       npm-patch-minor:
         update-types:
@@ -18,7 +18,7 @@ updates:
           - "minor"
 
   - package-ecosystem: "npm"
-    directory: "/replayglowz_site"
+    directory: "/site"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -27,7 +27,7 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
-      - "replayglowz_site"
+      - "site"
     groups:
       npm-patch-minor:
         update-types:
@@ -35,7 +35,7 @@ updates:
           - "minor"
 
   - package-ecosystem: "pip"
-    directory: "/replayglowz_lab"
+    directory: "/lab"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -44,7 +44,7 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
-      - "replayglowz_lab"
+      - "lab"
     groups:
       pip-patch-minor:
         update-types:
@@ -52,7 +52,7 @@ updates:
           - "minor"
 
   - package-ecosystem: "pub"
-    directory: "/replayglowz_app"
+    directory: "/app"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -61,7 +61,7 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
-      - "replayglowz_app"
+      - "app"
     groups:
       pub-patch-minor:
         update-types:
@@ -86,7 +86,7 @@ updates:
           - "minor"
 
   - package-ecosystem: "docker"
-    directory: "/replayglowz_lab"
+    directory: "/lab"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -95,7 +95,7 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
-      - "replayglowz_lab"
+      - "lab"
       - "docker"
     groups:
       docker-patch-minor:

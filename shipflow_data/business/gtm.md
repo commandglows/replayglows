@@ -25,10 +25,10 @@ proof_points:
 docs_impact: "yes"
 security_impact: "unknown"
 evidence:
-  - "shipflow_data/business/apps/replayglowz_site/gtm.md"
-  - "shipflow_data/business/apps/replayglowz_app/gtm.md"
-  - "replayglowz_site/src/pages/pricing.astro"
-  - "replayglowz_site/src/pages/compare.astro"
+  - "shipflow_data/business/site/gtm.md"
+  - "shipflow_data/business/app/gtm.md"
+  - "site/src/pages/pricing.astro"
+  - "site/src/pages/compare.astro"
 depends_on:
   - "shipflow_data/business/business.md"
   - "shipflow_data/business/branding.md"
@@ -41,7 +41,7 @@ next_step: "/sf-docs editorial audit"
 
 ## Primary Surface
 
-`replayglowz_site` owns acquisition, public education, pricing, comparison, blog, and trust pages. It must not introduce product claims that conflict with `replayglowz_app`.
+`site` owns acquisition, public education, pricing, comparison, blog, and trust pages. It must not introduce product claims that conflict with `app`.
 
 ## Promise
 

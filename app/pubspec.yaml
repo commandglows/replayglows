@@ -1,0 +1,66 @@
+name: app
+description: ReplayGlowz - Video Note-Taking App
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.8.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+
+  # Authentication
+  # Clerk is integrated through a web-only ClerkJS bridge.
+  firebase_core: ^3.10.1
+  firebase_auth: ^5.7.0
+  google_sign_in: ^6.3.0
+
+  # Convex backend
+  convex_flutter: ^3.0.1
+
+  # Routing
+  go_router: ^17.2.3
+
+  # State management
+  flutter_riverpod: ^3.3.1
+
+  # YouTube player
+  youtube_player_flutter: ^10.0.1
+
+  # Web platform views
+  web: ^1.1.1
+
+  # UI components
+  cached_network_image: ^3.4.0
+  shimmer: ^3.0.0
+  just_audio: ^0.10.5
+
+  # Storage
+  path_provider: ^2.1.5
+  shared_preferences: ^2.3.0
+
+  # Utilities
+  intl: ^0.20.2
+  http: ^1.6.0
+  record: ^6.2.0
+  url_launcher: ^6.3.0
+  sentry_flutter: ^9.20.0
+  firebase_messaging: ^15.2.10
+  flutter_local_notifications: ^22.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+dependency_overrides:
+  # convex_flutter 3.0.1 ships FRB-generated native bindings for 2.11.1.
+  # Allowing pub to resolve flutter_rust_bridge 2.12.0 trips the runtime
+  # sanity check before the app can initialise Convex on Android.
+  flutter_rust_bridge: 2.11.1
+
+flutter:
+  uses-material-design: true

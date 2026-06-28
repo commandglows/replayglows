@@ -15,28 +15,28 @@ security_impact: "no"
 docs_impact: "yes"
 supersedes: []
 content_surfaces:
-  - "replayglowz_app"
-  - "replayglowz_site"
+  - "app"
+  - "site"
 linked_systems:
-  - "replayglowz_app/lib/app/theme.dart"
-  - "replayglowz_app/lib/utils/color_utils.dart"
-  - "replayglowz_site/src/styles/global.css"
-  - "replayglowz_site/src/layouts/Layout.astro"
-  - "shipflow_data/business/apps/replayglowz_app/branding.md"
-  - "shipflow_data/business/apps/replayglowz_site/branding.md"
+  - "app/lib/app/theme.dart"
+  - "app/lib/utils/color_utils.dart"
+  - "site/src/styles/global.css"
+  - "site/src/layouts/Layout.astro"
+  - "shipflow_data/business/app/branding.md"
+  - "shipflow_data/business/site/branding.md"
 depends_on:
-  - artifact: "shipflow_data/business/apps/replayglowz_app/branding.md"
+  - artifact: "shipflow_data/business/app/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/apps/replayglowz_site/branding.md"
+  - artifact: "shipflow_data/business/site/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 evidence:
-  - "Code scan: `replayglowz_app/lib/app/theme.dart` is the explicit Flutter theme token surface."
-  - "Code scan: `replayglowz_site/src/styles/global.css` is the centralized token source for the site."
-  - "Site typography and global layout container entrypoints route through `replayglowz_site/src/styles/global.css` + `src/layouts/Layout.astro`."
-  - "Baseline drift check: `python3 /home/claude/shipflow/tools/design_system_drift_check.py --root /home/claude/replayglowz/replayglowz_app --format markdown --warn-only --max-findings 5000` found 510 findings."
-  - "Baseline drift check: `python3 /home/claude/shipflow/tools/design_system_drift_check.py --root /home/claude/replayglowz/replayglowz_site --format markdown --warn-only --max-findings 5000` found 70 findings."
+  - "Code scan: `app/lib/app/theme.dart` is the explicit Flutter theme token surface."
+  - "Code scan: `site/src/styles/global.css` is the centralized token source for the site."
+  - "Site typography and global layout container entrypoints route through `site/src/styles/global.css` + `src/layouts/Layout.astro`."
+  - "Baseline drift check: `python3 /home/claude/shipflow/tools/design_system_drift_check.py --root /home/claude/replayglowz/app --format markdown --warn-only --max-findings 5000` found 510 findings."
+  - "Baseline drift check: `python3 /home/claude/shipflow/tools/design_system_drift_check.py --root /home/claude/replayglowz/site --format markdown --warn-only --max-findings 5000` found 70 findings."
 next_review: "2026-07-12"
 next_step: "run 503-sf-audit-design-tokens replayglowz"
 ---
@@ -46,13 +46,13 @@ next_step: "run 503-sf-audit-design-tokens replayglowz"
 ## 1) Canonical token sources
 
 ### App (Flutter)
-- Primary source: `replayglowz_app/lib/app/theme.dart`
+- Primary source: `app/lib/app/theme.dart`
 - Theme-mode mapping and component defaults in the same file (`AppColors`, `ThemeData light`, `ThemeData dark`).
-- Color and palette exceptions are allowed only via `replayglowz_app/lib/utils/color_utils.dart` when color is user-configurable runtime data.
+- Color and palette exceptions are allowed only via `app/lib/utils/color_utils.dart` when color is user-configurable runtime data.
 
 ### Site (Astro + CSS/Tailwind utility layer)
-- Primary source: `replayglowz_site/src/styles/global.css` (`:root` variables, `@theme inline`, and utility classes).
-- App shell and brand context in `replayglowz_site/src/layouts/Layout.astro`.
+- Primary source: `site/src/styles/global.css` (`:root` variables, `@theme inline`, and utility classes).
+- App shell and brand context in `site/src/layouts/Layout.astro`.
 
 ## 2) Governance rule
 
@@ -86,18 +86,18 @@ The project must not introduce new visual literals directly in feature-level scr
 
 ## 5) Exception register (must be approved before merge)
 
-- `replayglowz_app/lib/utils/color_utils.dart`: user-provided playlist/feed colors are persisted as user data and are intentionally outside the shared design palette.
-- `replayglowz_site/dist/**` and generated build outputs: excluded from canonical design source.
+- `app/lib/utils/color_utils.dart`: user-provided playlist/feed colors are persisted as user data and are intentionally outside the shared design palette.
+- `site/dist/**` and generated build outputs: excluded from canonical design source.
 - Legacy inlined logo SVG icon fills (`#18181b`) are legacy assets pending centralization.
-- `replayglowz_site/src/styles/global.css` contains animation presets (durations, bezier curves, delays); these are foundational primitives and part of the canonical source.
+- `site/src/styles/global.css` contains animation presets (durations, bezier curves, delays); these are foundational primitives and part of the canonical source.
 
 ## 6) Change process
 
 1. Add token(s) to canonical source first.
 2. Use tokens in the component/template.
 3. Run baseline checks:
-   - `python3 /home/claude/shipflow/tools/design_system_drift_check.py --root /home/claude/replayglowz/replayglowz_app --max-findings 5000`
-   - `python3 /home/claude/shipflow/tools/design_system_drift_check.py --root /home/claude/replayglowz/replayglowz_site --max-findings 5000`
+   - `python3 /home/claude/shipflow/tools/design_system_drift_check.py --root /home/claude/replayglowz/app --max-findings 5000`
+   - `python3 /home/claude/shipflow/tools/design_system_drift_check.py --root /home/claude/replayglowz/site --max-findings 5000`
 4. If checks show new findings outside explicit exceptions, block merge.
 
 ## 7) Success criteria

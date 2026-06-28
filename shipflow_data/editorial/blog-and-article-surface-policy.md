@@ -18,14 +18,14 @@ content_surfaces:
 claim_register: "shipflow_data/editorial/claim-register.md"
 page_intent: "shipflow_data/editorial/page-intent-map.md"
 linked_systems:
-  - "replayglowz_site/src/pages/blog"
-  - "replayglowz_site/src/content/blog"
+  - "site/src/pages/blog"
+  - "site/src/content/blog"
 depends_on:
   - "shipflow_data/editorial/astro-content-schema-policy.md"
 supersedes: []
 evidence:
-  - "replayglowz_site/src/pages/blog/index.astro"
-  - "replayglowz_site/src/pages/blog/[slug].astro"
+  - "site/src/pages/blog/index.astro"
+  - "site/src/pages/blog/[slug].astro"
 next_review: "2026-06-10"
 next_step: "/sf-docs editorial audit"
 ---
@@ -34,7 +34,7 @@ next_step: "/sf-docs editorial audit"
 
 ## Declared Surface
 
-The blog surface exists at `replayglowz_site/src/pages/blog` and renders Markdown entries from `replayglowz_site/src/content/blog`.
+The blog surface exists at `site/src/pages/blog` and renders Markdown entries from `site/src/content/blog`.
 
 ## Article Rules
 
@@ -46,5 +46,5 @@ The blog surface exists at `replayglowz_site/src/pages/blog` and renders Markdow
 ## Validation
 
 ```bash
-(cd replayglowz_site && npm run build)
+(cd site && npm run build)
 ```

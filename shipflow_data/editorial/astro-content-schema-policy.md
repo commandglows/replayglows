@@ -19,13 +19,13 @@ content_surfaces:
 claim_register: "shipflow_data/editorial/claim-register.md"
 page_intent: "shipflow_data/editorial/page-intent-map.md"
 linked_systems:
-  - "replayglowz_site/src/content.config.ts"
-  - "replayglowz_site/src/content/blog"
+  - "site/src/content.config.ts"
+  - "site/src/content/blog"
 depends_on:
   - "shipflow_data/editorial/public-surface-map.md"
 supersedes: []
 evidence:
-  - "replayglowz_site/src/content.config.ts"
+  - "site/src/content.config.ts"
 next_review: "2026-06-10"
 next_step: "/sf-docs editorial audit"
 ---
@@ -34,7 +34,7 @@ next_step: "/sf-docs editorial audit"
 
 ## Runtime Schema
 
-`replayglowz_site/src/content.config.ts` defines the blog collection frontmatter schema:
+`site/src/content.config.ts` defines the blog collection frontmatter schema:
 
 - `title: string`
 - `description: string`
@@ -44,10 +44,10 @@ next_step: "/sf-docs editorial audit"
 
 ## Policy
 
-- Do not add ShipFlow governance frontmatter to `replayglowz_site/src/content/blog/**` unless the Astro schema is explicitly extended first.
+- Do not add ShipFlow governance frontmatter to `site/src/content/blog/**` unless the Astro schema is explicitly extended first.
 - Store governance metadata in `shipflow_data/editorial/**`, not in runtime blog content.
-- Validate content schema changes with `(cd replayglowz_site && npm run build)`.
+- Validate content schema changes with `(cd site && npm run build)`.
 
 ## Maintenance Rule
 
-Update this policy whenever `replayglowz_site/src/content.config.ts` changes.
+Update this policy whenever `site/src/content.config.ts` changes.
