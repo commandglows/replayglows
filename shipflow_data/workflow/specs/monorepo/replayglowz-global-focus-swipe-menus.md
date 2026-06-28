@@ -27,10 +27,10 @@ depends_on:
   - artifact: "AGENTS.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.2.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/app/branding.md"
+  - artifact: "shipflow_data/branding/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "shipflow_data/workflow/specs/replayglowz-youtube-core-parity-priority-3.md"
@@ -194,8 +194,8 @@ Every menu also includes `Exit focus`. Destructive or external-side-effect actio
 - Existing i18n files:
   - `app/lib/i18n/en.dart`
   - `app/lib/i18n/fr.dart`
-- Product context: `shipflow_data/business/app/product.md` version `1.2.0`.
-- Branding context: `shipflow_data/business/app/branding.md` version `1.0.0`.
+- Product context: `shipflow_data/product/app/product.md` version `1.2.0`.
+- Branding context: `shipflow_data/branding/branding.md` version `1.0.0`.
 - Fresh external docs verdict: `fresh-docs not needed` for spec creation because this spec defines local Flutter UI behavior using already-installed project patterns. If implementation introduces browser fullscreen, new gesture packages, GoRouter upgrades, or platform APIs, rerun the documentation freshness gate before coding that part.
 
 ## Invariants

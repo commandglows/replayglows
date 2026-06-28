@@ -26,25 +26,25 @@ evidence:
   - "CHANGELOG.md"
   - "shipflow_data/workflow/test-logs/TASKS.md"
   - "shipflow_data/workflow/test-logs/AUDIT_LOG.md"
-  - "shipflow_data/business/app/product.md"
+  - "shipflow_data/product/app/product.md"
   - "shipflow_data/business/app/business.md"
-  - "shipflow_data/business/app/branding.md"
-  - "shipflow_data/business/app/gtm.md"
+  - "shipflow_data/branding/branding.md"
+  - "shipflow_data/gtm/app/gtm.md"
   - "shipflow_data/workflow/specs/feedback-v1.md"
   - "shipflow_data/workflow/specs/flutter-web-youtube-auth-redirect-spec.md"
   - "lib/app/router.dart"
 linked_artifacts:
-  - "shipflow_data/business/app/product.md"
+  - "shipflow_data/product/app/product.md"
   - "shipflow_data/business/app/business.md"
-  - "shipflow_data/business/app/branding.md"
-  - "shipflow_data/business/app/gtm.md"
+  - "shipflow_data/branding/branding.md"
+  - "shipflow_data/gtm/app/gtm.md"
   - "README.md"
   - "CHANGELOG.md"
 depends_on:
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/app/gtm.md"
+  - artifact: "shipflow_data/gtm/app/gtm.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes:
@@ -67,10 +67,10 @@ This file maps where product and support knowledge belongs so future specs, docs
 |---|---|---|---|---|---|
 | Repository overview | `README.md` | Public-facing repo summary, setup, stack, env vars, deployment notes | Markdown | Current app implementation plus deployed workflow assumptions | Setup, auth, deploy, env, or architecture expectations change |
 | Developer/operator guidance | `CLAUDE.md` | Maintainer guidance for contributors working in this repo | Markdown | Active implementation constraints in frontend auth, routing, Convex integration, and build flow | Architecture, workflow rules, or critical gotchas change |
-| Product context | `shipflow_data/business/app/product.md` | Reviewed product scope, target user, workflows, non-goals, and claim boundaries | Markdown artifact | Evidenced product behavior and specs | Product scope, workflows, or claim boundaries change |
+| Product context | `shipflow_data/product/app/product.md` | Reviewed product scope, target user, workflows, non-goals, and claim boundaries | Markdown artifact | Evidenced product behavior and specs | Product scope, workflows, or claim boundaries change |
 | Business context | `shipflow_data/business/app/business.md` | Business assumptions, monetization unknowns, target audience, and commercial claim limits | Markdown artifact | Diane decisions plus product evidence | Diane confirms model, segment, ICP, pricing, or commercial strategy |
-| Brand context | `shipflow_data/business/app/branding.md` | Voice, messaging pillars, tagline candidates, and brand claim boundaries | Markdown artifact | Diane decisions plus product and business context | Diane confirms tone, tagline, language priorities, or positioning |
-| GTM context | `shipflow_data/business/app/gtm.md` | Reviewed product-led GTM framing, activation path, proof points, objections, and KPI candidates | Markdown artifact | Product evidence and repo-visible routes/config | Offer, activation, channels, or product proof points change |
+| Brand context | `shipflow_data/branding/branding.md` | Voice, messaging pillars, tagline candidates, and brand claim boundaries | Markdown artifact | Diane decisions plus product and business context | Diane confirms tone, tagline, language priorities, or positioning |
+| GTM context | `shipflow_data/gtm/app/gtm.md` | Reviewed product-led GTM framing, activation path, proof points, objections, and KPI candidates | Markdown artifact | Product evidence and repo-visible routes/config | Offer, activation, channels, or product proof points change |
 | Product specs | `specs/*.md` | Decision and implementation planning for features or refactors | Markdown | Approved product/technical decisions for active work | A feature scope, acceptance criteria, or rollout approach changes |
 | Release notes | `CHANGELOG.md` | User-facing change narrative | Markdown | Shipped changes worth communicating | A user-visible feature, fix, or workflow change ships |
 | In-app support and product learning | `/feedback`, `/feedback/admin` | Capture user issues and product input; review feedback operationally | Flutter routes backed by app screens and Convex/Vercel flows | Live product behavior and feedback workflow implementation | Feedback collection or admin review flow changes |
@@ -80,11 +80,11 @@ This file maps where product and support knowledge belongs so future specs, docs
 
 | Cluster | Pillar page | Supporting pages | Target intent | Internal link rule | Status |
 |---|---|---|---|---|---|
-| Product truth and setup | `README.md` | `shipflow_data/business/app/product.md`, `CLAUDE.md`, `.env.example`, `vercel.json` | Operator and contributor understanding | README points to deeper setup or architecture context when needed | live |
-| Product and market context | `shipflow_data/business/app/product.md` | `shipflow_data/business/app/business.md`, `shipflow_data/business/app/branding.md`, `shipflow_data/business/app/gtm.md` | Keep claims aligned across product, business, brand, and GTM | Downstream copy should inherit product claim boundaries before expanding | live |
+| Product truth and setup | `README.md` | `shipflow_data/product/app/product.md`, `CLAUDE.md`, `.env.example`, `vercel.json` | Operator and contributor understanding | README points to deeper setup or architecture context when needed | live |
+| Product and market context | `shipflow_data/product/app/product.md` | `shipflow_data/business/app/business.md`, `shipflow_data/branding/branding.md`, `shipflow_data/gtm/app/gtm.md` | Keep claims aligned across product, business, brand, and GTM | Downstream copy should inherit product claim boundaries before expanding | live |
 | Active feature decision-making | `shipflow_data/workflow/specs/flutter-web-youtube-auth-redirect-spec.md` | `shipflow_data/workflow/specs/feedback-v1.md`, future feature specs | Implementation and review intent | Specs should reference product context and related routes/workflows | live |
-| Product feedback loop | `/feedback` | `/feedback/admin`, `shipflow_data/workflow/specs/feedback-v1.md`, `shipflow_data/business/app/product.md` | Support and product-learning intent | User-facing feedback entry should stay consistent with admin review workflow and specs | live |
-| Release communication | `CHANGELOG.md` | `README.md`, `shipflow_data/business/app/product.md` when behavior materially changes | Change-awareness intent | User-visible changes belong in changelog; structural changes may also require README updates | live |
+| Product feedback loop | `/feedback` | `/feedback/admin`, `shipflow_data/workflow/specs/feedback-v1.md`, `shipflow_data/product/app/product.md` | Support and product-learning intent | User-facing feedback entry should stay consistent with admin review workflow and specs | live |
+| Release communication | `CHANGELOG.md` | `README.md`, `shipflow_data/product/app/product.md` when behavior materially changes | Change-awareness intent | User-visible changes belong in changelog; structural changes may also require README updates | live |
 
 ## Page Roles
 
@@ -103,10 +103,10 @@ This file maps where product and support knowledge belongs so future specs, docs
 ## Repurposing Rules
 
 - Use `README.md` as the base source for setup, architecture summary, and environment truth.
-- Use `shipflow_data/business/app/product.md` for product framing before writing feature docs, support copy, release copy, or GTM copy.
+- Use `shipflow_data/product/app/product.md` for product framing before writing feature docs, support copy, release copy, or GTM copy.
 - Use `shipflow_data/business/app/business.md` only for commercial assumptions that are clearly marked as confirmed or open.
-- Use `shipflow_data/business/app/branding.md` for tone and safe phrasing, but do not treat tagline candidates as approved until reviewed.
-- Use `shipflow_data/business/app/gtm.md` for positioning language and activation framing, while keeping revenue and channel claims narrow.
+- Use `shipflow_data/branding/branding.md` for tone and safe phrasing, but do not treat tagline candidates as approved until reviewed.
+- Use `shipflow_data/gtm/app/gtm.md` for positioning language and activation framing, while keeping revenue and channel claims narrow.
 - Convert feature work into `CHANGELOG.md` only when a user-visible behavior actually ships.
 - Convert problem reports or repeated confusion into either a spec update, README clarification, or feedback-flow improvement.
 - Do not treat `shipflow_data/workflow/test-logs/TASKS.md` or `shipflow_data/workflow/test-logs/AUDIT_LOG.md` as canonical content sources for product claims.
@@ -115,17 +115,17 @@ This file maps where product and support knowledge belongs so future specs, docs
 
 | Trigger | Check these surfaces |
 |---|---|
-| New user-visible feature | `README.md`, `CHANGELOG.md`, related `specs/*.md`, `shipflow_data/business/app/product.md` |
-| Auth or YouTube-connect change | `README.md`, `CLAUDE.md`, relevant spec, `shipflow_data/business/app/gtm.md` if activation messaging changes |
-| Feedback flow change | `/feedback` and `/feedback/admin` behavior, `shipflow_data/workflow/specs/feedback-v1.md`, `shipflow_data/business/app/product.md`, `CHANGELOG.md` if user-visible |
+| New user-visible feature | `README.md`, `CHANGELOG.md`, related `specs/*.md`, `shipflow_data/product/app/product.md` |
+| Auth or YouTube-connect change | `README.md`, `CLAUDE.md`, relevant spec, `shipflow_data/gtm/app/gtm.md` if activation messaging changes |
+| Feedback flow change | `/feedback` and `/feedback/admin` behavior, `shipflow_data/workflow/specs/feedback-v1.md`, `shipflow_data/product/app/product.md`, `CHANGELOG.md` if user-visible |
 | Deployment or env change | `README.md`, `.env.example`, `CLAUDE.md` |
-| Repositioning or target-user change | `shipflow_data/business/app/product.md`, `shipflow_data/business/app/business.md`, `shipflow_data/business/app/branding.md`, `shipflow_data/business/app/gtm.md`, then any user-facing README or changelog framing |
-| Monetization or pricing decision | `shipflow_data/business/app/business.md`, `shipflow_data/business/app/gtm.md`, `shipflow_data/business/app/branding.md`, then product or README surfaces only if user-visible |
-| Voice, tagline, or language-priority decision | `shipflow_data/business/app/branding.md`, then user-facing app copy, README, and GTM surfaces if affected |
+| Repositioning or target-user change | `shipflow_data/product/app/product.md`, `shipflow_data/business/app/business.md`, `shipflow_data/branding/branding.md`, `shipflow_data/gtm/app/gtm.md`, then any user-facing README or changelog framing |
+| Monetization or pricing decision | `shipflow_data/business/app/business.md`, `shipflow_data/gtm/app/gtm.md`, `shipflow_data/branding/branding.md`, then product or README surfaces only if user-visible |
+| Voice, tagline, or language-priority decision | `shipflow_data/branding/branding.md`, then user-facing app copy, README, and GTM surfaces if affected |
 
 ## Current Gaps
 
 - `shipflow_data/business/app/business.md` remains draft until Diane confirms monetization, primary segment, and individual-versus-team trajectory.
-- `shipflow_data/business/app/branding.md` remains draft until Diane confirms tone, tagline, and language priority.
+- `shipflow_data/branding/branding.md` remains draft until Diane confirms tone, tagline, and language priority.
 - No public landing pages, blog, or docs hub exist in this repo; if those are created later, extend this map before repurposing content into them.
-- KPI candidates in `shipflow_data/business/app/gtm.md` are recommended validation metrics, not confirmed analytics instrumentation.
+- KPI candidates in `shipflow_data/gtm/app/gtm.md` are recommended validation metrics, not confirmed analytics instrumentation.

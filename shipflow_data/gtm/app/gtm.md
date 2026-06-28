@@ -26,13 +26,13 @@ evidence:
   - "shipflow_data/workflow/specs/feedback-v1.md"
   - "shipflow_data/workflow/specs/flutter-web-youtube-auth-redirect-spec.md"
 linked_artifacts:
-  - "shipflow_data/business/app/product.md"
+  - "shipflow_data/product/app/product.md"
   - "shipflow_data/business/app/business.md"
-  - "shipflow_data/business/app/branding.md"
+  - "shipflow_data/branding/branding.md"
   - "shipflow_data/editorial/app/content-map.md"
   - "README.md"
 depends_on:
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes:

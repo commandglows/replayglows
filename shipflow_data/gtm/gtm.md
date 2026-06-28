@@ -25,13 +25,13 @@ proof_points:
 docs_impact: "yes"
 security_impact: "unknown"
 evidence:
-  - "shipflow_data/business/site/gtm.md"
-  - "shipflow_data/business/app/gtm.md"
+  - "shipflow_data/gtm/site/gtm.md"
+  - "shipflow_data/gtm/app/gtm.md"
   - "site/src/pages/pricing.astro"
   - "site/src/pages/compare.astro"
 depends_on:
   - "shipflow_data/business/business.md"
-  - "shipflow_data/business/branding.md"
+  - "shipflow_data/branding/branding.md"
 supersedes: []
 next_review: "2026-06-10"
 next_step: "/sf-docs editorial audit"

@@ -22,13 +22,13 @@ linked_systems:
   - "app/lib/utils/color_utils.dart"
   - "site/src/styles/global.css"
   - "site/src/layouts/Layout.astro"
-  - "shipflow_data/business/app/branding.md"
-  - "shipflow_data/business/site/branding.md"
+  - "shipflow_data/branding/branding.md"
+  - "shipflow_data/branding/branding.md"
 depends_on:
-  - artifact: "shipflow_data/business/app/branding.md"
+  - artifact: "shipflow_data/branding/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/site/branding.md"
+  - artifact: "shipflow_data/branding/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 evidence:

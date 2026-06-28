@@ -19,7 +19,7 @@ evidence:
   - "src/config/site.ts centralizes public URL and email-domain configuration."
 depends_on:
   - "shipflow_data/business/site/business.md"
-  - "shipflow_data/business/site/branding.md"
+  - "shipflow_data/branding/branding.md"
 supersedes: []
 next_review: "2026-05-26"
 next_step: "Keep route copy and app claims synchronized with product releases."
@@ -68,4 +68,4 @@ next_step: "Keep route copy and app claims synchronized with product releases."
 
 - Update `.env.example` when public env usage changes.
 - Update `CLAUDE.md` when stack, commands, or architecture assumptions change.
-- Update `shipflow_data/business/site/business.md` or `shipflow_data/business/site/branding.md` when product positioning or claims change materially.
+- Update `shipflow_data/business/site/business.md` or `shipflow_data/branding/branding.md` when product positioning or claims change materially.

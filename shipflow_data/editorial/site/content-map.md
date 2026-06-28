@@ -35,18 +35,18 @@ evidence:
   - "src/pages/terms.astro"
   - "src/content/blog"
 linked_artifacts:
-  - "shipflow_data/business/site/product.md"
-  - "shipflow_data/business/site/gtm.md"
+  - "shipflow_data/product/site/product.md"
+  - "shipflow_data/gtm/site/gtm.md"
   - "shipflow_data/business/site/business.md"
-  - "shipflow_data/business/site/branding.md"
+  - "shipflow_data/branding/branding.md"
 depends_on:
-  - artifact: "shipflow_data/business/site/product.md"
+  - artifact: "shipflow_data/product/site/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/site/gtm.md"
+  - artifact: "shipflow_data/gtm/site/gtm.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes:
@@ -74,7 +74,7 @@ Canonical product truth remains `app`.
 | Blog | `src/pages/blog/index.astro`, `src/pages/blog/[slug].astro`, `src/content/blog/*.md` | SEO and education funnel | Markdown posts + blog routes |
 | French landing | `src/pages/fr/index.astro` | Bilingual acquisition surface | Route file + `src/i18n/*.ts` |
 | Trust/legal | `src/pages/privacy.astro`, `src/pages/terms.astro` | Compliance and trust completion surfaces | Route files |
-| Repo docs | `README.md`, `shipflow_data/business/site/business.md`, `shipflow_data/business/site/branding.md`, `shipflow_data/business/site/product.md`, `shipflow_data/business/site/gtm.md`, `shipflow_data/editorial/site/content-map.md` | Operating contracts for marketing and docs consistency | Root docs |
+| Repo docs | `README.md`, `shipflow_data/business/site/business.md`, `shipflow_data/branding/branding.md`, `shipflow_data/product/site/product.md`, `shipflow_data/gtm/site/gtm.md`, `shipflow_data/editorial/site/content-map.md` | Operating contracts for marketing and docs consistency | Root docs |
 
 ## Funnel Mapping
 
@@ -96,9 +96,9 @@ Canonical product truth remains `app`.
 
 | Trigger | Required updates |
 |---|---|
-| Product promise changes | `/`, `/features`, `/compare`, `shipflow_data/business/site/product.md`, `shipflow_data/business/site/gtm.md` |
-| Offer or pricing changes | `/pricing`, homepage pricing blocks, `shipflow_data/business/site/business.md`, `shipflow_data/business/site/gtm.md` |
-| Brand voice/tagline changes | `/`, `/fr`, `shipflow_data/business/site/branding.md`, selected blog intros/outros |
+| Product promise changes | `/`, `/features`, `/compare`, `shipflow_data/product/site/product.md`, `shipflow_data/gtm/site/gtm.md` |
+| Offer or pricing changes | `/pricing`, homepage pricing blocks, `shipflow_data/business/site/business.md`, `shipflow_data/gtm/site/gtm.md` |
+| Brand voice/tagline changes | `/`, `/fr`, `shipflow_data/branding/branding.md`, selected blog intros/outros |
 | CTA destination changes | `src/config/site.ts` and all CTA-bearing pages |
 | Legal/trust updates | `/privacy`, `/terms`, plus any impacted pricing/support copy |
 

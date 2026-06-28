@@ -31,8 +31,8 @@ evidence:
 linked_artifacts:
   - "README.md"
   - "shipflow_data/business/app/business.md"
-  - "shipflow_data/business/app/branding.md"
-  - "shipflow_data/business/app/gtm.md"
+  - "shipflow_data/branding/branding.md"
+  - "shipflow_data/gtm/app/gtm.md"
   - "shipflow_data/editorial/app/content-map.md"
   - "shipflow_data/workflow/specs/feedback-v1.md"
   - "shipflow_data/workflow/specs/flutter-web-youtube-auth-redirect-spec.md"

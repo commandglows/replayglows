@@ -23,13 +23,13 @@ linked_systems:
   - "app"
   - "lab"
 depends_on:
-  - "shipflow_data/business/product.md"
-  - "shipflow_data/business/gtm.md"
+  - "shipflow_data/product/product.md"
+  - "shipflow_data/gtm/gtm.md"
 supersedes: []
 evidence:
-  - "shipflow_data/business/app/product.md"
-  - "shipflow_data/business/site/product.md"
-  - "shipflow_data/business/lab/product.md"
+  - "shipflow_data/product/app/product.md"
+  - "shipflow_data/product/site/product.md"
+  - "shipflow_data/product/lab/product.md"
 next_review: "2026-06-10"
 next_step: "/sf-docs editorial audit"
 ---

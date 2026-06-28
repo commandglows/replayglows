@@ -25,10 +25,10 @@ linked_systems:
   - "Convex virtual feed queries"
   - "Android Gradle / R8"
 depends_on:
-  - artifact: "shipflow_data/business/product.md"
+  - artifact: "shipflow_data/product/product.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipflow_data/business/branding.md"
+  - artifact: "shipflow_data/branding/branding.md"
     artifact_version: "0.1.0"
     required_status: "draft"
   - artifact: "shipflow_data/technical/architecture.md"

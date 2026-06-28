@@ -23,7 +23,7 @@ evidence:
   - "shipflow_data/business/site/business.md"
   - "shipflow_data/business/lab/business.md"
 depends_on:
-  - "shipflow_data/business/product.md"
+  - "shipflow_data/product/product.md"
 supersedes: []
 next_review: "2026-06-10"
 next_step: "/sf-docs audit"

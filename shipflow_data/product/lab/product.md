@@ -24,7 +24,7 @@ evidence:
   - "CHANGELOG.md tracks operational behavior changes"
 linked_artifacts:
   - "README.md"
-  - "shipflow_data/business/lab/gtm.md"
+  - "shipflow_data/gtm/lab/gtm.md"
   - "shipflow_data/editorial/lab/content-map.md"
 depends_on: []
 supersedes: []

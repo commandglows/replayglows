@@ -25,18 +25,18 @@ evidence:
   - "src/pages/pricing.astro"
   - "src/pages/compare.astro"
   - "src/pages/fr/index.astro"
-  - "shipflow_data/business/app/product.md"
+  - "shipflow_data/product/app/product.md"
 linked_artifacts:
-  - "shipflow_data/business/site/gtm.md"
+  - "shipflow_data/gtm/site/gtm.md"
   - "shipflow_data/editorial/site/content-map.md"
 depends_on:
-  - artifact: "shipflow_data/business/app/product.md"
+  - artifact: "shipflow_data/product/app/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes:
   - artifact_version: "0.1.0"
 next_review: "2026-05-27"
-next_step: "/sf-docs audit shipflow_data/business/site/product.md"
+next_step: "/sf-docs audit shipflow_data/product/site/product.md"
 ---
 
 # Product Context
@@ -45,7 +45,7 @@ next_step: "/sf-docs audit shipflow_data/business/site/product.md"
 
 `replayglowz-site` is the public marketing and conversion layer for ReplayGlowz. It describes the product promise and routes visitors to the app at `app.replayglowz.com`.
 
-Canonical product truth is `shipflow_data/business/app/product.md`. This repository must stay aligned with that contract and avoid introducing a parallel product definition.
+Canonical product truth is `shipflow_data/product/app/product.md`. This repository must stay aligned with that contract and avoid introducing a parallel product definition.
 
 ## Target User
 
@@ -103,7 +103,7 @@ Secondary framing around escaping algorithmic distraction is acceptable as a hoo
 ## Product Truth Alignment Rule
 
 - This site documents and markets; it does not define app behavior canonically.
-- Any product-level conflict resolves in favor of `shipflow_data/business/app/product.md`.
+- Any product-level conflict resolves in favor of `shipflow_data/product/app/product.md`.
 - Roadmap claims must be labeled as planned, not implied as shipped.
 
 ## Risks

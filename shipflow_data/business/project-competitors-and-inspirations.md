@@ -17,10 +17,10 @@ evidence:
   - "Initial competitor and inspiration triage captured in legacy root concurrent.md."
   - "ReplayGlowz product context targets video learning workflows, notes, playlists, transcripts, and summaries."
 depends_on:
-  - artifact: "shipflow_data/business/product.md"
+  - artifact: "shipflow_data/product/product.md"
     artifact_version: "1.0.0"
     required_status: reviewed
-  - artifact: "shipflow_data/business/gtm.md"
+  - artifact: "shipflow_data/gtm/gtm.md"
     artifact_version: "1.0.0"
     required_status: reviewed
 supersedes:

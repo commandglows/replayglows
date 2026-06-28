@@ -36,9 +36,9 @@ linked_artifacts:
   - "shipflow_data/editorial/claim-register.md"
 depends_on:
   - "shipflow_data/business/business.md"
-  - "shipflow_data/business/product.md"
-  - "shipflow_data/business/branding.md"
-  - "shipflow_data/business/gtm.md"
+  - "shipflow_data/product/product.md"
+  - "shipflow_data/branding/branding.md"
+  - "shipflow_data/gtm/gtm.md"
 supersedes: []
 next_review: "2026-06-10"
 next_step: "/sf-docs editorial audit"
@@ -55,10 +55,10 @@ This file maps ReplayGlowz content surfaces at monorepo level and routes public-
 | Surface | Canonical path | Purpose | Source of truth | Update when |
 | --- | --- | --- | --- | --- |
 | Root README | `README.md` | Monorepo orientation and deployment model | Repository layout and deployment state | Subproject layout or deployment ownership changes. |
-| App docs | `app/README.md` and app contracts | Product and implementation truth for the Flutter app | `shipflow_data/business/app/product.md`, `shipflow_data/technical/app/architecture.md` | App behavior, auth, OAuth, Convex, deployment, or env changes. |
+| App docs | `app/README.md` and app contracts | Product and implementation truth for the Flutter app | `shipflow_data/product/app/product.md`, `shipflow_data/technical/app/architecture.md` | App behavior, auth, OAuth, Convex, deployment, or env changes. |
 | Public site pages | `site/src/pages/**` | Acquisition, product education, pricing, comparison, legal/trust | Business, product, brand, GTM contracts | Public claims, CTA, route intent, pricing, or legal/trust changes. |
 | Blog | `site/src/content/blog/**` | Editorial education and SEO content | Astro schema, page intent, claim register | Blog content, collection schema, topic strategy, or claims change. |
-| Worker docs | `lab/README.md` and worker contracts | Transcript worker setup, deployment, API, operations | `shipflow_data/business/lab/product.md`, `shipflow_data/technical/lab/architecture.md` | Worker API, env, provider, queue, health, or deployment changes. |
+| Worker docs | `lab/README.md` and worker contracts | Transcript worker setup, deployment, API, operations | `shipflow_data/product/lab/product.md`, `shipflow_data/technical/lab/architecture.md` | Worker API, env, provider, queue, health, or deployment changes. |
 | Editorial governance | `shipflow_data/editorial/**` | Public surface map, claim register, page intent, update gate, runtime schema policy | This content map and contracts | Public surfaces, claims, routes, or content schemas change. |
 
 ## Semantic Architecture

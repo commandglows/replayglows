@@ -25,13 +25,13 @@ evidence:
   - "CHANGELOG.md records operator-visible behavior changes"
 linked_artifacts:
   - "README.md"
-  - "shipflow_data/business/lab/product.md"
-  - "shipflow_data/business/lab/gtm.md"
+  - "shipflow_data/product/lab/product.md"
+  - "shipflow_data/gtm/lab/gtm.md"
 depends_on:
-  - artifact: "shipflow_data/business/lab/product.md"
+  - artifact: "shipflow_data/product/lab/product.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipflow_data/business/lab/gtm.md"
+  - artifact: "shipflow_data/gtm/lab/gtm.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes: []
@@ -50,8 +50,8 @@ next_step: "Keep this map synced when worker API, providers, or deployment model
 | Surface | Canonical path | Purpose | Source of truth | Update when |
 |---|---|---|---|---|
 | Repo overview and runbook | `README.md` | Explain what the worker does and how to run/deploy it | Worker code and runtime behavior | Endpoints, providers, deployment flow, or env assumptions change |
-| Product contract | `shipflow_data/business/lab/product.md` | Define worker user, problem, outcomes, scope, and risks | Worker behavior plus explicit boundary to parent product | Worker role in pipeline changes |
-| GTM contract | `shipflow_data/business/lab/gtm.md` | Define backend positioning, channels, proof points, and KPIs | Product contract plus distribution reality | Positioning assumptions change |
+| Product contract | `shipflow_data/product/lab/product.md` | Define worker user, problem, outcomes, scope, and risks | Worker behavior plus explicit boundary to parent product | Worker role in pipeline changes |
+| GTM contract | `shipflow_data/gtm/lab/gtm.md` | Define backend positioning, channels, proof points, and KPIs | Product contract plus distribution reality | Positioning assumptions change |
 | Editorial map | `shipflow_data/editorial/lab/content-map.md` | Route docs to the right surface | Current repository structure | A new content surface appears |
 | API/runtime contract | `server.py` | Canonical request models, endpoints, auth, and runtime controls | Implementation | API fields, providers, or behavior change |
 | Release history | `CHANGELOG.md` | Operator-visible change ledger | Merged runtime changes | Any behavior change affecting operations |
@@ -61,10 +61,10 @@ next_step: "Keep this map synced when worker API, providers, or deployment model
 
 | Cluster | Pillar surface | Supporting surfaces | Target intent | Status |
 |---|---|---|---|---|
-| Worker purpose and architecture | `README.md` | `shipflow_data/business/lab/product.md`, `server.py` | Understand why the worker exists | live |
+| Worker purpose and architecture | `README.md` | `shipflow_data/product/lab/product.md`, `server.py` | Understand why the worker exists | live |
 | Operations and deployment | `README.md` | `CHANGELOG.md`, `requirements.txt` | Run and maintain safely | live |
 | API and integration contract | `server.py` | `README.md` | Integrate parent app with predictable behavior | live |
-| Product and positioning decisions | `shipflow_data/business/lab/product.md` | `shipflow_data/business/lab/gtm.md`, `shipflow_data/editorial/lab/content-map.md` | Keep scope and messaging coherent | reviewed |
+| Product and positioning decisions | `shipflow_data/product/lab/product.md` | `shipflow_data/gtm/lab/gtm.md`, `shipflow_data/editorial/lab/content-map.md` | Keep scope and messaging coherent | reviewed |
 
 ## Page Roles
 
@@ -81,11 +81,11 @@ next_step: "Keep this map synced when worker API, providers, or deployment model
 
 | Trigger | Check these surfaces |
 |---|---|
-| Provider added or removed | `README.md`, `shipflow_data/business/lab/product.md`, `shipflow_data/business/lab/gtm.md`, `server.py`, `requirements.txt` |
+| Provider added or removed | `README.md`, `shipflow_data/product/lab/product.md`, `shipflow_data/gtm/lab/gtm.md`, `server.py`, `requirements.txt` |
 | Endpoint or auth change | `README.md`, `server.py`, deployment notes |
 | Deployment model change | `README.md`, `shipflow_data/editorial/lab/content-map.md` |
-| New guardrail or warning behavior | `README.md`, `CHANGELOG.md`, `shipflow_data/business/lab/product.md` |
-| Parent-product positioning update | `shipflow_data/business/lab/product.md`, `shipflow_data/business/lab/gtm.md`, and boundaries referencing `replayglowz-app` |
+| New guardrail or warning behavior | `README.md`, `CHANGELOG.md`, `shipflow_data/product/lab/product.md` |
+| Parent-product positioning update | `shipflow_data/product/lab/product.md`, `shipflow_data/gtm/lab/gtm.md`, and boundaries referencing `replayglowz-app` |
 
 ## Open Gaps
 
