@@ -1,6 +1,6 @@
 module.exports = {
   apps: [{
-    name: "lab",
+    name: "replayglowz_lab",
     cwd: __dirname,
     script: "bash",
     args: [
@@ -11,6 +11,9 @@ module.exports = {
       PORT: 8090
     },
     autorestart: true,
+    max_restarts: 3,
+    min_uptime: "10s",
+    restart_delay: 2000,
     watch: false
   }]
 };
