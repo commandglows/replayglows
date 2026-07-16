@@ -48,10 +48,11 @@ const {
   aria-label={ariaLabel}
   tabindex="0"
 >
-  <div class="testimonial-rail__track">
-    {[false, true].map((isDuplicate) => (
+  <div class="testimonial-rail__track" data-testimonial-track>
+    {[true, false, true].map((isDuplicate) => (
       <div
         class={`testimonial-rail__set ${isDuplicate ? 'testimonial-rail__set--duplicate' : ''}`}
+        data-testimonial-set
         role={isDuplicate ? undefined : 'list'}
         aria-hidden={isDuplicate ? 'true' : undefined}
       >
@@ -97,3 +98,89 @@ const {
     ))}
   </div>
 </div>
+
+<script>
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  const boundaryTolerancePx = 1
+
+  const motionDurationMs = () => {
+    const value = getComputedStyle(document.documentElement)
+      .getPropertyValue('--motion-duration-marquee')
+      .trim()
+    const duration = Number.parseFloat(value)
+
+    if (!Number.isFinite(duration) || duration <= 0) return 0
+    return value.endsWith('ms') ? duration : duration * 1000
+  }
+
+  document.querySelectorAll<HTMLElement>('.testimonial-rail').forEach((rail) => {
+    const track = rail.querySelector<HTMLElement>('[data-testimonial-track]')
+    const sets = track?.querySelectorAll<HTMLElement>('[data-testimonial-set]')
+    const canonicalSet = sets?.item(1)
+
+    if (!track || !sets || sets.length !== 3 || !canonicalSet) return
+
+    let loopWidth = 0
+    let previousFrame = performance.now()
+    const duration = motionDurationMs()
+    const pauseReasons = new Set<string>()
+
+    const resetToCanonicalSet = () => {
+      loopWidth = canonicalSet.getBoundingClientRect().width
+      if (loopWidth > 0) rail.scrollLeft = reducedMotionQuery.matches ? 0 : loopWidth
+    }
+
+    const normalizeScrollPosition = () => {
+      if (loopWidth <= 0 || reducedMotionQuery.matches) return
+
+      const maximumScroll = rail.scrollWidth - rail.clientWidth
+      const rightBoundary = Math.min(loopWidth * 2, maximumScroll)
+
+      if (rail.scrollLeft >= rightBoundary - boundaryTolerancePx) {
+        rail.scrollLeft -= loopWidth
+      } else if (rail.scrollLeft <= boundaryTolerancePx) {
+        rail.scrollLeft += loopWidth
+      }
+    }
+
+    const setPaused = (reason: string, paused: boolean) => {
+      if (paused) pauseReasons.add(reason)
+      else pauseReasons.delete(reason)
+    }
+
+    rail.addEventListener('scroll', normalizeScrollPosition, { passive: true })
+    rail.addEventListener('mouseenter', () => setPaused('hover', true))
+    rail.addEventListener('mouseleave', () => setPaused('hover', false))
+    rail.addEventListener('focus', () => setPaused('focus', true))
+    rail.addEventListener('blur', () => setPaused('focus', false))
+    rail.addEventListener('pointerdown', () => setPaused('pointer', true))
+    window.addEventListener('pointerup', () => setPaused('pointer', false))
+    window.addEventListener('pointercancel', () => setPaused('pointer', false))
+
+    const animate = (currentFrame: number) => {
+      const elapsed = currentFrame - previousFrame
+      previousFrame = currentFrame
+
+      if (!document.hidden && pauseReasons.size === 0 && loopWidth > 0 && duration > 0) {
+        rail.scrollLeft += loopWidth * (elapsed / duration)
+        normalizeScrollPosition()
+      }
+
+      requestAnimationFrame(animate)
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      previousFrame = performance.now()
+    })
+
+    const syncReducedMotion = () => {
+      setPaused('reduced-motion', reducedMotionQuery.matches)
+      resetToCanonicalSet()
+    }
+
+    reducedMotionQuery.addEventListener('change', syncReducedMotion)
+    syncReducedMotion()
+    if ('ResizeObserver' in window) new ResizeObserver(resetToCanonicalSet).observe(rail)
+    requestAnimationFrame(animate)
+  })
+</script>

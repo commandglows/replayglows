@@ -1,0 +1,26 @@
+---
+import { appSignInRedirectUrl } from '../config/site'
+
+interface Props {
+  content: {
+    title: string
+    subtitle: string
+    cta: string
+    reassurance: string
+  }
+}
+
+const { content } = Astro.props
+---
+
+<section class="py-16 sm:py-24 bg-background">
+  <div class="max-w-4xl mx-auto px-4 text-center" data-reveal>
+    <h2 class="animate-fade-up text-3xl sm:text-4xl font-bold text-foreground mb-4" style="font-family: var(--font-instrument-sans);">{content.title}</h2>
+    <p class="animate-fade-up delay-100 text-lg text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">{content.subtitle}</p>
+    <a href={appSignInRedirectUrl('/videos')} class="animate-fade-up delay-200 shimmer-btn inline-flex items-center gap-2 marketing-cta-solid marketing-cta-shadow-soft rounded-full px-8 h-12 text-base font-medium transition-colors">
+      {content.cta}
+      <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </a>
+    <p class="animate-fade-up delay-300 mt-4 text-sm text-muted-foreground">{content.reassurance}</p>
+  </div>
+</section>

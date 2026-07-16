@@ -4,25 +4,39 @@ import Navbar from '../components/Navbar.astro'
 import Hero from '../components/Hero.astro'
 import ProblemSection from '../components/ProblemSection.astro'
 import SolutionSection from '../components/SolutionSection.astro'
+import ProductProof from '../components/ProductProof.astro'
+import ComparisonSection from '../components/ComparisonSection.astro'
 import Benefits from '../components/Benefits.astro'
 import BentoGrid from '../components/BentoGrid.astro'
 import Pricing from '../components/Pricing.astro'
 import FinalCTA from '../components/FinalCTA.astro'
-import Newsletter from '../components/Newsletter.astro'
+import FocusSection from '../components/FocusSection.astro'
+import ClosingCTA from '../components/ClosingCTA.astro'
 import Footer from '../components/Footer.astro'
+import { getTranslations } from '../i18n'
+
+const t = getTranslations('en')
 ---
 
 <Layout>
   <main id="main-content" class="min-h-screen bg-background text-foreground">
     <Navbar />
-    <Hero />
-    <ProblemSection />
-    <SolutionSection />
-    <Benefits />
-    <BentoGrid />
+    <Hero
+      content={t.hero}
+      testimonials={t.testimonials.items}
+      testimonialLabel={t.testimonials.title}
+      ratingLabel="{rating} out of 5 stars"
+    />
+    <ProblemSection content={t.problem} />
+    <SolutionSection content={t.solution} />
+    <ProductProof content={t.productProof} />
+    <ComparisonSection content={t.comparison} />
     <Pricing />
-    <FinalCTA />
-    <Newsletter />
+    <FinalCTA content={t.finalCta} />
+    <Benefits content={t.benefits} />
+    <BentoGrid content={t.features} />
+    <FocusSection content={t.focus} />
+    <ClosingCTA content={t.closingCta} />
     <Footer />
   </main>
 </Layout>

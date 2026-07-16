@@ -1,42 +1,41 @@
 ---
-const solutions = [
-  {
-    icon: '✨',
-    title: 'Thematic Playlists',
-    description: 'Create playlists by topic, mood, or project. Make them your primary way to navigate YouTube.',
-  },
-  {
-    icon: '🏛️',
-    title: 'Subscription Control',
-    description: "Group channels into categories. See what's new from your favorites without the noise.",
-  },
-  {
-    icon: '🚫',
-    title: 'Zero Algorithmic Interference',
-    description: 'No suggestions. No rabbit holes. Just the content you chose to watch.',
-  },
-]
+interface Props {
+  content: {
+    label: string
+    title: string
+    intro: string
+    items: readonly {
+      icon: string
+      title: string
+      desc: string
+    }[]
+  }
+}
+
+const { content } = Astro.props
 ---
 
-<section class="py-16 sm:py-24 bg-background">
+<section id="workflow" class="py-16 sm:py-24 bg-background">
   <div class="max-w-6xl mx-auto px-4">
     <div class="text-center mb-12 sm:mb-16" data-reveal>
+      <p class="animate-fade-up text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">{content.label}</p>
       <h2
         class="animate-fade-up text-3xl sm:text-4xl font-bold text-foreground mb-4"
         style="font-family: var(--font-instrument-sans);"
       >
-        Your Content, Your Rules
+        {content.title}
       </h2>
+      <p class="animate-fade-up delay-100 text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">{content.intro}</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-reveal>
-      {solutions.map((solution, index) => (
+      {content.items.map((solution, index) => (
         <div
           class={`animate-fade-up delay-${(index + 1) * 100} group marketing-card marketing-card--hover-border bg-card border-border text-center`}
         >
-          <span class="text-4xl sm:text-5xl block mb-4">{solution.icon}</span>
+          <span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">{solution.icon}</span>
           <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">{solution.title}</h3>
-          <p class="text-base text-muted-foreground leading-relaxed">{solution.description}</p>
+          <p class="text-base text-muted-foreground leading-relaxed">{solution.desc}</p>
         </div>
       ))}
     </div>

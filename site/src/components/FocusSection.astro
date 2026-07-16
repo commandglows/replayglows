@@ -1,0 +1,19 @@
+---
+interface Props {
+  content: {
+    label: string
+    title: string
+    body: string
+  }
+}
+
+const { content } = Astro.props
+---
+
+<section class="py-16 sm:py-24 bg-card">
+  <div class="max-w-4xl mx-auto px-4 text-center" data-reveal>
+    <p class="animate-fade-up text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">{content.label}</p>
+    <h2 class="animate-fade-up delay-100 text-3xl sm:text-5xl font-bold text-foreground mb-6 tracking-tight" style="font-family: var(--font-cal-sans);">{content.title}</h2>
+    <p class="animate-fade-up delay-200 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">{content.body}</p>
+  </div>
+</section>

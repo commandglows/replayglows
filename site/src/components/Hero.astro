@@ -1,6 +1,29 @@
 ---
 import { appSignInRedirectUrl } from '../config/site'
 import Testimonials from './Testimonials.astro'
+
+interface Props {
+  content: {
+    badge: string
+    title1: string
+    title2: string
+    subtitle: string
+    cta: string
+    secondaryCta: string
+    socialProof: string
+  }
+  testimonials: readonly {
+    rating?: number
+    review: string
+    name: string
+    designation: string
+    featured?: boolean
+  }[]
+  testimonialLabel: string
+  ratingLabel: string
+}
+
+const { content, testimonials, testimonialLabel, ratingLabel } = Astro.props
 ---
 
 <section class="relative flex flex-col items-center justify-center px-4 pt-32 pb-20 overflow-hidden">
@@ -14,22 +37,22 @@ import Testimonials from './Testimonials.astro'
     <!-- Badge -->
     <div class="animate-fade-up delay-200 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border mb-8">
       <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-glow"></span>
-      <span class="text-sm text-muted-foreground">Now in Public Beta</span>
+      <span class="text-sm text-muted-foreground">{content.badge}</span>
     </div>
 
     <!-- Headline -->
     <h1 class="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6" style="font-family: var(--font-cal-sans);">
       <span class="block overflow-hidden">
-        <span class="block animate-text-reveal">Stop Fighting YouTube's Algorithm.</span>
+        <span class="block animate-text-reveal">{content.title1}</span>
       </span>
       <span class="block overflow-hidden">
-        <span class="block animate-text-reveal delay-100 text-muted-foreground">Start Enjoying Your Content.</span>
+        <span class="block animate-text-reveal delay-100 text-muted-foreground">{content.title2}</span>
       </span>
     </h1>
 
     <!-- Subtitle -->
     <p class="animate-fade-up delay-500 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-      ReplayGlowz gives you complete control over your YouTube experience. Organize videos into thematic playlists, manage subscriptions your way, and watch what you want&mdash;without algorithmic interference.
+      {content.subtitle}
     </p>
 
     <!-- CTAs -->
@@ -38,23 +61,27 @@ import Testimonials from './Testimonials.astro'
         href={appSignInRedirectUrl('/videos')}
         class="shimmer-btn marketing-cta-solid marketing-cta-shadow-soft inline-flex items-center gap-2 rounded-full px-8 h-12 text-base font-medium transition-colors"
       >
-        Start Organizing for Free
+        {content.cta}
         <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </a>
       <a
-        href="#features"
+        href="#workflow"
         class="inline-flex items-center rounded-full px-8 h-12 text-base font-medium border border-border text-muted-foreground hover:bg-card hover:text-foreground bg-transparent transition-colors"
       >
-        See How It Works
+        {content.secondaryCta}
       </a>
     </div>
 
     <!-- Social Proof -->
     <div class="animate-fade-up delay-700 flex flex-col items-center gap-4">
       <p class="text-sm text-muted-foreground">
-        Trusted by <span class="text-foreground font-medium">2,000+</span> users worldwide
+        {content.socialProof}
       </p>
-      <Testimonials />
+      <Testimonials
+        items={[...testimonials]}
+        ariaLabel={testimonialLabel}
+        ratingLabel={ratingLabel}
+      />
     </div>
   </div>
 </section>

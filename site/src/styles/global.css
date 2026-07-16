@@ -396,7 +396,6 @@
 .testimonial-rail__track {
   display: flex;
   width: max-content;
-  animation: marquee var(--motion-duration-marquee) var(--motion-ease-linear) infinite;
 }
 .testimonial-rail__set {
   display: flex;
@@ -405,10 +404,6 @@
 }
 .testimonial-rail__card {
   width: var(--testimonial-rail-card-width);
-}
-.testimonial-rail:hover .testimonial-rail__track,
-.testimonial-rail:focus-within .testimonial-rail__track {
-  animation-play-state: paused;
 }
 
 /* Scroll-triggered reveal animations */
@@ -485,7 +480,6 @@
     scroll-snap-type: inline proximity;
     scrollbar-width: thin;
   }
-  .testimonial-rail__track { animation: none; }
   .testimonial-rail__set--duplicate { display: none; }
   .testimonial-rail__card { scroll-snap-align: start; }
 }

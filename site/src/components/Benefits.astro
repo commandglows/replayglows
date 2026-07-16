@@ -1,42 +1,35 @@
 ---
-const benefits = [
-  {
-    title: 'Timestamped Notes',
-    description: 'Click any note to jump to that exact moment in the video. No more scrubbing through hours of content.',
-    icon: '⏱️',
-  },
-  {
-    title: 'Searchable Knowledge Base',
-    description: 'Every video you watch becomes part of a searchable library. Find any insight across all your notes instantly.',
-    icon: '🔍',
-  },
-  {
-    title: 'Distraction-Free Learning',
-    description: 'No ads, no recommendations rabbit holes — just you, the video, and your learning goals.',
-    icon: '🎯',
-  },
-  {
-    title: 'AI-Powered Summaries',
-    description: 'Get automatic summaries of video content so you can review key points without rewatching.',
-    icon: '🤖',
-  },
-]
+interface Props {
+  content: {
+    label: string
+    title: string
+    intro: string
+    items: readonly {
+      title: string
+      desc: string
+      icon: string
+    }[]
+  }
+}
+
+const { content } = Astro.props
 ---
 
 <section id="benefits" class="py-16 sm:py-24 bg-card">
   <div class="max-w-6xl mx-auto px-4">
     <div class="text-center mb-12 sm:mb-16" data-reveal>
-      <p class="animate-fade-up text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">Benefits</p>
+      <p class="animate-fade-up text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">{content.label}</p>
       <h2
         class="animate-fade-up delay-100 text-3xl sm:text-4xl font-bold text-foreground"
         style="font-family: var(--font-instrument-sans);"
       >
-        Why Choose ReplayGlowz
+        {content.title}
       </h2>
+      <p class="animate-fade-up delay-200 text-lg text-muted-foreground max-w-3xl mx-auto mt-4 leading-relaxed">{content.intro}</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4" data-reveal>
-      {benefits.map((benefit, index) => (
+      {content.items.map((benefit, index) => (
         <div
           class={`animate-fade-up delay-${(index + 1) * 100} group h-full flex flex-col items-center text-center marketing-card marketing-card--hover-border bg-background border-border`}
         >
@@ -44,7 +37,7 @@ const benefits = [
             {benefit.icon}
           </span>
           <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">{benefit.title}</h3>
-          <p class="text-base text-muted-foreground leading-relaxed">{benefit.description}</p>
+          <p class="text-base text-muted-foreground leading-relaxed">{benefit.desc}</p>
         </div>
       ))}
     </div>

@@ -2,7 +2,16 @@
 import Layout from '../../layouts/Layout.astro'
 import { getTranslations } from '../../i18n'
 import { appSignInRedirectUrl } from '../../config/site'
-import Testimonials from '../../components/Testimonials.astro'
+import Hero from '../../components/Hero.astro'
+import ProblemSection from '../../components/ProblemSection.astro'
+import SolutionSection from '../../components/SolutionSection.astro'
+import ProductProof from '../../components/ProductProof.astro'
+import ComparisonSection from '../../components/ComparisonSection.astro'
+import FinalCTA from '../../components/FinalCTA.astro'
+import Benefits from '../../components/Benefits.astro'
+import BentoGrid from '../../components/BentoGrid.astro'
+import FocusSection from '../../components/FocusSection.astro'
+import ClosingCTA from '../../components/ClosingCTA.astro'
 
 const t = getTranslations('fr')
 const appUrlValue = appSignInRedirectUrl('/videos')
@@ -83,108 +92,16 @@ const appUrlValue = appSignInRedirectUrl('/videos')
       })
     </script>
 
-    <!-- Hero -->
-    <section class="relative flex flex-col items-center justify-center px-4 pt-32 pb-20 overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-b from-background via-background to-card pointer-events-none"></div>
-      <div class="absolute top-1/4 left-1/2 -translate-x-1/2 site-hero-glow bg-foreground/5 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="relative z-10 w-full max-w-5xl mx-auto text-center">
-        <div class="animate-fade-up delay-200 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border mb-8">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-glow"></span>
-          <span class="text-sm text-muted-foreground">{t.hero.badge}</span>
-        </div>
-        <h1 class="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6" style="font-family: var(--font-cal-sans);">
-          <span class="block overflow-hidden"><span class="block animate-text-reveal">{t.hero.title1}</span></span>
-          <span class="block overflow-hidden"><span class="block animate-text-reveal delay-100 text-muted-foreground">{t.hero.title2}</span></span>
-        </h1>
-        <p class="animate-fade-up delay-500 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">{t.hero.subtitle}</p>
-        <div class="animate-fade-up delay-600 flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-          <a href={appUrlValue} class="shimmer-btn inline-flex items-center gap-2 marketing-cta-solid marketing-cta-shadow-soft rounded-full px-8 h-12 text-base font-medium transition-colors">
-            {t.hero.cta}
-            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </a>
-          <a href="#features" class="inline-flex items-center rounded-full px-8 h-12 text-base font-medium border border-border text-muted-foreground hover:bg-card hover:text-foreground transition-colors">{t.hero.secondaryCta}</a>
-        </div>
-        <div class="animate-fade-up delay-700 flex flex-col items-center gap-4">
-          <p class="text-sm text-muted-foreground">{t.hero.socialProof.replace('{count}', '2,000')}</p>
-          <Testimonials
-            items={t.testimonials.items}
-            ariaLabel={t.testimonials.title}
-            ratingLabel="{rating} étoiles sur 5"
-          />
-        </div>
-      </div>
-    </section>
-
-    <!-- Problem -->
-    <section class="py-16 sm:py-24 bg-card">
-      <div class="max-w-6xl mx-auto px-4">
-        <div class="text-center mb-12 sm:mb-16"><h2 class="text-3xl sm:text-4xl font-bold text-foreground" style="font-family: var(--font-instrument-sans);">{t.problem.title}</h2></div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {t.problem.items.map(p => (
-            <div class={`group marketing-card marketing-card--hover-border bg-background border-border ${p.wide ? 'md:col-span-2' : ''}`}>
-              <div class="flex items-center gap-3 mb-4"><span class="text-3xl sm:text-4xl">{p.icon}</span><h3 class="text-xl sm:text-2xl font-semibold text-foreground">{p.title}</h3></div>
-              <p class="text-base text-muted-foreground leading-relaxed">{p.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <!-- Solution -->
-    <section class="py-16 sm:py-24 bg-background">
-      <div class="max-w-6xl mx-auto px-4">
-        <div class="text-center mb-12 sm:mb-16"><h2 class="text-3xl sm:text-4xl font-bold text-foreground" style="font-family: var(--font-instrument-sans);">{t.solution.title}</h2></div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {t.solution.items.map(s => (
-            <div class="group marketing-card marketing-card--hover-border bg-card border-border text-center">
-              <span class="text-4xl sm:text-5xl block mb-4">{s.icon}</span>
-              <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">{s.title}</h3>
-              <p class="text-base text-muted-foreground leading-relaxed">{s.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <!-- Benefits -->
-    <section id="benefits" class="py-16 sm:py-24 bg-card">
-      <div class="max-w-6xl mx-auto px-4">
-        <div class="text-center mb-12 sm:mb-16">
-          <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">{t.benefits.label}</p>
-          <h2 class="text-3xl sm:text-4xl font-bold text-foreground" style="font-family: var(--font-instrument-sans);">{t.benefits.title}</h2>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          {t.benefits.items.map(b => (
-            <div class="group marketing-card marketing-card--hover-border h-full flex flex-col items-center text-center bg-background border-border">
-              <span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">{b.icon}</span>
-              <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">{b.title}</h3>
-              <p class="text-base text-muted-foreground leading-relaxed">{b.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <!-- Features -->
-    <section id="features" class="py-16 sm:py-24 bg-background">
-      <div class="max-w-6xl mx-auto px-4">
-        <div class="text-center mb-12 sm:mb-16">
-          <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">{t.features.label}</p>
-          <h2 class="text-3xl sm:text-4xl font-bold text-foreground" style="font-family: var(--font-instrument-sans);">{t.features.title}</h2>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {t.features.items.map(f => (
-            <div class="group marketing-card marketing-card--hover-border h-full flex flex-col items-center text-center bg-card border-border">
-              <span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">{f.icon}</span>
-              <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">{f.title}</h3>
-              <p class="text-base text-muted-foreground mb-4 leading-relaxed">{f.desc}</p>
-              {f.badges && <div class="flex flex-wrap items-center justify-center gap-2 mb-4">{f.badges.map(b => <span class="px-2 py-1 text-xs bg-muted rounded text-muted-foreground">{b}</span>)}</div>}
-              <span class="mt-auto inline-block bg-foreground/10 text-foreground rounded-full px-3 py-1 text-sm">{f.tag}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+    <Hero
+      content={t.hero}
+      testimonials={t.testimonials.items}
+      testimonialLabel={t.testimonials.title}
+      ratingLabel="{rating} étoiles sur 5"
+    />
+    <ProblemSection content={t.problem} />
+    <SolutionSection content={t.solution} />
+    <ProductProof content={t.productProof} />
+    <ComparisonSection content={t.comparison} />
 
     <!-- Pricing -->
     <section id="pricing" class="py-16 sm:py-24 bg-background">
@@ -214,33 +131,11 @@ const appUrlValue = appSignInRedirectUrl('/videos')
       </div>
     </section>
 
-    <!-- Final CTA -->
-    <section class="py-16 sm:py-24 bg-background">
-      <div class="max-w-4xl mx-auto px-4 text-center">
-        <h2 class="text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 tracking-tight" style="font-family: var(--font-cal-sans);">{t.finalCta.title}</h2>
-        <p class="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">{t.finalCta.subtitle}</p>
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a href={appUrlValue} class="shimmer-btn inline-flex items-center gap-2 marketing-cta-solid marketing-cta-shadow-strong rounded-full px-8 h-14 text-base font-medium transition-colors">
-            {t.finalCta.cta}
-            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </a>
-          <a href="#features" class="inline-flex items-center rounded-full px-8 h-14 text-base font-medium border border-border text-muted-foreground hover:bg-card hover:text-foreground transition-colors">{t.finalCta.secondaryCta}</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Newsletter -->
-    <section class="py-16 sm:py-24 bg-background">
-      <div class="max-w-2xl mx-auto px-4 text-center">
-        <h2 class="text-2xl sm:text-3xl font-bold text-foreground mb-4" style="font-family: var(--font-instrument-sans);">{t.newsletter.title}</h2>
-        <p class="text-muted-foreground mb-8">{t.newsletter.subtitle}</p>
-        <form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-          <input type="email" placeholder={t.newsletter.placeholder} required class="flex-1 px-4 py-3 rounded-full bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20 text-sm" />
-          <button type="submit" class="shimmer-btn marketing-cta-solid rounded-full px-6 py-3 text-sm font-medium transition-colors">{t.newsletter.subscribe}</button>
-        </form>
-        <p class="mt-4 text-xs text-muted-foreground">{t.newsletter.noSpam}</p>
-      </div>
-    </section>
+    <FinalCTA content={t.finalCta} />
+    <Benefits content={t.benefits} />
+    <BentoGrid content={t.features} />
+    <FocusSection content={t.focus} />
+    <ClosingCTA content={t.closingCta} />
 
     <!-- Footer -->
     <footer class="border-t border-border bg-background">

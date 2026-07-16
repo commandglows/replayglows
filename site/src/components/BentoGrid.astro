@@ -1,77 +1,38 @@
+---
+interface Props {
+  content: {
+    label: string
+    title: string
+    items: readonly {
+      icon: string
+      title: string
+      desc: string
+      tag: string
+    }[]
+  }
+}
+
+const { content } = Astro.props
+---
+
 <section id="features" class="py-16 sm:py-24 bg-background">
   <div class="max-w-6xl mx-auto px-4">
     <div class="text-center mb-12 sm:mb-16" data-reveal>
-      <p class="animate-fade-up text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">Features</p>
+      <p class="animate-fade-up text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">{content.label}</p>
       <h2 class="animate-fade-up delay-100 text-3xl sm:text-4xl font-bold text-foreground mb-4" style="font-family: var(--font-instrument-sans);">
-        Everything You Need, Nothing You Don't
+        {content.title}
       </h2>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-reveal>
-      <!-- Smart Organization -->
-      <div class="animate-fade-up group h-full flex flex-col items-center text-center marketing-card marketing-card--hover-border bg-card border-border">
-        <span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">🗂️</span>
-        <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">Smart Organization</h3>
-        <p class="text-base text-muted-foreground mb-4 leading-relaxed">
-          Organize videos by theme, topic, or mood. Build your own learning paths, entertainment queues, or inspiration libraries.
-        </p>
-        <span class="mt-auto inline-block bg-foreground/10 text-foreground rounded-full px-3 py-1 text-sm">Find what you need in seconds</span>
-      </div>
-
-      <!-- Feed Sources -->
-      <div class="animate-fade-up delay-100 group h-full flex flex-col items-center text-center marketing-card marketing-card--hover-border bg-card border-border">
-        <span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">📡</span>
-        <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">Feed Sources</h3>
-        <p class="text-base text-muted-foreground mb-4 leading-relaxed">
-          Build focused feeds from playlists, channels, or all subscriptions as a source, then switch the main feed to the views you actually want.
-        </p>
-        <span class="mt-auto inline-block bg-foreground/10 text-foreground rounded-full px-3 py-1 text-sm">Choose the sources that matter</span>
-      </div>
-
-      <!-- Intelligent Search -->
-      <div class="animate-fade-up delay-200 group h-full flex flex-col items-center text-center marketing-card marketing-card--hover-border bg-card border-border">
-        <span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">🔍</span>
-        <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">Intelligent Search</h3>
-        <p class="text-base text-muted-foreground mb-4 leading-relaxed">
-          Search across all your saved content, playlists, and subscriptions. Filter by duration, date, channel, or custom tags.
-        </p>
-        <span class="mt-auto inline-block bg-foreground/10 text-foreground rounded-full px-3 py-1 text-sm">Your content library, searchable</span>
-      </div>
-
-      <!-- Distraction-Free Viewing -->
-      <div class="animate-fade-up delay-300 group h-full flex flex-col items-center text-center marketing-card marketing-card--hover-border bg-card border-border">
-        <span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">🎯</span>
-        <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">Distraction-Free Viewing</h3>
-        <p class="text-base text-muted-foreground mb-4 leading-relaxed">
-          No suggested videos pulling you away. No autoplay to random content. Just your curated playlists and intentional viewing.
-        </p>
-        <span class="mt-auto inline-block bg-foreground/10 text-foreground rounded-full px-3 py-1 text-sm">Reclaim your time and focus</span>
-      </div>
-
-      <!-- Cross-Device Sync -->
-      <div class="animate-fade-up delay-400 group h-full flex flex-col items-center text-center marketing-card marketing-card--hover-border bg-card border-border">
-        <span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">🔄</span>
-        <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">Cross-Device Sync</h3>
-        <p class="text-base text-muted-foreground mb-4 leading-relaxed">
-          Your playlists, feeds, watch history, and preferences sync across devices. Web playback depends on the browser today; native apps are the path toward watching anywhere, anytime.
-        </p>
-        <span class="mt-auto inline-block bg-foreground/10 text-foreground rounded-full px-3 py-1 text-sm">Watch anywhere, anytime</span>
-      </div>
-
-      <!-- Privacy-First -->
-      <div class="animate-fade-up delay-500 group h-full flex flex-col items-center text-center marketing-card marketing-card--hover-border bg-card border-border">
-        <span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">🔒</span>
-        <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">Privacy-First</h3>
-        <p class="text-base text-muted-foreground mb-4 leading-relaxed">
-          We don't track your viewing habits for advertising. No data selling. No creepy recommendations. Just a tool that works for you.
-        </p>
-        <div class="flex flex-wrap items-center justify-center gap-2 mb-4">
-          <span class="px-2 py-1 text-xs bg-muted rounded text-muted-foreground">SOC2</span>
-          <span class="px-2 py-1 text-xs bg-muted rounded text-muted-foreground">GDPR</span>
-          <span class="px-2 py-1 text-xs bg-muted rounded text-muted-foreground">E2E</span>
+      {content.items.map((feature, index) => (
+        <div class={`animate-fade-up delay-${index * 100} group h-full flex flex-col items-center text-center marketing-card marketing-card--hover-border bg-card border-border`}>
+          <span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">{feature.icon}</span>
+          <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">{feature.title}</h3>
+          <p class="text-base text-muted-foreground mb-4 leading-relaxed">{feature.desc}</p>
+          <span class="mt-auto inline-block bg-foreground/10 text-foreground rounded-full px-3 py-1 text-sm">{feature.tag}</span>
         </div>
-        <span class="mt-auto inline-block bg-foreground/10 text-foreground rounded-full px-3 py-1 text-sm">Watch with peace of mind</span>
-      </div>
+      ))}
     </div>
   </div>
 </section>
