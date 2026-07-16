@@ -110,17 +110,12 @@
   --marketing-cta-shadow-soft: 0 10px 15px -3px rgba(255, 255, 255, 0.1);
   --marketing-cta-shadow-strong: 0 10px 30px -10px rgba(255, 255, 255, 0.2);
   --marketing-shimmer-highlight: rgba(255, 255, 255, 0.1);
-  --marketing-chart-stroke: #fff;
-  --marketing-chart-area-end: 0;
-
   --marketing-card-padding: 1.5rem;
   --marketing-card-scale: 1.02;
   --marketing-card-radius: var(--radius-2xl);
   --marketing-card-hover-border: color-mix(in oklab, var(--foreground) 25%, transparent);
   --marketing-card-transition: 0.3s;
   --marketing-card-transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --marketing-card-kicker: 0.625rem;
-  --marketing-bento-preview-width: 16.25rem;
   --marketing-card-border-width: 1px;
   --marketing-card-glow-offset-path: rect(0 100% 100% 0 round 16px);
 
@@ -128,7 +123,6 @@
   --motion-duration-shimmer: 3s;
   --motion-duration-pulse-glow: 2s;
   --motion-duration-marquee: 30s;
-  --motion-duration-draw-line: 2s;
   --motion-duration-fade-up: 0.6s;
   --motion-duration-fade-up-slow: 0.8s;
   --motion-duration-text-reveal: 0.8s;
@@ -246,10 +240,6 @@
   @apply inline-flex items-center gap-2;
 }
 
-.marketing-card-kicker {
-  font-size: var(--marketing-card-kicker);
-}
-
 .site-shell-header {
   position: fixed;
   top: var(--site-shell-offset);
@@ -334,16 +324,6 @@
   box-shadow: var(--marketing-cta-shadow-strong);
 }
 
-.marketing-chart-gradient-line {
-  stop-color: currentColor;
-  stroke: currentColor;
-}
-
-.marketing-bento-preview {
-  width: var(--marketing-bento-preview-width);
-  flex-shrink: 0;
-}
-
 .marketing-card-glow {
   offset-path: var(--marketing-card-glow-offset-path);
 }
@@ -401,16 +381,6 @@
 }
 .animate-marquee {
   animation: marquee var(--motion-duration-marquee) var(--motion-ease-linear) infinite;
-}
-
-/* Draw line animation for charts */
-@keyframes draw-line {
-  to { stroke-dashoffset: 0; }
-}
-.draw-line {
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  animation: draw-line var(--motion-duration-draw-line) ease-out forwards;
 }
 
 /* Scroll-triggered reveal animations */

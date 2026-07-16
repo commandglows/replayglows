@@ -48,12 +48,12 @@ export default {
     label: 'Fonctionnalités',
     title: 'Tout ce dont tu as besoin, rien de superflu',
     items: [
-      { title: 'Organisation intelligente', desc: "Organise tes vidéos par thème, sujet ou humeur. Construis tes propres parcours d'apprentissage.", tag: "Trouve ce qu'il te faut en secondes", wide: true },
-      { title: 'Sources de feed', desc: 'Crée des feeds ciblés depuis des playlists, des chaînes ou tous tes abonnements comme source, puis affiche les vues qui comptent vraiment.', tag: 'Choisis les sources importantes' },
-      { title: 'Recherche intelligente', desc: 'Recherche dans tout ton contenu, playlists et abonnements. Filtre par durée, date, chaîne ou tags.', tag: 'Ta bibliothèque, cherchable', kbd: true },
-      { title: 'Visionnage sans distraction', desc: 'Pas de vidéos suggérées. Pas de lecture automatique aléatoire. Juste tes playlists sélectionnées.', tag: 'Reprends le contrôle de ton temps' },
-      { title: 'Synchronisation multi-appareils', desc: "Tes playlists, feeds, historique et préférences se synchronisent entre tes appareils. Sur le web, la lecture dépend encore du navigateur ; les apps natives sont la voie vers le vrai visionnage partout, tout le temps.", tag: 'Regarder partout, tout le temps', chart: true },
-      { title: "Vie privée d'abord", desc: "Nous ne suivons pas tes habitudes pour la publicité. Pas de vente de données. Juste un outil qui travaille pour toi.", tag: "Regarde l'esprit tranquille", badges: ['SOC2', 'GDPR', 'E2E'] },
+      { icon: '\uD83D\uDDC2\uFE0F', title: 'Organisation intelligente', desc: "Organise tes vidéos par thème, sujet ou humeur. Construis tes propres parcours d'apprentissage.", tag: "Trouve ce qu'il te faut en secondes" },
+      { icon: '\uD83D\uDCE1', title: 'Sources de feed', desc: 'Crée des feeds ciblés depuis des playlists, des chaînes ou tous tes abonnements comme source, puis affiche les vues qui comptent vraiment.', tag: 'Choisis les sources importantes' },
+      { icon: '\uD83D\uDD0D', title: 'Recherche intelligente', desc: 'Recherche dans tout ton contenu, playlists et abonnements. Filtre par durée, date, chaîne ou tags.', tag: 'Ta bibliothèque, cherchable' },
+      { icon: '\uD83C\uDFAF', title: 'Visionnage sans distraction', desc: 'Pas de vidéos suggérées. Pas de lecture automatique aléatoire. Juste tes playlists sélectionnées.', tag: 'Reprends le contrôle de ton temps' },
+      { icon: '\uD83D\uDD04', title: 'Synchronisation multi-appareils', desc: "Tes playlists, feeds, historique et préférences se synchronisent entre tes appareils. Sur le web, la lecture dépend encore du navigateur ; les apps natives sont la voie vers le vrai visionnage partout, tout le temps.", tag: 'Regarder partout, tout le temps' },
+      { icon: '\uD83D\uDD12', title: "Vie privée d'abord", desc: "Nous ne suivons pas tes habitudes pour la publicité. Pas de vente de données. Juste un outil qui travaille pour toi.", tag: "Regarde l'esprit tranquille", badges: ['SOC2', 'GDPR', 'E2E'] },
     ],
   },
   testimonials: {

@@ -35,7 +35,7 @@ const appUrlValue = appSignInRedirectUrl('/videos')
         </div>
         <div class="hidden md:flex items-center gap-3">
           <a href="/" class="text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-2" title="English version">EN</a>
-          <a href={appUrlValue} class="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2">{t.nav.signIn}</a>
+          <a href={appUrlValue} class="whitespace-nowrap text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2">{t.nav.signIn}</a>
           <a href={appUrlValue} class="shimmer-btn marketing-cta-solid rounded-full px-4 py-2 text-sm font-medium transition-colors">{t.nav.getStarted}</a>
         </div>
         <button id="fr-mobile-menu-btn" class="md:hidden p-2 text-muted-foreground hover:text-foreground" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="fr-mobile-menu">
@@ -154,11 +154,12 @@ const appUrlValue = appSignInRedirectUrl('/videos')
           <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">{t.benefits.label}</p>
           <h2 class="text-3xl sm:text-4xl font-bold text-foreground" style="font-family: var(--font-instrument-sans);">{t.benefits.title}</h2>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {t.benefits.items.map(b => (
-            <div class="group marketing-card marketing-card--hover-border flex gap-4 sm:gap-6 items-center bg-background border-border">
-              <div class="shrink-0 bg-muted rounded-lg p-3 text-3xl">{b.icon}</div>
-              <div><h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-2">{b.title}</h3><p class="text-base text-muted-foreground leading-relaxed">{b.desc}</p></div>
+            <div class="group marketing-card marketing-card--hover-border h-full flex flex-col items-center text-center bg-background border-border">
+              <span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">{b.icon}</span>
+              <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">{b.title}</h3>
+              <p class="text-base text-muted-foreground leading-relaxed">{b.desc}</p>
             </div>
           ))}
         </div>
@@ -174,11 +175,12 @@ const appUrlValue = appSignInRedirectUrl('/videos')
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {t.features.items.map(f => (
-            <div class={`group marketing-card marketing-card--hover-border bg-card border-border ${f.wide ? 'md:col-span-2' : ''}`}>
-              <h3 class="text-lg sm:text-xl font-semibold text-foreground mb-2">{f.title}</h3>
-              <p class="text-sm text-muted-foreground mb-4 leading-relaxed">{f.desc}</p>
-              {f.badges && <div class="flex items-center gap-2 mb-4">{f.badges.map(b => <span class="px-2 py-1 text-xs bg-muted rounded text-muted-foreground">{b}</span>)}</div>}
-              <span class="inline-block bg-foreground/10 text-foreground rounded-full px-3 py-1 text-sm">{f.tag}</span>
+            <div class="group marketing-card marketing-card--hover-border h-full flex flex-col items-center text-center bg-card border-border">
+              <span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">{f.icon}</span>
+              <h3 class="text-xl sm:text-2xl font-semibold text-foreground mb-3">{f.title}</h3>
+              <p class="text-base text-muted-foreground mb-4 leading-relaxed">{f.desc}</p>
+              {f.badges && <div class="flex flex-wrap items-center justify-center gap-2 mb-4">{f.badges.map(b => <span class="px-2 py-1 text-xs bg-muted rounded text-muted-foreground">{b}</span>)}</div>}
+              <span class="mt-auto inline-block bg-foreground/10 text-foreground rounded-full px-3 py-1 text-sm">{f.tag}</span>
             </div>
           ))}
         </div>
