@@ -118,6 +118,8 @@
   --marketing-card-transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --marketing-card-border-width: 1px;
   --marketing-card-glow-offset-path: rect(0 100% 100% 0 round 16px);
+  --testimonial-rail-card-width: 20rem;
+  --testimonial-rail-gap: 1rem;
 
   --motion-duration-border-beam: 8s;
   --motion-duration-shimmer: 3s;
@@ -383,6 +385,32 @@
   animation: marquee var(--motion-duration-marquee) var(--motion-ease-linear) infinite;
 }
 
+.testimonial-rail {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+}
+.testimonial-rail::-webkit-scrollbar {
+  display: none;
+}
+.testimonial-rail__track {
+  display: flex;
+  width: max-content;
+  animation: marquee var(--motion-duration-marquee) var(--motion-ease-linear) infinite;
+}
+.testimonial-rail__set {
+  display: flex;
+  gap: var(--testimonial-rail-gap);
+  padding-inline-end: var(--testimonial-rail-gap);
+}
+.testimonial-rail__card {
+  width: var(--testimonial-rail-card-width);
+}
+.testimonial-rail:hover .testimonial-rail__track,
+.testimonial-rail:focus-within .testimonial-rail__track {
+  animation-play-state: paused;
+}
+
 /* Scroll-triggered reveal animations */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(var(--motion-fade-up-offset)); }
@@ -453,6 +481,13 @@
   }
   [data-reveal] { opacity: 1; }
   .animate-marquee { animation: none; }
+  .testimonial-rail {
+    scroll-snap-type: inline proximity;
+    scrollbar-width: thin;
+  }
+  .testimonial-rail__track { animation: none; }
+  .testimonial-rail__set--duplicate { display: none; }
+  .testimonial-rail__card { scroll-snap-align: start; }
 }
 
 /* Blog prose */

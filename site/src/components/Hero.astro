@@ -1,5 +1,6 @@
 ---
 import { appSignInRedirectUrl } from '../config/site'
+import Testimonials from './Testimonials.astro'
 ---
 
 <section class="relative flex flex-col items-center justify-center px-4 pt-32 pb-20 overflow-hidden">
@@ -9,7 +10,7 @@ import { appSignInRedirectUrl } from '../config/site'
   <!-- Subtle radial glow -->
   <div class="absolute top-1/4 left-1/2 -translate-x-1/2 site-hero-glow bg-foreground/5 rounded-full blur-3xl pointer-events-none"></div>
 
-  <div class="relative z-10 max-w-5xl mx-auto text-center">
+  <div class="relative z-10 w-full max-w-5xl mx-auto text-center">
     <!-- Badge -->
     <div class="animate-fade-up delay-200 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border mb-8">
       <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-glow"></span>
@@ -50,18 +51,10 @@ import { appSignInRedirectUrl } from '../config/site'
 
     <!-- Social Proof -->
     <div class="animate-fade-up delay-700 flex flex-col items-center gap-4">
-      <div class="flex items-center -space-x-3">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div class={`animate-scale-in delay-${700 + i * 100}`}>
-            <div class="w-10 h-10 rounded-full border-2 border-background bg-gradient-to-br from-foreground/20 to-foreground/5 flex items-center justify-center text-xs font-medium text-foreground/60">
-              {String.fromCharCode(64 + i)}
-            </div>
-          </div>
-        ))}
-      </div>
       <p class="text-sm text-muted-foreground">
         Trusted by <span class="text-foreground font-medium">2,000+</span> users worldwide
       </p>
+      <Testimonials />
     </div>
   </div>
 </section>

@@ -28,7 +28,7 @@ evidence:
   - "src/pages/index.astro"
   - "src/pages/fr/index.astro"
   - "/home/claude/shipflow/skills/references/sentry-observability.md"
-next_step: "npm run build"
+next_step: "pnpm build"
 ---
 
 # AGENT
@@ -81,9 +81,9 @@ This repository is the public marketing site for ReplayGlowz. It is an Astro sit
 
 ## Commands
 
-- `npm run dev`: local development
-- `npm run build`: production build
-- `npm run preview`: local preview of the build
+- `pnpm dev`: local development
+- `pnpm build`: production build
+- `pnpm preview`: local preview of the build
 
 ## Known risks for future agents
 

@@ -1,11 +1,24 @@
 ---
-const testimonials = [
+interface Testimonial {
+  rating?: number
+  review: string
+  name: string
+  designation: string
+  featured?: boolean
+}
+
+interface Props {
+  items?: Testimonial[]
+  ariaLabel?: string
+  ratingLabel?: string
+}
+
+const defaultTestimonials: Testimonial[] = [
   {
     rating: 5,
     review: 'Great note-taking application! The AI features make note-taking a breeze.',
     name: 'Ryan Lowry',
     designation: 'Engineer & Author',
-    featured: false,
   },
   {
     rating: 5,
@@ -19,62 +32,68 @@ const testimonials = [
     review: 'Simply brilliant! ReplayGlowz has elevated my productivity.',
     name: 'Moe Partuj',
     designation: 'Student',
-    featured: false,
   },
 ]
+
+const {
+  items = defaultTestimonials,
+  ariaLabel = 'User testimonials',
+  ratingLabel = '{rating} out of 5 stars',
+} = Astro.props
 ---
 
-<section id="reviews" class="py-16 sm:py-24 bg-card">
-  <div class="max-w-6xl mx-auto px-4">
-    <div class="text-center mb-12 sm:mb-16" data-reveal>
-      <p class="animate-fade-up text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">Reviews</p>
-      <h2
-        class="animate-fade-up delay-100 text-3xl sm:text-4xl font-bold text-foreground"
-        style="font-family: var(--font-instrument-sans);"
+<div
+  class="testimonial-rail w-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+  role="region"
+  aria-label={ariaLabel}
+  tabindex="0"
+>
+  <div class="testimonial-rail__track">
+    {[false, true].map((isDuplicate) => (
+      <div
+        class={`testimonial-rail__set ${isDuplicate ? 'testimonial-rail__set--duplicate' : ''}`}
+        role={isDuplicate ? undefined : 'list'}
+        aria-hidden={isDuplicate ? 'true' : undefined}
       >
-        User Testimonials
-      </h2>
-    </div>
+        {items.map((item) => {
+          const rating = item.rating ?? 5
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" data-reveal>
-      {testimonials.map((item, index) => (
-        <div
-          class={`animate-fade-up delay-${(index + 1) * 100} marketing-card ${
-            item.featured
-              ? 'bg-background border-border'
-              : 'bg-background/50 border-border marketing-card--hover-border'
-          }`}
-        >
-          {item.featured && (
-            <div class="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+          return (
+            <article
+              class={`testimonial-rail__card marketing-card flex shrink-0 flex-col text-left border-border ${
+                item.featured ? 'bg-background' : 'bg-background/70'
+              }`}
+              role={isDuplicate ? undefined : 'listitem'}
+            >
               <div
-                class="absolute w-24 h-24 bg-white/20 blur-xl border-beam marketing-card-glow"
-              ></div>
-            </div>
-          )}
+                class="mb-4 flex gap-1"
+                role={isDuplicate ? undefined : 'img'}
+                aria-label={isDuplicate ? undefined : ratingLabel.replace('{rating}', String(rating))}
+              >
+                {Array.from({ length: rating }).map(() => (
+                  <svg class="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                ))}
+              </div>
 
-          <!-- Stars -->
-          <div class="flex gap-1 mb-4" role="img" aria-label={`${item.rating} out of 5 stars`}>
-            {Array.from({ length: item.rating }).map(() => (
-              <svg class="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            ))}
-          </div>
+              <blockquote class="mb-6 flex-1 leading-relaxed text-foreground">
+                &ldquo;{item.review}&rdquo;
+              </blockquote>
 
-          <blockquote class="text-foreground mb-6 leading-relaxed">
-            &ldquo;{item.review}&rdquo;
-          </blockquote>
-
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full border border-border bg-gradient-to-br from-foreground/20 to-foreground/5 flex items-center justify-center text-xs font-medium text-foreground/60">
-              {item.name[0]}
-            </div>
-            <div>
-              <p class="font-medium text-foreground text-sm">{item.name}</p>
-              <p class="text-xs text-muted-foreground">{item.designation}</p>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-gradient-to-br from-foreground/20 to-foreground/5 text-xs font-medium text-foreground/60" aria-hidden="true">
+                  {item.name[0]}
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-foreground">{item.name}</p>
+                  <p class="text-xs text-muted-foreground">{item.designation}</p>
+                </div>
+              </div>
+            </article>
+          )
+        })}
+      </div>
+    ))}
   </div>
-</section>
+</div>

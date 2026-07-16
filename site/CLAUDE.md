@@ -13,11 +13,13 @@ This file provides guidance to coding agents working in this repository.
 
 ## Commands
 
-- `npm install` - install dependencies
-- `npm run dev` - start the Astro dev server
-- `npm run build` - create the production build
-- `npm run preview` - preview the built site
-- `npm run astro -- --help` - access Astro CLI help
+Use Node.js 24.18.0 (pinned in `.nvmrc`).
+
+- `pnpm install` - install dependencies
+- `pnpm dev` - start the Astro dev server
+- `pnpm build` - create the production build
+- `pnpm preview` - preview the built site
+- `pnpm astro -- --help` - access Astro CLI help
 
 ## Architecture
 
