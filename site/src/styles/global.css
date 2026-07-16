@@ -427,8 +427,8 @@
   to { transform: translateY(0); }
 }
 @keyframes slide-down {
-  from { transform: translateY(var(--motion-slide-down-offset)); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { transform: translateX(var(--site-shell-center-translate-x)) translateY(var(--motion-slide-down-offset)); opacity: 0; }
+  to { transform: translateX(var(--site-shell-center-translate-x)) translateY(0); opacity: 1; }
 }
 @keyframes scale-in {
   from { opacity: 0; transform: scale(var(--motion-scale-in-start)) translateX(var(--motion-scale-in-offset-x)); }

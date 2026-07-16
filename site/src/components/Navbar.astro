@@ -54,12 +54,12 @@ const navItems = [
     <button
       id="mobile-menu-btn"
       class="md:hidden p-2 text-muted-foreground hover:text-foreground"
-      aria-label="Toggle menu"
+      aria-label="Open menu"
       aria-expanded="false"
       aria-controls="mobile-menu"
     >
-      <svg class="w-5 h-5 menu-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-      <svg class="w-5 h-5 close-icon hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      <svg class="w-5 h-5 menu-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+      <svg class="w-5 h-5 close-icon hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </button>
   </nav>
 
@@ -87,20 +87,30 @@ const navItems = [
   const menuIcon = btn.querySelector('.menu-icon')!
   const closeIcon = btn.querySelector('.close-icon')!
 
+  const setMenuOpen = (isOpen: boolean, restoreFocus = false) => {
+    menu.classList.toggle('hidden', !isOpen)
+    menuIcon.classList.toggle('hidden', isOpen)
+    closeIcon.classList.toggle('hidden', !isOpen)
+    btn.setAttribute('aria-expanded', String(isOpen))
+    btn.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu')
+
+    if (restoreFocus) btn.focus()
+  }
+
   btn.addEventListener('click', () => {
-    const isOpen = !menu.classList.contains('hidden')
-    menu.classList.toggle('hidden')
-    menuIcon.classList.toggle('hidden')
-    closeIcon.classList.toggle('hidden')
-    btn.setAttribute('aria-expanded', String(!isOpen))
+    setMenuOpen(menu.classList.contains('hidden'))
   })
 
-  menu.querySelectorAll('.mobile-nav-link').forEach((link) => {
+  menu.querySelectorAll('a').forEach((link) => {
     link.addEventListener('click', () => {
-      menu.classList.add('hidden')
-      menuIcon.classList.remove('hidden')
-      closeIcon.classList.add('hidden')
+      setMenuOpen(false)
     })
+  })
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !menu.classList.contains('hidden')) {
+      setMenuOpen(false, true)
+    }
   })
 
   // Navbar hover pill

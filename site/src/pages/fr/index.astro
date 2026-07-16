@@ -38,7 +38,7 @@ const appUrlValue = appSignInRedirectUrl('/videos')
           <a href={appUrlValue} class="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2">{t.nav.signIn}</a>
           <a href={appUrlValue} class="shimmer-btn marketing-cta-solid rounded-full px-4 py-2 text-sm font-medium transition-colors">{t.nav.getStarted}</a>
         </div>
-        <button id="fr-mobile-menu-btn" class="md:hidden p-2 text-muted-foreground hover:text-foreground" aria-label="Menu" aria-expanded="false" aria-controls="fr-mobile-menu">
+        <button id="fr-mobile-menu-btn" class="md:hidden p-2 text-muted-foreground hover:text-foreground" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="fr-mobile-menu">
           <svg class="w-5 h-5 fr-menu-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
           <svg class="w-5 h-5 fr-close-icon hidden" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
@@ -58,19 +58,30 @@ const appUrlValue = appSignInRedirectUrl('/videos')
     <script>
       const btn = document.getElementById('fr-mobile-menu-btn')!
       const menu = document.getElementById('fr-mobile-menu')!
+
+      const setMenuOpen = (isOpen: boolean, restoreFocus = false) => {
+        menu.classList.toggle('hidden', !isOpen)
+        btn.querySelector('.fr-menu-icon')!.classList.toggle('hidden', isOpen)
+        btn.querySelector('.fr-close-icon')!.classList.toggle('hidden', !isOpen)
+        btn.setAttribute('aria-expanded', String(isOpen))
+        btn.setAttribute('aria-label', isOpen ? 'Fermer le menu' : 'Ouvrir le menu')
+
+        if (restoreFocus) btn.focus()
+      }
+
       btn.addEventListener('click', () => {
-        const isOpen = !menu.classList.contains('hidden')
-        menu.classList.toggle('hidden')
-        btn.querySelector('.fr-menu-icon')!.classList.toggle('hidden')
-        btn.querySelector('.fr-close-icon')!.classList.toggle('hidden')
-        btn.setAttribute('aria-expanded', String(!isOpen))
+        setMenuOpen(menu.classList.contains('hidden'))
       })
-      menu.querySelectorAll('.fr-mobile-link').forEach(l => l.addEventListener('click', () => {
-        menu.classList.add('hidden')
-        btn.querySelector('.fr-menu-icon')!.classList.remove('hidden')
-        btn.querySelector('.fr-close-icon')!.classList.add('hidden')
-        btn.setAttribute('aria-expanded', 'false')
+
+      menu.querySelectorAll('a').forEach(l => l.addEventListener('click', () => {
+        setMenuOpen(false)
       }))
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !menu.classList.contains('hidden')) {
+          setMenuOpen(false, true)
+        }
+      })
     </script>
 
     <!-- Hero -->
