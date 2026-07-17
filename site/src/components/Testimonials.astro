@@ -55,6 +55,7 @@ const {
         data-testimonial-set
         role={isDuplicate ? undefined : 'list'}
         aria-hidden={isDuplicate ? 'true' : undefined}
+        inert={isDuplicate ? true : undefined}
       >
         {items.map((item) => {
           const rating = item.rating ?? 5
@@ -101,7 +102,6 @@ const {
 
 <script>
   const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-  const boundaryTolerancePx = 1
 
   const motionDurationMs = () => {
     const value = getComputedStyle(document.documentElement)
@@ -122,6 +122,7 @@ const {
 
     let loopWidth = 0
     let previousFrame = performance.now()
+    let animationFrame: number | undefined
     const duration = motionDurationMs()
     const pauseReasons = new Set<string>()
 
@@ -136,42 +137,69 @@ const {
       const maximumScroll = rail.scrollWidth - rail.clientWidth
       const rightBoundary = Math.min(loopWidth * 2, maximumScroll)
 
-      if (rail.scrollLeft >= rightBoundary - boundaryTolerancePx) {
+      if (rail.scrollLeft >= rightBoundary) {
         rail.scrollLeft -= loopWidth
-      } else if (rail.scrollLeft <= boundaryTolerancePx) {
+      } else if (rail.scrollLeft <= 0) {
         rail.scrollLeft += loopWidth
       }
+    }
+
+    const canAnimate = () => (
+      !document.hidden
+      && pauseReasons.size === 0
+      && loopWidth > 0
+      && duration > 0
+    )
+
+    const stopAnimation = () => {
+      if (animationFrame === undefined) return
+      cancelAnimationFrame(animationFrame)
+      animationFrame = undefined
+    }
+
+    const scheduleAnimation = (resetClock = false) => {
+      if (animationFrame !== undefined || !canAnimate()) return
+      if (resetClock) previousFrame = performance.now()
+      animationFrame = requestAnimationFrame(animate)
+    }
+
+    const syncAnimation = () => {
+      if (canAnimate()) scheduleAnimation(true)
+      else stopAnimation()
     }
 
     const setPaused = (reason: string, paused: boolean) => {
       if (paused) pauseReasons.add(reason)
       else pauseReasons.delete(reason)
+      syncAnimation()
     }
 
     rail.addEventListener('scroll', normalizeScrollPosition, { passive: true })
     rail.addEventListener('mouseenter', () => setPaused('hover', true))
     rail.addEventListener('mouseleave', () => setPaused('hover', false))
-    rail.addEventListener('focus', () => setPaused('focus', true))
-    rail.addEventListener('blur', () => setPaused('focus', false))
+    rail.addEventListener('focusin', () => setPaused('focus', true))
+    rail.addEventListener('focusout', (event) => {
+      const nextTarget = event.relatedTarget
+      if (!(nextTarget instanceof Node) || !rail.contains(nextTarget)) {
+        setPaused('focus', false)
+      }
+    })
     rail.addEventListener('pointerdown', () => setPaused('pointer', true))
     window.addEventListener('pointerup', () => setPaused('pointer', false))
     window.addEventListener('pointercancel', () => setPaused('pointer', false))
 
-    const animate = (currentFrame: number) => {
+    function animate(currentFrame: number) {
+      animationFrame = undefined
+      if (!canAnimate()) return
+
       const elapsed = currentFrame - previousFrame
       previousFrame = currentFrame
-
-      if (!document.hidden && pauseReasons.size === 0 && loopWidth > 0 && duration > 0) {
-        rail.scrollLeft += loopWidth * (elapsed / duration)
-        normalizeScrollPosition()
-      }
-
-      requestAnimationFrame(animate)
+      rail.scrollLeft += loopWidth * (elapsed / duration)
+      normalizeScrollPosition()
+      scheduleAnimation()
     }
 
-    document.addEventListener('visibilitychange', () => {
-      previousFrame = performance.now()
-    })
+    document.addEventListener('visibilitychange', syncAnimation)
 
     const syncReducedMotion = () => {
       setPaused('reduced-motion', reducedMotionQuery.matches)
@@ -180,7 +208,12 @@ const {
 
     reducedMotionQuery.addEventListener('change', syncReducedMotion)
     syncReducedMotion()
-    if ('ResizeObserver' in window) new ResizeObserver(resetToCanonicalSet).observe(rail)
-    requestAnimationFrame(animate)
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(() => {
+        resetToCanonicalSet()
+        syncAnimation()
+      }).observe(rail)
+    }
+    syncAnimation()
   })
 </script>

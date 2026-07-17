@@ -5,8 +5,8 @@ artifact_version: "1.0.0"
 project: "replayglowz"
 created: "2026-07-16"
 created_at: "2026-07-16 18:56:30 UTC"
-updated: "2026-07-16"
-updated_at: "2026-07-16 19:07:51 UTC"
+updated: "2026-07-17"
+updated_at: "2026-07-17 08:34:05 UTC"
 status: ready
 source_skill: 100-sg-spec
 source_model: "GPT-5 Codex"
@@ -58,7 +58,7 @@ Rebuild ReplayGlowz Landing Narrative And Deep-Dive Flow
 
 ## Status
 
-Implemented locally. Structural, claim-safety, pricing non-regression, production-build, rendered-order, and design-system checks pass; authoritative responsive and motion proof remains assigned to the matching Vercel preview.
+Implemented locally. The bilingual copywriting review gives every section a distinct persuasion role, and testimonial review text now uses operator-requested Lorem ipsum placeholders without changing identities, ratings, cards, or rail behavior. Pricing remains unchanged. Structural, claim-safety, pricing non-regression, production-build, rendered-order, and design-system checks pass; authoritative responsive and motion proof remains assigned to the matching Vercel preview.
 
 ## User Story
 
@@ -106,13 +106,14 @@ Create a two-level homepage. The first level is a conversion narrative: learning
 - Repositioning the existing Benefits and Features sections after Pricing and the first CTA.
 - Rewriting Benefits/Features copy only where required to remove generic, AI, privacy-certification, or unsupported claims and reduce duplication.
 - A post-feature attention-control punchline and compact final CTA.
+- Operator-requested Lorem ipsum placeholder review text in both locales while preserving testimonial identities, ratings, cards, and rail behavior.
 - Removal of Newsletter from the homepage assembly only.
 - Shared Astro components or typed props when they reduce EN/FR structural drift without changing Pricing.
 
 ## Scope Out
 
 - No changes to Pricing plans, prices, alignment, toggle behavior, markup contract, or conversion destination.
-- No edits to testimonial identities, ratings, or review text in this chantier; testimonial claim provenance remains a separate review need.
+- No edits to testimonial identities or ratings; review text is explicitly non-final placeholder content.
 - No changes to product app behavior, backend, authentication, data, entitlements, or APIs.
 - No newsletter backend or blog/footer newsletter redesign.
 - No new dependencies, image-generation assets, analytics, or form handling.
@@ -152,7 +153,7 @@ Create a two-level homepage. The first level is a conversion narrative: learning
 ## Invariants
 
 - Pricing content and behavior remain unchanged.
-- Testimonial card content remains unchanged, and the rail remains directly beneath the hero.
+- Testimonial identities and ratings remain unchanged; review text uses explicit Lorem ipsum placeholders, and the rail remains directly beneath the hero.
 - All conversion links continue to use the canonical app URL helper.
 - Canonical, `hreflang`, Open Graph, JSON-LD, and page-language metadata remain intact.
 - The learning workflow is the primary promise; algorithm control is a secondary benefit.
@@ -170,6 +171,49 @@ Create a two-level homepage. The first level is a conversion narrative: learning
 ## Documentation Coherence
 
 The homepage itself is the public documentation surface being changed. No README, feature docs, pricing docs, or product behavior docs change because the implementation aligns the site to the already reviewed product and GTM contracts. This spec records the new public narrative and proof obligations.
+
+### Copywriting Review — 2026-07-17
+
+- Intended buyer: an individual who uses YouTube to learn, research, teach, or return to useful explanations and is frustrated by disconnected notes and lost source context.
+- Funnel position: homepage bridge from problem-aware to solution-aware, with a product-led app CTA after mechanism, objection handling, and offer visibility.
+- Awareness path: lost idea -> repeatable workflow -> timestamp/context mechanism -> YouTube-plus-notes objection -> Pricing -> action -> optional capability deep dive.
+- Inspiration Gate: the private inspiration index was unavailable, so no external reference was selected or loaded; decisions use only ReplayGlowz product, GTM, brand, and operator evidence.
+- Persuasion grades: persona alignment `A`; value proposition `A`; persuasion structure `A`; objections `A`; emotional path `A-`; CTA strategy `A`; journey coherence `A`.
+- Content-quality rubric: clarity `94`; structure `95`; source faithfulness `96`; compliance `94`; brand voice `93`; call to action `92`; weighted overall `94`; status `publishable with caveats`; confidence `0.90`.
+- Caveat: existing AI and cross-device wording inside Pricing remains outside this chantier by explicit invariant and still requires separate proof review. Testimonial review text is intentionally non-final placeholder content.
+
+#### Editorial Update Plan
+
+- Changed behavior or source: operator-requested copywriting refinement grounded in reviewed site product/GTM contracts and the canonical app product contract.
+- Impacted surface: English `/` and French `/fr/` homepage narrative, benefits/features summary, CTA copy, footer tagline, and homepage metadata.
+- Source of truth: `shipflow_data/product/app/product.md`, `shipflow_data/product/site/product.md`, `shipflow_data/gtm/site/gtm.md`, and `shipflow_data/branding/branding.md`.
+- Required action: update.
+- Reason: remove repeated generic benefit language and assign one persuasion job to each section.
+- Owner role: executor.
+- Parallel-safe: no; English and French meaning must remain synchronized.
+- Validation: bilingual rendered-heading review, claim scan, unchanged Pricing comparison, intentional testimonial-placeholder assertion, Astro build, and preview browser proof.
+- Closure status: complete locally; preview proof remains pending under the parent spec.
+
+#### Claim Impact Plan
+
+- Changed claim: qualitative promise that ReplayGlowz keeps YouTube videos, timestamped notes, and exact playback context connected for later retrieval.
+- Surface: English and French homepages.
+- Evidence checked: canonical app product contract, site product/GTM contracts, and editorial claim register.
+- Status: supported.
+- Required action: none for rewritten narrative sections; testimonial claims were removed through placeholders, while the separate proof caveat remains for untouched Pricing claims.
+
+#### Documentation Update Plan
+
+- Code changed: homepage locale copy and page metadata only.
+- Subsystem: Astro public site.
+- Primary technical doc: `shipflow_data/technical/site/architecture.md`.
+- Secondary docs: this active spec.
+- Required action: review primary doc; update this spec only.
+- Priority: low.
+- Reason: public wording and metadata changed, but product behavior, routing, APIs, build configuration, and component contracts did not.
+- Owner role: executor.
+- Parallel-safe: no.
+- Notes: documentation coherence is complete in this spec.
 
 ## Edge Cases
 
@@ -231,7 +275,7 @@ The homepage itself is the public documentation surface being changed. No README
 
 1. Diff the homepage/component/i18n scope and confirm Pricing sources/regions are unchanged.
 2. Assert section order and unique IDs in both locale sources.
-3. Scan homepage-owned copy for `2,000`, `AI`, `SOC2`, `E2E`, and unsupported guarantee language; manually classify unavoidable Pricing/Testimonial occurrences as out of this chantier.
+3. Scan homepage-owned copy for `2,000`, `AI`, `SOC2`, `E2E`, and unsupported guarantee language; assert testimonial review text is placeholder-only and classify unavoidable Pricing occurrences as out of this chantier.
 4. Run `(cd site && pnpm build)`.
 5. Run `python3 /home/claude/shipglowz/tools/design_system_drift_check.py --root /home/claude/replayglowz/site --changed --format markdown --max-findings 5000` after canonical tool preflight.
 6. After authorized ship and target discovery, run `108-sg-browser` at the required desktop, medium, and mobile viewports for `/` and `/fr/`, including accessibility/reduced-motion inspection.
@@ -251,7 +295,7 @@ The homepage itself is the public documentation surface being changed. No README
 - Implementation order: typed narrative props -> new shared sections -> safe bilingual copy -> EN assembly -> FR assembly -> source assertions -> build -> drift scan.
 - Reuse `.marketing-card`, existing reveal classes, existing section spacing, current CTA classes, and current responsive grid utilities; do not add packages or new animation primitives.
 - Preserve `Pricing.astro` byte-for-byte and preserve the French inline Pricing region structurally and textually.
-- Do not edit testimonial item content; only replace the unsupported numeric lead-in with a neutral statement.
+- Preserve testimonial identities, ratings, card structure, and rail behavior; review text is deliberately placeholder-only until final proof-backed testimonials are supplied.
 - Stop if implementation needs new raw design literals, changes Pricing, cannot keep locale parity, or exposes a claim that product contracts do not support.
 - Development mode is `vercel-preview-push`: local static proof is implementation evidence only; authoritative browser proof routes through `005-sg-ship -> 405-sg-prod -> 108-sg-browser`.
 - Fresh external docs verdict: not needed; no external framework/provider behavior changes.
@@ -268,6 +312,10 @@ None. The operator approved the learning-first plus anti-distraction hybrid posi
 | 2026-07-16 18:58:13 UTC | 101-sg-ready | GPT-5 Codex | Reviewed user-story fit, mandatory structure, product truth, claim boundaries, locale parity, pricing non-regression, accessibility, design-system authority, edge cases, and hosted proof routing. | Ready. | `/102-sg-start replayglowz-landing-narrative-and-deep-dive` |
 | 2026-07-16 19:07:51 UTC | 102-sg-start | GPT-5 Codex | Implemented the bilingual learning-first narrative, product proof, comparison, post-pricing deep dive, shared locale-driven components, and homepage newsletter removal while preserving Pricing and testimonial content. Ran rendered-order assertions, Pricing source comparison, Astro build, metadata lint, and design drift checks. | Implemented locally; preview responsive and motion proof remains pending. | `/103-sg-verify replayglowz-landing-narrative-and-deep-dive` |
 | 2026-07-16 19:13:39 UTC | 106-sg-fix | GPT-5 Codex | Diagnosed and repaired the testimonial rail's finite native-scroll endpoint by using one scroll coordinate system, triple buffering, and bidirectional position normalization. | Fix attempted locally; build and static checks pass, but preview interaction retest remains required. | `/005-sg-ship -> /405-sg-prod -> /107-sg-test --preview --retest BUG-2026-07-16-001` |
+| 2026-07-17 08:00:06 UTC | 103-sg-verify | GPT-5 Codex | Exercised the testimonial rail in local development and compiled-preview browsers at mobile, medium, and desktop widths across both locales; then strengthened animation scheduling, focus handling, and duplicate accessibility isolation and reran focused scenarios. | Partial: local browser, build, metadata, and design-system evidence pass; the declared development mode still requires matching Vercel preview proof for a verified verdict. | `/005-sg-ship -> /405-sg-prod -> /108-sg-browser` |
+| 2026-07-17 08:25:06 UTC | 009-sg-marketing | GPT-5 Codex | Audited persona fit, value proposition, persuasion sequence, objections, CTA strategy, claim safety, and bilingual journey coherence; rewrote the homepage narrative and metadata so each section has one distinct role while preserving Pricing and testimonial content. | Copywriting remediated locally; rubric 94/100, build/static proof and six local responsive browser scenarios pass; matching preview proof remains pending. | `/103-sg-verify replayglowz-landing-narrative-and-deep-dive` |
+| 2026-07-17 08:34:05 UTC | 007-sg-content | GPT-5 Codex | Routed and applied the operator-requested public testimonial placeholder update across both homepage locales. | Implemented locally; testimonial identities, ratings, cards, and rail behavior preserved. | `/103-sg-verify replayglowz-landing-narrative-and-deep-dive` |
+| 2026-07-17 08:34:05 UTC | 201-sg-enrich | GPT-5 Codex | Replaced the three testimonial review claims with matching Lorem ipsum placeholder copy in English and French. | Placeholder content applied; final testimonial copy remains intentionally unresolved. | `/103-sg-verify replayglowz-landing-narrative-and-deep-dive` |
 
 ## Current Chantier Flow
 
@@ -277,7 +325,10 @@ None. The operator approved the learning-first plus anti-distraction hybrid posi
 | 101-sg-ready | ready | Structural, adversarial, security, design-system, and proof-contract review passed. |
 | 102-sg-start | implemented | EN/FR narrative and deep-dive flow complete; local build, scope, claim, pricing, metadata, and drift evidence pass. |
 | 106-sg-fix | fix attempted | Testimonial rail loop repaired locally; hosted manual-scroll retest remains pending. |
-| 103-sg-verify | not started | Local contract verification can run; hosted responsive/motion proof remains preview-dependent. |
+| 103-sg-verify | partial | Testimonial loop behavior passes local browser checks at 1440, 768, and 390 pixels; full landing responsive and motion proof remains preview-dependent. |
+| 009-sg-marketing | remediated | Bilingual persuasion sequence, section roles, CTAs, and homepage metadata improved; six local responsive copy-rendering scenarios pass and the existing Pricing proof caveat remains explicitly out of scope. |
+| 007-sg-content | implemented | Testimonial review claims replaced by explicit bilingual Lorem ipsum placeholders. |
+| 201-sg-enrich | implemented | Placeholder text applied without changing testimonial identities, ratings, cards, or rail behavior. |
 | 104-sg-end | not started | Closure not started. |
 | 005-sg-ship | not started | No commit or push authorized in this workflow. |
 
