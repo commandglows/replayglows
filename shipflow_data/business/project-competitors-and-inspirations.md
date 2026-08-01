@@ -42,6 +42,10 @@ source_policy: "Track public sources only; do not copy private positioning, paid
 
 # Concurrents et inspirations — ReplayGlowz
 
+TODO
+
+https://appsumo.com/products/bookster/
+
 ## Lecture projet
 
 ReplayGlowz cible les workflows d'apprentissage vidéo: notes horodatées, playlists, transcriptions et synthèses. Les liens utiles concernent audio/voix, résumé, automatisation créateur et intelligence de contenu.
