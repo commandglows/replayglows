@@ -18,7 +18,7 @@ linked_systems:
   - "Convex"
   - "YouTube"
 depends_on:
-  - "shipflow_data/technical/lab/guidelines.md@1.0.0"
+  - "shipglows_data/technical/lab/guidelines.md@1.0.0"
 supersedes: []
 evidence:
   - "README.md"

@@ -8,7 +8,7 @@ Canonical monorepo for the ReplayGlowz product surfaces.
 - `backend` - product Convex backend
 - `site` - website
 - `lab` - backend and tooling
-- `shipflow_data` - governance, specs, research, audits, and trackers
+- `shipglows_data` - governance, specs, research, audits, and trackers
 
 ## Deployment Model
 

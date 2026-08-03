@@ -27,7 +27,7 @@ evidence:
   - "src/layouts/Layout.astro"
   - "src/pages/index.astro"
   - "src/pages/fr/index.astro"
-  - "/home/claude/shipflow/skills/references/sentry-observability.md"
+  - "/home/claude/shipglows/skills/references/sentry-observability.md"
 next_step: "pnpm build"
 ---
 

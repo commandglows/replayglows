@@ -19,8 +19,8 @@ linked_systems:
   - "site"
   - "lab"
 depends_on:
-  - "shipflow_data/technical/architecture.md"
-  - "shipflow_data/technical/guidelines.md"
+  - "shipglows_data/technical/architecture.md"
+  - "shipglows_data/technical/guidelines.md"
 supersedes: []
 evidence:
   - "README.md"
@@ -42,13 +42,13 @@ This repository is the canonical ReplayGlowz monorepo for the Flutter app, produ
 - `backend/`: ReplayGlowz product Convex backend for product data, YouTube tokens, preferences, playlists, transcripts, and product access snapshots.
 - `site/`: Astro public marketing site, blog, pricing, comparison, privacy, and terms pages.
 - `lab/`: FastAPI transcript worker and operational tooling.
-- `shipflow_data/`: monorepo-level governance contracts and documentation maps.
+- `shipglows_data/`: monorepo-level governance contracts and documentation maps.
 
 ## Working Rules
 
 - Treat subproject contracts as source evidence, not as files to rewrite casually from the root.
 - Keep product claims aligned with `app` contracts before changing public site copy.
-- Preserve Astro runtime content frontmatter in `site/src/content/**`; do not add ShipFlow metadata there unless `src/content.config.ts` is changed first.
+- Preserve Astro runtime content frontmatter in `site/src/content/**`; do not add ShipGlows metadata there unless `src/content.config.ts` is changed first.
 - Do not touch unrelated dirty files when updating docs.
 - Prefer canonical root surface names: `app/`, `backend/`, `site/`, `lab/`.
 - Prefer canonical root surface names: `app/`, `backend/`, `site/`, `lab/`.
@@ -64,8 +64,8 @@ Use focused checks from the changed subproject:
 (cd lab && python -m py_compile main.py server.py)
 ```
 
-Run ShipFlow metadata validation for governance docs:
+Run ShipGlows metadata validation for governance docs:
 
 ```bash
-/home/claude/shipflow/tools/shipflow_metadata_lint.py AGENT.md shipflow_data
+/home/claude/shipglows/tools/shipglows_metadata_lint.py AGENT.md shipglows_data
 ```

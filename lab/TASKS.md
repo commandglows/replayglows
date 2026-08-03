@@ -1,1 +1,1 @@
-/home/claude/shipflow_data/projects/tubeflow_lab/TASKS.md
+../shipglows_data/workflow/TASKS.md

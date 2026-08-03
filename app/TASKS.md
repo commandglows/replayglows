@@ -1,6 +1,6 @@
 # Tasks - app
 
-> Operational task records follow `/home/claude/shipflow/skills/references/operational-record-format.md`.
+> Operational task records follow `/home/claude/shipglows/skills/references/operational-record-format.md`.
 
 ---
 

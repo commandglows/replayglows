@@ -132,7 +132,7 @@ flox activate -- ./.venv/bin/python server.py
 
 The worker listens on `http://localhost:8090` by default.
 
-If you run it under PM2 / ShipFlow, the worker also accepts the generic `PORT`
+If you run it under PM2 / ShipGlows, the worker also accepts the generic `PORT`
 environment variable and can be started with:
 
 ```bash
@@ -284,7 +284,7 @@ At minimum, set:
 The provided PM2 config no longer requires Doppler. It loads `.env` directly if
 present and otherwise starts with defaults.
 
-### Publish through the existing Caddy / ShipFlow setup
+### Publish through the existing Caddy / ShipGlows setup
 
 Two workable options:
 
@@ -293,7 +293,7 @@ Two workable options:
 - subdomain-based:
   `https://transcript.your-domain`
 
-Path-based is the easiest if you want to reuse ShipFlow's current route model.
+Path-based is the easiest if you want to reuse the current ShipGlows route model.
 
 If you use the path-based route, set in Convex:
 

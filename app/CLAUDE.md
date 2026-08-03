@@ -26,9 +26,9 @@ supersedes:
 evidence:
   - "AGENT.md"
   - "README.md"
-  - "shipflow_data/technical/app/architecture.md"
+  - "shipglows_data/technical/app/architecture.md"
 next_review: "2026-07-25"
-next_step: "Keep this file aligned with AGENT.md and shipflow_data/technical/app/architecture.md when auth, entitlement, routing, or deployment contracts change."
+next_step: "Keep this file aligned with AGENT.md and shipglows_data/technical/app/architecture.md when auth, entitlement, routing, or deployment contracts change."
 ---
 
 # CLAUDE.md
