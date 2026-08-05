@@ -15,25 +15,25 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "vue": "3.3.4",
-    "tinykeys": "^1.4.0"
+    "tinykeys": "^1.4.0",
+    "vue": "3.3.4"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.260",
-    "@types/node": "^20.10.0",
-    "@typescript-eslint/eslint-plugin": "^6.13.0",
-    "@typescript-eslint/parser": "^6.13.0",
-    "@vitejs/plugin-vue": "^4.5.0",
-    "autoprefixer": "^10.4.20",
+    "@types/node": "^20.19.43",
+    "@typescript-eslint/eslint-plugin": "^8.66.0",
+    "@typescript-eslint/parser": "^8.66.0",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "autoprefixer": "^10.5.4",
     "concurrently": "^8.2.2",
-    "eslint": "^8.54.0",
-    "eslint-plugin-vue": "^9.18.1",
-    "postcss": "^8.4.49",
-    "prettier": "^3.4.2",
-    "prettier-plugin-tailwindcss": "^0.6.9",
-    "tailwindcss": "^3.4.14",
-    "typescript": "5.0.4",
-    "vite": "^5.0.0",
-    "vue-tsc": "1.6.5"
+    "eslint": "^8.57.1",
+    "eslint-plugin-vue": "^9.33.0",
+    "postcss": "^8.5.25",
+    "prettier": "^3.9.6",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "tailwindcss": "^3.4.19",
+    "typescript": "5.9.3",
+    "vite": "^6.4.3",
+    "vue-tsc": "3.3.9"
   }
 }
