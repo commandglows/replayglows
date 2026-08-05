@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
@@ -82,7 +83,7 @@ class _HiddenScreenState extends ConsumerState<HiddenScreen>
     return AppLoadingListSkeleton(
       itemCount: 3,
       itemBuilder: (context, index) => Card(
-        margin: const EdgeInsets.only(bottom: 8),
+        margin: const EdgeInsets.only(bottom: AppSpacing.xs),
         child: ListTile(
           leading: Container(
             width: 80,
@@ -118,22 +119,26 @@ class _HiddenScreenState extends ConsumerState<HiddenScreen>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       itemCount: hiddenVideos.length,
       itemBuilder: (context, index) {
         final item = hiddenVideos[index];
         return Card(
-          margin: const EdgeInsets.only(bottom: 8),
+          margin: const EdgeInsets.only(bottom: AppSpacing.xs),
           child: ListTile(
             leading: Container(
               width: 80,
               height: 45,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(4),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(AppRadii.sm),
               ),
-              child: const Center(
-                child: Icon(Icons.visibility_off, size: 24, color: Colors.grey),
+              child: Center(
+                child: Icon(
+                  Icons.visibility_off,
+                  size: AppSizes.iconMedium,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
             title: Text(
@@ -176,22 +181,26 @@ class _HiddenScreenState extends ConsumerState<HiddenScreen>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       itemCount: hiddenPlaylists.length,
       itemBuilder: (context, index) {
         final item = hiddenPlaylists[index];
         return Card(
-          margin: const EdgeInsets.only(bottom: 8),
+          margin: const EdgeInsets.only(bottom: AppSpacing.xs),
           child: ListTile(
             leading: Container(
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(8),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(AppRadii.md),
               ),
-              child: const Center(
-                child: Icon(Icons.playlist_play, size: 28, color: Colors.grey),
+              child: Center(
+                child: Icon(
+                  Icons.playlist_play,
+                  size: AppSizes.navigationIcon,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
             title: Text(

@@ -87,6 +87,7 @@ abstract final class AppTypography {
   static const bodyFont = 'Inter';
   static const headingFont = 'Instrument Sans';
   static const displayFont = 'DM Sans';
+  static const monospaceFont = 'monospace';
 
   static const displayLarge = 57.0;
   static const displayMedium = 45.0;
@@ -140,6 +141,8 @@ abstract final class AppSizes {
   static const iconLarge = 32.0;
   static const navigationIcon = 28.0;
   static const emptyStateIcon = 64.0;
+  static const compactProgress = 18.0;
+  static const authPanelMaxWidth = 520.0;
 }
 
 /// Central theme configuration for ReplayGlowz.

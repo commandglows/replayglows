@@ -15,7 +15,7 @@ class YoutubeConnectionLoadingState extends StatelessWidget {
     final theme = Theme.of(context);
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 460),
+        constraints: const BoxConstraints(maxWidth: AppSizes.authPanelMaxWidth),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Card(
@@ -27,7 +27,9 @@ class YoutubeConnectionLoadingState extends StatelessWidget {
                   const SizedBox(
                     width: 28,
                     height: 28,
-                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                    child: CircularProgressIndicator(
+                      strokeWidth: AppSpacing.xxxs,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md2 - AppSpacing.xxs),
                   Text(
@@ -76,7 +78,7 @@ class YoutubeConnectRequiredState extends ConsumerWidget {
     final theme = Theme.of(context);
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 460),
+        constraints: const BoxConstraints(maxWidth: AppSizes.authPanelMaxWidth),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Card(
@@ -90,13 +92,13 @@ class YoutubeConnectRequiredState extends ConsumerWidget {
                     width: 76,
                     height: 76,
                     decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(22),
+                      color: theme.colorScheme.errorContainer,
+                      borderRadius: BorderRadius.circular(AppRadii.xl),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.smart_display_rounded,
-                      size: 40,
-                      color: Colors.red,
+                      size: AppSizes.iconLarge,
+                      color: theme.colorScheme.onErrorContainer,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md2 - AppSpacing.xxs),
@@ -121,16 +123,21 @@ class YoutubeConnectRequiredState extends ConsumerWidget {
                     child: FilledButton.icon(
                       onPressed: () =>
                           startYoutubeConnectFlow(context, returnTo: returnTo),
-                      icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                      icon: const Icon(
+                        Icons.open_in_new_rounded,
+                        size: AppSizes.compactProgress,
+                      ),
                       label: Text(ctaLabel),
                       style: FilledButton.styleFrom(
-                        backgroundColor: Colors.red.shade600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: theme.colorScheme.error,
+                        foregroundColor: theme.colorScheme.onError,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.sm2,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     kIsWeb
                         ? 'ReplayGlowz redirects this tab to Google, then brings you back automatically after YouTube authorisation.'
@@ -251,7 +258,7 @@ class _YoutubeConnectionSettingsCardState
     final hasTokens = status?['hasTokens'] == true;
     final diagnosticsText = _formatYoutubeDiagnostics(status);
 
-    final accentColor = connected ? colorScheme.primary : Colors.red.shade600;
+    final accentColor = connected ? colorScheme.primary : colorScheme.error;
     final icon = connected
         ? Icons.check_circle_rounded
         : Icons.smart_display_rounded;
@@ -263,11 +270,16 @@ class _YoutubeConnectionSettingsCardState
         : 'Authorise Google once to import your playlists, watch queue, and future video syncs directly in ReplayGlowz.';
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        0,
+        AppSpacing.md,
+        AppSpacing.md,
+      ),
       child: Card(
         clipBehavior: Clip.antiAlias,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -279,11 +291,11 @@ class _YoutubeConnectionSettingsCardState
                     height: 44,
                     decoration: BoxDecoration(
                       color: accentColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppRadii.lg),
                     ),
                     child: Icon(icon, color: accentColor),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,7 +306,7 @@ class _YoutubeConnectionSettingsCardState
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.xxs),
                         Text(
                           description,
                           style: theme.textTheme.bodySmall?.copyWith(
@@ -308,16 +320,18 @@ class _YoutubeConnectionSettingsCardState
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: AppSpacing.sm2),
               if (statusAsync.isLoading && status == null)
                 const Row(
                   children: [
                     SizedBox(
                       width: 16,
                       height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: AppSpacing.xxxs,
+                      ),
                     ),
-                    SizedBox(width: 10),
+                    SizedBox(width: AppSpacing.xs + AppSpacing.xxxs),
                     Text('Checking YouTube connection...'),
                   ],
                 )
@@ -334,7 +348,7 @@ class _YoutubeConnectionSettingsCardState
                                 width: 16,
                                 height: 16,
                                 child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                                  strokeWidth: AppSpacing.xxxs,
                                 ),
                               )
                             : const Icon(Icons.open_in_new_rounded),
@@ -348,7 +362,7 @@ class _YoutubeConnectionSettingsCardState
                                 width: 16,
                                 height: 16,
                                 child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                                  strokeWidth: AppSpacing.xxxs,
                                 ),
                               )
                             : const Icon(Icons.sync_rounded),
@@ -370,13 +384,13 @@ class _YoutubeConnectionSettingsCardState
                   ],
                 ),
               if (connected || hasTokens) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.sm),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
                     color: colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppRadii.lg),
                   ),
                   child: Text(
                     connected
@@ -387,7 +401,7 @@ class _YoutubeConnectionSettingsCardState
                 ),
               ],
               if (_inlineError != null) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.sm),
                 InlineErrorCard(
                   error: _inlineError!,
                   prefix: 'YouTube action failed',
@@ -404,8 +418,16 @@ class _YoutubeConnectionSettingsCardState
                     horizontal: 12,
                     vertical: 4,
                   ),
-                  childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                  leading: const Icon(Icons.bug_report_outlined, size: 20),
+                  childrenPadding: const EdgeInsets.fromLTRB(
+                    AppSpacing.sm,
+                    0,
+                    AppSpacing.sm,
+                    AppSpacing.sm,
+                  ),
+                  leading: const Icon(
+                    Icons.bug_report_outlined,
+                    size: AppSpacing.md2,
+                  ),
                   title: const Text('YouTube diagnostics'),
                   subtitle: Text(
                     connected
@@ -426,7 +448,7 @@ class _YoutubeConnectionSettingsCardState
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.sm),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: OutlinedButton.icon(
@@ -479,7 +501,7 @@ class YoutubeAwareEmptyState extends ConsumerWidget {
           ? null
           : OutlinedButton.icon(
               onPressed: onRefresh,
-              icon: const Icon(Icons.refresh, size: 18),
+              icon: const Icon(Icons.refresh, size: AppSizes.compactProgress),
               label: const Text('Refresh'),
             ),
     );
@@ -496,7 +518,7 @@ class _ConnectYoutubeEmptyState extends ConsumerWidget {
     final theme = Theme.of(context);
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 460),
+        constraints: const BoxConstraints(maxWidth: AppSizes.authPanelMaxWidth),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
@@ -506,16 +528,16 @@ class _ConnectYoutubeEmptyState extends ConsumerWidget {
                 width: 78,
                 height: 78,
                 decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(22),
+                  color: theme.colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(AppRadii.xl),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.smart_display_rounded,
-                  size: 42,
-                  color: Colors.red,
+                  size: AppSizes.iconLarge,
+                  color: theme.colorScheme.onErrorContainer,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.md2),
               Text(
                 'Connect YouTube before you start',
                 style: theme.textTheme.titleLarge?.copyWith(
@@ -523,7 +545,7 @@ class _ConnectYoutubeEmptyState extends ConsumerWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.xs + AppSpacing.xxxs),
               Text(
                 'ReplayGlowz needs Google access once to import your playlists and keep your video library in sync.',
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -531,7 +553,7 @@ class _ConnectYoutubeEmptyState extends ConsumerWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: AppSpacing.md + AppSpacing.xxxs),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -542,20 +564,27 @@ class _ConnectYoutubeEmptyState extends ConsumerWidget {
                       ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: AppSpacing.xxxs,
+                          ),
                         )
-                      : const Icon(Icons.open_in_new_rounded, size: 18),
+                      : const Icon(
+                          Icons.open_in_new_rounded,
+                          size: AppSizes.compactProgress,
+                        ),
                   label: Text(
                     loading ? 'Checking status...' : 'Connect YouTube',
                   ),
                   style: FilledButton.styleFrom(
-                    backgroundColor: Colors.red.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: theme.colorScheme.error,
+                    foregroundColor: theme.colorScheme.onError,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.sm2,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 kIsWeb
                     ? 'ReplayGlowz redirects this tab to Google, then returns you to the same screen after YouTube authorisation.'
@@ -593,11 +622,15 @@ class _SimpleEmptyState extends StatelessWidget {
     final theme = Theme.of(context);
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: AppSizes.emptyStateIcon, color: Colors.grey),
+            Icon(
+              icon,
+              size: AppSizes.emptyStateIcon,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
             const SizedBox(height: AppSpacing.md),
             Text(
               title,

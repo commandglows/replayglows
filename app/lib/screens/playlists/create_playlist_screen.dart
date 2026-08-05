@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
 
@@ -51,10 +52,11 @@ class _CreatePlaylistScreenState extends ConsumerState<CreatePlaylistScreen> {
           TextButton(
             onPressed: _isSaving ? null : _handleSave,
             child: _isSaving
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                ? const SizedBox.square(
+                    dimension: AppSizes.iconSmall,
+                    child: CircularProgressIndicator(
+                      strokeWidth: AppSpacing.xxxs,
+                    ),
                   )
                 : const Text('Save'),
           ),
@@ -63,7 +65,7 @@ class _CreatePlaylistScreenState extends ConsumerState<CreatePlaylistScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.md),
           children: [
             // Name field
             TextFormField(
@@ -84,7 +86,7 @@ class _CreatePlaylistScreenState extends ConsumerState<CreatePlaylistScreen> {
               },
               textInputAction: TextInputAction.next,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
 
             // Description field
             TextFormField(
@@ -98,7 +100,7 @@ class _CreatePlaylistScreenState extends ConsumerState<CreatePlaylistScreen> {
               maxLines: 3,
               textInputAction: TextInputAction.done,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
 
             // Visibility toggle
             SwitchListTile(
@@ -112,55 +114,65 @@ class _CreatePlaylistScreenState extends ConsumerState<CreatePlaylistScreen> {
               },
               secondary: Icon(_isPublic ? Icons.public : Icons.lock),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
 
             // Color picker
             Text(
               'Playlist Color',
               style: Theme.of(context).textTheme.titleSmall,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             Wrap(
-              spacing: 12,
-              runSpacing: 12,
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
               children: _colorOptions.map((color) {
                 final isSelected = _selectedColor == color;
                 return GestureDetector(
                   onTap: () => setState(() => _selectedColor = color),
                   child: Container(
-                    width: 40,
-                    height: 40,
+                    width: AppSizes.minTouchTarget,
+                    height: AppSizes.minTouchTarget,
                     decoration: BoxDecoration(
                       color: color,
                       shape: BoxShape.circle,
                       border: isSelected
                           ? Border.all(
                               color: Theme.of(context).colorScheme.onSurface,
-                              width: 3,
+                              width: AppSpacing.xxxs,
                             )
                           : null,
                     ),
                     child: isSelected
-                        ? const Icon(Icons.check, color: Colors.white, size: 20)
+                        ? const Icon(
+                            Icons.check,
+                            color: AppColors.primaryForeground,
+                            size: AppSizes.iconMedium,
+                          )
                         : null,
                   ),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xl),
 
             // Preview card
             Text('Preview', style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xs),
             Card(
               clipBehavior: Clip.antiAlias,
               child: Row(
                 children: [
-                  Container(width: 4, height: 60, color: _selectedColor),
-                  const SizedBox(width: 12),
+                  Container(
+                    width: AppSpacing.xxs,
+                    height: 60,
+                    color: _selectedColor,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.xs,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

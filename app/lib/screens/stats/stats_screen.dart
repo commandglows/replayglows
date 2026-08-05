@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/providers/providers.dart';
 import 'package:replayglowz_app/widgets/error_feedback.dart';
 
@@ -38,17 +39,17 @@ class StatsScreen extends ConsumerWidget {
               (quotaData?['dailyHistory'] as List<dynamic>?) ?? [];
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.md),
             children: [
               _buildQuotaCard(context, usedQuota, totalQuota),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               _buildDailySummaryCard(context, quotaData, dailyHistory),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               _buildRecentCallsSection(context, recentCalls),
             ],
           );
         },
-        loading: () => _buildShimmerLoading(),
+        loading: () => _buildShimmerLoading(context),
         error: (error, stack) => ErrorStateView(
           error: error,
           prefix: 'Failed to load stats',
@@ -58,18 +59,19 @@ class StatsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildShimmerLoading() {
+  Widget _buildShimmerLoading(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: colorScheme.surfaceContainerHighest,
+      highlightColor: colorScheme.surface,
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          Card(child: Container(height: 100, color: Colors.white)),
-          const SizedBox(height: 16),
-          Card(child: Container(height: 200, color: Colors.white)),
-          const SizedBox(height: 16),
-          Card(child: Container(height: 300, color: Colors.white)),
+          Card(child: Container(height: 100, color: colorScheme.surface)),
+          const SizedBox(height: AppSpacing.md),
+          Card(child: Container(height: 200, color: colorScheme.surface)),
+          const SizedBox(height: AppSpacing.md),
+          Card(child: Container(height: 300, color: colorScheme.surface)),
         ],
       ),
     );
@@ -80,7 +82,7 @@ class StatsScreen extends ConsumerWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -99,26 +101,28 @@ class StatsScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppRadii.md),
               child: LinearProgressIndicator(
                 value: percentage.clamp(0.0, 1.0),
                 minHeight: 12,
-                backgroundColor: Colors.grey[200],
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest,
                 color: percentage > 0.8
-                    ? Colors.red
+                    ? Theme.of(context).colorScheme.error
                     : percentage > 0.5
-                    ? Colors.orange
-                    : Colors.green,
+                    ? Theme.of(context).colorScheme.tertiary
+                    : Theme.of(context).colorScheme.primary,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               '${(percentage * 100).toStringAsFixed(1)}% used today - resets at midnight PT',
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(color: Colors.grey),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -139,7 +143,7 @@ class StatsScreen extends ConsumerWidget {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -149,7 +153,7 @@ class StatsScreen extends ConsumerWidget {
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             Row(
               children: [
                 Expanded(
@@ -178,9 +182,9 @@ class StatsScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             Text('Last 7 Days', style: Theme.of(context).textTheme.labelMedium),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xs),
             SizedBox(
               height: 80,
               child: Row(
@@ -202,7 +206,9 @@ class StatsScreen extends ConsumerWidget {
 
                   return Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.xxxs,
+                      ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -215,16 +221,16 @@ class StatsScreen extends ConsumerWidget {
                                     context,
                                   ).colorScheme.primary.withValues(alpha: 0.6),
                                   borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(4),
+                                    top: Radius.circular(AppRadii.sm),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: AppSpacing.xxs),
                           Text(
                             ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index],
-                            style: const TextStyle(fontSize: 10),
+                            style: Theme.of(context).textTheme.labelSmall,
                           ),
                         ],
                       ),
@@ -247,8 +253,12 @@ class StatsScreen extends ConsumerWidget {
   }) {
     return Column(
       children: [
-        Icon(icon, size: 24, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(height: 4),
+        Icon(
+          icon,
+          size: AppSizes.iconMedium,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        const SizedBox(height: AppSpacing.xxs),
         Text(
           value,
           style: Theme.of(
@@ -257,9 +267,9 @@ class StatsScreen extends ConsumerWidget {
         ),
         Text(
           label,
-          style: Theme.of(
-            context,
-          ).textTheme.labelSmall?.copyWith(color: Colors.grey),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -271,7 +281,7 @@ class StatsScreen extends ConsumerWidget {
   ) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -281,22 +291,28 @@ class StatsScreen extends ConsumerWidget {
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             // Table header
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+              padding: const EdgeInsets.symmetric(
+                vertical: AppSpacing.xs,
+                horizontal: AppSpacing.xxs,
               ),
-              child: const Row(
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
+                ),
+              ),
+              child: Row(
                 children: [
                   Expanded(
                     flex: 2,
                     child: Text(
                       'Endpoint',
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -304,9 +320,8 @@ class StatsScreen extends ConsumerWidget {
                     flex: 2,
                     child: Text(
                       'Time',
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
                       ),
                     ),
                   ),
@@ -314,9 +329,8 @@ class StatsScreen extends ConsumerWidget {
                     flex: 1,
                     child: Text(
                       'Cost',
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
                       ),
                       textAlign: TextAlign.end,
                     ),
@@ -325,12 +339,14 @@ class StatsScreen extends ConsumerWidget {
               ),
             ),
             if (recentCalls.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(16),
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
                 child: Center(
                   child: Text(
                     'No recent API calls',
-                    style: TextStyle(color: Colors.grey),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               )
@@ -355,12 +371,14 @@ class StatsScreen extends ConsumerWidget {
 
                 return Container(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 4,
+                    vertical: AppSpacing.xs,
+                    horizontal: AppSpacing.xxs,
                   ),
                   decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: Colors.grey[200]!),
+                      bottom: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
                     ),
                   ),
                   child: Row(
@@ -369,28 +387,32 @@ class StatsScreen extends ConsumerWidget {
                         flex: 2,
                         child: Text(
                           endpoint,
-                          style: const TextStyle(fontSize: 12),
+                          style: Theme.of(context).textTheme.labelMedium,
                         ),
                       ),
                       Expanded(
                         flex: 2,
                         child: Text(
                           timeStr,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                         ),
                       ),
                       Expanded(
                         flex: 1,
                         child: Text(
                           '$cost units',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: cost >= 100 ? Colors.red : null,
-                          ),
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: cost >= 100
+                                    ? Theme.of(context).colorScheme.error
+                                    : null,
+                              ),
                           textAlign: TextAlign.end,
                         ),
                       ),

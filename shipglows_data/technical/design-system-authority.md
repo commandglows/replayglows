@@ -40,6 +40,7 @@ evidence:
   - "Baseline drift check: `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglowz/app --format markdown --warn-only --max-findings 5000` found 510 findings."
   - "Baseline drift check: `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglowz/site --format markdown --warn-only --max-findings 5000` found 70 findings."
   - "2026-08-05: App token authority expanded in `app/lib/app/theme.dart` with spacing, radii, typography, elevation, motion, breakpoints, and accessible size roles; current app drift scan remains 515 candidates pending widget migration."
+  - "2026-08-05: App screens and shared widgets migrated to consume the canonical token groups or Material theme roles; the full app drift scan fell from 515 to 131 documented functional candidates, with Flutter analysis and 49 tests passing."
 next_review: "2026-07-12"
 next_step: "run 503-sf-audit-design-tokens replayglowz"
 ---
@@ -98,6 +99,8 @@ The project must not introduce new visual literals directly in feature-level scr
 ## 5) Exception register (must be approved before merge)
 
 - `app/lib/utils/color_utils.dart`: user-provided playlist/feed colors are persisted as user data and are intentionally outside the shared design palette.
+- Media thumbnails, skeleton placeholders, charts, waveforms, and bounded player panels may retain named intrinsic dimensions when those values encode media ratios, data visualization geometry, or platform layout contracts rather than reusable visual styling.
+- YouTube iframe polling, pagination, debounce values, gesture thresholds, and player overlay black/white contrast values are behavioral or media-platform contracts, not design animation or palette tokens.
 - `site/dist/**` and generated build outputs: excluded from canonical design source.
 - Legacy inlined logo SVG icon fills (`#18181b`) are legacy assets pending centralization.
 - `site/src/styles/global.css` contains animation presets (durations, bezier curves, delays); these are foundational primitives and part of the canonical source.

@@ -157,7 +157,13 @@ class _SeekStepButton extends StatelessWidget {
     return _ControlFeedbackCell(
       tooltip: tooltip,
       onPressed: onPressed,
-      child: Center(child: Icon(icon, size: 24, color: colorScheme.primary)),
+      child: Center(
+        child: Icon(
+          icon,
+          size: AppSizes.iconMedium,
+          color: colorScheme.primary,
+        ),
+      ),
     );
   }
 }
@@ -210,7 +216,7 @@ class _ControlFeedbackCellState extends State<_ControlFeedbackCell> {
         ? colorScheme.primary.withValues(alpha: 0.22)
         : _hovered || _focused
         ? colorScheme.primary.withValues(alpha: 0.12)
-        : Colors.transparent;
+        : colorScheme.surface.withValues(alpha: 0);
 
     return Expanded(
       child: Tooltip(

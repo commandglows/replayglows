@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:replayglowz_app/app/router.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
@@ -48,7 +49,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
   static const _compactViewBreakpoint = 640.0;
   static const _filteredFeedPageSize = 60;
   static const _filteredFeedLoadMoreExtent = 960.0;
-  static const _watchTransitionDuration = Duration(milliseconds: 320);
+  static const _watchTransitionDuration = AppMotion.slow;
   static const _feedSnapAnimationDuration = Duration(milliseconds: 300);
   static const _feedSyncAnimationDuration = Duration(milliseconds: 360);
   static const _feedSlowSnapVelocity = 420.0;
@@ -297,10 +298,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       }
     });
     _persistLocalPrefs();
-    _clearWatchTransitionIds(
-      transitioningIds,
-      entering: nextIncludeWatched,
-    );
+    _clearWatchTransitionIds(transitioningIds, entering: nextIncludeWatched);
   }
 
   void _stageWatchStateTransition(
@@ -565,8 +563,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       _handledActiveVideoScrollToken = token;
       controller.animateTo(
         target,
-        duration: const Duration(milliseconds: 320),
-        curve: Curves.easeOutCubic,
+        duration: AppMotion.slow,
+        curve: AppMotion.curve,
       );
     });
   }
@@ -847,8 +845,8 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       controller
           .animateTo(
             preciseTarget,
-            duration: const Duration(milliseconds: 120),
-            curve: Curves.easeOut,
+            duration: AppMotion.fast,
+            curve: AppMotion.emphasizedCurve,
           )
           .whenComplete(_finishProgrammaticFeedScroll);
     });
@@ -932,7 +930,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
 
   void _scheduleFeedSnapAfterIdle(int tabIndex) {
     _feedSnapIdleTimer?.cancel();
-    _feedSnapIdleTimer = Timer(const Duration(milliseconds: 180), () {
+    _feedSnapIdleTimer = Timer(AppMotion.standard, () {
       if (!mounted ||
           _isAdjustingFeedScroll ||
           tabIndex != _tabController.index) {
@@ -1260,9 +1258,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
         ? ref.watch(watchedVideosProvider)
         : const AsyncValue<List<WatchedVideo>>.data(<WatchedVideo>[]);
     final watchedIds = _effectiveWatchedIds(
-      watchedAsync.asData?.value
-              .map((item) => item.youtubeVideoId)
-              .toSet() ??
+      watchedAsync.asData?.value.map((item) => item.youtubeVideoId).toSet() ??
           const <String>{},
     );
     final currentSourceVideos = videosAsync?.asData?.value == null
@@ -1452,7 +1448,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
 
               final body = videos.isEmpty
                   ? ListView(
-                      padding: const EdgeInsets.only(bottom: 24),
+                      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                       children: [
                         YouTubeChannelOnboardingCard(
                           onImported: _refreshVideos,
@@ -1541,7 +1537,12 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 children: [
                   if (_hasFeedFilters && filteredFeedErrors.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        AppSpacing.sm,
+                        AppSpacing.md,
+                        0,
+                      ),
                       child: Card(
                         child: ListTile(
                           leading: const Icon(Icons.warning_amber_rounded),
@@ -1569,7 +1570,12 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                     ),
                   if (_hasFeedFilters && isLoadingMoreFilteredFeeds)
                     const Padding(
-                      padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      padding: EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        AppSpacing.sm,
+                        AppSpacing.md,
+                        0,
+                      ),
                       child: LinearProgressIndicator(minHeight: 3),
                     ),
                   UiHintCard(
@@ -1694,7 +1700,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
       itemCount: 5,
       itemBuilder: (context, index) {
         return Card(
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1703,7 +1709,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 color: Theme.of(context).colorScheme.surface,
               ),
               Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppSpacing.sm),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1712,7 +1718,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                       width: 200,
                       color: Theme.of(context).colorScheme.surface,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.xs),
                     Container(
                       height: 12,
                       width: 120,
@@ -1843,9 +1849,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
             controller: _cardScrollController,
             key: const PageStorageKey('videos-card'),
             padding: EdgeInsets.fromLTRB(
-              16,
-              16,
-              16,
+              AppSpacing.md,
+              AppSpacing.md,
+              AppSpacing.md,
               _feedTrailingAlignmentPadding(constraints),
             ),
             itemCount: videos.length,
@@ -1929,9 +1935,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
             controller: _summaryScrollController,
             key: const PageStorageKey('videos-summary'),
             padding: EdgeInsets.fromLTRB(
-              16,
-              16,
-              16,
+              AppSpacing.md,
+              AppSpacing.md,
+              AppSpacing.md,
               _feedTrailingAlignmentPadding(constraints),
             ),
             itemCount: videos.length,
@@ -1948,15 +1954,15 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                 child: KeyedSubtree(
                   key: _feedItemKeyForTab(2, video),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutCubic,
-                    margin: const EdgeInsets.only(bottom: 12),
+                    duration: AppMotion.standard,
+                    curve: AppMotion.curve,
+                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppRadii.lg),
                       border: Border.all(
                         color: isActive
                             ? colorScheme.primary.withValues(alpha: 0.52)
-                            : Colors.transparent,
+                            : colorScheme.surface.withValues(alpha: 0),
                         width: 1.5,
                       ),
                       boxShadow: isActive
@@ -1984,19 +1990,19 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                           _openVideo(context, video.youtubeVideoId);
                         },
                         child: Padding(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(AppSpacing.sm),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               if (isActive) ...[
                                 _NowPlayingBadge(colorScheme: colorScheme),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: AppSpacing.xs),
                               ],
                               Text(
                                 video.title,
                                 style: theme.textTheme.titleSmall,
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: AppSpacing.xxs),
                               Text(
                                 video.description ??
                                     'No description available for this video.',
@@ -2004,19 +2010,25 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: AppSpacing.xs),
                               Row(
                                 children: [
-                                  const Icon(Icons.notes, size: 16),
-                                  const SizedBox(width: 4),
+                                  const Icon(
+                                    Icons.notes,
+                                    size: AppSizes.iconSmall,
+                                  ),
+                                  const SizedBox(width: AppSpacing.xxs),
                                   Text(
                                     '$noteCount note${noteCount == 1 ? '' : 's'}',
                                     style: theme.textTheme.labelSmall,
                                   ),
-                                  const SizedBox(width: 16),
+                                  const SizedBox(width: AppSpacing.md),
                                   if (durationSec != null) ...[
-                                    const Icon(Icons.schedule, size: 16),
-                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.schedule,
+                                      size: AppSizes.iconSmall,
+                                    ),
+                                    const SizedBox(width: AppSpacing.xxs),
                                     Text(
                                       formatDuration(durationSec),
                                       style: theme.textTheme.labelSmall,
@@ -2154,7 +2166,9 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
         try {
           final animateVisibility =
               !_includeWatched &&
-              sourceVideos.any((item) => item.youtubeVideoId == video.youtubeVideoId);
+              sourceVideos.any(
+                (item) => item.youtubeVideoId == video.youtubeVideoId,
+              );
           _stageWatchStateTransition(
             video.youtubeVideoId,
             watched: !isWatched,
@@ -2235,7 +2249,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
 
                   if (writablePlaylists.isEmpty) {
                     return const Padding(
-                      padding: EdgeInsets.all(24),
+                      padding: EdgeInsets.all(AppSpacing.lg),
                       child: AppEmptyState(
                         icon: Icons.playlist_add,
                         title: 'No playlists available',
@@ -2249,7 +2263,12 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                     shrinkWrap: true,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.lg,
+                          AppSpacing.xs,
+                          AppSpacing.lg,
+                          AppSpacing.sm,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -2257,7 +2276,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                               'Add to playlist',
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: AppSpacing.xs2),
                             const YoutubeQuotaCostText(
                               cost: YoutubeQuotaCost.addPlaylistItem,
                             ),
@@ -2281,11 +2300,11 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                   );
                 },
                 loading: () => const Padding(
-                  padding: EdgeInsets.all(24),
+                  padding: EdgeInsets.all(AppSpacing.lg),
                   child: Center(child: CircularProgressIndicator()),
                 ),
                 error: (error, stackTrace) => Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   child: ErrorStateView(
                     error: error,
                     prefix: 'Failed to load playlists',
@@ -2354,7 +2373,12 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
             return StatefulBuilder(
               builder: (context, setSheetState) {
                 return Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    0,
+                    AppSpacing.md,
+                    AppSpacing.md,
+                  ),
                   child: Column(
                     children: [
                       ListTile(
@@ -2414,7 +2438,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                             if (sortedFeeds.isEmpty)
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                                  vertical: AppSpacing.md,
                                 ),
                                 child: Text(
                                   t('p3.videos.noFeedFilterOptions', locale: l),
@@ -2424,7 +2448,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                           ],
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.sm),
                       Row(
                         children: [
                           Expanded(
@@ -2438,7 +2462,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: FilledButton.icon(
                               onPressed: () {
@@ -2482,7 +2506,7 @@ class _SortMenuItem extends PopupMenuItem<String> {
          child: Row(
            children: [
              Expanded(child: Text(label)),
-             if (selected) const Icon(Icons.check, size: 18),
+             if (selected) const Icon(Icons.check, size: AppSizes.iconSmall),
            ],
          ),
        );
@@ -2496,7 +2520,7 @@ class _NowPlayingBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconTheme(
-      data: IconThemeData(color: colorScheme.primary, size: 14),
+      data: IconThemeData(color: colorScheme.primary, size: AppSizes.iconSmall),
       child: DefaultTextStyle(
         style: Theme.of(context).textTheme.labelSmall!.copyWith(
           color: colorScheme.primary,
@@ -2506,7 +2530,7 @@ class _NowPlayingBadge extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.graphic_eq_rounded),
-            SizedBox(width: 4),
+            SizedBox(width: AppSpacing.xxs),
             Text('Now playing'),
           ],
         ),
@@ -2532,8 +2556,8 @@ class _VideoActionMenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 18),
-        const SizedBox(width: 12),
+        Icon(icon, size: AppSizes.iconSmall),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(child: Text(label)),
       ],
     );
@@ -2557,12 +2581,16 @@ class _ViewModeMenuItem extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(icon, size: 18),
-        const SizedBox(width: 10),
+        Icon(icon, size: AppSizes.iconSmall),
+        const SizedBox(width: AppSpacing.xs),
         Expanded(child: Text(label)),
         if (selected) ...[
-          const SizedBox(width: 12),
-          Icon(Icons.check_rounded, size: 18, color: theme.colorScheme.primary),
+          const SizedBox(width: AppSpacing.sm),
+          Icon(
+            Icons.check_rounded,
+            size: AppSizes.iconSmall,
+            color: theme.colorScheme.primary,
+          ),
         ],
       ],
     );

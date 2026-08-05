@@ -69,8 +69,8 @@ class _UiHintCardState extends State<UiHintCard> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(widget.icon, size: 20),
-            const SizedBox(width: 10),
+            Icon(widget.icon, size: AppSpacing.md2),
+            const SizedBox(width: AppSpacing.xs + AppSpacing.xxxs),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,7 +79,7 @@ class _UiHintCardState extends State<UiHintCard> {
                     widget.title,
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xxs),
                   Text(widget.message),
                   if (widget.actionLabel != null && widget.onAction != null)
                     Padding(

@@ -703,10 +703,10 @@ class _AppShellState extends ConsumerState<AppShell> {
               children: [
                 Icon(
                   Icons.play_circle_outline_rounded,
-                  size: 32,
+                  size: AppSizes.iconLarge,
                   color: colorScheme.primary,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.xs),
               ],
             ),
             destinations: [
@@ -817,7 +817,7 @@ class _PlaybackBarButton extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(icon, size: selected ? 34 : 28, color: color),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.xxs),
                     Text(
                       label,
                       maxLines: 1,
@@ -879,17 +879,20 @@ class _YoutubeQuotaSyncStrip extends ConsumerWidget {
           ? colorScheme.errorContainer
           : colorScheme.surfaceContainerHighest,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
         child: Row(
           children: [
             Icon(
               isThrottled ? Icons.warning_amber_rounded : Icons.speed_rounded,
-              size: 18,
+              size: AppSizes.compactProgress,
               color: isThrottled
                   ? colorScheme.onErrorContainer
                   : colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.xs),
             Expanded(
               child: Text(
                 [
@@ -911,7 +914,7 @@ class _YoutubeQuotaSyncStrip extends ConsumerWidget {
             if (isRunning)
               const SizedBox.square(
                 dimension: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                child: CircularProgressIndicator(strokeWidth: AppSpacing.xxxs),
               )
             else if (progress != null)
               SizedBox(
@@ -937,10 +940,10 @@ class _ProductAccessInactiveView extends ConsumerWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 620),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Card(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppSpacing.md2),
               child: statusAsync.when(
                 data: (status) {
                   final isNewAccount = status.reasonCode == 'account_not_found';
@@ -956,7 +959,7 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                                 : Icons.lock_outline,
                             color: theme.colorScheme.primary,
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: AppSpacing.sm),
                           Text(
                             isNewAccount
                                 ? 'Setting up your ReplayGlowz account'
@@ -967,7 +970,7 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
                         isNewAccount
                             ? 'Your sign-in worked. ReplayGlowz is creating your workspace and free access; retry in a moment if this message stays visible.'
@@ -975,11 +978,11 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                             ? 'Your account is valid, but it does not have active ReplayGlowz access yet.'
                             : 'ReplayGlowz could not confirm your product access for this account.',
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.md),
                       const _FreeTrialAccessSummary(),
                       if ((status.reasonCode ?? '').isNotEmpty &&
                           !isNewAccount) ...[
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.sm),
                         SelectableText(
                           'Reason: ${status.reasonCode}',
                           style: theme.textTheme.bodySmall?.copyWith(
@@ -987,7 +990,7 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.md),
                       Wrap(
                         spacing: 10,
                         runSpacing: 10,
@@ -1024,9 +1027,11 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                   children: [
                     SizedBox.square(
                       dimension: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: AppSpacing.xxxs,
+                      ),
                     ),
-                    SizedBox(width: 12),
+                    SizedBox(width: AppSpacing.sm),
                     Text('Checking product access…'),
                   ],
                 ),
@@ -1038,14 +1043,14 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                       'ReplayGlowz cannot verify product access right now.',
                       style: theme.textTheme.titleMedium,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.xs),
                     SelectableText(
                       '$error',
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontFamily: 'monospace',
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.md),
                     FilledButton.icon(
                       onPressed: () {
                         ref.invalidate(productAccessStatusProvider);
@@ -1075,11 +1080,11 @@ class _FreeTrialAccessSummary extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadii.md),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(AppSpacing.sm2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1087,14 +1092,14 @@ class _FreeTrialAccessSummary extends StatelessWidget {
               children: [
                 Icon(
                   Icons.workspace_premium_outlined,
-                  size: 18,
+                  size: AppSizes.compactProgress,
                   color: colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.xs),
                 Text('Free trial access', style: theme.textTheme.labelLarge),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.xs + AppSpacing.xxxs),
             const _TrialAccessRow(
               icon: Icons.video_library_outlined,
               text: 'Sync a starter YouTube library',
@@ -1112,7 +1117,7 @@ class _FreeTrialAccessSummary extends StatelessWidget {
               text:
                   'Quota placeholders: daily sync and playlist actions included while limits are finalized',
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               'Trial limits are placeholders during beta and may change before billing launches.',
               style: theme.textTheme.bodySmall?.copyWith(
@@ -1136,12 +1141,18 @@ class _TrialAccessRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme.onSurfaceVariant;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 7),
+      padding: const EdgeInsets.only(
+        bottom: AppSpacing.xs - AppSpacing.xxxs / 2,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 17, color: color),
-          const SizedBox(width: 8),
+          Icon(
+            icon,
+            size: AppSizes.iconSmall + AppSpacing.xxxs / 2,
+            color: color,
+          ),
+          const SizedBox(width: AppSpacing.xs),
           Expanded(child: Text(text)),
         ],
       ),

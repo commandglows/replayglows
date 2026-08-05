@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:replayglowz_app/app/build_info.dart';
 import 'package:replayglowz_app/app/router.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/auth/auth_state.dart';
 import 'package:replayglowz_app/auth/auth_service.dart';
 import 'package:replayglowz_app/utils/app_logger.dart';
@@ -57,21 +58,23 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
       appBar: AppBar(title: const Text('Sign in')),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
+          constraints: const BoxConstraints(
+            maxWidth: AppSizes.authPanelMaxWidth,
+          ),
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
                   Icons.play_circle_outline,
-                  size: 44,
+                  size: AppSizes.minTouchTarget,
                   color: theme.colorScheme.primary,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.md),
                 Text('ReplayGlowz', style: theme.textTheme.headlineMedium),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   'Create or sign in to your ReplayGlowz account to sync '
                   'videos, playlists, notes, and YouTube connection state.',
@@ -80,19 +83,19 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
                 if (authState case AuthUnauthenticated(
                   :final error,
                 ) when error != null && error.isNotEmpty) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.md),
                   InlineErrorCard(error: error, prefix: 'Auth unavailable'),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.sm),
                   const _AuthDebugPanel(),
                 ],
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.lg),
                 FilledButton.icon(
                   onPressed: _submitting || !service.isInitialised
                       ? null
                       : _signIn,
                   icon: _submitting
                       ? const SizedBox.square(
-                          dimension: 18,
+                          dimension: AppSizes.compactProgress,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.login),
@@ -167,7 +170,7 @@ class _AuthDebugPanelState extends State<_AuthDebugPanel> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Auth logs copied.'),
-        duration: Duration(seconds: 2),
+        duration: AppMotion.feedback,
       ),
     );
   }
@@ -179,10 +182,10 @@ class _AuthDebugPanelState extends State<_AuthDebugPanel> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         border: Border.all(color: colorScheme.outlineVariant),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,17 +194,20 @@ class _AuthDebugPanelState extends State<_AuthDebugPanel> {
             'Auth diagnostics',
             style: Theme.of(context).textTheme.titleSmall,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           SelectableText(
             logs,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+            style: const TextStyle(
+              fontFamily: AppTypography.monospaceFont,
+              fontSize: AppTypography.bodySmall,
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           Align(
             alignment: Alignment.centerRight,
             child: OutlinedButton.icon(
               onPressed: _copyLogs,
-              icon: const Icon(Icons.copy, size: 16),
+              icon: const Icon(Icons.copy, size: AppSizes.iconSmall),
               label: const Text('Copy logs'),
             ),
           ),

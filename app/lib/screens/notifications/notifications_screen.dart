@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:replayglowz_app/app/router.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
 import 'package:replayglowz_app/providers/providers.dart';
@@ -41,20 +42,28 @@ class NotificationsScreen extends ConsumerWidget {
       body: notificationsAsync.when(
         data: (notifications) {
           if (notifications.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_none, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
+                  Icon(
+                    Icons.notifications_none,
+                    size: AppSizes.emptyStateIcon,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
                   Text(
                     'No notifications yet',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     'New videos from your subscriptions will appear here',
-                    style: TextStyle(color: Colors.grey),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -112,8 +121,8 @@ class _NotificationTile extends ConsumerWidget {
       ),
       trailing: isUnread
           ? Container(
-              width: 8,
-              height: 8,
+              width: AppSpacing.xs,
+              height: AppSpacing.xs,
               decoration: BoxDecoration(
                 color: theme.colorScheme.primary,
                 shape: BoxShape.circle,
@@ -144,7 +153,7 @@ class _NotificationTile extends ConsumerWidget {
   Widget _buildLeading(ThemeData theme) {
     if (notification.thumbnailUrl != null) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppRadii.sm),
         child: Image.network(
           notification.thumbnailUrl!,
           width: 56,

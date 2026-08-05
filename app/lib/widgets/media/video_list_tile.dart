@@ -39,10 +39,12 @@ class VideoListTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: isActive
             ? colorScheme.primary.withValues(alpha: 0.08)
-            : Colors.transparent,
+            : colorScheme.surface.withValues(alpha: 0),
         border: Border(
           left: BorderSide(
-            color: isActive ? colorScheme.primary : Colors.transparent,
+            color: isActive
+                ? colorScheme.primary
+                : colorScheme.surface.withValues(alpha: 0),
             width: AppSpacing.xxs - 1,
           ),
         ),

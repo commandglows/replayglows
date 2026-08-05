@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -206,9 +207,9 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
                         ].join(' • ');
 
                         return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
+                          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                           child: Padding(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(AppSpacing.md),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -246,14 +247,14 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
                                                 ),
                                             ],
                                           ),
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: AppSpacing.xs),
                                           Text(
                                             subtitle,
                                             style: Theme.of(
                                               context,
                                             ).textTheme.titleMedium,
                                           ),
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: AppSpacing.xs),
                                           Text(
                                             meta,
                                             style: Theme.of(
@@ -288,8 +289,8 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
                                               : () => _togglePlayback(entry),
                                           icon: isLoadingAudio
                                               ? const SizedBox(
-                                                  width: 18,
-                                                  height: 18,
+                                                  width: AppSizes.iconSmall,
+                                                  height: AppSizes.iconSmall,
                                                   child:
                                                       CircularProgressIndicator(
                                                         strokeWidth: 2,
@@ -305,7 +306,7 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
                                   ],
                                 ),
                                 if (entry.isUnread) ...[
-                                  const SizedBox(height: 16),
+                                  const SizedBox(height: AppSpacing.md),
                                   Align(
                                     alignment: Alignment.centerRight,
                                     child: FilledButton.tonalIcon(
@@ -314,8 +315,8 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
                                           : () => _markReviewed(entry.id),
                                       icon: isReviewing
                                           ? const SizedBox(
-                                              width: 16,
-                                              height: 16,
+                                              width: AppSizes.iconSmall,
+                                              height: AppSizes.iconSmall,
                                               child: CircularProgressIndicator(
                                                 strokeWidth: 2,
                                               ),

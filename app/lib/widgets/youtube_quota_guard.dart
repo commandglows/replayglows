@@ -81,7 +81,7 @@ class YoutubeQuotaCostText extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.speed, size: 16, color: color),
+        Icon(Icons.speed, size: AppSizes.iconSmall, color: color),
         const SizedBox(width: AppSpacing.xxs + 2),
         Flexible(child: Text('$prefix: $quotaText', style: style)),
       ],

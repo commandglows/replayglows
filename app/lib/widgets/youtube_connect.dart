@@ -536,22 +536,22 @@ class _YoutubeOAuthFeedbackBannerState
               ),
               const SizedBox(height: AppSpacing.sm),
               Wrap(
-                spacing: 10,
-                runSpacing: 10,
+                spacing: AppSpacing.xs + AppSpacing.xxxs,
+                runSpacing: AppSpacing.xs + AppSpacing.xxxs,
                 children: [
                   if (_syncing)
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         SizedBox(
-                          width: 16,
-                          height: 16,
+                          width: AppSizes.iconSmall,
+                          height: AppSizes.iconSmall,
                           child: CircularProgressIndicator(
-                            strokeWidth: 2,
+                            strokeWidth: AppSpacing.xxxs,
                             color: foregroundColor,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.xs),
                         Text(
                           'Syncing playlists',
                           style: theme.textTheme.bodySmall?.copyWith(
@@ -605,19 +605,23 @@ class YoutubeConnectBanner extends ConsumerWidget {
     if (async.asData == null) return const SizedBox.shrink();
     if (_isYoutubeConnected(async)) return const SizedBox.shrink();
 
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Material(
       color: colorScheme.primaryContainer,
       child: SafeArea(
         top: false,
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs + AppSpacing.xxxs,
+          ),
           child: Row(
             children: [
               Icon(
                 Icons.smart_display_rounded,
-                size: 22,
+                size: AppTypography.titleLarge,
                 color: colorScheme.onPrimaryContainer,
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -627,29 +631,29 @@ class YoutubeConnectBanner extends ConsumerWidget {
                   children: [
                     Text(
                       'Connect YouTube to unlock your library',
-                      style: TextStyle(
+                      style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onPrimaryContainer,
                         fontWeight: FontWeight.w700,
-                        fontSize: 13,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSpacing.xxxs),
                     Text(
                       'ReplayGlowz will import your playlists and refresh them after you return from Google.',
-                      style: TextStyle(
+                      style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onPrimaryContainer.withValues(
                           alpha: 0.82,
                         ),
-                        fontSize: 12,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.sm),
               FilledButton.tonal(
                 style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm2,
+                  ),
                   minimumSize: const Size(0, 36),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),

@@ -173,7 +173,10 @@ class _YouTubeChannelOnboardingCardState
               children: [
                 OutlinedButton.icon(
                   onPressed: _openChannelHelp,
-                  icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                  icon: const Icon(
+                    Icons.open_in_new_rounded,
+                    size: AppSizes.compactProgress,
+                  ),
                   label: Text(t('youtubeLibrary.createChannel', locale: l)),
                 ),
                 TextButton.icon(
@@ -181,9 +184,14 @@ class _YouTubeChannelOnboardingCardState
                   icon: _importing
                       ? const SizedBox.square(
                           dimension: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: AppSpacing.xxxs,
+                          ),
                         )
-                      : const Icon(Icons.playlist_add_rounded, size: 18),
+                      : const Icon(
+                          Icons.playlist_add_rounded,
+                          size: AppSizes.compactProgress,
+                        ),
                   label: Text(
                     _importing
                         ? t('youtubeLibrary.importing', locale: l)

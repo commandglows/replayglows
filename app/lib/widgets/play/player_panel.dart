@@ -141,7 +141,7 @@ class _VideoPosterOverlay extends StatelessWidget {
                             ? const Icon(
                                 Icons.person,
                                 color: Colors.white,
-                                size: 18,
+                                size: AppSizes.compactProgress,
                               )
                             : null,
                       ),
@@ -184,8 +184,11 @@ class _VideoPosterOverlay extends StatelessWidget {
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.36),
-                            blurRadius: 24,
-                            offset: const Offset(0, 10),
+                            blurRadius: AppSpacing.lg,
+                            offset: const Offset(
+                              0,
+                              AppSpacing.xs + AppSpacing.xxxs,
+                            ),
                           ),
                         ],
                       ),

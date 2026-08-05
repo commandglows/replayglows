@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -61,7 +62,7 @@ class _ShortSurfaceButton extends StatelessWidget {
     final theme = Theme.of(context);
     return OutlinedButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon, size: 18),
+      icon: Icon(icon, size: AppSizes.iconSmall),
       label: Text(label),
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(44),
@@ -96,10 +97,7 @@ class _ChannelFeedActionTarget {
 }
 
 class _ChannelFeedActionSelection {
-  const _ChannelFeedActionSelection({
-    required this.target,
-    required this.feed,
-  });
+  const _ChannelFeedActionSelection({required this.target, required this.feed});
 
   final _ChannelFeedActionTarget target;
   final VirtualFeed feed;
@@ -129,9 +127,9 @@ class _TranscriptControlHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppSpacing.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -147,8 +145,8 @@ class _TranscriptControlHeader extends StatelessWidget {
                   onPressed: isGenerating ? null : onGenerate,
                   icon: isGenerating
                       ? const SizedBox(
-                          width: 16,
-                          height: 16,
+                          width: AppSizes.iconSmall,
+                          height: AppSizes.iconSmall,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.auto_awesome),
@@ -162,14 +160,14 @@ class _TranscriptControlHeader extends StatelessWidget {
                 final text =
                     job.errorMessage ?? job.progressMessage ?? job.status;
                 return Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.only(top: AppSpacing.xs),
                   child: Row(
                     children: [
                       Icon(
                         job.isRunning ? Icons.sync : Icons.info_outline,
-                        size: 16,
+                        size: AppSizes.iconSmall,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.xs),
                       Expanded(child: Text(text)),
                     ],
                   ),
@@ -182,7 +180,7 @@ class _TranscriptControlHeader extends StatelessWidget {
               data: (versions) {
                 if (versions.isEmpty) return const SizedBox.shrink();
                 return Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.only(top: AppSpacing.xs),
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -203,7 +201,7 @@ class _TranscriptControlHeader extends StatelessWidget {
                 );
               },
               loading: () => const Padding(
-                padding: EdgeInsets.only(top: 8),
+                padding: EdgeInsets.only(top: AppSpacing.xs),
                 child: LinearProgressIndicator(),
               ),
               error: (error, stack) => const SizedBox.shrink(),
@@ -812,27 +810,27 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.play_circle_outline_rounded,
-                        size: 64,
-                        color: Colors.grey,
+                        size: AppSizes.emptyStateIcon,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.md),
                       Text(
                         'Choose a video to start playback',
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w700),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.xs),
                       Text(
                         'Open Feed or Playlists, then select a synced YouTube video to unlock playback, transcript, and notes.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -1074,7 +1072,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     return Positioned.fill(
       child: IgnorePointer(
         child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 140),
+          duration: AppMotion.fast,
           opacity: 1,
           child: Stack(
             fit: StackFit.expand,
@@ -1091,22 +1089,26 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withValues(alpha: 0.22),
-                      Colors.black.withValues(alpha: 0.04),
-                      Colors.black.withValues(alpha: 0.28),
+                      theme.colorScheme.scrim.withValues(alpha: 0.22),
+                      theme.colorScheme.scrim.withValues(alpha: 0.04),
+                      theme.colorScheme.scrim.withValues(alpha: 0.28),
                     ],
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(AppSpacing.md2),
                 child: Align(
                   alignment: Alignment.bottomLeft,
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Icon(icon, color: Colors.white, size: 32),
-                      const SizedBox(width: 12),
+                      Icon(
+                        icon,
+                        color: theme.colorScheme.onPrimary,
+                        size: AppSizes.iconLarge,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -1115,29 +1117,33 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                             Text(
                               label,
                               style: theme.textTheme.labelLarge?.copyWith(
-                                color: Colors.white70,
+                                color: theme.colorScheme.onPrimary.withValues(
+                                  alpha: 0.7,
+                                ),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: AppSpacing.xxs),
                             Text(
                               title,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: theme.textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
+                                color: theme.colorScheme.onPrimary,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
                             if (channelTitle != null &&
                                 channelTitle.isNotEmpty) ...[
-                              const SizedBox(height: 4),
+                              const SizedBox(height: AppSpacing.xxs),
                               Text(
                                 channelTitle,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.78),
+                                  color: theme.colorScheme.onPrimary.withValues(
+                                    alpha: 0.78,
+                                  ),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -1258,7 +1264,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.xs),
                 Expanded(
                   child: _ShortSurfaceButton(
                     icon: Icons.subtitles_outlined,
@@ -1270,7 +1276,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.xs),
                 Expanded(
                   child: _ShortSurfaceButton(
                     icon: Icons.forum_outlined,
@@ -1390,7 +1396,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(AppSpacing.sm),
           child: Row(
             children: [
               Expanded(
@@ -1406,7 +1412,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                   minLines: 1,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.xs),
               IconButton.filled(
                 icon: const Icon(Icons.send),
                 onPressed: () async {
@@ -1433,7 +1439,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
             ],
           ),
         ),
-        const Divider(height: 1),
+        const Divider(height: AppElevation.raised),
         Expanded(
           child: notesAsync.when(
             data: (notes) {
@@ -1447,7 +1453,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                 );
               }
               return ListView.builder(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppSpacing.sm),
                 itemCount: notes.length,
                 itemBuilder: (context, index) {
                   final note = notes[index];
@@ -1460,7 +1466,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                         ? () => _seekToSeconds(note.timestamp!)
                         : null,
                     trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline, size: 20),
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        size: AppSizes.iconMedium,
+                      ),
                       onPressed: () async {
                         try {
                           await deleteNote(ref, note.id);
@@ -1481,9 +1490,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
             },
             loading: () => AppLoadingListSkeleton(
               itemCount: 3,
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppSpacing.sm),
               itemBuilder: (context, index) => Card(
-                margin: const EdgeInsets.only(bottom: 8),
+                margin: const EdgeInsets.only(bottom: AppSpacing.xs),
                 child: Container(
                   height: 56,
                   color: Theme.of(context).colorScheme.surface,
@@ -1538,12 +1547,16 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
 
         if (entries.isEmpty) {
           return ListView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               header,
-              const SizedBox(height: 24),
-              const Icon(Icons.subtitles_off, size: 40, color: Colors.grey),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.lg),
+              Icon(
+                Icons.subtitles_off,
+                size: 40,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: AppSpacing.sm),
               const Text(
                 'No transcript available yet.',
                 textAlign: TextAlign.center,
@@ -1553,7 +1566,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(AppSpacing.sm),
           itemCount: entries.length + 1,
           itemBuilder: (context, index) {
             if (index == 0) return header;
@@ -1816,11 +1829,15 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
             builder: (context, ref, _) {
               final playlistsAsync = ref.watch(playlistsProvider);
               return ConstrainedBox(
-                constraints: BoxConstraints(minHeight: 240, maxHeight: maxHeight),
+                constraints: BoxConstraints(
+                  minHeight: 240,
+                  maxHeight: maxHeight,
+                ),
                 child: playlistsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.md),
                     child: ErrorStateView(
                       error: error,
                       prefix: 'Could not load playlists',
@@ -1834,7 +1851,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                         .toList();
                     if (eligiblePlaylists.isEmpty) {
                       return Padding(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(AppSpacing.lg),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -1844,7 +1861,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppSpacing.xs),
                             Text(
                               'No playlist available yet.',
                               style: theme.textTheme.bodyMedium,
@@ -1864,7 +1881,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.xxs),
                         Text(
                           target.title,
                           maxLines: 2,
@@ -1873,7 +1890,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.sm),
                         for (final playlist in eligiblePlaylists)
                           ListTile(
                             leading: const CircleAvatar(
@@ -2002,7 +2019,8 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
   }
 
-  Future<_ChannelFeedActionSelection?> _showAddCurrentChannelToFeedPickerSheet() {
+  Future<_ChannelFeedActionSelection?>
+  _showAddCurrentChannelToFeedPickerSheet() {
     final routeVideoId = widget.videoId.trim();
     final cached = _latestCurrentVideo;
     final immediateTarget =
@@ -2036,7 +2054,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                 child = const Center(child: CircularProgressIndicator());
               } else if (backendVideoAsync.hasError && resolvedTarget == null) {
                 child = Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   child: ErrorStateView(
                     error: backendVideoAsync.error!,
                     prefix: 'Could not resolve channel metadata',
@@ -2047,7 +2065,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                   resolvedTarget.sourceId.trim().isEmpty ||
                   resolvedTarget.sourceTitle.trim().isEmpty) {
                 child = Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -2057,7 +2075,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.xs),
                       Text(
                         'Current video channel metadata is not ready yet.',
                         style: theme.textTheme.bodyMedium,
@@ -2069,19 +2087,22 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
               } else {
                 final feedsAsync = ref.watch(virtualFeedsProvider);
                 child = feedsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.md),
                     child: ErrorStateView(
                       error: error,
                       prefix: 'Could not load feeds',
                     ),
                   ),
                   data: (feeds) {
-                    final activeFeeds = feeds.where((feed) => feed.isActive).toList();
+                    final activeFeeds = feeds
+                        .where((feed) => feed.isActive)
+                        .toList();
                     if (activeFeeds.isEmpty) {
                       return Padding(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(AppSpacing.lg),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -2091,7 +2112,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppSpacing.xs),
                             Text(
                               'Create a ReplayGlowz feed first.',
                               style: theme.textTheme.bodyMedium,
@@ -2111,7 +2132,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.xxs),
                         Text(
                           resolvedTarget.sourceTitle,
                           maxLines: 2,
@@ -2120,7 +2141,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.sm),
                         for (final feed in activeFeeds)
                           ListTile(
                             leading: CircleAvatar(child: Text(feed.initials)),
@@ -2142,7 +2163,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
               }
 
               return ConstrainedBox(
-                constraints: BoxConstraints(minHeight: 240, maxHeight: maxHeight),
+                constraints: BoxConstraints(
+                  minHeight: 240,
+                  maxHeight: maxHeight,
+                ),
                 child: child,
               );
             },
@@ -2462,7 +2486,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w700),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppSpacing.xxs),
                       Text(
                         '${session.displayTitle} · ${queue.length} video${queue.length == 1 ? '' : 's'}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -2476,7 +2500,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                   Expanded(
                     child: Center(
                       child: Padding(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(AppSpacing.lg),
                         child: Text(
                           'No active queue. Start playback from Feed, a playlist, or a ReplayGlowz feed to build Up next.',
                           textAlign: TextAlign.center,
@@ -2506,7 +2530,9 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                                 : Icons.play_circle,
                             color: isCurrent
                                 ? Theme.of(context).colorScheme.primary
-                                : Colors.grey,
+                                : Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                           ),
                           title: Text(
                             item.title ?? 'Queued video',
@@ -2617,7 +2643,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                   context.go(Routes.feedback);
                 },
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.xs),
             ],
           ),
         );

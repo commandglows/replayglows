@@ -325,33 +325,36 @@ class _ConfigFallbackScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 560),
               child: Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.settings_rounded, size: 28),
-                          SizedBox(width: 12),
+                          Icon(
+                            Icons.settings_rounded,
+                            size: AppSizes.navigationIcon,
+                          ),
+                          SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: Text(
                               'ReplayGlowz bootstrap failed',
                               style: TextStyle(
-                                fontSize: 20,
+                                fontSize: AppTypography.titleLarge,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.md),
                       Text(
                         missing.isEmpty
                             ? 'The app started, but bootstrap failed.'
@@ -360,13 +363,13 @@ class _ConfigFallbackScreen extends StatelessWidget {
                                   'variables are missing.',
                       ),
                       if (missing.isNotEmpty) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.md),
                         Text(
                           'Missing variables: ${missing.join(', ')}',
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ],
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.sm),
                       const SelectableText(
                         kIsWeb
                             ? 'Set these at build time with --dart-define or '
@@ -374,13 +377,13 @@ class _ConfigFallbackScreen extends StatelessWidget {
                             : 'Set these at build time with --dart-define in '
                                   'the Android CI workflow secrets.',
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.xs),
                       OutlinedButton.icon(
                         onPressed: () => _copyDiagnostics(context),
-                        icon: const Icon(Icons.copy, size: 16),
+                        icon: const Icon(Icons.copy, size: AppSizes.iconSmall),
                         label: const Text('Copy diagnostics'),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.md),
                       SelectableText(
                         '${buildIdentityHeader().join('\n')}\n'
                         'Build id: $buildId\n'
@@ -409,19 +412,24 @@ class _ConfigFallbackScreen extends StatelessWidget {
                         'SENTRY: ${sentryStatusLabel()}',
                       ),
                       if (bootstrapError != null) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.md),
                         SelectableText(
                           'Bootstrap error: $bootstrapError',
-                          style: const TextStyle(color: Colors.red),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.xs),
                         OutlinedButton.icon(
                           onPressed: () => copyErrorToClipboard(
                             context,
                             bootstrapError!,
                             prefix: 'Bootstrap error',
                           ),
-                          icon: const Icon(Icons.copy, size: 16),
+                          icon: const Icon(
+                            Icons.copy,
+                            size: AppSizes.iconSmall,
+                          ),
                           label: Text(
                             Localizations.localeOf(context).languageCode == 'fr'
                                 ? 'Copier'

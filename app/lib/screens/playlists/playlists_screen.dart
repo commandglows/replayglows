@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:replayglowz_app/app/router.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
@@ -236,10 +237,15 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                           },
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.md,
+                            AppSpacing.md,
+                            AppSpacing.md,
+                            0,
+                          ),
                           child: _buildCreateSectionHint(context, l),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.md),
                         SizedBox(
                           height: 360,
                           child: YoutubeAwareEmptyState(
@@ -286,7 +292,12 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                           },
                           child: ListView(
                             controller: _scrollController,
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                            padding: const EdgeInsets.fromLTRB(
+                              AppSpacing.md,
+                              AppSpacing.md,
+                              AppSpacing.md,
+                              96,
+                            ),
                             children: [
                               if (virtualFeeds.isNotEmpty) ...[
                                 _buildSectionTitle(
@@ -301,7 +312,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                                   (feed) =>
                                       _buildVirtualFeedCard(context, ref, feed),
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: AppSpacing.md),
                               ],
                               _buildSectionTitle(
                                 context,
@@ -325,7 +336,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                 loading: () => AppLoadingListSkeleton(
                   itemCount: 8,
                   itemBuilder: (context, index) => Card(
-                    margin: const EdgeInsets.only(bottom: 12),
+                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                     child: Row(
                       children: [
                         Container(
@@ -335,7 +346,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                         ),
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(AppSpacing.sm),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -344,7 +355,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                                   width: 100,
                                   color: Theme.of(context).colorScheme.surface,
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: AppSpacing.xs),
                                 Container(
                                   height: 10,
                                   width: 60,
@@ -368,7 +379,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
             loading: () => AppLoadingListSkeleton(
               itemCount: 4,
               itemBuilder: (context, index) => Card(
-                margin: const EdgeInsets.only(bottom: 12),
+                margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: Row(
                   children: [
                     Container(
@@ -378,7 +389,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(AppSpacing.sm),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -387,7 +398,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                               width: 100,
                               color: Theme.of(context).colorScheme.surface,
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppSpacing.xs),
                             Container(
                               height: 10,
                               width: 60,
@@ -421,7 +432,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
       floatingActionButton: IgnorePointer(
         ignoring: !youtubeConnected || _fabOpacity == 0.0,
         child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 180),
+          duration: AppMotion.standard,
           opacity: youtubeConnected ? _fabOpacity : 0.0,
           child: FloatingActionButton.small(
             onPressed: youtubeConnected
@@ -445,7 +456,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
   Widget _buildCreateSectionHint(BuildContext context, AppLocale l) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppSpacing.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -453,9 +464,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
               t('playlistsPage.createDialogTitle', locale: l),
               style: Theme.of(context).textTheme.titleSmall,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xxs),
             Text(t('playlistsPage.createDialogDescription', locale: l)),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xs),
             TextButton(
               onPressed: () => _showCreateListDialog(context, ref, l),
               child: Text(t('playlistsPage.createSectionAction', locale: l)),
@@ -468,11 +479,11 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
 
   Widget _buildSectionTitle(BuildContext context, String title, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 10),
+      padding: const EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.xs),
       child: Row(
         children: [
-          Icon(icon, size: 18),
-          const SizedBox(width: 8),
+          Icon(icon, size: AppSpacing.md2),
+          const SizedBox(width: AppSpacing.xs),
           Text(title, style: Theme.of(context).textTheme.titleMedium),
         ],
       ),
@@ -489,14 +500,14 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
         : Theme.of(context).colorScheme.primary;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: ListTile(
         leading: Container(
-          width: 44,
-          height: 44,
+          width: AppSizes.minTouchTarget,
+          height: AppSizes.minTouchTarget,
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppRadii.md),
           ),
           child: Icon(Icons.layers, color: color),
         ),
@@ -663,7 +674,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                         border: const OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.sm),
                     TextField(
                       controller: descriptionController,
                       decoration: InputDecoration(
@@ -676,15 +687,15 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                       minLines: 2,
                       maxLines: 4,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.md),
                     Text(
                       t('playlistCreate.colorLabel', locale: l),
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: AppSpacing.xs),
                     Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
+                      spacing: AppSpacing.xs,
+                      runSpacing: AppSpacing.xs,
                       children: [
                         for (final color in _colorOptions)
                           _ColorSwatch(
@@ -754,7 +765,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                   icon: saving
                       ? const SizedBox.square(
                           dimension: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: AppSpacing.xxxs,
+                          ),
                         )
                       : const Icon(Icons.check),
                   label: Text(t('common.save', locale: l)),
@@ -814,7 +827,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.sm),
                       TextField(
                         controller: descriptionController,
                         minLines: 2,
@@ -827,7 +840,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                           border: const OutlineInputBorder(),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.sm),
                       SwitchListTile.adaptive(
                         contentPadding: EdgeInsets.zero,
                         title: Text(t('playlistCreate.makePublic', locale: l)),
@@ -844,15 +857,15 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                             ? null
                             : (value) => setDialogState(() => isPublic = value),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.xs),
                       Text(
                         t('playlistCreate.colorLabel', locale: l),
                         style: Theme.of(context).textTheme.labelLarge,
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: AppSpacing.xs),
                       Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
+                        spacing: AppSpacing.xs,
+                        runSpacing: AppSpacing.xs,
                         children: [
                           for (final color in _colorOptions)
                             _ColorSwatch(
@@ -922,7 +935,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                   icon: saving
                       ? const SizedBox.square(
                           dimension: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: AppSpacing.xxxs,
+                          ),
                         )
                       : const Icon(Icons.check),
                   label: Text(t('playlistCreate.create', locale: l)),
@@ -993,7 +1008,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.sm),
                       TextFormField(
                         controller: descriptionController,
                         decoration: InputDecoration(
@@ -1011,7 +1026,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                         maxLines: 3,
                         textInputAction: TextInputAction.done,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
                         t(
                           'virtualFeedDetail.sourceDescriptionTitle',
@@ -1076,7 +1091,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                   icon: saving
                       ? const SizedBox.square(
                           dimension: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: AppSpacing.xxxs,
+                          ),
                         )
                       : const Icon(Icons.check),
                   label: Text(
@@ -1165,20 +1182,24 @@ class _ColorSwatch extends StatelessWidget {
       onTap: onTap,
       customBorder: const CircleBorder(),
       child: Container(
-        width: 34,
-        height: 34,
+        width: AppSizes.iconLarge,
+        height: AppSizes.iconLarge,
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
           border: selected
               ? Border.all(
                   color: Theme.of(context).colorScheme.onSurface,
-                  width: 3,
+                  width: AppSpacing.xxxs,
                 )
               : null,
         ),
         child: selected
-            ? const Icon(Icons.check, size: 18, color: Colors.white)
+            ? const Icon(
+                Icons.check,
+                size: AppSpacing.md2,
+                color: AppColors.primaryForeground,
+              )
             : null,
       ),
     );

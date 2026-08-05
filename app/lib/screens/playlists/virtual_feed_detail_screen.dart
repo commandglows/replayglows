@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:replayglowz_app/app/router.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
@@ -58,10 +59,11 @@ class _SortMenuItem extends PopupMenuItem<String> {
          value: value,
          child: Row(
            children: [
-             Icon(icon, size: 18),
-             const SizedBox(width: 10),
+             Icon(icon, size: AppSpacing.md2),
+             const SizedBox(width: AppSpacing.xs),
              Expanded(child: Text(label)),
-             if (selected) const Icon(Icons.check_rounded, size: 18),
+             if (selected)
+               const Icon(Icons.check_rounded, size: AppSpacing.md2),
            ],
          ),
        );
@@ -449,7 +451,7 @@ class _VirtualFeedDetailScreenState
     _lastScrolledCursor = cursor;
     await Scrollable.ensureVisible(
       targetContext,
-      duration: const Duration(milliseconds: 250),
+      duration: AppMotion.standard,
       curve: Curves.easeOut,
       alignment: 0.25,
     );
@@ -844,7 +846,12 @@ class _VirtualFeedDetailScreenState
       isScrollControlled: true,
       builder: (dialogContext) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.xs,
+            AppSpacing.md,
+            AppSpacing.lg,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -853,14 +860,14 @@ class _VirtualFeedDetailScreenState
                 t('virtualFeedDetail.addSource', locale: l),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: AppSpacing.xs2),
               Text(
                 t('virtualFeedDetail.addSourceHelp', locale: l),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               if (channels.isEmpty && playlists.isEmpty)
                 Column(
                   mainAxisSize: MainAxisSize.min,
@@ -895,7 +902,7 @@ class _VirtualFeedDetailScreenState
                               locale: l,
                             ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.sm),
                     FilledButton.icon(
                       onPressed: () async {
                         Navigator.of(dialogContext).pop();
@@ -1090,7 +1097,12 @@ class _VirtualFeedDetailScreenState
       isScrollControlled: true,
       builder: (dialogContext) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.xs,
+            AppSpacing.md,
+            AppSpacing.lg,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1099,14 +1111,14 @@ class _VirtualFeedDetailScreenState
                 t('virtualFeedDetail.sourceModePlaylist', locale: l),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: AppSpacing.xs2),
               Text(
                 t('virtualFeedDetail.sourceModePlaylistDescription', locale: l),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               if (candidates.isEmpty)
                 AppEmptyState(
                   icon: Icons.playlist_add_check,
@@ -1189,7 +1201,7 @@ class _VirtualFeedDetailScreenState
                     t('virtualFeedDetail.sourceModeChannels', locale: l),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppSpacing.xs2),
                   TextField(
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.search),
@@ -1200,7 +1212,7 @@ class _VirtualFeedDetailScreenState
                     ),
                     onChanged: (value) => setSheetState(() => query = value),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.sm),
                   Flexible(
                     child: ListView.separated(
                       shrinkWrap: true,
@@ -1243,7 +1255,7 @@ class _VirtualFeedDetailScreenState
                       },
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.sm),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
@@ -1303,7 +1315,12 @@ class _VirtualFeedDetailScreenState
       isScrollControlled: true,
       builder: (dialogContext) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.xs,
+            AppSpacing.md,
+            AppSpacing.lg,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1312,7 +1329,7 @@ class _VirtualFeedDetailScreenState
                 t('virtualFeedDetail.sourceModePlaylistChannels', locale: l),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: AppSpacing.xs2),
               Text(
                 t(
                   'virtualFeedDetail.sourceModePlaylistChannelsDescription',
@@ -1322,7 +1339,7 @@ class _VirtualFeedDetailScreenState
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               Flexible(
                 child: ListView.separated(
                   shrinkWrap: true,
@@ -1372,7 +1389,12 @@ class _VirtualFeedDetailScreenState
             );
             return SafeArea(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.xs,
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                ),
                 child: candidatesAsync.when(
                   loading: () => const SizedBox(
                     height: 220,
@@ -1396,7 +1418,7 @@ class _VirtualFeedDetailScreenState
                           playlist.title,
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: AppSpacing.xs2),
                         Text(
                           result.missingMetadataCount > 0
                               ? tr(
@@ -1418,7 +1440,7 @@ class _VirtualFeedDetailScreenState
                                 ).colorScheme.onSurfaceVariant,
                               ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.sm),
                         if (result.missingMetadataCount > 0) ...[
                           SizedBox(
                             width: double.infinity,
@@ -1442,7 +1464,7 @@ class _VirtualFeedDetailScreenState
                               ),
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: AppSpacing.sm),
                         ],
                         if (result.candidates.isEmpty)
                           AppEmptyState(
@@ -1497,7 +1519,7 @@ class _VirtualFeedDetailScreenState
                               },
                             ),
                           ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.sm),
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton(
@@ -1588,7 +1610,9 @@ class _VirtualFeedDetailScreenState
             .where((page) => page.hasValue)
             .map((page) => page.requireValue)
             .toList(growable: false);
-        final feedBundle = loadedPages.isNotEmpty ? loadedPages.first : detailsData;
+        final feedBundle = loadedPages.isNotEmpty
+            ? loadedPages.first
+            : detailsData;
         final allVideos = <YouTubeVideo>[];
         for (final page in loadedPages) {
           allVideos.addAll(page.videos);
@@ -1683,10 +1707,11 @@ class _VirtualFeedDetailScreenState
               IconButton(
                 tooltip: t('virtualFeedDetail.refreshYoutube', locale: l),
                 icon: _isRefreshing
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                    ? const SizedBox.square(
+                        dimension: AppSizes.iconSmall,
+                        child: CircularProgressIndicator(
+                          strokeWidth: AppSpacing.xxxs,
+                        ),
                       )
                     : const Icon(Icons.refresh),
                 onPressed: _isRefreshing
@@ -1719,7 +1744,12 @@ class _VirtualFeedDetailScreenState
               if (pageErrors.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      AppSpacing.md,
+                      0,
+                    ),
                     child: Card(
                       child: ListTile(
                         leading: const Icon(Icons.warning_amber_rounded),
@@ -1745,9 +1775,14 @@ class _VirtualFeedDetailScreenState
                 ),
               SliverToBoxAdapter(
                 child: Card(
-                  margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  margin: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.xs,
+                  ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.md),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1758,9 +1793,13 @@ class _VirtualFeedDetailScreenState
                             height: 36,
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppRadii.md),
                             ),
-                            child: Icon(Icons.layers, color: color, size: 20),
+                            child: Icon(
+                              Icons.layers,
+                              color: color,
+                              size: AppSpacing.md2,
+                            ),
                           ),
                           title: Text(feed.title),
                           subtitle: Text(
@@ -1788,7 +1827,7 @@ class _VirtualFeedDetailScreenState
                             ],
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.xs),
                         Row(
                           children: [
                             Expanded(
@@ -1802,8 +1841,11 @@ class _VirtualFeedDetailScreenState
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.play_arrow, size: 18),
-                                    const SizedBox(width: 6),
+                                    const Icon(
+                                      Icons.play_arrow,
+                                      size: AppSpacing.md2,
+                                    ),
+                                    const SizedBox(width: AppSpacing.xs2),
                                     Text(
                                       t('virtualFeedDetail.playAll', locale: l),
                                     ),
@@ -1811,7 +1853,7 @@ class _VirtualFeedDetailScreenState
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AppSpacing.sm),
                             ElevatedButton.icon(
                               onPressed: () => _showSourcePicker(
                                 context,
@@ -1835,7 +1877,12 @@ class _VirtualFeedDetailScreenState
               if (hasCacheError)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      0,
+                      AppSpacing.md,
+                      AppSpacing.xs,
+                    ),
                     child: Card(
                       color: Theme.of(
                         context,
@@ -1863,7 +1910,12 @@ class _VirtualFeedDetailScreenState
                 ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 4, 16, 4),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md2,
+                    AppSpacing.xxs,
+                    AppSpacing.md,
+                    AppSpacing.xxs,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1871,7 +1923,7 @@ class _VirtualFeedDetailScreenState
                         t('virtualFeedDetail.sourceSectionTitle', locale: l),
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppSpacing.xxs),
                       Text(
                         t('virtualFeedDetail.sourceSectionHelp', locale: l),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -1918,8 +1970,8 @@ class _VirtualFeedDetailScreenState
                       return Card(
                         key: _sourceTileKeys[source.id],
                         margin: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.xxs,
                         ),
                         child: ListTile(
                           leading: Icon(
@@ -1928,7 +1980,11 @@ class _VirtualFeedDetailScreenState
                                 : source.isChannelSource
                                 ? Icons.person_search
                                 : Icons.playlist_play,
-                            color: source.isActive ? color : Colors.grey,
+                            color: source.isActive
+                                ? color
+                                : Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
                           ),
                           title: Text(source.sourceTitle),
                           subtitle: Text(_sourceSubtitle(source, l)),
@@ -1938,10 +1994,10 @@ class _VirtualFeedDetailScreenState
                               if (!source.isAvailable)
                                 Icon(
                                   Icons.warning_amber_outlined,
-                                  size: 18,
+                                  size: AppSpacing.md2,
                                   color: Theme.of(context).colorScheme.error,
                                 ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: AppSpacing.xs),
                               Switch(
                                 value: source.isActive,
                                 onChanged: (isActive) => _toggleSource(
@@ -1965,7 +2021,7 @@ class _VirtualFeedDetailScreenState
                                   l,
                                 ),
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(width: AppSpacing.xxs),
                               const Icon(Icons.drag_handle),
                             ],
                           ),
@@ -1977,7 +2033,12 @@ class _VirtualFeedDetailScreenState
               if (videos.isEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.lg,
+                      AppSpacing.md,
+                      AppSpacing.md,
+                    ),
                     child: AppEmptyState(
                       icon: Icons.dynamic_feed,
                       title: t('virtualFeedDetail.noVideosTitle', locale: l),
@@ -2006,11 +2067,19 @@ class _VirtualFeedDetailScreenState
                     final item = videoListItems[index];
                     if (item.isHeader) {
                       return Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.md2,
+                          AppSpacing.md2,
+                          AppSpacing.md2,
+                          AppSpacing.xs2,
+                        ),
                         child: Row(
                           children: [
-                            const Icon(Icons.source_outlined, size: 16),
-                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.source_outlined,
+                              size: AppSizes.iconSmall,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
                             Expanded(
                               child: Text(
                                 item.headerTitle!,
@@ -2028,7 +2097,12 @@ class _VirtualFeedDetailScreenState
                     final key = _videoItemKeys[video.youtubeVideoId];
                     return Card(
                       key: key,
-                      margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                      margin: const EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        AppSpacing.xxs,
+                        AppSpacing.md,
+                        AppSpacing.xxs,
+                      ),
                       child: VideoListTile(
                         video: video,
                         onTap: () => _openVideo(
@@ -2049,7 +2123,12 @@ class _VirtualFeedDetailScreenState
               if (isLoadingMore)
                 const SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    padding: EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.xs,
+                      AppSpacing.md,
+                      AppSpacing.lg,
+                    ),
                     child: LinearProgressIndicator(minHeight: 3),
                   ),
                 )
@@ -2058,7 +2137,12 @@ class _VirtualFeedDetailScreenState
                   feedBundle.continueCursor!.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.md,
+                      AppSpacing.xs,
+                      AppSpacing.md,
+                      AppSpacing.lg,
+                    ),
                     child: Center(
                       child: OutlinedButton(
                         onPressed: _maybeLoadMorePages,

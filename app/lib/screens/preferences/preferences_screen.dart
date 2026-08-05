@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -119,7 +120,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
     if (authState is! AuthAuthenticated) {
       return [
         const Padding(
-          padding: EdgeInsets.all(24),
+          padding: EdgeInsets.all(AppSpacing.lg),
           child: Text(
             'Sign in to manage playback, notifications and transcript '
             'preferences.',
@@ -133,7 +134,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
       preferencesAsync.when(
         data: (data) => data == null
             ? const Padding(
-                padding: EdgeInsets.all(24),
+                padding: EdgeInsets.all(AppSpacing.lg),
                 child: Text(
                   'No preferences available for this account yet.',
                   textAlign: TextAlign.center,
@@ -152,28 +153,28 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
 
   Widget _buildShimmerLoading() {
     return const Padding(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(AppSpacing.md),
       child: Card(
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   SizedBox(
-                    width: 18,
-                    height: 18,
+                    width: AppSizes.iconSmall,
+                    height: AppSizes.iconSmall,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                  SizedBox(width: 12),
+                  SizedBox(width: AppSpacing.sm),
                   Text(
                     'Loading preferences',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
-              SizedBox(height: 12),
+              SizedBox(height: AppSpacing.sm),
               Text(
                 'ReplayGlowz is fetching your settings, subscription, and profile data from Convex.',
               ),
@@ -608,18 +609,18 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
           ),
           error: (error, stackTrace) => const SizedBox.shrink(),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.xl),
 
         // App info
         Center(
           child: Text(
             'ReplayGlowz v1.0.0',
-            style: Theme.of(
-              context,
-            ).textTheme.labelSmall?.copyWith(color: Colors.grey),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
       ],
     );
   }
@@ -755,7 +756,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                         onChanged: (value) =>
                             setSheetState(() => notifyAll = value),
                       ),
-                      const Divider(height: 1),
+                      const Divider(height: AppElevation.raised),
                       Expanded(
                         child: ListView(
                           children: [
@@ -814,7 +815,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(AppSpacing.md),
                         child: Row(
                           children: [
                             Expanded(
@@ -823,7 +824,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                                 child: const Text('Cancel'),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AppSpacing.sm),
                             Expanded(
                               child: FilledButton(
                                 onPressed: () async {
@@ -924,7 +925,9 @@ class _TranscriptProviderSettingsCardState
                 (provider) => ExpansionTile(
                   leading: Icon(
                     provider.available ? Icons.check_circle : Icons.info,
-                    color: provider.available ? Colors.green : null,
+                    color: provider.available
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
                   ),
                   title: Text(provider.label),
                   subtitle: Text(
@@ -952,8 +955,8 @@ class _TranscriptProviderSettingsCardState
       },
       loading: () => const ListTile(
         leading: SizedBox(
-          width: 20,
-          height: 20,
+          width: AppSizes.iconMedium,
+          height: AppSizes.iconMedium,
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
         title: Text('Loading transcript providers'),
@@ -985,7 +988,7 @@ class _TranscriptProviderSettingsCardState
               border: const OutlineInputBorder(),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           Wrap(
             spacing: 8,
             children: [
@@ -1191,8 +1194,8 @@ class _ChannelAutomationSettingsCard extends ConsumerWidget {
       },
       loading: () => const ListTile(
         leading: SizedBox(
-          width: 20,
-          height: 20,
+          width: AppSizes.iconMedium,
+          height: AppSizes.iconMedium,
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
         title: Text('Loading YouTube subscriptions'),
@@ -1289,7 +1292,7 @@ class _AccountTile extends ConsumerWidget {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: OutlinedButton.icon(
-                  icon: const Icon(Icons.logout, size: 18),
+                  icon: const Icon(Icons.logout, size: AppSizes.iconSmall),
                   label: const Text('Sign out'),
                   onPressed: () async {
                     try {
@@ -1333,7 +1336,7 @@ class _AccountTile extends ConsumerWidget {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: FilledButton.icon(
-                  icon: const Icon(Icons.login, size: 18),
+                  icon: const Icon(Icons.login, size: AppSizes.iconSmall),
                   label: const Text('Sign in'),
                   onPressed: () => context.go(Routes.signIn),
                 ),
@@ -1476,14 +1479,14 @@ class _DiagnosticsCard extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const Icon(Icons.tune, size: 18),
-                  const SizedBox(width: 8),
+                  const Icon(Icons.tune, size: AppSizes.iconSmall),
+                  const SizedBox(width: AppSpacing.xs),
                   Text(
                     'Diagnostics',
                     style: Theme.of(context).textTheme.titleSmall,
@@ -1491,31 +1494,33 @@ class _DiagnosticsCard extends ConsumerWidget {
                   const Spacer(),
                   TextButton.icon(
                     onPressed: () => _copyDiagnostics(context, auth, authState),
-                    icon: const Icon(Icons.copy, size: 16),
+                    icon: const Icon(Icons.copy, size: AppSizes.iconSmall),
                     label: const Text('Copy'),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               for (final r in rows)
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(
                         r.ok ? Icons.check_circle : Icons.error,
-                        size: 16,
-                        color: r.ok ? Colors.green : Colors.red,
+                        size: AppSizes.iconSmall,
+                        color: r.ok
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.error,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.xs),
                       SizedBox(
                         width: 160,
                         child: Text(
                           r.key,
                           style: const TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 12,
+                            fontSize: AppTypography.bodySmall,
                           ),
                         ),
                       ),
@@ -1524,7 +1529,7 @@ class _DiagnosticsCard extends ConsumerWidget {
                           r.value,
                           style: const TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 12,
+                            fontSize: AppTypography.bodySmall,
                           ),
                         ),
                       ),
@@ -1585,26 +1590,32 @@ class _LogsCardState extends State<_LogsCard> {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const Icon(Icons.bug_report_outlined, size: 18),
-                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.bug_report_outlined,
+                    size: AppSizes.iconSmall,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
                   Text(
                     'Logs (${entries.length})',
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.copy, size: 18),
+                    icon: const Icon(Icons.copy, size: AppSizes.iconSmall),
                     tooltip: 'Copy all',
                     onPressed: entries.isEmpty ? null : _copyAll,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.delete_outline, size: 18),
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      size: AppSizes.iconSmall,
+                    ),
                     tooltip: 'Clear',
                     onPressed: entries.isEmpty
                         ? null
@@ -1612,10 +1623,10 @@ class _LogsCardState extends State<_LogsCard> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.xs),
               if (entries.isEmpty)
                 const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                   child: Text(
                     '(no logs yet)',
                     style: TextStyle(fontStyle: FontStyle.italic),
@@ -1633,15 +1644,17 @@ class _LogsCardState extends State<_LogsCard> {
                       itemBuilder: (context, i) {
                         final e = entries[i];
                         final color = switch (e.level) {
-                          LogLevel.error => Colors.red,
-                          LogLevel.warning => Colors.orange,
+                          LogLevel.error => Theme.of(context).colorScheme.error,
+                          LogLevel.warning => Theme.of(
+                            context,
+                          ).colorScheme.tertiary,
                           LogLevel.info => null,
                         };
                         return SelectableText(
                           e.format(),
                           style: TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 11,
+                            fontSize: AppTypography.labelSmall,
                             color: color,
                           ),
                         );

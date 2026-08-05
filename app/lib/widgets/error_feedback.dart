@@ -101,25 +101,27 @@ class InlineErrorCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: colorScheme.error.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SelectableText(
             message,
-            style: TextStyle(color: colorScheme.error, fontSize: 13),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: colorScheme.error),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           Align(
             alignment: Alignment.centerRight,
             child: OutlinedButton.icon(
               onPressed: () =>
                   copyErrorToClipboard(context, error, prefix: prefix),
-              icon: const Icon(Icons.copy, size: 16),
+              icon: const Icon(Icons.copy, size: AppSizes.iconSmall),
               label: Text(_copyLabel(context)),
             ),
           ),
@@ -155,35 +157,41 @@ class ErrorStateView extends StatelessWidget {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
+            Icon(
+              Icons.error_outline,
+              size: AppSpacing.xxl,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            const SizedBox(height: AppSpacing.md),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Wrap(
                 alignment: WrapAlignment.center,
                 crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 8,
-                runSpacing: 8,
+                spacing: AppSpacing.xs,
+                runSpacing: AppSpacing.xs,
                 children: [
                   SizedBox(
                     width: textWidth,
                     child: Text(
                       message,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.red),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
                   ),
                   OutlinedButton.icon(
                     onPressed: () =>
                         copyErrorToClipboard(context, error, prefix: prefix),
-                    icon: const Icon(Icons.copy, size: 16),
+                    icon: const Icon(Icons.copy, size: AppSizes.iconSmall),
                     label: Text(_copyLabel(context)),
                   ),
                 ],
               ),
             ),
             if (onRetry != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               FilledButton.tonal(
                 onPressed: onRetry,
                 child: Text(_retryLabel(context)),

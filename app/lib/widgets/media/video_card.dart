@@ -32,11 +32,11 @@ class VideoCard extends StatelessWidget {
       curve: AppMotion.curve,
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
         border: Border.all(
           color: isActive
               ? colorScheme.primary.withValues(alpha: 0.52)
-              : Colors.transparent,
+              : colorScheme.surface.withValues(alpha: 0),
           width: AppSpacing.xxs / 2,
         ),
         boxShadow: isActive
@@ -152,7 +152,7 @@ class _NowPlayingBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconTheme(
-      data: IconThemeData(color: colorScheme.primary, size: 14),
+      data: IconThemeData(color: colorScheme.primary, size: AppSpacing.sm2),
       child: DefaultTextStyle(
         style: Theme.of(context).textTheme.labelSmall!.copyWith(
           color: colorScheme.primary,
@@ -162,7 +162,7 @@ class _NowPlayingBadge extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.graphic_eq_rounded),
-            SizedBox(width: 4),
+            SizedBox(width: AppSpacing.xxs),
             Text('Now playing'),
           ],
         ),

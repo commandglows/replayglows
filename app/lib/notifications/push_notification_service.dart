@@ -308,10 +308,7 @@ class PushNotificationService {
       return route;
     }
 
-    return jsonEncode({
-      'route': route,
-      'notificationId': notificationId,
-    });
+    return jsonEncode({'route': route, 'notificationId': notificationId});
   }
 
   Map<String, String?> _parsePayload(String payload) {
@@ -325,10 +322,9 @@ class PushNotificationService {
         final routeValue = decoded['route'];
         final notificationIdValue = decoded['notificationId'];
         return {
-          'route':
-              routeValue is String && routeValue.isNotEmpty
-                  ? routeValue
-                  : null,
+          'route': routeValue is String && routeValue.isNotEmpty
+              ? routeValue
+              : null,
           'notificationId': notificationIdValue is String
               ? notificationIdValue
               : null,

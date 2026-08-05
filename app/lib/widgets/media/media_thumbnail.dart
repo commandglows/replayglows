@@ -55,7 +55,7 @@ class MediaThumbnail extends StatelessWidget {
             child: SizedBox(
               width: AppSizes.iconSmall + 2,
               height: AppSizes.iconSmall + 2,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(strokeWidth: AppSpacing.xxxs),
             ),
           ),
         ),

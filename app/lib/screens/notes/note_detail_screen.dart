@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:go_router/go_router.dart';
@@ -69,10 +70,12 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         if (note == null) {
           return Scaffold(
             appBar: AppBar(title: const Text('Note')),
-            body: const Center(
+            body: Center(
               child: Text(
                 'Note not found',
-                style: TextStyle(color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           );
@@ -89,18 +92,28 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       loading: () => Scaffold(
         appBar: AppBar(title: Text(t('common.notes', locale: l))),
         body: Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
+          baseColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+          highlightColor: Theme.of(context).colorScheme.surfaceContainerLow,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(height: 60, color: Colors.white),
-                const SizedBox(height: 16),
-                Container(height: 30, width: 80, color: Colors.white),
-                const SizedBox(height: 16),
-                Container(height: 100, color: Colors.white),
+                Container(
+                  height: 60,
+                  color: Theme.of(context).colorScheme.surface,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Container(
+                  height: 30,
+                  width: 80,
+                  color: Theme.of(context).colorScheme.surface,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Container(
+                  height: 100,
+                  color: Theme.of(context).colorScheme.surface,
+                ),
               ],
             ),
           ),
@@ -148,11 +161,19 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'delete',
                 child: ListTile(
-                  leading: Icon(Icons.delete, color: Colors.red),
-                  title: Text('Delete', style: TextStyle(color: Colors.red)),
+                  leading: Icon(
+                    Icons.delete,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  title: Text(
+                    'Delete',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
@@ -161,20 +182,20 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Video reference card
             if (note.youtubeVideoId != null) ...[
               _buildVideoReference(context, note),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
             ],
 
             // Timestamp badge
             if (note.isTimestamped) ...[
               _buildTimestampBadge(context, note),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
             ],
 
             // Note content
@@ -194,7 +215,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                       context,
                     ).textTheme.bodyLarge?.copyWith(height: 1.6),
                   ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
 
             // Metadata
             _buildMetadata(context, note),
@@ -211,10 +232,13 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
           width: 64,
           height: 36,
           decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(4),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
-          child: const Icon(Icons.play_circle_outline, size: 24),
+          child: const Icon(
+            Icons.play_circle_outline,
+            size: AppSizes.iconMedium,
+          ),
         ),
         title: Text(
           note.youtubeVideoId ?? 'Video',
@@ -222,7 +246,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(t('p3.notes.openVideo', locale: _locale(context))),
-        trailing: const Icon(Icons.open_in_new, size: 18),
+        trailing: const Icon(Icons.open_in_new, size: AppSizes.iconSmall),
         onTap: () {
           _openNoteVideo(note);
         },
@@ -237,22 +261,25 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
           onTap: () {
             _openNoteVideo(note);
           },
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppRadii.md),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xs2,
+            ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   Icons.access_time,
-                  size: 16,
+                  size: AppSizes.iconSmall,
                   color: Theme.of(context).colorScheme.onPrimaryContainer,
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: AppSpacing.xxs),
                 Text(
                   note.formattedTimestamp ?? '',
                   style: TextStyle(
@@ -273,12 +300,12 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Divider(),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.xs),
         Text(
           'Created: ${note.createdAt != null ? formatDate(note.createdAt) : 'Unknown'}',
-          style: Theme.of(
-            context,
-          ).textTheme.labelSmall?.copyWith(color: Colors.grey),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -342,7 +369,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                 }
               }
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
             child: const Text('Delete'),
           ),
         ],

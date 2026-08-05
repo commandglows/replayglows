@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:record/record.dart';
@@ -283,11 +284,11 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 760),
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.md),
             children: [
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(AppSpacing.md2),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -295,14 +296,14 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                         'Tell us what is working, what is broken, or what you want next.',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
                         authState is AuthAuthenticated
                             ? 'Your feedback will be attached to ${authState.user.email}.'
                             : 'You can send feedback anonymously even without signing in.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.md),
                       SegmentedButton<_FeedbackComposerMode>(
                         segments: const [
                           ButtonSegment<_FeedbackComposerMode>(
@@ -323,7 +324,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                                 setState(() => _mode = selection.first);
                               },
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: AppSpacing.md2),
                       if (_mode == _FeedbackComposerMode.text) ...[
                         TextField(
                           controller: _messageController,
@@ -337,13 +338,13 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                           ),
                           onChanged: _scheduleDraftSave,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.md),
                         FilledButton.icon(
                           onPressed: canSendText ? _submitText : null,
                           icon: _submitting
                               ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
+                                  width: AppSizes.iconSmall,
+                                  height: AppSizes.iconSmall,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                   ),
@@ -356,13 +357,13 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                       ] else ...[
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(AppSpacing.md),
                           decoration: BoxDecoration(
                             color: Theme.of(context)
                                 .colorScheme
                                 .surfaceContainerHighest
                                 .withValues(alpha: 0.45),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(AppRadii.xl),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -375,12 +376,12 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                                     : 'Record a short voice note',
                                 style: Theme.of(context).textTheme.titleSmall,
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: AppSpacing.xs),
                               Text(
                                 'Duration: ${formatDuration(_recordingDuration.inSeconds)} / 2:00',
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: AppSpacing.md),
                               Wrap(
                                 spacing: 12,
                                 runSpacing: 12,
@@ -425,7 +426,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.md),
                         TextField(
                           controller: _messageController,
                           minLines: 4,
@@ -438,13 +439,13 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                           ),
                           onChanged: _scheduleDraftSave,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.md),
                         FilledButton.icon(
                           onPressed: canSendAudio ? _submitAudio : null,
                           icon: _submitting
                               ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
+                                  width: AppSizes.iconSmall,
+                                  height: AppSizes.iconSmall,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                   ),
@@ -456,7 +457,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                         ),
                       ],
                       if (_successNotice != null) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.md),
                         Text(
                           _successNotice!,
                           style: Theme.of(context).textTheme.bodyMedium
@@ -469,7 +470,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                       if (_draftLoaded &&
                           _messageController.text.trim().isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.only(top: 12),
+                          padding: const EdgeInsets.only(top: AppSpacing.sm),
                           child: Text(
                             'Draft saved locally. Current locale: $locale.',
                             style: Theme.of(context).textTheme.bodySmall,

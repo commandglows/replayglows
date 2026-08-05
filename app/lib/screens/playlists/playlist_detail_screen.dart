@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:replayglowz_app/app/router.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/i18n/translations.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/providers/mutations.dart';
@@ -71,7 +72,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
 
     final playlistColor = playlist?.color != null
         ? parseHexColor(playlist!.color!)
-        : Colors.purple;
+        : Theme.of(context).colorScheme.primary;
     final playlistTitle = playlist?.title ?? 'Playlist';
     final l = _locale(context);
 
@@ -119,7 +120,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
             loading: () => SliverToBoxAdapter(child: _buildShimmerList()),
             error: (error, stack) => SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(32),
+                padding: const EdgeInsets.all(AppSpacing.xl),
                 child: ErrorStateView(
                   error: error,
                   prefix: 'Failed to load videos',
@@ -171,10 +172,11 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       actions: [
         IconButton(
           icon: _isSavingOrder
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+              ? const SizedBox.square(
+                  dimension: AppSpacing.md2,
+                  child: CircularProgressIndicator(
+                    strokeWidth: AppSpacing.xxxs,
+                  ),
                 )
               : Icon(_isReorderMode ? Icons.check : Icons.reorder),
           tooltip: _isReorderMode ? 'Done reordering' : 'Reorder videos',
@@ -246,7 +248,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        title: Text(title, style: const TextStyle(fontSize: 16)),
+        title: Text(title, style: Theme.of(context).textTheme.titleMedium),
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -262,21 +264,23 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
               ? CachedNetworkImage(
                   imageUrl: playlist!.effectiveThumbnailUrl!,
                   fit: BoxFit.cover,
-                  color: Colors.black.withValues(alpha: 0.3),
+                  color: Theme.of(context).colorScheme.scrim.withValues(
+                    alpha: AppElevation.scrimOpacity,
+                  ),
                   colorBlendMode: BlendMode.darken,
                   errorWidget: (context, url, error) => const Center(
                     child: Icon(
                       Icons.playlist_play,
-                      size: 64,
-                      color: Colors.white70,
+                      size: AppSizes.emptyStateIcon,
+                      color: AppColors.primaryForeground,
                     ),
                   ),
                 )
               : const Center(
                   child: Icon(
                     Icons.playlist_play,
-                    size: 64,
-                    color: Colors.white70,
+                    size: AppSizes.emptyStateIcon,
+                    color: AppColors.primaryForeground,
                   ),
                 ),
         ),
@@ -291,7 +295,10 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       child: Row(
         children: [
           _buildStatChip(
@@ -299,7 +306,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
             Icons.video_library,
             '${videos.length} video${videos.length == 1 ? '' : 's'}',
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: AppSpacing.md),
           _buildStatChip(
             context,
             Icons.schedule,
@@ -313,8 +320,8 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.play_arrow, size: 18),
-                SizedBox(width: 4),
+                Icon(Icons.play_arrow, size: AppSpacing.md2),
+                SizedBox(width: AppSpacing.xxs),
                 Text('Play All'),
               ],
             ),
@@ -328,8 +335,12 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: Colors.grey),
-        const SizedBox(width: 4),
+        Icon(
+          icon,
+          size: AppSizes.iconSmall,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: AppSpacing.xxs),
         Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
@@ -672,7 +683,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
 
                   if (writablePlaylists.isEmpty) {
                     return const Padding(
-                      padding: EdgeInsets.all(24),
+                      padding: EdgeInsets.all(AppSpacing.lg),
                       child: AppEmptyState(
                         icon: Icons.playlist_add,
                         title: 'No other playlists available',
@@ -686,7 +697,12 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                     shrinkWrap: true,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.lg,
+                          AppSpacing.xs,
+                          AppSpacing.lg,
+                          AppSpacing.sm,
+                        ),
                         child: Text(
                           'Copy to another playlist',
                           style: Theme.of(context).textTheme.titleMedium,
@@ -709,11 +725,11 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                   );
                 },
                 loading: () => const Padding(
-                  padding: EdgeInsets.all(24),
+                  padding: EdgeInsets.all(AppSpacing.lg),
                   child: Center(child: CircularProgressIndicator()),
                 ),
                 error: (error, stackTrace) => Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   child: ErrorStateView(
                     error: error,
                     prefix: 'Failed to load playlists',
@@ -897,7 +913,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                         border: OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.sm),
                     TextField(
                       controller: descriptionController,
                       decoration: const InputDecoration(
@@ -907,15 +923,15 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                       minLines: 2,
                       maxLines: 4,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.md),
                     Text(
                       'Color',
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: AppSpacing.xs),
                     Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
+                      spacing: AppSpacing.xs,
+                      runSpacing: AppSpacing.xs,
                       children: [
                         for (final color in _colorOptions)
                           _ColorSwatch(
@@ -980,7 +996,9 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
                   icon: saving
                       ? const SizedBox.square(
                           dimension: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: AppSpacing.xxxs,
+                          ),
                         )
                       : const Icon(Icons.check),
                   label: const Text('Save'),
@@ -1062,20 +1080,24 @@ class _ColorSwatch extends StatelessWidget {
       onTap: onTap,
       customBorder: const CircleBorder(),
       child: Container(
-        width: 34,
-        height: 34,
+        width: AppSizes.iconLarge,
+        height: AppSizes.iconLarge,
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
           border: selected
               ? Border.all(
                   color: Theme.of(context).colorScheme.onSurface,
-                  width: 3,
+                  width: AppSpacing.xxxs,
                 )
               : null,
         ),
         child: selected
-            ? const Icon(Icons.check, size: 18, color: Colors.white)
+            ? const Icon(
+                Icons.check,
+                size: AppSpacing.md2,
+                color: AppColors.primaryForeground,
+              )
             : null,
       ),
     );

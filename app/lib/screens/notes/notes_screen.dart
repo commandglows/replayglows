@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -103,7 +104,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           ),
           // Search bar
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -119,7 +120,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                       )
                     : null,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadii.lg),
                 ),
                 filled: true,
               ),
@@ -176,9 +177,9 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
   Widget _buildShimmerLoading() {
     return AppLoadingListSkeleton(
       itemCount: 6,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       itemBuilder: (context, index) => Card(
-        margin: const EdgeInsets.only(bottom: 8),
+        margin: const EdgeInsets.only(bottom: AppSpacing.xs),
         child: ListTile(
           leading: Container(
             width: 50,
@@ -249,7 +250,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
     final groupKeys = grouped.keys.toList();
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       itemCount: groupKeys.length,
       itemBuilder: (context, groupIndex) {
         final videoId = groupKeys[groupIndex];
@@ -302,7 +303,10 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                 ? '[${note.formattedTimestamp}]'
                 : null,
             compactText: true,
-            trailing: const Icon(Icons.chevron_right, size: 20),
+            trailing: const Icon(
+              Icons.chevron_right,
+              size: AppSizes.iconMedium,
+            ),
             onTap: () => context.go(Routes.noteDetail(note.id)),
           );
         }),
