@@ -310,12 +310,12 @@ chrome.runtime.onMessage.addListener((request) => {
 <template>
   <!-- Message de feedback -->
   <div v-if="message" 
-       :class="['msg', message.type]"
+       :class="['sg-toast', `sg-toast--${message.type}`]"
        :key="message.text">
     {{ message.text }}
   </div>
 
-  <div class="spc-lg">
+  <div class="spc-lg sg-options-shell">
     <h1 class="h1">Options</h1>
     <div class="grid grid-cols-2 gap-4">
       <!-- Colonne gauche -->

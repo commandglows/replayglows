@@ -1,6 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Century+Gothic&display=swap');
-
 @import "tailwindcss";
+
+:root {
+  --rg-font-body: "Manrope", "Instrument Sans", sans-serif;
+  --rg-font-display: "Instrument Sans", "Manrope", sans-serif;
+  --rg-color-background: oklch(0.145 0 0);
+  --rg-color-surface: oklch(0.18 0 0);
+  --rg-color-surface-raised: oklch(0.225 0 0);
+  --rg-color-foreground: oklch(0.985 0 0);
+  --rg-color-muted: oklch(0.708 0 0);
+  --rg-color-border: oklch(0.269 0 0);
+  --rg-color-primary: oklch(0.62 0.17 245);
+  --rg-color-primary-hover: oklch(0.7 0.16 245);
+  --rg-color-primary-foreground: oklch(0.985 0 0);
+  --rg-color-success: oklch(0.78 0.16 155);
+  --rg-color-danger: oklch(0.68 0.2 25);
+  --rg-color-warning: oklch(0.82 0.17 85);
+  --rg-space-1: 0.5rem;
+  --rg-space-2: 0.75rem;
+  --rg-space-3: 1rem;
+  --rg-space-4: 1.5rem;
+  --rg-space-5: 2rem;
+  --rg-radius-sm: 0.625rem;
+  --rg-radius-md: 1rem;
+  --rg-radius-lg: 1.5rem;
+  --rg-shadow-card: 0 1rem 3rem color-mix(in oklab, var(--rg-color-background) 35%, transparent);
+  --rg-motion-fast: 160ms;
+  --rg-motion-base: 240ms;
+  --rg-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
 
 .font-century {
 font-family: 'Century Gothic', sans-serif;
@@ -1025,3 +1052,169 @@ font-family: 'Century Gothic', sans-serif;
   scrollbar-width: thin;
   scrollbar-color: #ff809944 transparent;
   }
+
+/* ReplayGlowz extension surface tokens and components. */
+body {
+  min-width: 20rem;
+  margin: 0;
+  background: var(--rg-color-background);
+  color: var(--rg-color-foreground);
+  font-family: var(--rg-font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.sg-popup {
+  display: flex;
+  min-width: 22rem;
+  min-height: 24rem;
+  flex-direction: column;
+  gap: var(--rg-space-5);
+  padding: var(--rg-space-5);
+  background: radial-gradient(circle at top right, color-mix(in oklab, var(--rg-color-primary) 18%, transparent), transparent 42%), var(--rg-color-background);
+}
+
+.sg-brand-row {
+  display: flex;
+  align-items: center;
+  gap: var(--rg-space-2);
+}
+
+.sg-brand-mark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: var(--rg-radius-sm);
+  background: var(--rg-color-foreground);
+  color: var(--rg-color-background);
+  font-family: var(--rg-font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.sg-eyebrow,
+.sg-kicker {
+  margin: 0;
+  color: var(--rg-color-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sg-title,
+.sg-section-title {
+  margin: 0;
+  font-family: var(--rg-font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.sg-title { font-size: 1.25rem; }
+.sg-section-title { font-size: 1.0625rem; }
+
+.sg-muted {
+  margin: 0;
+  color: var(--rg-color-muted);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+.sg-empty-state {
+  display: flex;
+  flex: 1;
+  min-height: 14rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rg-space-2);
+  padding: var(--rg-space-5);
+  border: 1px solid var(--rg-color-border);
+  border-radius: var(--rg-radius-lg);
+  background: color-mix(in oklab, var(--rg-color-surface) 82%, transparent);
+  text-align: center;
+  box-shadow: var(--rg-shadow-card);
+}
+
+.sg-empty-icon {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: var(--rg-space-2);
+  place-items: center;
+  border: 1px solid color-mix(in oklab, var(--rg-color-primary) 45%, var(--rg-color-border));
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--rg-color-primary) 18%, transparent);
+  color: var(--rg-color-primary-hover);
+  font-size: 1.5rem;
+}
+
+.sg-button {
+  min-height: 2.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--rg-radius-sm);
+  padding: 0 var(--rg-space-3);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--rg-motion-fast) var(--rg-ease), background var(--rg-motion-fast) var(--rg-ease), border-color var(--rg-motion-fast) var(--rg-ease);
+}
+
+.sg-button:hover { transform: translateY(-1px); }
+.sg-button:active { transform: translateY(0); }
+.sg-button:focus-visible,
+.sg-icon-button:focus-visible,
+.sg-input:focus-visible,
+.sg-switch:focus-visible { outline: 2px solid var(--rg-color-primary-hover); outline-offset: 3px; }
+.sg-button--primary { background: var(--rg-color-primary); color: var(--rg-color-primary-foreground); }
+.sg-button--primary:hover { background: var(--rg-color-primary-hover); }
+.sg-button--secondary { border-color: var(--rg-color-border); background: var(--rg-color-surface-raised); color: var(--rg-color-foreground); }
+
+.sg-popup-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--rg-space-1);
+  color: var(--rg-color-muted);
+  font-size: 0.6875rem;
+}
+.sg-status-dot { width: 0.375rem; height: 0.375rem; border-radius: 50%; background: var(--rg-color-success); box-shadow: 0 0 0.5rem var(--rg-color-success); }
+
+.sg-options-shell {
+  min-height: 100vh;
+  box-sizing: border-box;
+  margin: 0;
+  padding: var(--rg-space-5);
+  background: radial-gradient(circle at top right, color-mix(in oklab, var(--rg-color-primary) 12%, transparent), transparent 34%), var(--rg-color-background);
+}
+.sg-options-shell > .h1 { padding: 0; border: 0; color: var(--rg-color-foreground); }
+.sg-options-shell > .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--rg-space-3); }
+.sg-options-shell .sct { display: flex; min-width: 0; flex-direction: column; gap: var(--rg-space-2); padding: var(--rg-space-4); border: 1px solid var(--rg-color-border); border-radius: var(--rg-radius-md); background: color-mix(in oklab, var(--rg-color-surface) 88%, transparent); box-shadow: var(--rg-shadow-card); }
+.sg-options-shell .h2 { padding: 0; color: var(--rg-color-foreground); font-family: var(--rg-font-display); font-size: 1.0625rem; letter-spacing: -0.02em; }
+.sg-options-shell .cont { max-width: none; margin: 0; padding: 0; gap: var(--rg-space-1); }
+.sg-options-shell .lbl { gap: var(--rg-space-2); padding: var(--rg-space-2); border: 1px solid transparent; background: var(--rg-color-surface-raised); color: var(--rg-color-foreground); box-shadow: none; }
+.sg-options-shell .lbl:hover { background: color-mix(in oklab, var(--rg-color-primary) 12%, var(--rg-color-surface-raised)); }
+.sg-options-shell .t { padding: 0; color: var(--rg-color-foreground); font-size: 0.8125rem; }
+.sg-options-shell .inp { min-width: 5.5rem; margin: 0; border: 1px solid var(--rg-color-border); background: var(--rg-color-background); color: var(--rg-color-foreground); box-shadow: none; }
+.sg-options-shell .btn { min-height: 2.5rem; margin: 0; padding: 0 var(--rg-space-2); border: 1px solid var(--rg-color-border); background: transparent; color: var(--rg-color-muted); box-shadow: none; }
+.sg-options-shell .btn:hover { border-color: var(--rg-color-danger); color: var(--rg-color-danger); }
+.sg-options-shell .checkbox { width: 1.25rem; height: 1.25rem; padding: 0; border: 1px solid var(--rg-color-border); background: var(--rg-color-background); box-shadow: none; }
+.sg-options-shell .peer:checked + .checkbox { border-color: var(--rg-color-primary); background: var(--rg-color-primary); }
+.sg-toast { position: fixed; top: var(--rg-space-4); right: var(--rg-space-4); z-index: 9999; border: 1px solid var(--rg-color-border); border-radius: var(--rg-radius-sm); padding: var(--rg-space-2) var(--rg-space-3); color: var(--rg-color-foreground); font-size: 0.8125rem; animation: sg-toast-in var(--rg-motion-base) var(--rg-ease) both; }
+.sg-options-shell .sg-toast--info { border-color: var(--rg-color-success); background: color-mix(in oklab, var(--rg-color-success) 18%, var(--rg-color-surface)); color: var(--rg-color-foreground); }
+.sg-options-shell .sg-toast--error { border-color: var(--rg-color-danger); background: color-mix(in oklab, var(--rg-color-danger) 18%, var(--rg-color-surface)); color: var(--rg-color-foreground); }
+.sg-options-shell .sg-toast--loading { border-color: var(--rg-color-warning); background: color-mix(in oklab, var(--rg-color-warning) 18%, var(--rg-color-surface)); color: var(--rg-color-foreground); }
+
+@media (max-width: 46rem) {
+  .sg-options-shell { padding: var(--rg-space-3); }
+  .sg-options-shell > .grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+@keyframes sg-toast-in {
+  from { opacity: 0; transform: translateY(-0.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -17,11 +17,13 @@ supersedes: []
 content_surfaces:
   - "app"
   - "site"
+  - "ext"
 linked_systems:
   - "app/lib/app/theme.dart"
   - "app/lib/utils/color_utils.dart"
   - "site/src/styles/global.css"
   - "site/src/layouts/Layout.astro"
+  - "ext/src/styles/styles.css"
   - "shipglows_data/branding/branding.md"
   - "shipglows_data/branding/branding.md"
 depends_on:
@@ -53,6 +55,10 @@ next_step: "run 503-sf-audit-design-tokens replayglowz"
 ### Site (Astro + CSS/Tailwind utility layer)
 - Primary source: `site/src/styles/global.css` (`:root` variables, `@theme inline`, and utility classes).
 - App shell and brand context in `site/src/layouts/Layout.astro`.
+
+### Extension (Vue + Tailwind CSS)
+- Primary source: `ext/src/styles/styles.css` (`:root` ReplayGlowz extension tokens and shared component classes).
+- Popup and options surfaces consume the extension token layer; YouTube-injected legacy styles remain a separate migration scope.
 
 ## 2) Governance rule
 
