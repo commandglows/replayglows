@@ -1,10 +1,10 @@
 ---
 artifact: design_system_authority
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: "replayglowz"
 created: "2026-06-12"
-updated: "2026-06-12"
+updated: "2026-08-05"
 status: "draft"
 source_skill: 300-sf-docs
 scope: design-system-authority
@@ -39,6 +39,7 @@ evidence:
   - "Site typography and global layout container entrypoints route through `site/src/styles/global.css` + `src/layouts/Layout.astro`."
   - "Baseline drift check: `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglowz/app --format markdown --warn-only --max-findings 5000` found 510 findings."
   - "Baseline drift check: `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglowz/site --format markdown --warn-only --max-findings 5000` found 70 findings."
+  - "2026-08-05: App token authority expanded in `app/lib/app/theme.dart` with spacing, radii, typography, elevation, motion, breakpoints, and accessible size roles; current app drift scan remains 515 candidates pending widget migration."
 next_review: "2026-07-12"
 next_step: "run 503-sf-audit-design-tokens replayglowz"
 ---
@@ -70,10 +71,14 @@ The project must not introduce new visual literals directly in feature-level scr
 
 ### App
 - Colors: `AppColors.*`
-- Typography: private font constants and `TextTheme` generated in `_buildTextTheme(...)`
-- Spacing/radius/shadow/motion:
-  - Use tokenized values only when extending `ThemeData`, widgets, and custom constants from the theme layer.
-  - Any future dedicated spacing/shape/animation classes must be added in `theme.dart`.
+- Typography: `AppTypography.*` and `TextTheme` generated in `_buildTextTheme(...)`
+- Spacing: `AppSpacing.*`
+- Shapes: `AppRadii.*`
+- Elevation/opacity: `AppElevation.*`
+- Motion: `AppMotion.*`
+- Responsive thresholds: `AppBreakpoints.*`
+- Accessible control/icon sizes: `AppSizes.*`
+- New app visual constants must be added to these token groups before screen/widget consumption.
 
 ### Site
 - Palette: `--background`, `--foreground`, `--card`, `--primary`, `--secondary`, `--muted`, `--destructive`, `--border`, `--input`, `--ring`, `--radius*`

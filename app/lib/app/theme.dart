@@ -58,6 +58,82 @@ abstract final class AppColors {
   static const darkBorder = Color(0xFF27272A);
 }
 
+/// Spacing scale shared by app surfaces and reusable widgets.
+abstract final class AppSpacing {
+  static const xxs = 4.0;
+  static const xs = 8.0;
+  static const sm = 12.0;
+  static const md = 16.0;
+  static const lg = 24.0;
+  static const xl = 32.0;
+  static const xxl = 48.0;
+}
+
+/// Shape tokens for cards, controls, and compact surfaces.
+abstract final class AppRadii {
+  static const sm = 4.0;
+  static const md = 8.0;
+  static const lg = 12.0;
+  static const xl = 16.0;
+  static const pill = 999.0;
+}
+
+/// Typography roles and scale. Font files are owned by the app asset layer.
+abstract final class AppTypography {
+  static const bodyFont = 'Inter';
+  static const headingFont = 'Instrument Sans';
+  static const displayFont = 'DM Sans';
+
+  static const displayLarge = 57.0;
+  static const displayMedium = 45.0;
+  static const displaySmall = 36.0;
+  static const headlineLarge = 32.0;
+  static const headlineMedium = 28.0;
+  static const headlineSmall = 24.0;
+  static const titleLarge = 22.0;
+  static const titleMedium = 16.0;
+  static const titleSmall = 14.0;
+  static const bodyLarge = 16.0;
+  static const bodyMedium = 14.0;
+  static const bodySmall = 12.0;
+  static const labelLarge = 14.0;
+  static const labelMedium = 12.0;
+  static const labelSmall = 11.0;
+}
+
+/// Elevation and opacity roles for Material surfaces.
+abstract final class AppElevation {
+  static const none = 0.0;
+  static const raised = 1.0;
+  static const modal = 8.0;
+  static const scrimOpacity = 0.32;
+  static const focusOpacity = 0.12;
+}
+
+/// Motion contract used by interactive app surfaces.
+abstract final class AppMotion {
+  static const fast = Duration(milliseconds: 140);
+  static const standard = Duration(milliseconds: 220);
+  static const slow = Duration(milliseconds: 320);
+  static const curve = Curves.easeOutCubic;
+  static const emphasizedCurve = Curves.easeOut;
+}
+
+/// Named responsive layout thresholds for adaptive app surfaces.
+abstract final class AppBreakpoints {
+  static const compact = 600.0;
+  static const medium = 840.0;
+  static const expanded = 1200.0;
+}
+
+/// Minimum interactive dimensions for accessible controls.
+abstract final class AppSizes {
+  static const minTouchTarget = 44.0;
+  static const iconSmall = 16.0;
+  static const iconMedium = 24.0;
+  static const iconLarge = 32.0;
+}
+
 /// Central theme configuration for ReplayGlowz.
 ///
 /// Provides fully-specified [ThemeData] for light and dark modes using the
@@ -68,9 +144,9 @@ abstract final class AppTheme {
   // Typography
   // ---------------------------------------------------------------------------
 
-  static const _fontBody = 'Inter';
-  static const _fontHeading = 'Instrument Sans';
-  static const _fontDisplay = 'DM Sans';
+  static const _fontBody = AppTypography.bodyFont;
+  static const _fontHeading = AppTypography.headingFont;
+  static const _fontDisplay = AppTypography.displayFont;
 
   static TextTheme _buildTextTheme(Color foreground, Color muted) {
     return TextTheme(
@@ -78,19 +154,19 @@ abstract final class AppTheme {
       displayLarge: TextStyle(
         fontFamily: _fontDisplay,
         fontWeight: FontWeight.w700,
-        fontSize: 57,
+        fontSize: AppTypography.displayLarge,
         color: foreground,
       ),
       displayMedium: TextStyle(
         fontFamily: _fontDisplay,
         fontWeight: FontWeight.w700,
-        fontSize: 45,
+        fontSize: AppTypography.displayMedium,
         color: foreground,
       ),
       displaySmall: TextStyle(
         fontFamily: _fontDisplay,
         fontWeight: FontWeight.w700,
-        fontSize: 36,
+        fontSize: AppTypography.displaySmall,
         color: foreground,
       ),
 
@@ -98,19 +174,19 @@ abstract final class AppTheme {
       headlineLarge: TextStyle(
         fontFamily: _fontHeading,
         fontWeight: FontWeight.w600,
-        fontSize: 32,
+        fontSize: AppTypography.headlineLarge,
         color: foreground,
       ),
       headlineMedium: TextStyle(
         fontFamily: _fontHeading,
         fontWeight: FontWeight.w600,
-        fontSize: 28,
+        fontSize: AppTypography.headlineMedium,
         color: foreground,
       ),
       headlineSmall: TextStyle(
         fontFamily: _fontHeading,
         fontWeight: FontWeight.w600,
-        fontSize: 24,
+        fontSize: AppTypography.headlineSmall,
         color: foreground,
       ),
 
@@ -118,19 +194,19 @@ abstract final class AppTheme {
       titleLarge: TextStyle(
         fontFamily: _fontHeading,
         fontWeight: FontWeight.w600,
-        fontSize: 22,
+        fontSize: AppTypography.titleLarge,
         color: foreground,
       ),
       titleMedium: TextStyle(
         fontFamily: _fontHeading,
         fontWeight: FontWeight.w500,
-        fontSize: 16,
+        fontSize: AppTypography.titleMedium,
         color: foreground,
       ),
       titleSmall: TextStyle(
         fontFamily: _fontHeading,
         fontWeight: FontWeight.w500,
-        fontSize: 14,
+        fontSize: AppTypography.titleSmall,
         color: foreground,
       ),
 
@@ -138,19 +214,19 @@ abstract final class AppTheme {
       bodyLarge: TextStyle(
         fontFamily: _fontBody,
         fontWeight: FontWeight.w400,
-        fontSize: 16,
+        fontSize: AppTypography.bodyLarge,
         color: foreground,
       ),
       bodyMedium: TextStyle(
         fontFamily: _fontBody,
         fontWeight: FontWeight.w400,
-        fontSize: 14,
+        fontSize: AppTypography.bodyMedium,
         color: foreground,
       ),
       bodySmall: TextStyle(
         fontFamily: _fontBody,
         fontWeight: FontWeight.w400,
-        fontSize: 12,
+        fontSize: AppTypography.bodySmall,
         color: muted,
       ),
 
@@ -158,19 +234,19 @@ abstract final class AppTheme {
       labelLarge: TextStyle(
         fontFamily: _fontBody,
         fontWeight: FontWeight.w500,
-        fontSize: 14,
+        fontSize: AppTypography.labelLarge,
         color: foreground,
       ),
       labelMedium: TextStyle(
         fontFamily: _fontBody,
         fontWeight: FontWeight.w500,
-        fontSize: 12,
+        fontSize: AppTypography.labelMedium,
         color: foreground,
       ),
       labelSmall: TextStyle(
         fontFamily: _fontBody,
         fontWeight: FontWeight.w500,
-        fontSize: 11,
+        fontSize: AppTypography.labelSmall,
         color: muted,
       ),
     );
@@ -201,9 +277,9 @@ abstract final class AppTheme {
     ),
     cardTheme: CardThemeData(
       color: AppColors.lightCard,
-      elevation: 0,
+      elevation: AppElevation.none,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
         side: const BorderSide(color: AppColors.lightBorder),
       ),
       shadowColor: Colors.black.withValues(alpha: 0.06),
@@ -211,17 +287,19 @@ abstract final class AppTheme {
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.lightCard,
       foregroundColor: AppColors.lightForeground,
-      elevation: 0,
-      scrolledUnderElevation: 1,
+      elevation: AppElevation.none,
+      scrolledUnderElevation: AppElevation.raised,
       surfaceTintColor: Colors.transparent,
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColors.lightCard,
-      indicatorColor: AppColors.primary.withValues(alpha: 0.12),
+      indicatorColor: AppColors.primary.withValues(
+        alpha: AppElevation.focusOpacity,
+      ),
       labelTextStyle: const WidgetStatePropertyAll(
         TextStyle(
           fontFamily: _fontBody,
-          fontSize: 12,
+          fontSize: AppTypography.labelMedium,
           fontWeight: FontWeight.w500,
           color: AppColors.lightForeground,
         ),
@@ -229,52 +307,62 @@ abstract final class AppTheme {
     ),
     navigationRailTheme: NavigationRailThemeData(
       backgroundColor: AppColors.lightCard,
-      indicatorColor: AppColors.primary.withValues(alpha: 0.12),
+      indicatorColor: AppColors.primary.withValues(
+        alpha: AppElevation.focusOpacity,
+      ),
       selectedLabelTextStyle: const TextStyle(
         fontFamily: _fontBody,
-        fontSize: 12,
+        fontSize: AppTypography.labelMedium,
         fontWeight: FontWeight.w600,
         color: AppColors.primary,
       ),
       unselectedLabelTextStyle: const TextStyle(
         fontFamily: _fontBody,
-        fontSize: 12,
+        fontSize: AppTypography.labelMedium,
         fontWeight: FontWeight.w500,
         color: AppColors.lightMutedForeground,
       ),
     ),
     dividerTheme: const DividerThemeData(
       color: AppColors.lightBorder,
-      thickness: 1,
+      thickness: AppElevation.raised,
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: AppColors.lightMuted,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadii.md),
         borderSide: const BorderSide(color: AppColors.lightBorder),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadii.md),
         borderSide: const BorderSide(color: AppColors.lightBorder),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadii.md),
         borderSide: const BorderSide(color: AppColors.primary, width: 2),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.primaryForeground,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: AppElevation.none,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+        ),
         textStyle: const TextStyle(
           fontFamily: _fontBody,
           fontWeight: FontWeight.w600,
-          fontSize: 14,
+          fontSize: AppTypography.labelLarge,
         ),
       ),
     ),
@@ -282,12 +370,17 @@ abstract final class AppTheme {
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.lightForeground,
         side: const BorderSide(color: AppColors.lightBorder),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+        ),
         textStyle: const TextStyle(
           fontFamily: _fontBody,
           fontWeight: FontWeight.w600,
-          fontSize: 14,
+          fontSize: AppTypography.labelLarge,
         ),
       ),
     ),
@@ -295,12 +388,14 @@ abstract final class AppTheme {
       backgroundColor: AppColors.lightSecondary,
       labelStyle: const TextStyle(
         fontFamily: _fontBody,
-        fontSize: 12,
+        fontSize: AppTypography.labelMedium,
         fontWeight: FontWeight.w500,
         color: AppColors.lightSecondaryForeground,
       ),
       side: const BorderSide(color: AppColors.lightBorder),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+      ),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: AppColors.lightForeground,
@@ -308,7 +403,9 @@ abstract final class AppTheme {
         fontFamily: _fontBody,
         color: AppColors.lightCard,
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+      ),
       behavior: SnackBarBehavior.floating,
     ),
   );
@@ -338,26 +435,28 @@ abstract final class AppTheme {
     ),
     cardTheme: CardThemeData(
       color: AppColors.darkCard,
-      elevation: 0,
+      elevation: AppElevation.none,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
         side: const BorderSide(color: AppColors.darkBorder),
       ),
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.darkCard,
       foregroundColor: AppColors.darkForeground,
-      elevation: 0,
-      scrolledUnderElevation: 1,
+      elevation: AppElevation.none,
+      scrolledUnderElevation: AppElevation.raised,
       surfaceTintColor: Colors.transparent,
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColors.darkCard,
-      indicatorColor: AppColors.primary.withValues(alpha: 0.12),
+      indicatorColor: AppColors.primary.withValues(
+        alpha: AppElevation.focusOpacity,
+      ),
       labelTextStyle: const WidgetStatePropertyAll(
         TextStyle(
           fontFamily: _fontBody,
-          fontSize: 12,
+          fontSize: AppTypography.labelMedium,
           fontWeight: FontWeight.w500,
           color: AppColors.darkForeground,
         ),
@@ -365,52 +464,62 @@ abstract final class AppTheme {
     ),
     navigationRailTheme: NavigationRailThemeData(
       backgroundColor: AppColors.darkCard,
-      indicatorColor: AppColors.primary.withValues(alpha: 0.12),
+      indicatorColor: AppColors.primary.withValues(
+        alpha: AppElevation.focusOpacity,
+      ),
       selectedLabelTextStyle: const TextStyle(
         fontFamily: _fontBody,
-        fontSize: 12,
+        fontSize: AppTypography.labelMedium,
         fontWeight: FontWeight.w600,
         color: AppColors.primary,
       ),
       unselectedLabelTextStyle: const TextStyle(
         fontFamily: _fontBody,
-        fontSize: 12,
+        fontSize: AppTypography.labelMedium,
         fontWeight: FontWeight.w500,
         color: AppColors.darkMutedForeground,
       ),
     ),
     dividerTheme: const DividerThemeData(
       color: AppColors.darkBorder,
-      thickness: 1,
+      thickness: AppElevation.raised,
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: AppColors.darkMuted,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadii.md),
         borderSide: const BorderSide(color: AppColors.darkBorder),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadii.md),
         borderSide: const BorderSide(color: AppColors.darkBorder),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadii.md),
         borderSide: const BorderSide(color: AppColors.primary, width: 2),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.sm,
+      ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.primaryForeground,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: AppElevation.none,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+        ),
         textStyle: const TextStyle(
           fontFamily: _fontBody,
           fontWeight: FontWeight.w600,
-          fontSize: 14,
+          fontSize: AppTypography.labelLarge,
         ),
       ),
     ),
@@ -418,12 +527,17 @@ abstract final class AppTheme {
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.darkForeground,
         side: const BorderSide(color: AppColors.darkBorder),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+        ),
         textStyle: const TextStyle(
           fontFamily: _fontBody,
           fontWeight: FontWeight.w600,
-          fontSize: 14,
+          fontSize: AppTypography.labelLarge,
         ),
       ),
     ),
@@ -431,12 +545,14 @@ abstract final class AppTheme {
       backgroundColor: AppColors.darkSecondary,
       labelStyle: const TextStyle(
         fontFamily: _fontBody,
-        fontSize: 12,
+        fontSize: AppTypography.labelMedium,
         fontWeight: FontWeight.w500,
         color: AppColors.darkSecondaryForeground,
       ),
       side: const BorderSide(color: AppColors.darkBorder),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+      ),
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: AppColors.darkForeground,
@@ -444,7 +560,9 @@ abstract final class AppTheme {
         fontFamily: _fontBody,
         color: AppColors.darkCard,
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+      ),
       behavior: SnackBarBehavior.floating,
     ),
   );
