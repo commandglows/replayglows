@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
-const bookmarks = ref([])
 </script>
 
 <template>
@@ -11,4 +8,4 @@ const bookmarks = ref([])
       <!-- Liste des bookmarks ici -->
     </div>
   </div>
-</template> 
+</template>

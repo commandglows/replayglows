@@ -16,14 +16,6 @@ import { ref, onMounted } from 'vue'
 // ==================== Type Definitions ====================
 
 /**
- * Represents a keyboard shortcut configuration.
- */
-interface Hotkey {
-  action: string;  // Action identifier (e.g., 'add-bookmark')
-  key: string;     // Key combination (e.g., 'ALT+B')
-}
-
-/**
  * Represents a saved bookmark entry.
  */
 interface Bookmark {
@@ -31,6 +23,12 @@ interface Bookmark {
   note: string;       // User's note for this bookmark
   videoId: string;    // YouTube video ID
   title: string;      // Video title
+}
+
+interface StoredSettings {
+  hotkeys?: Record<string, string>
+  hideNotesByDefault?: boolean
+  showBookmarkButtons?: boolean
 }
 
 // ==================== State Initialization ====================
@@ -68,7 +66,7 @@ onMounted(async () => {
     'hotkeys',
     'hideNotesByDefault',
     'showBookmarkButtons'
-  ])
+  ]) as StoredSettings
   
   // Initialize storage with defaults if not present
   if (!result.hotkeys) {
@@ -200,7 +198,7 @@ const saveSettings = async () => {
 const exportMarkdown = async () => {
   try {
     showMessage("Copie du Markdown en cours...", "loading")
-    const result = await chrome.storage.local.get('bookmarks')
+    const result = await chrome.storage.local.get('bookmarks') as { bookmarks?: Bookmark[] }
     const bookmarks: Bookmark[] = result.bookmarks || []
     
     if (bookmarks.length === 0) {
@@ -215,7 +213,7 @@ const exportMarkdown = async () => {
     
     await navigator.clipboard.writeText(markdown)
     showMessage("Markdown copié !", "info")
-  } catch (err) {
+  } catch {
     showMessage("Impossible de copier dans le presse-papiers.", "error")
   }
 }
@@ -226,7 +224,7 @@ const exportMarkdown = async () => {
  */
 const exportJSON = async () => {
   try {
-    const result = await chrome.storage.local.get('bookmarks')
+    const result = await chrome.storage.local.get('bookmarks') as { bookmarks?: Bookmark[] }
     const bookmarks: Bookmark[] = result.bookmarks || []
     
     if (bookmarks.length === 0) {
@@ -247,7 +245,7 @@ const exportJSON = async () => {
     // Clean up object URL to prevent memory leak
     URL.revokeObjectURL(url)
     showMessage("Fichier JSON exporté !", "info")
-  } catch (error) {
+  } catch {
     showMessage("Erreur lors de l'export JSON", "error")
   }
 }
