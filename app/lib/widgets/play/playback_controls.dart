@@ -243,7 +243,7 @@ class _ControlFeedbackCellState extends State<_ControlFeedbackCell> {
                     (states) => _controlOverlayColor(colorScheme, states),
                   ),
                   child: SizedBox(
-                    height: 44,
+                    height: AppSizes.minTouchTarget,
                     width: double.infinity,
                     child: widget.child,
                   ),

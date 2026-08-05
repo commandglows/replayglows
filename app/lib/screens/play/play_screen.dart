@@ -1494,7 +1494,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
               itemBuilder: (context, index) => Card(
                 margin: const EdgeInsets.only(bottom: AppSpacing.xs),
                 child: Container(
-                  height: 56,
+                  height: AppSizes.playControlHeight,
                   color: Theme.of(context).colorScheme.surface,
                 ),
               ),

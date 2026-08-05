@@ -22,19 +22,10 @@ class _CreatePlaylistScreenState extends ConsumerState<CreatePlaylistScreen> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   bool _isPublic = true;
-  Color _selectedColor = Colors.purple;
+  Color _selectedColor = AppColors.playlistPurple;
   bool _isSaving = false;
 
-  static const _colorOptions = [
-    Colors.purple,
-    Colors.blue,
-    Colors.teal,
-    Colors.green,
-    Colors.orange,
-    Colors.red,
-    Colors.pink,
-    Colors.indigo,
-  ];
+  static const _colorOptions = AppColors.playlistPalette;
 
   @override
   void dispose() {
@@ -164,7 +155,7 @@ class _CreatePlaylistScreenState extends ConsumerState<CreatePlaylistScreen> {
                 children: [
                   Container(
                     width: AppSpacing.xxs,
-                    height: 60,
+                    height: AppSizes.playlistAccentHeight,
                     color: _selectedColor,
                   ),
                   const SizedBox(width: AppSpacing.sm),

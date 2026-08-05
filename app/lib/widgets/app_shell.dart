@@ -443,7 +443,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       onPointerUp: _resetSeekBarSwipeTracking,
       onPointerCancel: _resetSeekBarSwipeTracking,
       child: Container(
-        height: 176,
+        height: AppSizes.shellBottomNavigationHeight,
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerHighest,
           border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
@@ -451,7 +451,7 @@ class _AppShellState extends ConsumerState<AppShell> {
         child: Column(
           children: [
             SizedBox(
-              height: 72,
+              height: AppSizes.shellCompactAppBarHeight,
               child: Row(
                 children: [
                   _PlaybackBarButton(
@@ -567,7 +567,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     return SafeArea(
       top: false,
       child: Container(
-        height: 80,
+        height: AppSizes.shellToolbarHeight,
         decoration: BoxDecoration(
           color: colorScheme.surface,
           border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
@@ -718,7 +718,10 @@ class _AppShellState extends ConsumerState<AppShell> {
                 ),
             ],
           ),
-          const VerticalDivider(thickness: 1, width: 1),
+          const VerticalDivider(
+            thickness: AppSizes.divider,
+            width: AppSizes.divider,
+          ),
           Expanded(
             child: Column(
               children: [
@@ -918,7 +921,7 @@ class _YoutubeQuotaSyncStrip extends ConsumerWidget {
               )
             else if (progress != null)
               SizedBox(
-                width: 72,
+                width: AppSizes.navigationRailWidth,
                 child: LinearProgressIndicator(value: progress),
               ),
           ],

@@ -25,8 +25,8 @@ class YoutubeConnectionLoadingState extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(
-                    width: 28,
-                    height: 28,
+                    width: AppSizes.youtubeLoadingIndicator,
+                    height: AppSizes.youtubeLoadingIndicator,
                     child: CircularProgressIndicator(
                       strokeWidth: AppSpacing.xxxs,
                     ),
@@ -89,8 +89,8 @@ class YoutubeConnectRequiredState extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 76,
-                    height: 76,
+                    width: AppSizes.youtubeEmptyStateIcon,
+                    height: AppSizes.youtubeEmptyStateIcon,
                     decoration: BoxDecoration(
                       color: theme.colorScheme.errorContainer,
                       borderRadius: BorderRadius.circular(AppRadii.xl),
@@ -287,8 +287,8 @@ class _YoutubeConnectionSettingsCardState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: AppSizes.youtubeAction,
+                    height: AppSizes.youtubeAction,
                     decoration: BoxDecoration(
                       color: accentColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(AppRadii.lg),
@@ -325,8 +325,8 @@ class _YoutubeConnectionSettingsCardState
                 const Row(
                   children: [
                     SizedBox(
-                      width: 16,
-                      height: 16,
+                      width: AppSizes.iconSmall,
+                      height: AppSizes.iconSmall,
                       child: CircularProgressIndicator(
                         strokeWidth: AppSpacing.xxxs,
                       ),
@@ -345,8 +345,8 @@ class _YoutubeConnectionSettingsCardState
                         onPressed: _busy ? null : _connect,
                         icon: _busy
                             ? const SizedBox(
-                                width: 16,
-                                height: 16,
+                                width: AppSizes.iconSmall,
+                                height: AppSizes.iconSmall,
                                 child: CircularProgressIndicator(
                                   strokeWidth: AppSpacing.xxxs,
                                 ),
@@ -359,8 +359,8 @@ class _YoutubeConnectionSettingsCardState
                         onPressed: _busy ? null : _syncNow,
                         icon: _busy
                             ? const SizedBox(
-                                width: 16,
-                                height: 16,
+                                width: AppSizes.iconSmall,
+                                height: AppSizes.iconSmall,
                                 child: CircularProgressIndicator(
                                   strokeWidth: AppSpacing.xxxs,
                                 ),
@@ -444,7 +444,7 @@ class _YoutubeConnectionSettingsCardState
                         diagnosticsText,
                         style: theme.textTheme.bodySmall?.copyWith(
                           fontFamily: 'monospace',
-                          height: 1.4,
+                          height: AppTypography.mediaLineHeight,
                         ),
                       ),
                     ),
@@ -525,8 +525,8 @@ class _ConnectYoutubeEmptyState extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 78,
-                height: 78,
+                width: AppSizes.youtubeConnectedIcon,
+                height: AppSizes.youtubeConnectedIcon,
                 decoration: BoxDecoration(
                   color: theme.colorScheme.errorContainer,
                   borderRadius: BorderRadius.circular(AppRadii.xl),
@@ -562,8 +562,8 @@ class _ConnectYoutubeEmptyState extends ConsumerWidget {
                       : () => _launchYoutubeConnect(context),
                   icon: loading
                       ? const SizedBox(
-                          width: 16,
-                          height: 16,
+                          width: AppSizes.iconSmall,
+                          height: AppSizes.iconSmall,
                           child: CircularProgressIndicator(
                             strokeWidth: AppSpacing.xxxs,
                           ),

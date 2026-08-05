@@ -56,6 +56,37 @@ abstract final class AppColors {
   static const darkMutedForeground = Color(0xFFA1A1AA);
   static const darkDestructive = Color(0xFF7F1D1D);
   static const darkBorder = Color(0xFF27272A);
+
+  // Runtime-selectable playlist palette. These colors are persisted as user
+  // data, but remain centralized so every playlist surface uses the same set.
+  static const playlistPurple = Colors.purple;
+  static const playlistBlue = Colors.blue;
+  static const playlistTeal = Colors.teal;
+  static const playlistGreen = Colors.green;
+  static const playlistOrange = Colors.orange;
+  static const playlistRed = Colors.red;
+  static const playlistPink = Colors.pink;
+  static const playlistIndigo = Colors.indigo;
+  static const playlistPalette = <Color>[
+    playlistPurple,
+    playlistBlue,
+    playlistTeal,
+    playlistGreen,
+    playlistOrange,
+    playlistRed,
+    playlistPink,
+    playlistIndigo,
+  ];
+
+  // YouTube poster overlays need fixed contrast independent of app theme.
+  static const videoOverlayBase = Colors.black;
+  static const videoOverlayTop = Color(0xA3000000);
+  static const videoOverlayMiddle = Color(0x2E000000);
+  static const videoOverlayBottom = Color(0x8F000000);
+  static const videoOverlayAvatar = Color(0x3DFFFFFF);
+  static const videoOverlayForeground = Colors.white;
+  static const videoOverlayMuted = Color(0xD1FFFFFF);
+  static const videoOverlayShadow = Color(0x5C000000);
 }
 
 /// Spacing scale shared by app surfaces and reusable widgets.
@@ -104,6 +135,8 @@ abstract final class AppTypography {
   static const labelLarge = 14.0;
   static const labelMedium = 12.0;
   static const labelSmall = 11.0;
+  static const mediaLineHeight = 1.4;
+  static const noteLineHeight = 1.6;
 }
 
 /// Elevation and opacity roles for Material surfaces.
@@ -143,6 +176,57 @@ abstract final class AppSizes {
   static const emptyStateIcon = 64.0;
   static const compactProgress = 18.0;
   static const authPanelMaxWidth = 520.0;
+  static const divider = 1.0;
+  static const youtubeLoadingIndicator = 28.0;
+  static const youtubeEmptyStateIcon = 76.0;
+  static const youtubeAction = 44.0;
+  static const youtubeConnectedIcon = 78.0;
+  static const navigationRailWidth = 72.0;
+  static const shellBottomNavigationHeight = 176.0;
+  static const shellCompactAppBarHeight = 72.0;
+  static const shellToolbarHeight = 80.0;
+  static const videoHeroHeight = 360.0;
+  static const videoPanelHeight = 200.0;
+  static const videoProgressStroke = 1.5;
+  static const feedHeroHeight = 220.0;
+  static const avatarSmall = 36.0;
+  static const thumbnailWidth = 120.0;
+  static const thumbnailHeight = 90.0;
+  static const thumbnailLandscapeWidth = 100.0;
+  static const thumbnailLandscapeHeight = 56.0;
+  static const thumbnailCompactWidth = 80.0;
+  static const thumbnailCompactHeight = 45.0;
+  static const thumbnailTinyWidth = 50.0;
+  static const thumbnailTinyHeight = 36.0;
+  static const skeletonTitleHeight = 14.0;
+  static const skeletonTitleWidth = 120.0;
+  static const skeletonMetaHeight = 10.0;
+  static const skeletonMetaWidth = 80.0;
+  static const skeletonWideTitleWidth = 200.0;
+  static const skeletonWideMetaWidth = 120.0;
+  static const skeletonPlaylistTitleWidth = 100.0;
+  static const skeletonPlaylistMetaWidth = 60.0;
+  static const skeletonDetailTitleWidth = 160.0;
+  static const playlistAccentHeight = 60.0;
+  static const bottomContentInset = 96.0;
+  static const playControlHeight = 56.0;
+  static const notificationActionWidth = 56.0;
+  static const notificationActionHeight = 42.0;
+  static const emptyStateSmallIcon = 48.0;
+  static const feedbackOffset = 8.0;
+  static const preferencesPanelWidth = 160.0;
+  static const compactDividerHeight = 8.0;
+  static const statsShortChartHeight = 100.0;
+  static const statsMediumChartHeight = 200.0;
+  static const statsTallChartHeight = 300.0;
+  static const statsSummaryHeight = 80.0;
+  static const noteThumbnailWidth = 50.0;
+  static const noteDetailHeaderHeight = 60.0;
+  static const noteDetailMetaHeight = 30.0;
+  static const noteDetailMetaWidth = 80.0;
+  static const noteDetailEditorHeight = 100.0;
+  static const noteActionWidth = 64.0;
+  static const noteActionHeight = 36.0;
 }
 
 /// Central theme configuration for ReplayGlows.

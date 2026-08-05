@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:replayglows_app/app/theme.dart';
+
 enum WebYoutubePlaybackState {
   unstarted,
   ended,
@@ -61,6 +63,6 @@ class WebYoutubeEmbed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ColoredBox(color: Colors.black);
+    return const ColoredBox(color: AppColors.videoOverlayBase);
   }
 }

@@ -67,11 +67,26 @@ class StatsScreen extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          Card(child: Container(height: 100, color: colorScheme.surface)),
+          Card(
+            child: Container(
+              height: AppSizes.statsShortChartHeight,
+              color: colorScheme.surface,
+            ),
+          ),
           const SizedBox(height: AppSpacing.md),
-          Card(child: Container(height: 200, color: colorScheme.surface)),
+          Card(
+            child: Container(
+              height: AppSizes.statsMediumChartHeight,
+              color: colorScheme.surface,
+            ),
+          ),
           const SizedBox(height: AppSpacing.md),
-          Card(child: Container(height: 300, color: colorScheme.surface)),
+          Card(
+            child: Container(
+              height: AppSizes.statsTallChartHeight,
+              color: colorScheme.surface,
+            ),
+          ),
         ],
       ),
     );
@@ -186,7 +201,7 @@ class StatsScreen extends ConsumerWidget {
             Text('Last 7 Days', style: Theme.of(context).textTheme.labelMedium),
             const SizedBox(height: AppSpacing.xs),
             SizedBox(
-              height: 80,
+              height: AppSizes.statsSummaryHeight,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: List.generate(7, (index) {

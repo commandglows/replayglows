@@ -1515,7 +1515,7 @@ class _DiagnosticsCard extends ConsumerWidget {
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       SizedBox(
-                        width: 160,
+                        width: AppSizes.preferencesPanelWidth,
                         child: Text(
                           r.key,
                           style: const TextStyle(
@@ -1640,7 +1640,7 @@ class _LogsCardState extends State<_LogsCard> {
                       shrinkWrap: true,
                       itemCount: entries.length,
                       separatorBuilder: (context, index) =>
-                          const Divider(height: 8),
+                          const Divider(height: AppSizes.compactDividerHeight),
                       itemBuilder: (context, i) {
                         final e = entries[i];
                         final color = switch (e.level) {

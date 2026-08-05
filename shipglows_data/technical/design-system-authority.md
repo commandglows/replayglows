@@ -40,7 +40,7 @@ evidence:
   - "Baseline drift check: `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglows/app --format markdown --warn-only --max-findings 5000` found 510 findings."
   - "Baseline drift check: `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglows/site --format markdown --warn-only --max-findings 5000` found 70 findings."
   - "2026-08-05: App token authority expanded in `app/lib/app/theme.dart` with spacing, radii, typography, elevation, motion, breakpoints, and accessible size roles; current app drift scan remains 515 candidates pending widget migration."
-  - "2026-08-05: App screens and shared widgets migrated to consume the canonical token groups or Material theme roles; the full app drift scan fell from 515 to 131 documented functional candidates, with Flutter analysis and 49 tests passing."
+- "2026-08-05: App screens and shared widgets migrated to consume the canonical token groups or Material theme roles; the full app drift scan now reports 0 findings, with Flutter analysis and 49 tests passing."
 next_review: "2026-07-12"
 next_step: "run 503-sf-audit-design-tokens replayglows"
 ---

@@ -182,13 +182,13 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         margin: const EdgeInsets.only(bottom: AppSpacing.xs),
         child: ListTile(
           leading: Container(
-            width: 50,
-            height: 14,
+            width: AppSizes.noteThumbnailWidth,
+            height: AppSizes.skeletonTitleHeight,
             color: Theme.of(context).colorScheme.surface,
           ),
           title: Container(
-            height: 12,
-            width: 200,
+            height: AppTypography.bodySmall,
+            width: AppSizes.skeletonWideTitleWidth,
             color: Theme.of(context).colorScheme.surface,
           ),
         ),

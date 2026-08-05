@@ -86,18 +86,18 @@ class _HiddenScreenState extends ConsumerState<HiddenScreen>
         margin: const EdgeInsets.only(bottom: AppSpacing.xs),
         child: ListTile(
           leading: Container(
-            width: 80,
-            height: 45,
+            width: AppSizes.thumbnailCompactWidth,
+            height: AppSizes.thumbnailCompactHeight,
             color: Theme.of(context).colorScheme.surface,
           ),
           title: Container(
-            height: 14,
-            width: 120,
+            height: AppSizes.skeletonTitleHeight,
+            width: AppSizes.skeletonTitleWidth,
             color: Theme.of(context).colorScheme.surface,
           ),
           subtitle: Container(
-            height: 10,
-            width: 100,
+            height: AppSizes.skeletonMetaHeight,
+            width: AppSizes.thumbnailLandscapeWidth,
             color: Theme.of(context).colorScheme.surface,
           ),
         ),
@@ -127,8 +127,8 @@ class _HiddenScreenState extends ConsumerState<HiddenScreen>
           margin: const EdgeInsets.only(bottom: AppSpacing.xs),
           child: ListTile(
             leading: Container(
-              width: 80,
-              height: 45,
+              width: AppSizes.thumbnailCompactWidth,
+              height: AppSizes.thumbnailCompactHeight,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(AppRadii.sm),
@@ -189,8 +189,8 @@ class _HiddenScreenState extends ConsumerState<HiddenScreen>
           margin: const EdgeInsets.only(bottom: AppSpacing.xs),
           child: ListTile(
             leading: Container(
-              width: 48,
-              height: 48,
+              width: AppSizes.emptyStateSmallIcon,
+              height: AppSizes.emptyStateSmallIcon,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(AppRadii.md),

@@ -1397,7 +1397,7 @@ class _VirtualFeedDetailScreenState
                 ),
                 child: candidatesAsync.when(
                   loading: () => const SizedBox(
-                    height: 220,
+                    height: AppSizes.feedHeroHeight,
                     child: Center(child: CircularProgressIndicator()),
                   ),
                   error: (error, stack) => ErrorStateView(
@@ -1789,8 +1789,8 @@ class _VirtualFeedDetailScreenState
                         ListTile(
                           contentPadding: EdgeInsets.zero,
                           leading: Container(
-                            width: 36,
-                            height: 36,
+                            width: AppSizes.avatarSmall,
+                            height: AppSizes.avatarSmall,
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.18),
                               borderRadius: BorderRadius.circular(AppRadii.md),
@@ -2161,13 +2161,13 @@ class _VirtualFeedDetailScreenState
           itemCount: 8,
           itemBuilder: (context, index) => ListTile(
             title: Container(
-              height: 14,
-              width: 120,
+              height: AppSizes.skeletonTitleHeight,
+              width: AppSizes.skeletonTitleWidth,
               color: Theme.of(context).colorScheme.surface,
             ),
             subtitle: Container(
-              height: 10,
-              width: 80,
+              height: AppSizes.skeletonMetaHeight,
+              width: AppSizes.skeletonMetaWidth,
               color: Theme.of(context).colorScheme.surface,
             ),
           ),

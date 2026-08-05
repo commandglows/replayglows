@@ -100,18 +100,18 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  height: 60,
+                  height: AppSizes.noteDetailHeaderHeight,
                   color: Theme.of(context).colorScheme.surface,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Container(
-                  height: 30,
-                  width: 80,
+                  height: AppSizes.noteDetailMetaHeight,
+                  width: AppSizes.noteDetailMetaWidth,
                   color: Theme.of(context).colorScheme.surface,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Container(
-                  height: 100,
+                  height: AppSizes.noteDetailEditorHeight,
                   color: Theme.of(context).colorScheme.surface,
                 ),
               ],
@@ -211,9 +211,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                   )
                 : Text(
                     note.content,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(height: 1.6),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      height: AppTypography.noteLineHeight,
+                    ),
                   ),
             const SizedBox(height: AppSpacing.lg),
 
@@ -229,8 +229,8 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     return Card(
       child: ListTile(
         leading: Container(
-          width: 64,
-          height: 36,
+          width: AppSizes.noteActionWidth,
+          height: AppSizes.noteActionHeight,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(AppRadii.sm),

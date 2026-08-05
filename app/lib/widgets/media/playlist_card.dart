@@ -43,16 +43,16 @@ class PlaylistCard extends StatelessWidget {
         child: Row(
           children: [
             SizedBox(
-              width: 120,
-              height: 90,
+              width: AppSizes.thumbnailWidth,
+              height: AppSizes.thumbnailHeight,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
                   Container(color: color.withValues(alpha: 0.2)),
                   MediaThumbnail(
                     imageUrl: playlist.effectiveThumbnailUrl,
-                    width: 120,
-                    height: 90,
+                    width: AppSizes.thumbnailWidth,
+                    height: AppSizes.thumbnailHeight,
                     icon: Icons.playlist_play,
                   ),
                   Align(

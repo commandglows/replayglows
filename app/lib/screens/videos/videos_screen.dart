@@ -1454,7 +1454,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                           onImported: _refreshVideos,
                         ),
                         SizedBox(
-                          height: 360,
+                          height: AppSizes.videoHeroHeight,
                           child: YoutubeAwareEmptyState(
                             fallbackIcon: Icons.video_library_outlined,
                             fallbackTitle: t(
@@ -1705,7 +1705,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                height: 200,
+                height: AppSizes.videoPanelHeight,
                 color: Theme.of(context).colorScheme.surface,
               ),
               Padding(
@@ -1714,14 +1714,14 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      height: 16,
-                      width: 200,
+                      height: AppSizes.iconSmall,
+                      width: AppSizes.skeletonWideTitleWidth,
                       color: Theme.of(context).colorScheme.surface,
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Container(
-                      height: 12,
-                      width: 120,
+                      height: AppTypography.bodySmall,
+                      width: AppSizes.skeletonWideMetaWidth,
                       color: Theme.of(context).colorScheme.surface,
                     ),
                   ],
@@ -1963,7 +1963,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                         color: isActive
                             ? colorScheme.primary.withValues(alpha: 0.52)
                             : colorScheme.surface.withValues(alpha: 0),
-                        width: 1.5,
+                        width: AppSizes.videoProgressStroke,
                       ),
                       boxShadow: isActive
                           ? [

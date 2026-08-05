@@ -65,7 +65,7 @@ class VideoCard extends StatelessWidget {
             children: [
               MediaThumbnail(
                 imageUrl: video.thumbnailUrl,
-                height: 200,
+                height: AppSizes.videoPanelHeight,
                 width: double.infinity,
               ),
               Padding(

@@ -142,18 +142,18 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) => ListTile(
         leading: Container(
-          width: 100,
-          height: 56,
+          width: AppSizes.thumbnailLandscapeWidth,
+          height: AppSizes.thumbnailLandscapeHeight,
           color: Theme.of(context).colorScheme.surface,
         ),
         title: Container(
-          height: 14,
-          width: 160,
+          height: AppSizes.skeletonTitleHeight,
+          width: AppSizes.skeletonDetailTitleWidth,
           color: Theme.of(context).colorScheme.surface,
         ),
         subtitle: Container(
-          height: 10,
-          width: 100,
+          height: AppSizes.skeletonMetaHeight,
+          width: AppSizes.thumbnailLandscapeWidth,
           color: Theme.of(context).colorScheme.surface,
         ),
       ),
@@ -1014,16 +1014,7 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
     descriptionController.dispose();
   }
 
-  static const _colorOptions = [
-    Colors.purple,
-    Colors.blue,
-    Colors.teal,
-    Colors.green,
-    Colors.orange,
-    Colors.red,
-    Colors.pink,
-    Colors.indigo,
-  ];
+  static const _colorOptions = AppColors.playlistPalette;
 
   String _colorToHex(Color color) {
     return '#${color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}';

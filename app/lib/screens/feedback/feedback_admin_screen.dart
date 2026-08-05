@@ -266,7 +266,7 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
                                               entry.reviewedAt != null)
                                             Padding(
                                               padding: const EdgeInsets.only(
-                                                top: 8,
+                                                top: AppSpacing.xs,
                                               ),
                                               child: Text(
                                                 'Reviewed by ${entry.reviewedByEmail} on ${formatDateTime(entry.reviewedAt, locale: locale)}',
@@ -281,7 +281,7 @@ class _FeedbackAdminScreenState extends ConsumerState<FeedbackAdminScreen> {
                                     if (entry.hasAudio)
                                       Padding(
                                         padding: const EdgeInsets.only(
-                                          left: 12,
+                                          left: AppSpacing.sm,
                                         ),
                                         child: IconButton.filledTonal(
                                           onPressed: isLoadingAudio

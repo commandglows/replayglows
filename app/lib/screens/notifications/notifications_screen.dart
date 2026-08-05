@@ -156,8 +156,8 @@ class _NotificationTile extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppRadii.sm),
         child: Image.network(
           notification.thumbnailUrl!,
-          width: 56,
-          height: 42,
+          width: AppSizes.notificationActionWidth,
+          height: AppSizes.notificationActionHeight,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) =>
               _buildIconLeading(theme),

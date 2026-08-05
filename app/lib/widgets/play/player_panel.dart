@@ -94,7 +94,7 @@ class _VideoPosterOverlay extends StatelessWidget {
     final hasChannel = channelTitle != null && channelTitle!.trim().isNotEmpty;
 
     return Material(
-      color: Colors.black,
+      color: AppColors.videoOverlayBase,
       child: InkWell(
         onTap: onPlay,
         child: Stack(
@@ -106,15 +106,15 @@ class _VideoPosterOverlay extends StatelessWidget {
               height: double.infinity,
               fit: BoxFit.cover,
             ),
-            DecoratedBox(
+            const DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.64),
-                    Colors.black.withValues(alpha: 0.18),
-                    Colors.black.withValues(alpha: 0.56),
+                    AppColors.videoOverlayTop,
+                    AppColors.videoOverlayMiddle,
+                    AppColors.videoOverlayBottom,
                   ],
                 ),
               ),
@@ -129,7 +129,7 @@ class _VideoPosterOverlay extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 16,
-                        backgroundColor: Colors.white24,
+                        backgroundColor: AppColors.videoOverlayAvatar,
                         backgroundImage:
                             channelThumbnailUrl != null &&
                                 channelThumbnailUrl!.isNotEmpty
@@ -140,7 +140,7 @@ class _VideoPosterOverlay extends StatelessWidget {
                                 channelThumbnailUrl!.isEmpty
                             ? const Icon(
                                 Icons.person,
-                                color: Colors.white,
+                                color: AppColors.videoOverlayForeground,
                                 size: AppSizes.compactProgress,
                               )
                             : null,
@@ -157,7 +157,7 @@ class _VideoPosterOverlay extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.titleSmall?.copyWith(
-                                  color: Colors.white,
+                                  color: AppColors.videoOverlayForeground,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -167,7 +167,7 @@ class _VideoPosterOverlay extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.82),
+                                  color: AppColors.videoOverlayMuted,
                                 ),
                               ),
                           ],
@@ -181,11 +181,11 @@ class _VideoPosterOverlay extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: theme.colorScheme.primary,
                         borderRadius: BorderRadius.circular(AppRadii.lg + 2),
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.36),
+                            color: AppColors.videoOverlayShadow,
                             blurRadius: AppSpacing.lg,
-                            offset: const Offset(
+                            offset: Offset(
                               0,
                               AppSpacing.xs + AppSpacing.xxxs,
                             ),
@@ -195,7 +195,7 @@ class _VideoPosterOverlay extends StatelessWidget {
                       child: IconButton(
                         tooltip: 'Play',
                         onPressed: onPlay,
-                        color: Colors.white,
+                        color: AppColors.videoOverlayForeground,
                         iconSize: 42,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 26,

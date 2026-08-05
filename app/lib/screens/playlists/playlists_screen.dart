@@ -44,16 +44,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
   static const _fabScrollRevealDelay = Duration(milliseconds: 850);
   static const _fabScrollThreshold = 12.0;
 
-  static const _colorOptions = [
-    Colors.purple,
-    Colors.blue,
-    Colors.teal,
-    Colors.green,
-    Colors.orange,
-    Colors.red,
-    Colors.pink,
-    Colors.indigo,
-  ];
+  static const _colorOptions = AppColors.playlistPalette;
 
   @override
   void dispose() {
@@ -228,7 +219,9 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                       _setFabToRestingState();
                     });
                     return ListView(
-                      padding: const EdgeInsets.only(bottom: 96),
+                      padding: const EdgeInsets.only(
+                        bottom: AppSizes.bottomContentInset,
+                      ),
                       children: [
                         YouTubeChannelOnboardingCard(
                           onImported: () {
@@ -247,7 +240,7 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                         ),
                         const SizedBox(height: AppSpacing.md),
                         SizedBox(
-                          height: 360,
+                          height: AppSizes.videoHeroHeight,
                           child: YoutubeAwareEmptyState(
                             fallbackIcon: Icons.dynamic_feed_outlined,
                             fallbackTitle: t(
@@ -340,8 +333,8 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                     child: Row(
                       children: [
                         Container(
-                          width: 120,
-                          height: 90,
+                          width: AppSizes.thumbnailWidth,
+                          height: AppSizes.thumbnailHeight,
                           color: Theme.of(context).colorScheme.surface,
                         ),
                         Expanded(
@@ -351,14 +344,14 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  height: 14,
-                                  width: 100,
+                                  height: AppSizes.skeletonTitleHeight,
+                                  width: AppSizes.skeletonPlaylistTitleWidth,
                                   color: Theme.of(context).colorScheme.surface,
                                 ),
                                 const SizedBox(height: AppSpacing.xs),
                                 Container(
-                                  height: 10,
-                                  width: 60,
+                                  height: AppSizes.skeletonMetaHeight,
+                                  width: AppSizes.skeletonPlaylistMetaWidth,
                                   color: Theme.of(context).colorScheme.surface,
                                 ),
                               ],
@@ -383,8 +376,8 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                 child: Row(
                   children: [
                     Container(
-                      width: 120,
-                      height: 90,
+                      width: AppSizes.thumbnailWidth,
+                      height: AppSizes.thumbnailHeight,
                       color: Theme.of(context).colorScheme.surface,
                     ),
                     Expanded(
@@ -394,14 +387,14 @@ class _PlaylistsScreenState extends ConsumerState<PlaylistsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              height: 14,
-                              width: 100,
+                              height: AppSizes.skeletonTitleHeight,
+                              width: AppSizes.skeletonPlaylistTitleWidth,
                               color: Theme.of(context).colorScheme.surface,
                             ),
                             const SizedBox(height: AppSpacing.xs),
                             Container(
-                              height: 10,
-                              width: 60,
+                              height: AppSizes.skeletonMetaHeight,
+                              width: AppSizes.skeletonPlaylistMetaWidth,
                               color: Theme.of(context).colorScheme.surface,
                             ),
                           ],
