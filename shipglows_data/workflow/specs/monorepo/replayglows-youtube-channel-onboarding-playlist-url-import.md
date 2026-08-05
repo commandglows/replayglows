@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-26"
 created_at: "2026-05-26 06:20:51 UTC"
 updated: "2026-05-26"
@@ -12,7 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "youtube-channel-onboarding-playlist-url-import"
 owner: "Diane"
-user_story: "En tant qu'utilisateur ReplayGlowz qui a connecte YouTube mais dont la bibliotheque n'est pas decouvrable automatiquement, je veux comprendre pourquoi et importer mes playlists par URL si besoin, afin de recuperer mes videos sans erreur technique ni obligation confuse."
+user_story: "En tant qu'utilisateur ReplayGlows qui a connecte YouTube mais dont la bibliotheque n'est pas decouvrable automatiquement, je veux comprendre pourquoi et importer mes playlists par URL si besoin, afin de recuperer mes videos sans erreur technique ni obligation confuse."
 confidence: "high"
 risk_level: "high"
 security_impact: "yes"
@@ -32,13 +32,13 @@ depends_on:
   - artifact: "shipglows_data/workflow/audits/2026-05-26-youtube-edge-case-regression-checklist.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-1.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-1.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-2.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-2.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-3.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-3.md"
     artifact_version: "1.0.0"
     required_status: "ready"
   - artifact: "YouTube Help: Create a YouTube channel"
@@ -63,14 +63,14 @@ evidence:
   - "YouTube Data API playlistItems.list can retrieve items from a playlist by playlist ID, but special lists such as Watch Later can be unsupported."
   - "Current backend already has `youtube:fetchPlaylistItems`, `youtube:updatePlaylistsCache`, and `youtube:updateVideosCache`."
   - "Current Flutter app already has Playlists, Videos, Preferences, connect states, i18n maps, and sync mutations."
-next_step: "/sf-verify replayglowz-youtube-channel-onboarding-playlist-url-import"
+next_step: "/sf-verify replayglows-youtube-channel-onboarding-playlist-url-import"
 ---
 
-# Spec: ReplayGlowz YouTube Channel Onboarding And Playlist URL Import
+# Spec: ReplayGlows YouTube Channel Onboarding And Playlist URL Import
 
 ## Title
 
-ReplayGlowz YouTube channel onboarding and playlist URL import
+ReplayGlows YouTube channel onboarding and playlist URL import
 
 ## Status
 
@@ -78,19 +78,19 @@ ready
 
 ## User Story
 
-En tant qu'utilisateur ReplayGlowz qui a connecte YouTube mais dont la bibliotheque n'est pas decouvrable automatiquement, je veux comprendre pourquoi et importer mes playlists par URL si besoin, afin de recuperer mes videos sans erreur technique ni obligation confuse.
+En tant qu'utilisateur ReplayGlows qui a connecte YouTube mais dont la bibliotheque n'est pas decouvrable automatiquement, je veux comprendre pourquoi et importer mes playlists par URL si besoin, afin de recuperer mes videos sans erreur technique ni obligation confuse.
 
 ## Minimal Behavior Contract
 
-Quand ReplayGlowz detecte qu'un compte YouTube connecte ne permet pas de decouvrir automatiquement les playlists via l'API, l'app explique que la creation d'une chaine YouTube active la synchronisation automatique des playlists sans obliger a publier des videos, puis propose soit d'ouvrir l'aide/creation de chaine YouTube, soit d'importer une playlist publique ou non repertoriee par URL. L'import par URL valide l'URL cote client et cote backend, lit la playlist par ID explicite avec YouTube Data API, met en cache la playlist et ses videos dans ReplayGlowz, respecte les quotas, et retourne un etat clair si la playlist est privee, introuvable, Watch Later, trop grande ou non supportee. L'edge case facile a rater est un compte qui voit une playlist dans l'interface YouTube mais dont `playlists.list?mine=true` echoue parce que la playlist n'est pas decouvrable comme playlist possedee par une chaine.
+Quand ReplayGlows detecte qu'un compte YouTube connecte ne permet pas de decouvrir automatiquement les playlists via l'API, l'app explique que la creation d'une chaine YouTube active la synchronisation automatique des playlists sans obliger a publier des videos, puis propose soit d'ouvrir l'aide/creation de chaine YouTube, soit d'importer une playlist publique ou non repertoriee par URL. L'import par URL valide l'URL cote client et cote backend, lit la playlist par ID explicite avec YouTube Data API, met en cache la playlist et ses videos dans ReplayGlows, respecte les quotas, et retourne un etat clair si la playlist est privee, introuvable, Watch Later, trop grande ou non supportee. L'edge case facile a rater est un compte qui voit une playlist dans l'interface YouTube mais dont `playlists.list?mine=true` echoue parce que la playlist n'est pas decouvrable comme playlist possedee par une chaine.
 
 ## Success Behavior
 
-- Preconditions: l'utilisateur est authentifie dans ReplayGlowz, YouTube OAuth est connecte, Convex auth est pret, et le backend possede un access token YouTube valide ou rafraichissable.
+- Preconditions: l'utilisateur est authentifie dans ReplayGlows, YouTube OAuth est connecte, Convex auth est pret, et le backend possede un access token YouTube valide ou rafraichissable.
 - Trigger: l'utilisateur ouvre Videos, Playlists ou Preferences apres une sync vide/missing-channel, ou colle une URL de playlist YouTube dans un formulaire d'import.
-- User/operator result: l'utilisateur comprend que creer une chaine YouTube permet la synchronisation automatique des playlists, que cela ne change pas son compte ReplayGlowz et ne l'oblige pas a publier des videos.
+- User/operator result: l'utilisateur comprend que creer une chaine YouTube permet la synchronisation automatique des playlists, que cela ne change pas son compte ReplayGlows et ne l'oblige pas a publier des videos.
 - User/operator result: l'utilisateur peut choisir de creer/ouvrir la configuration de chaine YouTube ou d'importer une playlist par URL.
-- User/operator result: une URL valide de playlist publique ou non repertoriee importe une playlist cachee dans ReplayGlowz, puis les videos apparaissent dans Playlists et dans le feed Videos.
+- User/operator result: une URL valide de playlist publique ou non repertoriee importe une playlist cachee dans ReplayGlows, puis les videos apparaissent dans Playlists et dans le feed Videos.
 - User/operator result: si la playlist est trop grande, l'import se termine avec un message partiel lisible et conserve les videos deja importees dans la limite fixee.
 - System effect: le cache distingue les playlists decouvertes automatiquement, les playlists importees par URL et la playlist virtuelle Subscriptions afin qu'une sync automatique ne supprime pas les imports URL.
 - System effect: les appels YouTube sont journalises dans les metrics quota sans exposer de tokens, cookies, OAuth codes, URLs completes non repertoriees ou secrets.
@@ -105,11 +105,11 @@ Quand ReplayGlowz detecte qu'un compte YouTube connecte ne permet pas de decouvr
 - Quota proche du seuil: l'import est bloque ou confirme via le guard quota existant avant les appels couteux.
 - Quota atteint pendant l'import: l'import devient partiel, conserve les videos importees, indique le nombre importe et invite a reprendre plus tard.
 - Playlist enorme: l'import s'arrete a une limite bornee de 500 videos par execution, conserve les videos deja importees, marque le resultat comme partiel et indique que le reste n'a pas encore ete importe.
-- Must never happen: logguer des tokens ou l'URL complete d'une playlist non repertoriee, supprimer une playlist importee par URL pendant une sync `mine=true`, promettre l'import de Watch Later, forcer la creation d'une chaine, ou melanger les donnees YouTube entre deux `user_...` ReplayGlowz.
+- Must never happen: logguer des tokens ou l'URL complete d'une playlist non repertoriee, supprimer une playlist importee par URL pendant une sync `mine=true`, promettre l'import de Watch Later, forcer la creation d'une chaine, ou melanger les donnees YouTube entre deux `user_...` ReplayGlows.
 
 ## Problem
 
-Le flux actuel suppose encore trop souvent que la bibliotheque YouTube utile est decouvrable automatiquement via `playlists.list?mine=true` ou via les abonnements. Or l'interface YouTube peut montrer des playlists ou Watch Later a un compte qui a toujours un bouton "creer une chaine". Dans cette situation, ReplayGlowz peut afficher une app vide ou des messages trop techniques alors que l'utilisateur a bien des playlists exploitables par URL, ou a simplement besoin de creer une chaine pour rendre la decouverte automatique coherente.
+Le flux actuel suppose encore trop souvent que la bibliotheque YouTube utile est decouvrable automatiquement via `playlists.list?mine=true` ou via les abonnements. Or l'interface YouTube peut montrer des playlists ou Watch Later a un compte qui a toujours un bouton "creer une chaine". Dans cette situation, ReplayGlows peut afficher une app vide ou des messages trop techniques alors que l'utilisateur a bien des playlists exploitables par URL, ou a simplement besoin de creer une chaine pour rendre la decouverte automatique coherente.
 
 ## Solution
 
@@ -118,7 +118,7 @@ Ajouter un onboarding contextualise pour les comptes connectes avec bibliotheque
 ## Scope In
 
 - Detection et exposition UI d'un etat "YouTube connecte, playlists automatiques indisponibles ou vides".
-- Copy onboarding ReplayGlowz-first expliquant la creation de chaine YouTube sans panique ni jargon API.
+- Copy onboarding ReplayGlows-first expliquant la creation de chaine YouTube sans panique ni jargon API.
 - CTA pour ouvrir l'aide ou la configuration YouTube de creation de chaine.
 - Formulaire d'import de playlist par URL dans Playlists et/ou Preferences, reutilisable dans les empty states.
 - Parsing URL/ID de playlist cote Flutter et validation authoritative cote backend.
@@ -144,10 +144,10 @@ Ajouter un onboarding contextualise pour les comptes connectes avec bibliotheque
 
 ## Constraints
 
-- L'onboarding doit rester simple et non culpabilisant: creer une chaine est presente comme une option pratique, pas comme une obligation pour utiliser ReplayGlowz.
+- L'onboarding doit rester simple et non culpabilisant: creer une chaine est presente comme une option pratique, pas comme une obligation pour utiliser ReplayGlows.
 - L'utilisateur doit pouvoir continuer avec import par URL sans creer de chaine.
 - Les URL de playlists non repertoriees sont des donnees sensibles: ne pas les logguer brutes et ne pas les afficher dans diagnostics partageables sauf sous forme tronquee ou ID masque.
-- Les imports URL doivent rester scopes au `user_...` ReplayGlowz courant.
+- Les imports URL doivent rester scopes au `user_...` ReplayGlows courant.
 - Les imports URL ne doivent pas etre supprimes par une sync automatique `mine=true`.
 - Le backend doit respecter les limites quota existantes et logguer chaque appel YouTube avec `metrics.logApiCallInternal`.
 - Les erreurs YouTube doivent etre mappees vers des messages utilisateur sans exposer la reponse brute dans l'UI.
@@ -186,11 +186,11 @@ Ajouter un onboarding contextualise pour les comptes connectes avec bibliotheque
 - YouTube OAuth connection success is separate from playlist discovery success.
 - Missing channel/profile is not an auth failure and not a product entitlement failure.
 - Subscription sync remains independent from playlist discovery.
-- Imported URL playlists are first-class cached playlists for ReplayGlowz reading, notes, watched state and feed display.
+- Imported URL playlists are first-class cached playlists for ReplayGlows reading, notes, watched state and feed display.
 - Imported URL playlists are read-only unless a later feature proves the user owns the playlist and can write to it.
 - Existing owned playlist CRUD must keep working for accounts with a channel.
 - `__subscriptions__` remains virtual and must not be treated as a normal writable YouTube playlist.
-- All cached reads remain filtered by current ReplayGlowz user.
+- All cached reads remain filtered by current ReplayGlows user.
 - A single URL import execution must import at most 500 playlist items, even if the YouTube playlist contains more videos.
 
 ## Links & Consequences
@@ -224,7 +224,7 @@ Ajouter un onboarding contextualise pour les comptes connectes avec bibliotheque
 - User imports the same playlist twice.
 - User imports a playlist that later appears in owned `mine=true` discovery.
 - User disconnects YouTube after importing URL playlists.
-- User signs in with another ReplayGlowz account in the same browser.
+- User signs in with another ReplayGlows account in the same browser.
 - Quota reaches hard stop mid-import.
 
 ## Implementation Tasks
@@ -291,7 +291,7 @@ Ajouter un onboarding contextualise pour les comptes connectes avec bibliotheque
   - User story link: Keeps onboarding clear in both product languages.
   - Depends on: Tasks 6-7.
   - Validate with: Flutter analyze and source check for hard-coded new copy.
-  - Notes: Copy must say creating a channel does not require publishing videos and does not change the ReplayGlowz account.
+  - Notes: Copy must say creating a channel does not require publishing videos and does not change the ReplayGlows account.
 
 - [x] Task 9: Add regression tests and source checks.
   - File: `app/test/`, backend test location if available, `shipglows_data/workflow/audits/2026-05-26-youtube-edge-case-regression-checklist.md`.
@@ -303,10 +303,10 @@ Ajouter un onboarding contextualise pour les comptes connectes avec bibliotheque
 
 ## Acceptance Criteria
 
-- [ ] CA 1: Given YouTube is connected and automatic playlist discovery returns missing-channel/empty, when the user opens Playlists, then ReplayGlowz explains the channel requirement for automatic playlist sync and shows import-by-URL as an alternative.
-- [ ] CA 2: Given the user clicks the create-channel CTA, when the target opens, then it leads to an official YouTube channel creation/help path without altering ReplayGlowz state.
+- [ ] CA 1: Given YouTube is connected and automatic playlist discovery returns missing-channel/empty, when the user opens Playlists, then ReplayGlows explains the channel requirement for automatic playlist sync and shows import-by-URL as an alternative.
+- [ ] CA 2: Given the user clicks the create-channel CTA, when the target opens, then it leads to an official YouTube channel creation/help path without altering ReplayGlows state.
 - [ ] CA 3: Given the user pastes a valid public or non-repertorie playlist URL, when they import it, then the playlist and videos appear in Playlists and Videos.
-- [ ] CA 4: Given a video URL contains a `list=...` parameter, when the user imports it, then ReplayGlowz extracts the playlist ID and imports the playlist.
+- [ ] CA 4: Given a video URL contains a `list=...` parameter, when the user imports it, then ReplayGlows extracts the playlist ID and imports the playlist.
 - [ ] CA 5: Given the user imports the same playlist twice, when the second import completes, then cache entries are updated without duplicate playlist cards or duplicate videos.
 - [ ] CA 6: Given an imported URL playlist exists, when automatic sync runs and `playlists.list mine=true` returns an empty list, then the imported playlist remains visible.
 - [ ] CA 7: Given the user imports Watch Later or an unsupported special playlist, when the backend receives it, then the app shows a specific unsupported message and does not mutate cache.
@@ -372,9 +372,9 @@ None blocking for spec readiness. During implementation, verify whether the dire
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-26 06:20:51 UTC | sf-spec | GPT-5 Codex | Created spec for YouTube channel onboarding and playlist URL import after API edge-case research and operator decision. | draft spec created | `/sf-ready replayglowz-youtube-channel-onboarding-playlist-url-import` |
-| 2026-05-26 07:09:12 UTC | sf-ready | GPT-5 Codex | Reviewed structure, metadata, user-story fit, API freshness, task order, security, adversarial risks and quota bounds; fixed the import cap from ambiguous example to explicit 500 videos per execution. | ready | `/sf-start replayglowz-youtube-channel-onboarding-playlist-url-import` |
-| 2026-05-26 07:10:00 UTC | sf-start | GPT-5 Codex + backend sub-agent | Implemented backend URL import, cache source preservation, Flutter onboarding/import UI, EN/FR copy and focused tests. | implemented locally; static checks passed | `/sf-verify replayglowz-youtube-channel-onboarding-playlist-url-import` |
+| 2026-05-26 06:20:51 UTC | sf-spec | GPT-5 Codex | Created spec for YouTube channel onboarding and playlist URL import after API edge-case research and operator decision. | draft spec created | `/sf-ready replayglows-youtube-channel-onboarding-playlist-url-import` |
+| 2026-05-26 07:09:12 UTC | sf-ready | GPT-5 Codex | Reviewed structure, metadata, user-story fit, API freshness, task order, security, adversarial risks and quota bounds; fixed the import cap from ambiguous example to explicit 500 videos per execution. | ready | `/sf-start replayglows-youtube-channel-onboarding-playlist-url-import` |
+| 2026-05-26 07:10:00 UTC | sf-start | GPT-5 Codex + backend sub-agent | Implemented backend URL import, cache source preservation, Flutter onboarding/import UI, EN/FR copy and focused tests. | implemented locally; static checks passed | `/sf-verify replayglows-youtube-channel-onboarding-playlist-url-import` |
 
 ## Current Chantier Flow
 

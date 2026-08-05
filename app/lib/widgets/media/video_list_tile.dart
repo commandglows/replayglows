@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:replayglowz_app/app/theme.dart';
-import 'package:replayglowz_app/models/models.dart';
-import 'package:replayglowz_app/utils/duration_utils.dart';
-import 'package:replayglowz_app/widgets/media/media_thumbnail.dart';
+import 'package:replayglows_app/app/theme.dart';
+import 'package:replayglows_app/models/models.dart';
+import 'package:replayglows_app/utils/duration_utils.dart';
+import 'package:replayglows_app/widgets/media/media_thumbnail.dart';
 
 class VideoListTile extends StatelessWidget {
   const VideoListTile({

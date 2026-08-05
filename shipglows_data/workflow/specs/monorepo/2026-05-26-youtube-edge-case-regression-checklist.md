@@ -2,7 +2,7 @@
 artifact: audit_report
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-26"
 updated: "2026-05-26"
 status: "draft"
@@ -29,14 +29,14 @@ linked_systems:
   - "YouTube OAuth"
   - "YouTube Data API"
 depends_on:
-  - "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-1.md"
-  - "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-2.md"
-  - "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-3.md"
+  - "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-1.md"
+  - "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-2.md"
+  - "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-3.md"
 supersedes: []
 evidence:
   - "Production diagnostics from 2026-05-24 through 2026-05-26."
   - "Convex prod logs for youtube:startQuotaSafeSync and youtube:fetchYoutubePlaylists."
-  - "Operator QA with personal account and dedicated ReplayGlowz test Google account."
+  - "Operator QA with personal account and dedicated ReplayGlows test Google account."
   - "YouTube Help: https://support.google.com/youtube/answer/1646861"
   - "YouTube Data API playlists.list: https://developers.google.com/youtube/v3/docs/playlists/list"
   - "YouTube Data API subscriptions.list: https://developers.google.com/youtube/v3/docs/subscriptions/list"
@@ -45,29 +45,29 @@ evidence:
   - "app/lib/screens/videos/videos_screen.dart"
   - "app/lib/screens/playlists/playlists_screen.dart"
   - "app/lib/widgets/youtube_connect_ui_states.dart"
-next_step: "/sf-test ReplayGlowz YouTube edge-case regression checklist"
+next_step: "/sf-test ReplayGlows YouTube edge-case regression checklist"
 ---
 
-# ReplayGlowz YouTube Edge-Case Regression Checklist
+# ReplayGlows YouTube Edge-Case Regression Checklist
 
 ## Purpose
 
-Keep a durable list of YouTube account states that must be retested whenever ReplayGlowz changes YouTube OAuth, sync, feed, playlists, quota handling, onboarding, or empty states.
+Keep a durable list of YouTube account states that must be retested whenever ReplayGlows changes YouTube OAuth, sync, feed, playlists, quota handling, onboarding, or empty states.
 
-These cases are easy to forget because YouTube separates Google accounts, YouTube channels, subscriptions, playlists, uploaded videos, and OAuth scopes. ReplayGlowz must support users who only consume YouTube content, not only users who own or publish on a YouTube channel.
+These cases are easy to forget because YouTube separates Google accounts, YouTube channels, subscriptions, playlists, uploaded videos, and OAuth scopes. ReplayGlows must support users who only consume YouTube content, not only users who own or publish on a YouTube channel.
 
-ReplayGlowz identity and YouTube identity are also separate. A user can sign in to ReplayGlowz through Clerk email/password while authorising YouTube through a Google OAuth account. That is valid, but it must be tested because it creates account-linking edge cases that look like YouTube sync bugs.
+ReplayGlows identity and YouTube identity are also separate. A user can sign in to ReplayGlows through Clerk email/password while authorising YouTube through a Google OAuth account. That is valid, but it must be tested because it creates account-linking edge cases that look like YouTube sync bugs.
 
 ## Core Principle
 
-A ReplayGlowz user does not need a personal YouTube channel to use the app.
+A ReplayGlows user does not need a personal YouTube channel to use the app.
 
 Valid content sources:
 
 - Subscriptions: channels the Google/YouTube account follows.
-- Playlists: playlists owned by a YouTube channel, or specific public/unlisted playlist URLs/IDs imported explicitly into ReplayGlowz.
-- Explicit playlist imports: public or unlisted YouTube playlist URLs/IDs imported into ReplayGlowz cache when automatic `mine=true` discovery is unavailable.
-- Saved/imported videos cached in ReplayGlowz.
+- Playlists: playlists owned by a YouTube channel, or specific public/unlisted playlist URLs/IDs imported explicitly into ReplayGlows.
+- Explicit playlist imports: public or unlisted YouTube playlist URLs/IDs imported into ReplayGlows cache when automatic `mine=true` discovery is unavailable.
+- Saved/imported videos cached in ReplayGlows.
 
 Invalid assumption:
 
@@ -75,7 +75,7 @@ Invalid assumption:
 
 ## API Research Findings
 
-Official docs clarify a split that matters for ReplayGlowz QA:
+Official docs clarify a split that matters for ReplayGlows QA:
 
 - A Google Account can watch, like, and subscribe to channels without creating a YouTube channel. Creating playlists requires a YouTube channel according to YouTube Help.
 - `subscriptions.list?mine=true` is the API path for the authenticated user's subscriptions. It is the correct source for users who consume YouTube via subscriptions.
@@ -85,9 +85,9 @@ Official docs clarify a split that matters for ReplayGlowz QA:
 
 Product consequence:
 
-- ReplayGlowz should keep playlist sync and subscription sync independent.
+- ReplayGlows should keep playlist sync and subscription sync independent.
 - If a user reports playlists visible on youtube.com but has no channel, verify whether those are saved/library playlists, Watch Later, legacy/consumer-library lists, or channel-owned created playlists. The current API path may not expose saved/library playlists through `playlists.list?mine=true`.
-- Explicit playlist-URL import is now the fallback for users who expect ReplayGlowz to import playlists that are visible/saved in the YouTube UI but not discoverable through `playlists.list mine=true`.
+- Explicit playlist-URL import is now the fallback for users who expect ReplayGlows to import playlists that are visible/saved in the YouTube UI but not discoverable through `playlists.list mine=true`.
 - Do not use the presence of a "Create channel" button in YouTube UI as proof that the account has no YouTube library data. It only proves YouTube is still offering to create or complete a public channel/profile surface.
 
 ## Regression Matrix
@@ -106,16 +106,16 @@ Product consequence:
 | YT-EDGE-010 | Vivaldi/browser tracking protection blocks Clerk or Convex scripts | App shows unblock/adblock guidance fallback. | Permanent white page without explanation. | Bootstrap, sign-in, protected app |
 | YT-EDGE-011 | YouTube quota near warning threshold | UI shows quota/progress and disables or warns before expensive sync. | Launching full sync blindly; hiding quota usage. | Videos refresh, Playlists refresh, Stats |
 | YT-EDGE-012 | YouTube quota hard stop reached | Sync stops before next expensive request and marks job partial with a readable reason. | Burning quota past safety threshold; generic Server Error. | Sync job, snackbar, Stats |
-| YT-EDGE-013 | ReplayGlowz account created with Clerk email/password; YouTube authorised with a Google account using the same email | YouTube tokens attach to the current ReplayGlowz `user_...`; UI reads the same user session and shows the correct connection/sync state. | Assuming ReplayGlowz login provider must be Google; losing tokens because the Clerk login method differs. | Sign-in, YouTube connect, Convex token storage, Preferences diagnostics |
-| YT-EDGE-014 | ReplayGlowz account created with Clerk email/password; YouTube authorised with a different Google account | App still links YouTube tokens to the current ReplayGlowz user, but diagnostics/support copy must make the linked YouTube identity clear enough to avoid confusion. | Saving tokens to another ReplayGlowz user; showing playlists/subscriptions from an unexpected Google account without explainability. | YouTube callback, Preferences diagnostics, account/help copy |
-| YT-EDGE-015 | User signs into ReplayGlowz with one Clerk session but browser has another Google account selected during YouTube OAuth | OAuth succeeds only for the Google account selected in the Google consent screen; ReplayGlowz stores that YouTube authorization against the active Clerk user. | UI reading a stale Clerk session; callback associating tokens with the wrong `user_...`; silent cross-account mix-up. | YouTube OAuth start/callback, Clerk session handoff, Convex `saveYoutubeTokens` |
+| YT-EDGE-013 | ReplayGlows account created with Clerk email/password; YouTube authorised with a Google account using the same email | YouTube tokens attach to the current ReplayGlows `user_...`; UI reads the same user session and shows the correct connection/sync state. | Assuming ReplayGlows login provider must be Google; losing tokens because the Clerk login method differs. | Sign-in, YouTube connect, Convex token storage, Preferences diagnostics |
+| YT-EDGE-014 | ReplayGlows account created with Clerk email/password; YouTube authorised with a different Google account | App still links YouTube tokens to the current ReplayGlows user, but diagnostics/support copy must make the linked YouTube identity clear enough to avoid confusion. | Saving tokens to another ReplayGlows user; showing playlists/subscriptions from an unexpected Google account without explainability. | YouTube callback, Preferences diagnostics, account/help copy |
+| YT-EDGE-015 | User signs into ReplayGlows with one Clerk session but browser has another Google account selected during YouTube OAuth | OAuth succeeds only for the Google account selected in the Google consent screen; ReplayGlows stores that YouTube authorization against the active Clerk user. | UI reading a stale Clerk session; callback associating tokens with the wrong `user_...`; silent cross-account mix-up. | YouTube OAuth start/callback, Clerk session handoff, Convex `saveYoutubeTokens` |
 | YT-EDGE-016 | Convex stores YouTube tokens on one `user_...`, but UI later runs under another Clerk session/account | UI should show disconnected or the correct account state for the current user, never another user's YouTube data. | Cross-user token/data leakage; phantom connected state; playlists from a previous session. | Auth restore, providers, connection status, cached YouTube tables |
 | YT-EDGE-017 | Google OAuth account has visible YouTube web playlists/subscriptions but no initialized YouTube channel profile | App should treat missing channel/profile as a provider capability limitation, continue independent sync paths, and show a specific empty/unsupported message where discovery is impossible. | Generic Server Error; assuming web-visible playlists are necessarily exposed by `playlists.list mine=true`; forcing channel creation without explanation. | Playlists sync, subscriptions sync, empty states, diagnostics |
-| YT-EDGE-018 | YouTube UI shows `Create channel`, but the account still has `Watch Later` and a named playlist like `FUN` | QA should copy the playlist URLs/IDs and import readable public/unlisted playlist IDs through ReplayGlowz explicit playlist import; Watch Later should show the unsupported-special-playlist message. | Assuming the UI library and Data API `mine=true` discovery are equivalent; treating `Watch Later` as a normal API-readable playlist. | Playlist import, diagnostics, explicit URL import |
+| YT-EDGE-018 | YouTube UI shows `Create channel`, but the account still has `Watch Later` and a named playlist like `FUN` | QA should copy the playlist URLs/IDs and import readable public/unlisted playlist IDs through ReplayGlows explicit playlist import; Watch Later should show the unsupported-special-playlist message. | Assuming the UI library and Data API `mine=true` discovery are equivalent; treating `Watch Later` as a normal API-readable playlist. | Playlist import, diagnostics, explicit URL import |
 
 ## Implementation Coverage 2026-05-26
 
-ReplayGlowz now has a first implementation for the explicit playlist import path referenced in this checklist.
+ReplayGlows now has a first implementation for the explicit playlist import path referenced in this checklist.
 
 - Backend cache rows can distinguish `owned`, `url_import`, and `subscriptions` playlist sources.
 - Automatic `playlists.list mine=true` refresh preserves URL imports and the virtual Subscriptions playlist instead of deleting every row not returned by owned discovery.
@@ -131,7 +131,7 @@ Retest gap:
 
 Use these after any change that touches YouTube sync or feed behavior.
 
-1. Sign in to ReplayGlowz with the target test account.
+1. Sign in to ReplayGlows with the target test account.
 2. Confirm YouTube connection state in Preferences.
 3. Click `Refresh videos` from the Videos page.
 4. Open Playlists and click refresh there too.
@@ -144,12 +144,12 @@ Use these after any change that touches YouTube sync or feed behavior.
 
 Use these after any change that touches Clerk sign-in, YouTube OAuth, token persistence, session restore, or diagnostics.
 
-1. Create or sign in to ReplayGlowz with Clerk email/password.
+1. Create or sign in to ReplayGlows with Clerk email/password.
 2. Connect YouTube with a Google account using the same email.
-3. Confirm Preferences diagnostics show the expected ReplayGlowz `user_...` and YouTube connected state.
+3. Confirm Preferences diagnostics show the expected ReplayGlows `user_...` and YouTube connected state.
 4. Disconnect YouTube, then reconnect with a different Google account in the Google consent screen.
 5. Confirm the resulting playlists/subscriptions match the Google account selected during OAuth, not the Clerk login method.
-6. Sign out of ReplayGlowz, sign in with another ReplayGlowz account, and confirm YouTube data from the previous `user_...` is not visible.
+6. Sign out of ReplayGlows, sign in with another ReplayGlows account, and confirm YouTube data from the previous `user_...` is not visible.
 7. Retest after browser reload and in a clean browser profile to catch stale-session bugs.
 
 ## Backend Assertions
@@ -162,8 +162,8 @@ The backend should preserve these contracts:
 - `youtube:fetchSubscriptionFeed` must cap channels/videos per channel and batch video detail calls.
 - YouTube provider errors stored in jobs/snackbars must be user-safe and must not expose tokens, cookies, OAuth codes, or secrets.
 - Convex prod token refresh must use `YOUTUBE_OAUTH_CLIENT_ID` and `YOUTUBE_OAUTH_CLIENT_SECRET`, with legacy names only as compatibility fallback.
-- YouTube tokens must be stored against the authenticated Convex identity derived from the active ReplayGlowz/Clerk session, not inferred from the Google email alone.
-- Connection status and cached YouTube reads must always be scoped by the current ReplayGlowz `user_...`.
+- YouTube tokens must be stored against the authenticated Convex identity derived from the active ReplayGlows/Clerk session, not inferred from the Google email alone.
+- Connection status and cached YouTube reads must always be scoped by the current ReplayGlows `user_...`.
 
 ## UI Assertions
 
@@ -174,8 +174,8 @@ The app should preserve these contracts:
 - The feed can mix playlist videos and subscription videos.
 - The user can understand whether they need to connect YouTube, subscribe to channels, create/sync playlists, wait for sync, or reconnect.
 - The app must not display permanent skeletons after a terminal sync result.
-- Empty states should be ReplayGlowz-first and should not introduce WinFlowz/Suite explanation unless the user is in account/help context.
-- Diagnostics should make it possible to distinguish ReplayGlowz account identity from the Google account authorised for YouTube, without exposing private tokens or secrets.
+- Empty states should be ReplayGlows-first and should not introduce WinFlowz/Suite explanation unless the user is in account/help context.
+- Diagnostics should make it possible to distinguish ReplayGlows account identity from the Google account authorised for YouTube, without exposing private tokens or secrets.
 
 ## Retest Triggers
 

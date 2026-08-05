@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-25"
 created_at: "2026-05-25 17:55:50 UTC"
 updated: "2026-05-25"
@@ -12,7 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "youtube-core-feature-parity-priority-3"
 owner: "Diane"
-user_story: "En tant qu'utilisateur ReplayGlowz qui revient souvent dans l'app, je veux que l'interface retienne mes habitudes et m'aide discretement au bon moment, afin de retrouver la fluidite de TubeFlow sans ajouter de friction au premier usage."
+user_story: "En tant qu'utilisateur ReplayGlows qui revient souvent dans l'app, je veux que l'interface retienne mes habitudes et m'aide discretement au bon moment, afin de retrouver la fluidite de TubeFlow sans ajouter de friction au premier usage."
 confidence: "medium"
 risk_level: "medium"
 security_impact: "yes"
@@ -34,10 +34,10 @@ depends_on:
   - artifact: "shipglows_data/workflow/audits/2026-05-25-tubeflow-expo-feature-gap.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-1.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-1.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-2.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-2.md"
     artifact_version: "1.0.0"
     required_status: "ready"
 supersedes: []
@@ -48,14 +48,14 @@ evidence:
   - "Current backend settings schema persists theme, language, notifications, playback, notes, channelSync and transcripts, but not app UX helper state or persisted feed/playlist view preferences."
   - "Current `app/lib/i18n/en.dart` and `fr.dart` still contain TODO headers to copy remaining sections."
   - "Documentation freshness gate applied: P3 is primarily local Flutter/Convex state and UX; no new external API behavior is introduced."
-next_step: "/sf-auth-debug retest ReplayGlowz YouTube sync with empty-channel test account"
+next_step: "/sf-auth-debug retest ReplayGlows YouTube sync with empty-channel test account"
 ---
 
-# Spec: ReplayGlowz YouTube Core Parity Priority 3
+# Spec: ReplayGlows YouTube Core Parity Priority 3
 
 ## Title
 
-ReplayGlowz YouTube core parity priority 3
+ReplayGlows YouTube core parity priority 3
 
 ## Status
 
@@ -63,15 +63,15 @@ ready
 
 ## User Story
 
-En tant qu'utilisateur ReplayGlowz qui revient souvent dans l'app, je veux que l'interface retienne mes habitudes et m'aide discretement au bon moment, afin de retrouver la fluidite de TubeFlow sans ajouter de friction au premier usage.
+En tant qu'utilisateur ReplayGlows qui revient souvent dans l'app, je veux que l'interface retienne mes habitudes et m'aide discretement au bon moment, afin de retrouver la fluidite de TubeFlow sans ajouter de friction au premier usage.
 
 ## Minimal Behavior Contract
 
-ReplayGlowz doit ajouter une couche UX persistante et discrete autour des workflows YouTube deja retablis: onboarding progressif pour connecter YouTube et comprendre les etats vides, hints dismissibles pour les gestes/actions avancees, preferences d'affichage persistantes, restauration de scroll raisonnable, raccourcis clavier utiles dans le player, et un mode focus/study leger qui masque les panneaux secondaires sans changer le modele de donnees. Les aides doivent etre dismissibles et ne jamais bloquer l'action principale. L'edge case facile a rater est le nouveau compte YouTube vide: l'app doit guider sans faire croire a une erreur et sans lancer de sync couteuse ou automatique.
+ReplayGlows doit ajouter une couche UX persistante et discrete autour des workflows YouTube deja retablis: onboarding progressif pour connecter YouTube et comprendre les etats vides, hints dismissibles pour les gestes/actions avancees, preferences d'affichage persistantes, restauration de scroll raisonnable, raccourcis clavier utiles dans le player, et un mode focus/study leger qui masque les panneaux secondaires sans changer le modele de donnees. Les aides doivent etre dismissibles et ne jamais bloquer l'action principale. L'edge case facile a rater est le nouveau compte YouTube vide: l'app doit guider sans faire croire a une erreur et sans lancer de sync couteuse ou automatique.
 
 ## Success Behavior
 
-- Preconditions: l'utilisateur est authentifie, ReplayGlowz est initialise, les providers P1/P2 peuvent charger ou echouer proprement, et les settings utilisateur sont disponibles ou substitues par des defaults locaux.
+- Preconditions: l'utilisateur est authentifie, ReplayGlows est initialise, les providers P1/P2 peuvent charger ou echouer proprement, et les settings utilisateur sont disponibles ou substitues par des defaults locaux.
 - Trigger: l'utilisateur ouvre Videos, Playlists, Playlist detail, Play, Preferences ou Notes; change un mode d'affichage; ferme une aide; revient sur une page; ou active un mode focus/study.
 - User/operator result: les nouveaux utilisateurs voient des messages courts et contextuels pour connecter YouTube, importer/synchroniser, creer une playlist, comprendre un compte YouTube vide, configurer un transcript provider, et utiliser les notes.
 - User/operator result: les hints de swipe/action/menu/shortcuts sont affiches une fois par contexte, dismissibles, puis restent caches pour ce compte ou ce navigateur selon la sensibilite du hint.
@@ -86,11 +86,11 @@ ReplayGlowz doit ajouter une couche UX persistante et discrete autour des workfl
 - Expected failures: settings Convex indisponibles, ancien document settings sans champs UX, filtre playlist pointe vers une playlist supprimee, scroll anchor disparu, local dismissal corrompu, clavier non disponible sur mobile, player iframe non pret, langue non supportee, ou compte YouTube vide.
 - User/operator response: l'app retombe sur des defaults silencieux, ignore les preferences invalides, affiche un etat vide utile, et permet toujours l'action principale.
 - System effect: une preference invalide ne casse pas le chargement de settings; elle est ignoree ou remplacee par un default borne. Les dismissals ne masquent jamais les erreurs critiques.
-- Must never happen: stocker des secrets/tokens dans UX settings, lancer une sync YouTube automatique pour remplir un onboarding, bloquer la lecture derriere un tutorial, ou afficher une explication WinFlowz/Suite intrusive pendant le signup ReplayGlowz.
+- Must never happen: stocker des secrets/tokens dans UX settings, lancer une sync YouTube automatique pour remplir un onboarding, bloquer la lecture derriere un tutorial, ou afficher une explication WinFlowz/Suite intrusive pendant le signup ReplayGlows.
 
 ## Problem
 
-Les workflows de base et avances YouTube reviennent progressivement dans ReplayGlowz, mais l'app reste moins fluide que l'ancien TubeFlow sur les comportements quotidiens: elle oublie des choix d'affichage, elle ne guide pas assez les etats vides, elle expose encore des actions avancees sans hints contextuels, et certains textes ne sont pas encore i18n. Cela donne une impression d'application inachevee meme quand le backend fonctionne.
+Les workflows de base et avances YouTube reviennent progressivement dans ReplayGlows, mais l'app reste moins fluide que l'ancien TubeFlow sur les comportements quotidiens: elle oublie des choix d'affichage, elle ne guide pas assez les etats vides, elle expose encore des actions avancees sans hints contextuels, et certains textes ne sont pas encore i18n. Cela donne une impression d'application inachevee meme quand le backend fonctionne.
 
 ## Solution
 
@@ -122,7 +122,7 @@ Ajouter une couche P3 centree app UX: un modele persistant de preferences UX, de
 
 ## Constraints
 
-- Garder le premier usage simple: l'utilisateur cree ou connecte son compte ReplayGlowz, puis les explications avancees apparaissent seulement en contexte.
+- Garder le premier usage simple: l'utilisateur cree ou connecte son compte ReplayGlows, puis les explications avancees apparaissent seulement en contexte.
 - Toute persistance server-side doit etre backward-compatible avec les documents settings existants.
 - Toute persistance locale doit etre non critique: si elle disparait, l'app reste correcte.
 - Les dismissals d'aide ne doivent pas cacher les erreurs d'auth, quota, sync ou secrets.
@@ -178,7 +178,7 @@ Ajouter une couche P3 centree app UX: un modele persistant de preferences UX, de
 
 ## Edge Cases
 
-- Fresh ReplayGlowz account with no YouTube connection.
+- Fresh ReplayGlows account with no YouTube connection.
 - Google account connected to YouTube OAuth but no YouTube channel/playlists/subscriptions.
 - User has dismissed hints locally but logs in on another browser.
 - User changes language after hints were dismissed.
@@ -194,7 +194,7 @@ Ajouter une couche P3 centree app UX: un modele persistant de preferences UX, de
 - [x] Task 1: Define UX settings contract.
   - File: `app/lib/models/settings.dart`, `backend/packages/backend/convex/schema.ts`, `backend/packages/backend/convex/settings.ts`.
   - Action: Add backward-compatible `ux` settings for dismissed hints, view preferences, player layout/focus mode and optional last-used filters; keep values bounded and non-sensitive.
-  - User story link: Makes daily ReplayGlowz behavior persistent across sessions.
+  - User story link: Makes daily ReplayGlows behavior persistent across sessions.
   - Depends on: P2 provider/settings patterns.
   - Validate with: backend typecheck and Flutter model tests.
   - Notes: Prefer server-side settings for cross-device preferences; use local-only storage only for purely browser-local scroll state.
@@ -257,7 +257,7 @@ Ajouter une couche P3 centree app UX: un modele persistant de preferences UX, de
 
 ## Acceptance Criteria
 
-- [ ] Fresh account sees ReplayGlowz-first onboarding and no intrusive suite/parent-company explanation.
+- [ ] Fresh account sees ReplayGlows-first onboarding and no intrusive suite/parent-company explanation.
 - [ ] Connected empty YouTube account sees a clear valid empty state on Videos, Playlists and Preferences without server-error language.
 - [ ] Dismissible hints appear for relevant first-use contexts and remain dismissed after reload for the chosen persistence scope.
 - [ ] Feed, playlist and notes view preferences survive reload and ignore invalid stale filters.
@@ -305,7 +305,7 @@ Ajouter une couche P3 centree app UX: un modele persistant de preferences UX, de
   - one backend/settings subagent for schema/settings compatibility and test targets.
 - Prefer existing Riverpod settings/mutations patterns over a new state-management layer.
 - Use `SharedPreferences` only for browser-local hints or scroll offsets that should not become account data.
-- Keep UX copy short and ReplayGlowz-first.
+- Keep UX copy short and ReplayGlows-first.
 - Do not ship browser-auth claims until changes are deployed to preview/prod and verified with the authenticated QA path.
 
 ## Open Questions
@@ -316,13 +316,13 @@ None. P3 includes only a lightweight presentation-focused focus/study mode; adva
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-25 17:55:50 UTC | sf-spec | GPT-5 Codex | Created Priority 3 YouTube parity spec for onboarding, hints, persisted UX preferences, scroll restoration, focus mode and i18n parity. | draft spec created | `/sf-ready replayglowz-youtube-core-parity-priority-3` |
-| 2026-05-25 18:36:35 UTC | sf-ready | GPT-5 Codex | Resolved focus/study scope to lightweight presentation mode and completed readiness review. | ready | `/sf-start replayglowz-youtube-core-parity-priority-3` |
-| 2026-05-25 18:45:54 UTC | sf-start | GPT-5 Codex + gpt-5.3-codex subagents | Implemented P3 UX settings, dismissible hints, persisted view helpers, scroll restoration, lightweight player focus/shortcuts, i18n keys, tests and audit updates. | implemented | `/sf-verify replayglowz-youtube-core-parity-priority-3` |
-| 2026-05-25 19:09:34 UTC | sf-verify | GPT-5 Codex | Ran local static, model, backend, metadata and source-risk checks; fixed one localized tooltip gap in the reusable hint widget. Hosted Vercel/Convex auth/browser proof remains pending under vercel-preview-push mode. | partial | `/sf-ship replayglowz-youtube-core-parity-priority-3`, then `/sf-prod` and auth/browser QA |
-| 2026-05-25 19:18:21 UTC | sf-ship | GPT-5 Codex | Quick ship requested after partial verification; committing P3 iteration with explicit bug/auth preview risk note and no full closure. | shipped | `/sf-prod replayglowz` |
-| 2026-05-25 19:53:31 UTC | sf-prod | GPT-5 Codex | Verified Vercel production deployment for commit `b2d995b`, health-checked `https://app.replayglowz.com/`, deployed Convex prod to expose P3 `settings.ux` functions, and rechecked Convex health. Auth/browser QA remains pending. | partial | `/sf-auth-debug https://app.replayglowz.com ReplayGlowz P3 auth and YouTube QA` |
-| 2026-05-25 20:08:52 UTC | sf-auth-debug | GPT-5 Codex | Tested production sign-in without secrets, confirmed Clerk Google auth reaches Google with `redirect_uri=https://clerk.replayglowz.com/v1/oauth_callback`, confirmed YouTube start fails closed without a session, and inspected Convex prod logs for YouTube sync failures. | failed auth/backend QA: Convex `youtube:refreshYoutubeToken` still reads `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` while Vercel OAuth uses `YOUTUBE_OAUTH_CLIENT_ID`/`YOUTUBE_OAUTH_CLIENT_SECRET`; logs show `Google OAuth credentials not configured` cascading into `fetchYoutubeSubscriptions`. | `/sf-fix ReplayGlowz Convex YouTube OAuth env var mismatch` |
+| 2026-05-25 17:55:50 UTC | sf-spec | GPT-5 Codex | Created Priority 3 YouTube parity spec for onboarding, hints, persisted UX preferences, scroll restoration, focus mode and i18n parity. | draft spec created | `/sf-ready replayglows-youtube-core-parity-priority-3` |
+| 2026-05-25 18:36:35 UTC | sf-ready | GPT-5 Codex | Resolved focus/study scope to lightweight presentation mode and completed readiness review. | ready | `/sf-start replayglows-youtube-core-parity-priority-3` |
+| 2026-05-25 18:45:54 UTC | sf-start | GPT-5 Codex + gpt-5.3-codex subagents | Implemented P3 UX settings, dismissible hints, persisted view helpers, scroll restoration, lightweight player focus/shortcuts, i18n keys, tests and audit updates. | implemented | `/sf-verify replayglows-youtube-core-parity-priority-3` |
+| 2026-05-25 19:09:34 UTC | sf-verify | GPT-5 Codex | Ran local static, model, backend, metadata and source-risk checks; fixed one localized tooltip gap in the reusable hint widget. Hosted Vercel/Convex auth/browser proof remains pending under vercel-preview-push mode. | partial | `/sf-ship replayglows-youtube-core-parity-priority-3`, then `/sf-prod` and auth/browser QA |
+| 2026-05-25 19:18:21 UTC | sf-ship | GPT-5 Codex | Quick ship requested after partial verification; committing P3 iteration with explicit bug/auth preview risk note and no full closure. | shipped | `/sf-prod replayglows` |
+| 2026-05-25 19:53:31 UTC | sf-prod | GPT-5 Codex | Verified Vercel production deployment for commit `b2d995b`, health-checked `https://app.replayglowz.com/`, deployed Convex prod to expose P3 `settings.ux` functions, and rechecked Convex health. Auth/browser QA remains pending. | partial | `/sf-auth-debug https://app.replayglowz.com ReplayGlows P3 auth and YouTube QA` |
+| 2026-05-25 20:08:52 UTC | sf-auth-debug | GPT-5 Codex | Tested production sign-in without secrets, confirmed Clerk Google auth reaches Google with `redirect_uri=https://clerk.replayglowz.com/v1/oauth_callback`, confirmed YouTube start fails closed without a session, and inspected Convex prod logs for YouTube sync failures. | failed auth/backend QA: Convex `youtube:refreshYoutubeToken` still reads `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` while Vercel OAuth uses `YOUTUBE_OAUTH_CLIENT_ID`/`YOUTUBE_OAUTH_CLIENT_SECRET`; logs show `Google OAuth credentials not configured` cascading into `fetchYoutubeSubscriptions`. | `/sf-fix ReplayGlows Convex YouTube OAuth env var mismatch` |
 | 2026-05-26 05:12:10 UTC | sf-auth-debug | GPT-5 Codex | Inspected production Convex logs for Request ID `d943c70bec06e005`, traced `youtube:startQuotaSafeSync` to `youtube:fetchYoutubePlaylists`, and deployed backend handling for Google accounts connected through OAuth but missing a YouTube channel. | fixed and deployed: `Channel not found` is now treated like YouTube signup-required empty-account state, caches are cleared, and sync can complete with empty results instead of surfacing Server Error. | Retest sync in production with the connected test account. |
 | 2026-05-26 05:19:08 UTC | sf-auth-debug | GPT-5 Codex | Corrected the sync contract after operator clarification: users may have subscriptions without relying on a personal YouTube channel/playlist library. `youtube:startQuotaSafeSync` now refreshes the virtual Subscriptions feed independently from user playlists and includes it in quota/job progress. | fixed and deployed: playlist sync no longer gates subscription-feed sync; Convex prod redeployed and healthy. | Retest `Refresh videos` on the test account and inspect Convex logs if subscription API still returns a provider-specific error. |
 

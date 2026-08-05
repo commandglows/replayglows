@@ -1,4 +1,4 @@
-# Tasks — ReplayGlowz App
+# Tasks — ReplayGlows App
 
 ### Audit: Code
 
@@ -21,13 +21,13 @@
 ### Backlog
 
 #### Android-native opportunities
-- [ ] Add Android share-to-ReplayGlowz entry for YouTube URLs
-  - Context: Let users open a shared YouTube URL directly in ReplayGlowz to take notes, access transcripts, or continue a workflow without first adding the video to a YouTube playlist.
+- [ ] Add Android share-to-ReplayGlows entry for YouTube URLs
+  - Context: Let users open a shared YouTube URL directly in ReplayGlows to take notes, access transcripts, or continue a workflow without first adding the video to a YouTube playlist.
   - Notes: This is an Android-native workflow entry point, not a duplicate playlist-import feature.
 - [ ] Add Android home screen widgets for continue-watching and new-feed visibility
-  - Context: Expose ReplayGlowz resume state, playback progress, and recent feed items directly on the Android home screen.
+  - Context: Expose ReplayGlows resume state, playback progress, and recent feed items directly on the Android home screen.
   - Notes: Revisit only if the Android app becomes a primary re-entry surface rather than a thin companion to YouTube.
-- [ ] Add Android launcher shortcuts for high-frequency ReplayGlowz actions
+- [ ] Add Android launcher shortcuts for high-frequency ReplayGlows actions
   - Context: Support direct entry points such as `Resume last video`, `Open Notes`, `Open My Feeds`, and `Refresh YouTube cache`.
   - Notes: Depends on stable Android deep links and validated high-frequency actions.
 - [ ] Add an Android Quick Settings tile for quota-safe sync

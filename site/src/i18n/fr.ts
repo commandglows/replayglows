@@ -26,17 +26,17 @@ export default {
   solution: {
     label: 'Un workflow simple à répéter',
     title: 'Choisis. Note. Retrouve.',
-    intro: 'ReplayGlowz préserve le chemin entre la vidéo et l’idée, pour que chaque session te laisse quelque chose d’utile.',
+    intro: 'ReplayGlows préserve le chemin entre la vidéo et l’idée, pour que chaque session te laisse quelque chose d’utile.',
     items: [
       { icon: '\uD83D\uDCC2\uFE0F', title: 'Choisis la prochaine vidéo avec intention', desc: 'Rassemble les vidéos qui méritent ton attention dans des playlists et des fils centrés sur tes objectifs.' },
-      { icon: '\u270D\uFE0F', title: 'Capture l’idée tant qu’elle est claire', desc: 'Écris une note pendant la lecture. ReplayGlowz la garde liée au moment qui lui donne son sens.' },
+      { icon: '\u270D\uFE0F', title: 'Capture l’idée tant qu’elle est claire', desc: 'Écris une note pendant la lecture. ReplayGlows la garde liée au moment qui lui donne son sens.' },
       { icon: '\uD83C\uDFAF', title: 'Retrouve-la sans refaire le chemin', desc: 'Ouvre la note et reviens au passage utile au lieu de reparcourir la vidéo.' },
     ],
   },
   productProof: {
     label: 'La différence, c’est le contexte',
     title: 'Une note utile devrait te ramener directement à l’idée.',
-    body: 'ReplayGlowz garde ensemble la note, la vidéo et le moment exact. Plus besoin de te souvenir du passage — ni de faire défiler la vidéo pour le retrouver.',
+    body: 'ReplayGlows garde ensemble la note, la vidéo et le moment exact. Plus besoin de te souvenir du passage — ni de faire défiler la vidéo pour le retrouver.',
     noteLabel: 'Exemple de note',
     noteText: 'Ici, le concept devient concret',
     timestamp: '12:48',
@@ -48,10 +48,10 @@ export default {
   },
   comparison: {
     label: 'Un seul parcours, pas deux outils séparés',
-    title: 'YouTube pour découvrir. ReplayGlowz pour garder le fil.',
-    intro: 'YouTube t’aide à trouver et à lire la vidéo. Une app de notes capture du texte. ReplayGlowz relie les deux parties de l’apprentissage.',
+    title: 'YouTube pour découvrir. ReplayGlows pour garder le fil.',
+    intro: 'YouTube t’aide à trouver et à lire la vidéo. Une app de notes capture du texte. ReplayGlows relie les deux parties de l’apprentissage.',
     leftTitle: 'YouTube + une app de notes',
-    rightTitle: 'ReplayGlowz',
+    rightTitle: 'ReplayGlows',
     rows: [
       { before: 'Enregistrer la vidéo d’un côté et les notes de l’autre', after: 'Garder la vidéo et ses notes ensemble' },
       { before: 'Recopier un timestamp dans chaque note utile', after: 'Enregistrer la note au moment où elle compte' },
@@ -72,7 +72,7 @@ export default {
     ],
   },
   features: {
-    label: 'Dans ReplayGlowz',
+    label: 'Dans ReplayGlows',
     title: 'Six outils. Un seul parcours d’apprentissage.',
     items: [
       { icon: '\u23F1\uFE0F', title: 'Notes horodatées', desc: 'Capture une idée tant qu’elle est claire. Rouvre-la ensuite au passage concerné.', tag: 'Note + contexte' },
@@ -119,13 +119,13 @@ export default {
   },
   closingCta: {
     title: 'Une seule vidéo suffit pour commencer.',
-    subtitle: 'Ouvre ReplayGlowz, choisis ce que tu veux apprendre et garde chaque passage utile relié à sa source.',
+    subtitle: 'Ouvre ReplayGlows, choisis ce que tu veux apprendre et garde chaque passage utile relié à sa source.',
     cta: 'Commencer gratuitement',
     reassurance: "Commence avec l'offre gratuite.",
   },
   newsletter: {
     title: 'Reste informé',
-    subtitle: 'Reçois les dernières actualités ReplayGlowz, conseils et astuces productivité.',
+    subtitle: 'Reçois les dernières actualités ReplayGlows, conseils et astuces productivité.',
     placeholder: 'Ton email',
     subscribe: "S'abonner",
     noSpam: 'Pas de spam, désabonnement à tout moment.',
@@ -133,7 +133,7 @@ export default {
   footer: {
     tagline: 'Garde chaque idée utile reliée à sa source.',
     status: 'Tous les systèmes opérationnels',
-    copyright: '\u00A9 {year} ReplayGlowz. Tous droits réservés.',
+    copyright: '\u00A9 {year} ReplayGlows. Tous droits réservés.',
     product: 'Produit',
     resources: 'Ressources',
     company: 'Entreprise',

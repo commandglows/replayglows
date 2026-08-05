@@ -1,6 +1,6 @@
-# ReplayGlowz Site
+# ReplayGlows Site
 
-Marketing site for ReplayGlowz, built with Astro.
+Marketing site for ReplayGlows, built with Astro.
 
 ## Environment
 

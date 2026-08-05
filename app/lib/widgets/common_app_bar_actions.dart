@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:replayglowz_app/app/theme.dart';
-import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/providers/providers.dart';
+import 'package:replayglows_app/app/theme.dart';
+import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/providers/providers.dart';
 
 List<Widget> commonAppBarActions(BuildContext context, WidgetRef ref) {
   final unreadAsync = ref.watch(unreadNotificationCountProvider);

@@ -110,11 +110,11 @@
 
         const base = `https://${frontendApiDomain}/npm`;
         await loadScriptOnce(
-          "replayglowz-clerk-ui",
+          "replayglows-clerk-ui",
           `${base}/@clerk/ui@1/dist/ui.browser.js`,
         );
         await loadScriptOnce(
-          "replayglowz-clerk-js",
+          "replayglows-clerk-js",
           `${base}/@clerk/clerk-js@${CLERK_SCRIPT_VERSION}/dist/clerk.browser.js`,
           { "data-clerk-publishable-key": state.publishableKey },
         );
@@ -162,7 +162,7 @@
     });
   }
 
-  window.replayGlowzClerkBridge = {
+  window.replayGlowsClerkBridge = {
     async load(configJson) {
       const config = configJson ? JSON.parse(configJson) : {};
       await ensureClerkLoaded(config);

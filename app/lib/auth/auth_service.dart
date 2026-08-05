@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:replayglowz_app/auth/auth_session_adapter.dart';
-import 'package:replayglowz_app/auth/auth_state.dart';
-import 'package:replayglowz_app/convex/convex_client.dart';
-import 'package:replayglowz_app/utils/app_logger.dart';
+import 'package:replayglows_app/auth/auth_session_adapter.dart';
+import 'package:replayglows_app/auth/auth_state.dart';
+import 'package:replayglows_app/convex/convex_client.dart';
+import 'package:replayglows_app/utils/app_logger.dart';
 
 class AuthService {
   AuthService({required this.authNotifier}) {
@@ -59,7 +59,7 @@ class AuthService {
       return;
     } catch (e, st) {
       authNotifier.setUnauthenticated(
-        error: 'ReplayGlowz sign-in is unavailable.',
+        error: 'ReplayGlows sign-in is unavailable.',
       );
       AppLogger.instance.log(
         'AuthService initialisation failed',
@@ -89,7 +89,7 @@ class AuthService {
   Future<void> signIn({String? redirectTo}) async {
     await ready;
     if (!_adapter.hasConfig) {
-      throw StateError('ReplayGlowz sign-in is not configured for this build.');
+      throw StateError('ReplayGlows sign-in is not configured for this build.');
     }
 
     authNotifier.setLoading();
@@ -97,9 +97,9 @@ class AuthService {
       await _adapter.signIn(redirectTo: redirectTo);
       await refreshSession();
     } catch (e, st) {
-      authNotifier.setUnauthenticated(error: 'ReplayGlowz sign-in failed.');
+      authNotifier.setUnauthenticated(error: 'ReplayGlows sign-in failed.');
       AppLogger.instance.log(
-        'ReplayGlowz sign-in failed',
+        'ReplayGlows sign-in failed',
         source: 'AuthService',
         level: LogLevel.error,
         error: e,
@@ -117,10 +117,10 @@ class AuthService {
     } catch (e, st) {
       _currentUser = null;
       authNotifier.setUnauthenticated(
-        error: 'ReplayGlowz session refresh failed.',
+        error: 'ReplayGlows session refresh failed.',
       );
       AppLogger.instance.log(
-        'ReplayGlowz session refresh failed',
+        'ReplayGlows session refresh failed',
         source: 'AuthService',
         level: LogLevel.warning,
         error: e,

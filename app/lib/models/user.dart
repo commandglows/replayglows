@@ -1,8 +1,8 @@
-/// Model representing an authenticated ReplayGlowz user.
+/// Model representing an authenticated ReplayGlows user.
 ///
 /// Maps to the `users` table in Convex. Sensitive fields (OAuth tokens)
 /// are intentionally excluded from the client model.
-class ReplayGlowzUser {
+class ReplayGlowsUser {
   /// Convex document ID (`_id`).
   final String id;
 
@@ -27,7 +27,7 @@ class ReplayGlowzUser {
   /// Last update timestamp (ms since epoch).
   final int? updatedAt;
 
-  const ReplayGlowzUser({
+  const ReplayGlowsUser({
     required this.id,
     required this.clerkId,
     required this.email,
@@ -44,8 +44,8 @@ class ReplayGlowzUser {
   /// Whether YouTube features are available for this user.
   bool get hasYouTubeAccess => youtubeConnected == true;
 
-  factory ReplayGlowzUser.fromJson(Map<String, dynamic> json) {
-    return ReplayGlowzUser(
+  factory ReplayGlowsUser.fromJson(Map<String, dynamic> json) {
+    return ReplayGlowsUser(
       id: json['_id'] as String,
       clerkId: json['clerkId'] as String,
       email: json['email'] as String,
@@ -70,7 +70,7 @@ class ReplayGlowzUser {
     };
   }
 
-  ReplayGlowzUser copyWith({
+  ReplayGlowsUser copyWith({
     String? id,
     String? clerkId,
     String? email,
@@ -80,7 +80,7 @@ class ReplayGlowzUser {
     int? createdAt,
     int? updatedAt,
   }) {
-    return ReplayGlowzUser(
+    return ReplayGlowsUser(
       id: id ?? this.id,
       clerkId: clerkId ?? this.clerkId,
       email: email ?? this.email,
@@ -95,7 +95,7 @@ class ReplayGlowzUser {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ReplayGlowzUser &&
+      other is ReplayGlowsUser &&
           runtimeType == other.runtimeType &&
           id == other.id;
 
@@ -103,5 +103,5 @@ class ReplayGlowzUser {
   int get hashCode => id.hashCode;
 
   @override
-  String toString() => 'ReplayGlowzUser(id: $id, email: $email)';
+  String toString() => 'ReplayGlowsUser(id: $id, email: $email)';
 }

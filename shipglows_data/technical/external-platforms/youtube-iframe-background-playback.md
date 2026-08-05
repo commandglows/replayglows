@@ -2,7 +2,7 @@
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
 artifact_version: "0.1.1"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-31"
 updated: "2026-06-01"
 status: draft
@@ -33,7 +33,7 @@ next_step: "Recheck official browser and YouTube iframe docs before promising ba
 
 ## Purpose
 
-Record the external behavior that constrains ReplayGlowz background audio guidance for embedded YouTube playback in the current web app.
+Record the external behavior that constrains ReplayGlows background audio guidance for embedded YouTube playback in the current web app.
 
 ## Source Map
 
@@ -43,10 +43,10 @@ Record the external behavior that constrains ReplayGlowz background audio guidan
 
 Freshness verdict on 2026-05-31: `fresh-docs checked`.
 
-## ReplayGlowz Decision Rules
+## ReplayGlows Decision Rules
 
-- Do not claim ReplayGlowz can guarantee background playback for YouTube iframe videos.
-- Do not generalize this web iframe limitation to future native ReplayGlowz apps.
+- Do not claim ReplayGlows can guarantee background playback for YouTube iframe videos.
+- Do not generalize this web iframe limitation to future native ReplayGlows apps.
 - Treat a pause after app/background transition as browser- or YouTube-embed-controlled unless local code explicitly paused the player.
 - User-facing copy may recommend browsers/settings known to allow background audio, but must keep wording conditional.
 - Public copy may preserve `watch anywhere, anytime` as a native-app ambition if it clearly distinguishes the current web beta limitation.
@@ -55,4 +55,4 @@ Freshness verdict on 2026-05-31: `fresh-docs checked`.
 
 ## Maintenance Rule
 
-Update this note when ReplayGlowz changes embedded player implementation, adds a native playback surface, or when official YouTube/browser docs change the background audio contract.
+Update this note when ReplayGlows changes embedded player implementation, adds a native playback surface, or when official YouTube/browser docs change the background audio contract.

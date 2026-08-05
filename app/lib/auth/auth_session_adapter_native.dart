@@ -4,12 +4,12 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import 'package:replayglowz_app/app/build_info.dart';
-import 'package:replayglowz_app/auth/auth_session_adapter.dart';
-import 'package:replayglowz_app/auth/auth_state.dart';
-import 'package:replayglowz_app/auth/firebase_bootstrap.dart';
-import 'package:replayglowz_app/auth/suite_identity.dart';
-import 'package:replayglowz_app/auth/suite_identity_bridge_client.dart';
+import 'package:replayglows_app/app/build_info.dart';
+import 'package:replayglows_app/auth/auth_session_adapter.dart';
+import 'package:replayglows_app/auth/auth_state.dart';
+import 'package:replayglows_app/auth/firebase_bootstrap.dart';
+import 'package:replayglows_app/auth/suite_identity.dart';
+import 'package:replayglows_app/auth/suite_identity_bridge_client.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class _SuiteIdentitySession {
@@ -83,7 +83,7 @@ class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
   @override
   Future<void> initialise() async {
     if (!hasFirebaseNativeConfig) {
-      _statusMessage = 'ReplayGlowz native sign-in is not configured.';
+      _statusMessage = 'ReplayGlows native sign-in is not configured.';
       _initialised = true;
       return;
     }
@@ -92,7 +92,7 @@ class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
     if (!FirebaseBootstrap.isConfigured) {
       _statusMessage =
           FirebaseBootstrap.initError ??
-          'ReplayGlowz native auth is unavailable.';
+          'ReplayGlows native auth is unavailable.';
       _initialised = true;
       return;
     }
@@ -182,7 +182,7 @@ class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
     }
 
     if (!hasFirebaseNativeConfig || !FirebaseBootstrap.isConfigured) {
-      throw StateError('ReplayGlowz native sign-in is not configured.');
+      throw StateError('ReplayGlows native sign-in is not configured.');
     }
 
     if (kIsWeb) {
@@ -214,14 +214,14 @@ class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
     }
 
     final snapshot = _suiteIdentitySnapshot;
-    if (snapshot == null || !snapshot.hasReplayGlowzAccess) {
+    if (snapshot == null || !snapshot.hasReplayGlowsAccess) {
       if (forceRefresh) {
         await refreshSession();
       }
     }
 
     final refreshedSnapshot = _suiteIdentitySnapshot;
-    if (refreshedSnapshot == null || !refreshedSnapshot.hasReplayGlowzAccess) {
+    if (refreshedSnapshot == null || !refreshedSnapshot.hasReplayGlowsAccess) {
       return null;
     }
 
@@ -255,7 +255,7 @@ class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
 
   @override
   Future<bool> openAccountCenter() async {
-    final url = Uri.tryParse(replayGlowzAccountCenterUrl);
+    final url = Uri.tryParse(replayGlowsAccountCenterUrl);
     if (url == null || !url.hasScheme || url.host.isEmpty) {
       return false;
     }

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:replayglowz_app/widgets/youtube_channel_onboarding.dart';
+import 'package:replayglows_app/widgets/youtube_channel_onboarding.dart';
 
 void main() {
   group('validateYoutubePlaylistUrl', () {

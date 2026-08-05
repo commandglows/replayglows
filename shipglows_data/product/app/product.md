@@ -2,7 +2,7 @@
 artifact: product_context
 metadata_schema_version: "1.0"
 artifact_version: "1.2.0"
-project: "replayglowz-app"
+project: "replayglows-app"
 created: "2026-04-26"
 updated: "2026-06-01"
 status: reviewed
@@ -27,7 +27,7 @@ evidence:
   - "lib/screens/playlists/virtual_feed_detail_screen.dart"
   - "shipglows_data/workflow/specs/feedback-v1.md"
   - "shipglows_data/workflow/specs/flutter-web-youtube-auth-redirect-spec.md"
-  - "User feedback 2026-06-01: web is the easier-to-test starting surface, but native apps are intended to be the main ReplayGlowz product experience."
+  - "User feedback 2026-06-01: web is the easier-to-test starting surface, but native apps are intended to be the main ReplayGlows product experience."
 linked_artifacts:
   - "README.md"
   - "shipglows_data/business/app/business.md"
@@ -47,9 +47,9 @@ next_step: "/sf-docs audit"
 
 ## Product Definition
 
-ReplayGlowz App is currently implemented as a Flutter web application for authenticated YouTube viewing workflows. The web app is the first testable surface, not the long-term product ceiling: ReplayGlowz is intended to become a native-first viewing product where stronger mobile/background playback workflows can be built. The current repository supports a personal productivity use case: watch videos, capture timestamped notes, organize content into playlists and ReplayGlowz feeds, keep history-oriented continuity, manage preferences and notifications, connect YouTube when needed, and submit feedback.
+ReplayGlows App is currently implemented as a Flutter web application for authenticated YouTube viewing workflows. The web app is the first testable surface, not the long-term product ceiling: ReplayGlows is intended to become a native-first viewing product where stronger mobile/background playback workflows can be built. The current repository supports a personal productivity use case: watch videos, capture timestamped notes, organize content into playlists and ReplayGlows feeds, keep history-oriented continuity, manage preferences and notifications, connect YouTube when needed, and submit feedback.
 
-The defensible product claim is workflow consolidation. ReplayGlowz brings several actions that usually happen across YouTube, notes apps, bookmarks, and memory into one app context.
+The defensible product claim is workflow consolidation. ReplayGlows brings several actions that usually happen across YouTube, notes apps, bookmarks, and memory into one app context.
 
 ## Target User
 
@@ -73,14 +73,14 @@ The product addresses a fragmented learning and curation workflow:
 - Playlists and later retrieval live apart from note-taking.
 - Viewing continuity depends on scattered history and bookmarks.
 
-ReplayGlowz positions itself as the app layer that keeps those actions together.
+ReplayGlows positions itself as the app layer that keeps those actions together.
 
 ## Desired Outcomes
 
 - Let users watch YouTube videos inside the app workflow.
 - Let users create and revisit timestamped notes tied to video context.
 - Let users organize videos through playlists and feed source collections.
-- Let users narrow the main feed to all videos or selected ReplayGlowz feeds.
+- Let users narrow the main feed to all videos or selected ReplayGlows feeds.
 - Move toward the product goal of watching anywhere, anytime, with native app surfaces expected to carry stronger playback capabilities than the current web implementation.
 - Preserve user state through Clerk authentication and Convex-backed persistence.
 - Support YouTube connection through the Vercel OAuth path described in the repo.
@@ -92,7 +92,7 @@ ReplayGlowz positions itself as the app layer that keeps those actions together.
 2. Enter the main app shell.
 3. Browse or open video-oriented routes.
 4. Watch a video and capture timestamped notes.
-5. Create, manage, or revisit playlists and ReplayGlowz feeds.
+5. Create, manage, or revisit playlists and ReplayGlows feeds.
 6. Use history, stats, preferences, notifications, or related utility routes where present.
 7. Connect YouTube when account-linked functionality is required.
 8. Submit feedback through `/feedback`; review feedback through `/feedback/admin` when authorized.
@@ -105,7 +105,7 @@ ReplayGlowz positions itself as the app layer that keeps those actions together.
 - YouTube video playback inside the app workflow.
 - Timestamped note-taking.
 - Playlist management.
-- ReplayGlowz feed filtering and feed source management.
+- ReplayGlows feed filtering and feed source management.
 - Mobile playback controls and current-video actions for faster watching workflows.
 - History-oriented viewing continuity.
 - Preferences, notifications, stats, hidden/admin-style utility routes, and feedback surfaces present in routing.
@@ -129,7 +129,7 @@ These are appropriate product signals to validate because they align with eviden
 - Users complete sign-in and reach the authenticated shell.
 - Users connect YouTube successfully when prompted.
 - Users create timestamped notes while watching.
-- Users create, update, or revisit playlists and ReplayGlowz feeds.
+- Users create, update, or revisit playlists and ReplayGlows feeds.
 - Users use Play controls to hide, mark watched, loop, navigate, or adjust speed without leaving the viewing workflow.
 - Users return to previously watched or organized content.
 - Users submit actionable feedback when confused or blocked.
@@ -138,7 +138,7 @@ These are appropriate product signals to validate because they align with eviden
 
 Safe product claims:
 
-- ReplayGlowz combines YouTube viewing, timestamped notes, playlists, feeds, and continuity workflows.
+- ReplayGlows combines YouTube viewing, timestamped notes, playlists, feeds, and continuity workflows.
 - The app is account-backed and built around authenticated persistence.
 - Feedback collection is part of the product loop.
 - `Watch anywhere, anytime` is an appropriate product ambition and native-app direction, but must not be framed as a fully delivered guarantee for the current web app.

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-16"
 created_at: "2026-05-16 13:56:51 UTC"
 updated: "2026-05-17"
@@ -12,7 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "flutter-app-component-first-ui-refactor"
 owner: "Diane"
-user_story: "As the ReplayGlowz maintainer, I want the Flutter app UI refactored toward reusable, component-first widgets so app screens stay visually consistent and future feature work does not duplicate cards, empty states, loading states, and settings controls."
+user_story: "As the ReplayGlows maintainer, I want the Flutter app UI refactored toward reusable, component-first widgets so app screens stay visually consistent and future feature work does not duplicate cards, empty states, loading states, and settings controls."
 confidence: "high"
 risk_level: "medium"
 security_impact: "none"
@@ -47,12 +47,12 @@ evidence:
   - "Audit found `PreferencesScreen` is 939 lines with repeated settings sections, ListTile/SwitchListTile choices, and selection dialog logic."
   - "`flutter analyze` passed in `app` on 2026-05-16."
   - "User decided on 2026-05-17 that the runtime theme selector wiring is included in this chantier and that focused widget tests should be added during the first implementation pass."
-next_step: "/sf-ship ReplayGlowz App Component-First UI Refactor"
+next_step: "/sf-ship ReplayGlows App Component-First UI Refactor"
 ---
 
 # Title
 
-ReplayGlowz App Component-First UI Refactor
+ReplayGlows App Component-First UI Refactor
 
 ## Status
 
@@ -60,11 +60,11 @@ Ready for implementation. The chantier is intentionally limited to Flutter UI st
 
 ## User Story
 
-As the ReplayGlowz maintainer, I want the Flutter app UI refactored toward reusable, component-first widgets so app screens stay visually consistent and future feature work does not duplicate cards, empty states, loading states, and settings controls.
+As the ReplayGlows maintainer, I want the Flutter app UI refactored toward reusable, component-first widgets so app screens stay visually consistent and future feature work does not duplicate cards, empty states, loading states, and settings controls.
 
 ## Minimal Behavior Contract
 
-ReplayGlowz should keep the current app behavior and navigation while replacing repeated screen-local UI patterns with reusable Flutter widgets for app states, media thumbnails, video/playlist/note rows, settings rows, and player panels. When data loads, fails, is empty, or requires YouTube connection, users should see the same or clearer states than today. The theme choice persisted from Preferences must also drive the app runtime `ThemeMode` without changing auth, routing, or backend behavior. Focused widget tests must cover the riskiest new reusable UI contracts. If a component extraction would alter auth, YouTube OAuth, Convex provider behavior, routing, playback semantics, or transcript generation, the implementation must stop or split that work. The easiest edge case to miss is extracting shared widgets too aggressively and accidentally coupling visually similar surfaces that have different domain behavior.
+ReplayGlows should keep the current app behavior and navigation while replacing repeated screen-local UI patterns with reusable Flutter widgets for app states, media thumbnails, video/playlist/note rows, settings rows, and player panels. When data loads, fails, is empty, or requires YouTube connection, users should see the same or clearer states than today. The theme choice persisted from Preferences must also drive the app runtime `ThemeMode` without changing auth, routing, or backend behavior. Focused widget tests must cover the riskiest new reusable UI contracts. If a component extraction would alter auth, YouTube OAuth, Convex provider behavior, routing, playback semantics, or transcript generation, the implementation must stop or split that work. The easiest edge case to miss is extracting shared widgets too aggressively and accidentally coupling visually similar surfaces that have different domain behavior.
 
 ## Success Behavior
 
@@ -326,12 +326,12 @@ None. User decision on 2026-05-17: include the narrow runtime theme selector wir
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-16 13:56:51 UTC | sf-spec | GPT-5 Codex | Created app-only component-first UI refactor spec from the design/component audit and user confirmation. | Draft created. | `/sf-ready ReplayGlowz app component-first UI refactor` |
-| 2026-05-17 08:03:24 UTC | sf-ready | GPT-5 Codex | Evaluated the component-first UI refactor spec against the readiness gate. | Not ready: open questions still change scope/validation decisions. | `/sf-spec ReplayGlowz app component-first UI refactor` |
-| 2026-05-17 08:05:38 UTC | sf-spec | GPT-5 Codex | Resolved open questions from the user decision: include runtime theme wiring and focused widget tests. | Draft updated. | `/sf-ready ReplayGlowz app component-first UI refactor` |
-| 2026-05-17 08:07:21 UTC | sf-ready | GPT-5 Codex | Re-evaluated the spec after open questions were resolved and test/theme scope was made explicit. | Ready. | `/sf-start ReplayGlowz App Component-First UI Refactor` |
-| 2026-05-17 09:31:51 UTC | sf-start | GPT-5 Codex | Implemented component-first UI extraction across app screens, split YouTube connect UI from flow helpers, wired runtime theme mode to persisted settings, and added focused widget/provider tests. | implemented | `/sf-verify ReplayGlowz App Component-First UI Refactor` |
-| 2026-05-17 09:36:18 UTC | sf-verify | GPT-5 Codex | Re-ran local Flutter checks, inspected component/theme/test changes, fixed a sliver loading skeleton constraint risk, and evaluated ship-readiness gates. | partial: local checks pass, but Vercel preview/manual QA and an active high YouTube/auth bug gate remain. | `/sf-ship ReplayGlowz App Component-First UI Refactor` |
+| 2026-05-16 13:56:51 UTC | sf-spec | GPT-5 Codex | Created app-only component-first UI refactor spec from the design/component audit and user confirmation. | Draft created. | `/sf-ready ReplayGlows app component-first UI refactor` |
+| 2026-05-17 08:03:24 UTC | sf-ready | GPT-5 Codex | Evaluated the component-first UI refactor spec against the readiness gate. | Not ready: open questions still change scope/validation decisions. | `/sf-spec ReplayGlows app component-first UI refactor` |
+| 2026-05-17 08:05:38 UTC | sf-spec | GPT-5 Codex | Resolved open questions from the user decision: include runtime theme wiring and focused widget tests. | Draft updated. | `/sf-ready ReplayGlows app component-first UI refactor` |
+| 2026-05-17 08:07:21 UTC | sf-ready | GPT-5 Codex | Re-evaluated the spec after open questions were resolved and test/theme scope was made explicit. | Ready. | `/sf-start ReplayGlows App Component-First UI Refactor` |
+| 2026-05-17 09:31:51 UTC | sf-start | GPT-5 Codex | Implemented component-first UI extraction across app screens, split YouTube connect UI from flow helpers, wired runtime theme mode to persisted settings, and added focused widget/provider tests. | implemented | `/sf-verify ReplayGlows App Component-First UI Refactor` |
+| 2026-05-17 09:36:18 UTC | sf-verify | GPT-5 Codex | Re-ran local Flutter checks, inspected component/theme/test changes, fixed a sliver loading skeleton constraint risk, and evaluated ship-readiness gates. | partial: local checks pass, but Vercel preview/manual QA and an active high YouTube/auth bug gate remain. | `/sf-ship ReplayGlows App Component-First UI Refactor` |
 
 ## Current Chantier Flow
 

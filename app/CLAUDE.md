@@ -2,7 +2,7 @@
 artifact: agent_guidance
 metadata_schema_version: "1.0"
 artifact_version: "1.1.0"
-project: "replayglowz-app"
+project: "replayglows-app"
 created: "2026-04-26"
 updated: "2026-05-24"
 status: "reviewed"
@@ -33,17 +33,17 @@ next_step: "Keep this file aligned with AGENT.md and shipglows_data/technical/ap
 
 # CLAUDE.md
 
-Guidance for coding agents working in `replayglowz-app`.
+Guidance for coding agents working in `replayglows-app`.
 
 ## Project overview
 
-ReplayGlowz App is a Flutter web client using suite Clerk identity and a ReplayGlowz product Convex backend for videos, notes, playlists, transcripts, preferences, and YouTube tokens.
+ReplayGlows App is a Flutter web client using suite Clerk identity and a ReplayGlows product Convex backend for videos, notes, playlists, transcripts, preferences, and YouTube tokens.
 
 ## Architecture invariants
 
 1. Client-only identity is not product access.
-2. Product access is server-verified; recognized ReplayGlowz accounts default to product-scoped `replayglowz/free` access unless explicitly revoked.
-3. Canonical product id is `replayglowz`; `tubeflow` is legacy alias only.
+2. Product access is server-verified; recognized ReplayGlows accounts default to product-scoped `replayglows/free` access unless explicitly revoked.
+3. Canonical product id is `replayglows`; `tubeflow` is legacy alias only.
 4. Convex token for product backend comes from the Clerk session token configured by the Clerk Convex integration.
 5. OAuth handlers must fail closed when suite verification is unavailable.
 
@@ -62,10 +62,10 @@ Flutter build-time:
 - `CLERK_PUBLISHABLE_KEY`
 - `CLERK_SIGN_IN_URL`
 - `CLERK_SIGN_UP_URL`
-- `REPLAYGLOWZ_PRODUCT_ID`
-- `REPLAYGLOWZ_LEGACY_PRODUCT_IDS`
-- `REPLAYGLOWZ_ACCOUNT_CENTER_URL`
-- `REPLAYGLOWZ_APP_URL`
+- `REPLAYGLOWS_PRODUCT_ID`
+- `REPLAYGLOWS_LEGACY_PRODUCT_IDS`
+- `REPLAYGLOWS_ACCOUNT_CENTER_URL`
+- `REPLAYGLOWS_APP_URL`
 
 Server/runtime:
 
@@ -82,7 +82,7 @@ flutter pub get
 flutter analyze
 bash -n build.sh
 node --test api/auth/_youtube.test.js
-REPLAYGLOWZ_BACKEND_ROOT=/path/to/convex dart run tool/check_shared_backend_contract.dart
+REPLAYGLOWS_BACKEND_ROOT=/path/to/convex dart run tool/check_shared_backend_contract.dart
 ```
 
 ## Risk areas

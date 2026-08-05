@@ -7,7 +7,7 @@ import {
   internalQuery,
   internalAction,
 } from "./_generated/server";
-import { requireReplayGlowzAccess } from "./access";
+import { requireReplayGlowsAccess } from "./access";
 import { internal, api } from "./_generated/api";
 import { YOUTUBE_QUOTA_COSTS } from "./metrics";
 
@@ -289,7 +289,7 @@ function parseYoutubePlaylistInput(input: string): string {
   }
 
   if (candidate === SUBSCRIPTION_PLAYLIST_ID) {
-    throw new Error("The ReplayGlowz subscriptions feed cannot be imported.");
+    throw new Error("The ReplayGlows subscriptions feed cannot be imported.");
   }
 
   return candidate;
@@ -317,7 +317,7 @@ function playlistImportErrorMessage(error: {
     reasons.has("forbidden") ||
     reasons.has("permission_denied")
   ) {
-    return "ReplayGlowz cannot access this playlist. Make it public or unlisted, then try again.";
+    return "ReplayGlows cannot access this playlist. Make it public or unlisted, then try again.";
   }
 
   if (
@@ -326,10 +326,10 @@ function playlistImportErrorMessage(error: {
     reasons.has("notfound") ||
     reasons.has("not_found")
   ) {
-    return "ReplayGlowz could not find this playlist. Check the URL and make sure the playlist is public or unlisted.";
+    return "ReplayGlows could not find this playlist. Check the URL and make sure the playlist is public or unlisted.";
   }
 
-  return "ReplayGlowz could not import this playlist from YouTube. Try again later.";
+  return "ReplayGlows could not import this playlist from YouTube. Try again later.";
 }
 
 function resolveYoutubeOAuthCredentials() {
@@ -364,7 +364,7 @@ function resolveYoutubeOAuthCredentials() {
 export const getYoutubeConnectionStatus = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return { connected: false };
 
     const user = await ctx.db
@@ -390,7 +390,7 @@ export const getYoutubeConnectionStatus = query({
 export const getLatestYoutubeSyncJob = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return null;
 
     return ctx.db
@@ -638,7 +638,7 @@ export const getYoutubePlaylists = query({
     includeHidden: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
 
     // Fetch all data sources in parallel
@@ -742,7 +742,7 @@ export const getPlaylistVideos = query({
     includeHidden: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
 
     const videos = await ctx.db
@@ -826,7 +826,7 @@ export const getPlaylistVideos = query({
 export const getPlaylistById = query({
   args: { playlistId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return null;
 
     const playlist = await ctx.db
@@ -862,7 +862,7 @@ export const getPlaylistById = query({
 export const getYoutubeChannels = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
 
     const channels = await ctx.db
@@ -890,7 +890,7 @@ export const getYoutubeChannels = query({
 export const getChannelByYoutubeId = query({
   args: { youtubeChannelId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return null;
 
     const channel = await ctx.db
@@ -916,7 +916,7 @@ export const getChannelByYoutubeId = query({
 export const getVideoByYoutubeId = query({
   args: { youtubeVideoId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return null;
 
     const video = await ctx.db
@@ -949,7 +949,7 @@ export const getVideoByYoutubeId = query({
 export const getVideosInfoBatch = query({
   args: { youtubeVideoIds: v.array(v.string()) },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId || args.youtubeVideoIds.length === 0) return {};
 
     // Fetch all videos and channels in parallel
@@ -1025,7 +1025,7 @@ export const getAllVideos = query({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return { page: [], isDone: true, continueCursor: null };
 
     // Fetch all data sources in parallel instead of sequentially
@@ -1164,7 +1164,7 @@ export const getUncategorizedVideos = query({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return { page: [], isDone: true, continueCursor: null };
 
     // Fetch all data sources in parallel
@@ -1274,7 +1274,7 @@ export const getAllCategorizedVideos = query({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return { page: [], isDone: true, continueCursor: null };
 
     // Fetch all data sources in parallel
@@ -1370,7 +1370,7 @@ export const getAllCategorizedVideos = query({
  */
 export const areAllChannelsCategorized = query({
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId)
       return {
         allCategorized: false,
@@ -1423,7 +1423,7 @@ export const updatePlaylistColor = mutation({
     color: v.string(), // Hex color
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const playlist = await ctx.db
@@ -1451,7 +1451,7 @@ export const updatePlaylistDetails = mutation({
     customThumbnailUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const playlist = await ctx.db
@@ -1513,7 +1513,7 @@ export const saveYoutubeTokens = mutation({
     expiresIn: v.number(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const user = await ctx.db
@@ -1541,7 +1541,7 @@ export const saveYoutubeTokens = mutation({
 export const disconnectYoutube = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const user = await ctx.db
@@ -1597,7 +1597,7 @@ export const updatePlaylistsCache = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const now = Date.now();
@@ -1730,7 +1730,7 @@ export const updateVideosCache = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const now = Date.now();
@@ -1851,7 +1851,7 @@ export const updateChannelsCache = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const now = Date.now();
@@ -2193,7 +2193,7 @@ export const getUserTokens = internalQuery({
 export const refreshYoutubeToken = action({
   args: {},
   handler: async (ctx): Promise<string | null> => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const tokens = await ctx.runQuery(internal.youtube.getUserTokens, {
       userId,
     });
@@ -2271,7 +2271,7 @@ async function getValidAccessToken(ctx: any, userId: string): Promise<string> {
 export const fetchYoutubePlaylists = action({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     const startTime = Date.now();
@@ -2338,7 +2338,7 @@ export const fetchYoutubePlaylists = action({
 export const fetchPlaylistItems = action({
   args: { playlistId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     // Fetch playlist items
@@ -2483,7 +2483,7 @@ export const fetchPlaylistItems = action({
 export const importPlaylistByUrl = action({
   args: { url: v.string() },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const playlistId = parseYoutubePlaylistInput(args.url);
     const accessToken = await getValidAccessToken(ctx, userId);
 
@@ -2521,7 +2521,7 @@ export const importPlaylistByUrl = action({
     const playlistItem = metadata.items?.[0];
     if (!playlistItem) {
       throw new Error(
-        "ReplayGlowz could not find this playlist. Check the URL and make sure the playlist is public or unlisted.",
+        "ReplayGlows could not find this playlist. Check the URL and make sure the playlist is public or unlisted.",
       );
     }
 
@@ -2705,7 +2705,7 @@ export const importPlaylistByUrl = action({
 export const startQuotaSafeSync = action({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const activeJob = await ctx.runQuery(
       youtubeInternal.getActiveYoutubeSyncJob,
       {
@@ -2936,7 +2936,7 @@ export const createYoutubePlaylist = action({
     privacyStatus: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     const startTime = Date.now();
@@ -3010,7 +3010,7 @@ export const addVideoToYoutubePlaylist = action({
     videoId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     // Check if we already have this video cached (from any playlist)
@@ -3160,7 +3160,7 @@ export const removeVideoFromYoutubePlaylist = action({
     playlistId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     const startTime = Date.now();
@@ -3199,10 +3199,10 @@ export const removeVideoFromYoutubePlaylist = action({
 });
 
 /**
- * Remove a cached video from a ReplayGlowz playlist without calling YouTube.
+ * Remove a cached video from a ReplayGlows playlist without calling YouTube.
  *
  * Used for URL-imported playlists or cached rows that cannot be mutated through
- * playlistItems.delete. This only changes the ReplayGlowz cache.
+ * playlistItems.delete. This only changes the ReplayGlows cache.
  */
 export const removeCachedVideoFromPlaylist = mutation({
   args: {
@@ -3210,7 +3210,7 @@ export const removeCachedVideoFromPlaylist = mutation({
     videoCacheId: v.id("youtubeVideosCache"),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const video = await ctx.db.get(args.videoCacheId);
@@ -3251,7 +3251,7 @@ export const removeVideoFromAllPlaylists = action({
     videoId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     // Find all cache entries for this video across all playlists
@@ -3317,7 +3317,7 @@ export const searchYoutubeVideos = action({
     maxResults: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     const maxResults = args.maxResults ?? 10;
@@ -3425,7 +3425,7 @@ export const searchYoutubeVideos = action({
 export const getYoutubeVideoDetails = action({
   args: { videoId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     const startTime = Date.now();
@@ -3492,7 +3492,7 @@ export const moveVideoInYoutubePlaylist = action({
     newPosition: v.number(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     // YouTube API requires updating the playlistItem with the new position
@@ -3554,7 +3554,7 @@ export const moveVideoInYoutubePlaylist = action({
 export const deleteYoutubePlaylist = action({
   args: { playlistId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     const startTime = Date.now();
@@ -3598,7 +3598,7 @@ export const updateYoutubePlaylist = action({
     description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     const startTime = Date.now();
@@ -3654,7 +3654,7 @@ export const updateYoutubePlaylist = action({
 export const fetchYoutubeSubscriptions = action({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     const allChannels: Array<{
@@ -3744,7 +3744,7 @@ export const fetchYoutubeSubscriptions = action({
 export const backfillPlaylistVideoChannelMetadata = action({
   args: { playlistId: v.string() },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
     const plan = await ctx.runQuery(
       youtubeInternal.getPlaylistVideosMissingChannelMetadata,
@@ -3962,7 +3962,7 @@ export const updateSubscriptionPlaylist = mutation({
     videoCount: v.number(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const existing = await ctx.db
@@ -4007,7 +4007,7 @@ export const fetchSubscriptionFeed = action({
     maxVideosPerChannel: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const accessToken = await getValidAccessToken(ctx, userId);
 
     const maxChannels = args.maxChannels ?? 20;

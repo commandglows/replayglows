@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
-import { requireReplayGlowzAccess } from "./access";
+import { requireReplayGlowsAccess } from "./access";
 
 // =============================================================================
 // YOUTUBE API QUOTA COSTS
@@ -138,7 +138,7 @@ export const logApiCall = mutation({
     responseTimeMs: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     await ctx.db.insert("apiMetrics", {
@@ -203,7 +203,7 @@ async function getQuotaUsageForUser(ctx: any, userId: string) {
 export const getTodayQuotaUsage = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) {
       return { used: 0, limit: PLAN_QUOTA_LIMITS.free, percentage: 0 };
     }
@@ -230,7 +230,7 @@ export const getQuotaHistory = query({
     days: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
 
     const days = args.days ?? 7;
@@ -275,7 +275,7 @@ export const getRecentApiCalls = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
 
     const limit = args.limit ?? 50;

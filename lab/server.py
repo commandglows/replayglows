@@ -20,7 +20,7 @@ import requests
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
 
-logger = logging.getLogger("replayglowz")
+logger = logging.getLogger("replayglows")
 
 
 class _JsonFormatter(logging.Formatter):
@@ -46,7 +46,7 @@ def _log(level: int, msg: str, **data: Any) -> None:
     record.data = data  # type: ignore[attr-defined]
     logger.handle(record)
 
-APP_NAME = "ReplayGlowz Transcript Worker"
+APP_NAME = "ReplayGlows Transcript Worker"
 
 WORKER_SECRET = os.getenv("TRANSCRIPT_WORKER_SECRET")
 DEFAULT_YTDLP_BIN = str(Path(sys.executable).with_name("yt-dlp"))
@@ -746,7 +746,7 @@ def transcribe(
 
     try:
         with reserve_job_slot() as queue_wait_seconds:
-            with tempfile.TemporaryDirectory(prefix="replayglowz-transcript-") as temp_dir:
+            with tempfile.TemporaryDirectory(prefix="replayglows-transcript-") as temp_dir:
                 working_dir = Path(temp_dir)
                 source_audio, preflight_warnings = download_audio(
                     payload.youtubeVideoId,

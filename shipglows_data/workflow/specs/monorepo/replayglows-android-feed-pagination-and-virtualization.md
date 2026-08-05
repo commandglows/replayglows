@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-06-12"
 created_at: "2026-06-12 12:55:03 UTC"
 updated: "2026-06-12"
@@ -12,7 +12,7 @@ source_skill: 100-sf-spec
 source_model: "GPT-5 Codex"
 scope: "android-feed-pagination-and-virtualization"
 owner: "Diane"
-user_story: "En tant qu'utilisatrice ReplayGlowz sur Android avec une bibliotheque YouTube dense, je veux que mes feeds et listes restent fluides et que les builds de production restent legers, afin d'ouvrir l'app vite, scroller sans saccades, et parcourir mes videos sans surcharge memoire ou package inutile."
+user_story: "En tant qu'utilisatrice ReplayGlows sur Android avec une bibliotheque YouTube dense, je veux que mes feeds et listes restent fluides et que les builds de production restent legers, afin d'ouvrir l'app vite, scroller sans saccades, et parcourir mes videos sans surcharge memoire ou package inutile."
 confidence: "high"
 risk_level: "high"
 security_impact: "yes"
@@ -54,34 +54,34 @@ evidence:
   - "Flutter docs checked 2026-06-12: https://docs.flutter.dev/perf/best-practices and https://docs.flutter.dev/cookbook/lists/long-lists recommend lazy list builders and careful long-list handling."
   - "Android docs checked 2026-06-12: https://developer.android.com/topic/performance/app-optimization/enable-app-optimization and https://developer.android.com/topic/performance/reduce-apk-size describe R8 code shrinking and resource shrinking for release builds."
   - "`flutter analyze` passed after enabling release shrinking and thumbnail cache bounds on 2026-06-12."
-next_step: "/005-sf-ship replayglowz-android-feed-pagination-and-virtualization"
+next_step: "/005-sf-ship replayglows-android-feed-pagination-and-virtualization"
 ---
 
-# Spec: ReplayGlowz Android Feed Pagination And Virtualization
+# Spec: ReplayGlows Android Feed Pagination And Virtualization
 
-🟢 [replayglowz] spec: ReplayGlowz Android Feed Pagination And Virtualization | status: active | path: shipglows_data/workflow/specs/replayglowz-android-feed-pagination-and-virtualization.md | next: /005-sf-ship replayglowz-android-feed-pagination-and-virtualization
+🟢 [replayglows] spec: ReplayGlows Android Feed Pagination And Virtualization | status: active | path: shipglows_data/workflow/specs/replayglows-android-feed-pagination-and-virtualization.md | next: /005-sf-ship replayglows-android-feed-pagination-and-virtualization
 
 ## Title
 
-ReplayGlowz Android feed pagination and virtualization
+ReplayGlows Android feed pagination and virtualization
 
 ## Status
 
 active
 
-This chantier turns the Android performance audit into an implementation contract. It covers production artifact shrinkage, long-feed loading pressure, and the list-windowing proof needed to keep ReplayGlowz usable as feed size grows.
+This chantier turns the Android performance audit into an implementation contract. It covers production artifact shrinkage, long-feed loading pressure, and the list-windowing proof needed to keep ReplayGlows usable as feed size grows.
 
 ## User Story
 
-En tant qu'utilisatrice ReplayGlowz sur Android avec une bibliotheque YouTube dense, je veux que mes feeds et listes restent fluides et que les builds de production restent legers, afin d'ouvrir l'app vite, scroller sans saccades, et parcourir mes videos sans surcharge memoire ou package inutile.
+En tant qu'utilisatrice ReplayGlows sur Android avec une bibliotheque YouTube dense, je veux que mes feeds et listes restent fluides et que les builds de production restent legers, afin d'ouvrir l'app vite, scroller sans saccades, et parcourir mes videos sans surcharge memoire ou package inutile.
 
 ## Minimal Behavior Contract
 
-Quand une utilisatrice Android ouvre ReplayGlowz, l'application doit charger et afficher les feeds de maniere progressive sans aspirer des centaines d'elements par feed avant le premier rendu, et les listes longues doivent rester construites a la demande avec une pression memoire bornee. Les miniatures et les pages de feed doivent utiliser des tailles et des fenetres adaptees a l'ecran et au contexte visible, tandis que le build Android release doit supprimer le code et les ressources inutiles avant distribution. Si un feed est trop grand, si une page supplementaire echoue, ou si la pagination backend n'est pas encore disponible, l'app doit garder les donnees deja visibles, afficher un etat recuperable, et ne jamais figer tout l'ecran sur un chargement global. L'edge case le plus facile a rater est un filtre multi-feeds qui lance plusieurs requetes volumineuses en parallele, fusionne tout en memoire, puis casse la fluidite malgre des `ListView.builder`.
+Quand une utilisatrice Android ouvre ReplayGlows, l'application doit charger et afficher les feeds de maniere progressive sans aspirer des centaines d'elements par feed avant le premier rendu, et les listes longues doivent rester construites a la demande avec une pression memoire bornee. Les miniatures et les pages de feed doivent utiliser des tailles et des fenetres adaptees a l'ecran et au contexte visible, tandis que le build Android release doit supprimer le code et les ressources inutiles avant distribution. Si un feed est trop grand, si une page supplementaire echoue, ou si la pagination backend n'est pas encore disponible, l'app doit garder les donnees deja visibles, afficher un etat recuperable, et ne jamais figer tout l'ecran sur un chargement global. L'edge case le plus facile a rater est un filtre multi-feeds qui lance plusieurs requetes volumineuses en parallele, fusionne tout en memoire, puis casse la fluidite malgre des `ListView.builder`.
 
 ## Success Behavior
 
-- Preconditions: l'utilisatrice est authentifiee, dispose d'un acces ReplayGlowz actif, Convex auth est pret, et sa bibliotheque contient assez de videos ou feeds pour exposer les limites actuelles.
+- Preconditions: l'utilisatrice est authentifiee, dispose d'un acces ReplayGlows actif, Convex auth est pret, et sa bibliotheque contient assez de videos ou feeds pour exposer les limites actuelles.
 - Trigger: ouverture de `VideosScreen`, activation de filtres multi-feeds, ouverture d'un feed detaille, scroll prolongé dans les listes/videos, et generation d'un build Android release.
 - User/operator result: les ecrans Videos et feeds rendent un premier lot rapidement, chargent davantage de contenu a mesure que l'utilisatrice s'approche de la fin utile, et conservent une interaction fluide meme quand plusieurs feeds sont selectionnes. Le build Android release produit des artefacts shrunk sans code/ressources mortes connues.
 - System effect: les providers Flutter evitent les grosses unions eager de `pageSize: 500`, utilisent une pagination/fenetre explicite quand les donnees feed depassent le premier lot, limitent la taille des miniatures decodees au contexte rendu, et la configuration Android release applique R8/resource shrinking avec des keep rules explicites seulement si necessaire.
@@ -134,11 +134,11 @@ La spec autorise une petite extension backend dans `backend` si le contrat Conve
 
 ## Constraints
 
-- Respecter le contrat ReplayGlowz: les ecritures et actions YouTube restent backend-orchestrees et quota-safe.
+- Respecter le contrat ReplayGlows: les ecritures et actions YouTube restent backend-orchestrees et quota-safe.
 - Les changements ne doivent pas casser les comportements de scroll synchronise, de snap, de filtre watched, ni la navigation actuelle sans preuve explicite de remplacement.
 - Les listes longues doivent rester lazy (`ListView.builder`, slivers builder) et ne pas etre remplacees par des collections eager dans les widgets.
 - Les miniatures doivent continuer a respecter la taille rendue et ne pas regresser sur la qualite visuelle normale Android.
-- Toute extension backend doit preservers les gardes d'auth ReplayGlowz et les invariants des providers existants.
+- Toute extension backend doit preservers les gardes d'auth ReplayGlows et les invariants des providers existants.
 - Le chantier doit conserver la surface de diagnostic runtime: build identity, Paris/UTC timestamps, release/environment, et Sentry config safe-copy quand ces ecrans ou logs sont utilises pour la preuve.
 
 ## Test Contract
@@ -162,7 +162,7 @@ La spec autorise une petite extension backend dans `backend` si le contrat Conve
   - `RGAF-007`: Android release build succeeds with shrinking enabled and no known runtime regression from removed resources/classes.
   - `RGAF-008`: Thumbnail-heavy scrolling does not decode/cache full-size remote images for small cards/list rows.
 - `required_results`: all scenarios above must pass or be explicitly documented as blocked with a real owner decision before `/103-sf-verify` can pass.
-- `checklist_path`: `shipglows_data/workflow/test-checklists/replayglowz-android-feed-pagination-and-virtualization.md`
+- `checklist_path`: `shipglows_data/workflow/test-checklists/replayglows-android-feed-pagination-and-virtualization.md`
 - `exception_with_proof`: smooth-scroll proof and APK/AAB size comparison need an emulator or Android device plus release artifacts; static analysis alone is insufficient.
 - `exception_without_proof`: none.
 
@@ -182,7 +182,7 @@ La spec autorise une petite extension backend dans `backend` si le contrat Conve
 
 ## Invariants
 
-- ReplayGlowz auth, entitlement, and Convex token wiring remain server-verified and unchanged.
+- ReplayGlows auth, entitlement, and Convex token wiring remain server-verified and unchanged.
 - YouTube sync orchestration remains backend-owned and quota-safe.
 - Runtime diagnostics and copied logs keep the current build identity header with Paris/UTC build timestamps.
 - Sentry remains conservative: no broad tracing/replay/logging expansion is allowed as a side effect of this perf chantier.
@@ -299,13 +299,13 @@ La spec autorise une petite extension backend dans `backend` si le contrat Conve
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-06-12 12:55:03 UTC | 100-sf-spec | GPT-5 Codex | Created a ready Android performance chantier from the 403-sf-perf audit findings, preserving the proposed title, severity, scope, and evidence. | Ready. | `/102-sf-start replayglowz-android-feed-pagination-and-virtualization` |
-| 2026-06-12 12:58:19 UTC | 101-sf-ready | GPT-5 Codex | Ran readiness review against the Android performance spec and challenged the proof contract and pre-gate status. | Not ready. Missing the checklist artifact named in the manual proof path, and the spec should not remain `ready` before that proof contract is fully formed. | `/100-sf-spec replayglowz-android-feed-pagination-and-virtualization` |
-| 2026-06-12 13:12:03 UTC | 101-sf-ready | GPT-5 Codex | Reran readiness review after adding the missing manual checklist artifact and aligning checklist field names/flow. | Ready. Structural blockers resolved for this pre-gate rerun; proof execution remains to be performed in implementation/verify steps. | `/102-sf-start replayglowz-android-feed-pagination-and-virtualization` |
-| 2026-06-12 13:49:58 UTC | 102-sf-start | GPT-5 Codex | Reworked Flutter virtual-feed loading to use bounded progressive pages in `VideosScreen` and `VirtualFeedDetailScreen`, while broadening invalidation coverage for paged provider args. | Implemented. Local pagination contract now uses bounded pages instead of eager `pageSize: 500`; preview/device/manual proof is still pending. | `/103-sf-verify replayglowz-android-feed-pagination-and-virtualization` |
-| 2026-06-12 13:49:58 UTC | 103-sf-verify | GPT-5 Codex | Verified the local Android feed pagination implementation against the spec, local checks, and project validation mode. | Partial. `flutter analyze` passed, but the required manual checklist and preview/device proof remain unrun in this `vercel-preview-push` project, so ship-readiness is not yet proven. | `/005-sf-ship replayglowz-android-feed-pagination-and-virtualization -> /405-sf-prod app` |
-| 2026-06-12 13:49:58 UTC | 104-sf-end | GPT-5 Codex | Closed the local implementation pass without shipping, updated workflow tracking, and kept the chantier open for preview/device validation. | Deferred. Code and spec progress are recorded, but the chantier remains active until ship plus preview/manual proof complete. | `/005-sf-ship replayglowz-android-feed-pagination-and-virtualization -> /405-sf-prod app` |
-| 2026-06-12 13:49:58 UTC | 001-sf-build | GPT-5 Codex | Orchestrated readiness repair, delegated implementation, local validation, verify triage, and pre-ship closure for the Android feed pagination chantier. | Partial. The implementation pass is complete locally, but preview/device/manual proof remains outstanding before ship. | `/005-sf-ship replayglowz-android-feed-pagination-and-virtualization -> /405-sf-prod app` |
+| 2026-06-12 12:55:03 UTC | 100-sf-spec | GPT-5 Codex | Created a ready Android performance chantier from the 403-sf-perf audit findings, preserving the proposed title, severity, scope, and evidence. | Ready. | `/102-sf-start replayglows-android-feed-pagination-and-virtualization` |
+| 2026-06-12 12:58:19 UTC | 101-sf-ready | GPT-5 Codex | Ran readiness review against the Android performance spec and challenged the proof contract and pre-gate status. | Not ready. Missing the checklist artifact named in the manual proof path, and the spec should not remain `ready` before that proof contract is fully formed. | `/100-sf-spec replayglows-android-feed-pagination-and-virtualization` |
+| 2026-06-12 13:12:03 UTC | 101-sf-ready | GPT-5 Codex | Reran readiness review after adding the missing manual checklist artifact and aligning checklist field names/flow. | Ready. Structural blockers resolved for this pre-gate rerun; proof execution remains to be performed in implementation/verify steps. | `/102-sf-start replayglows-android-feed-pagination-and-virtualization` |
+| 2026-06-12 13:49:58 UTC | 102-sf-start | GPT-5 Codex | Reworked Flutter virtual-feed loading to use bounded progressive pages in `VideosScreen` and `VirtualFeedDetailScreen`, while broadening invalidation coverage for paged provider args. | Implemented. Local pagination contract now uses bounded pages instead of eager `pageSize: 500`; preview/device/manual proof is still pending. | `/103-sf-verify replayglows-android-feed-pagination-and-virtualization` |
+| 2026-06-12 13:49:58 UTC | 103-sf-verify | GPT-5 Codex | Verified the local Android feed pagination implementation against the spec, local checks, and project validation mode. | Partial. `flutter analyze` passed, but the required manual checklist and preview/device proof remain unrun in this `vercel-preview-push` project, so ship-readiness is not yet proven. | `/005-sf-ship replayglows-android-feed-pagination-and-virtualization -> /405-sf-prod app` |
+| 2026-06-12 13:49:58 UTC | 104-sf-end | GPT-5 Codex | Closed the local implementation pass without shipping, updated workflow tracking, and kept the chantier open for preview/device validation. | Deferred. Code and spec progress are recorded, but the chantier remains active until ship plus preview/manual proof complete. | `/005-sf-ship replayglows-android-feed-pagination-and-virtualization -> /405-sf-prod app` |
+| 2026-06-12 13:49:58 UTC | 001-sf-build | GPT-5 Codex | Orchestrated readiness repair, delegated implementation, local validation, verify triage, and pre-ship closure for the Android feed pagination chantier. | Partial. The implementation pass is complete locally, but preview/device/manual proof remains outstanding before ship. | `/005-sf-ship replayglows-android-feed-pagination-and-virtualization -> /405-sf-prod app` |
 
 ## Current Chantier Flow
 
@@ -318,4 +318,4 @@ La spec autorise une petite extension backend dans `backend` si le contrat Conve
 | 104-sf-end | deferred | Local bookkeeping is updated, but the chantier stays active until post-ship proof runs. |
 | 005-sf-ship | pending | Next lifecycle owner must push the bounded scope, then route to preview/device proof. |
 
-Next command: `/005-sf-ship replayglowz-android-feed-pagination-and-virtualization -> /405-sf-prod app`
+Next command: `/005-sf-ship replayglows-android-feed-pagination-and-virtualization -> /405-sf-prod app`

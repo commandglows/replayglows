@@ -2,7 +2,7 @@
 artifact: competitive_intelligence
 metadata_schema_version: "1.0"
 artifact_version: "1.1.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-11"
 updated: "2026-07-08"
 status: reviewed
@@ -15,7 +15,7 @@ security_impact: none
 docs_impact: yes
 evidence:
   - "Initial competitor and inspiration triage captured in legacy root concurrent.md."
-  - "ReplayGlowz product context targets video learning workflows, notes, playlists, transcripts, and summaries."
+  - "ReplayGlows product context targets video learning workflows, notes, playlists, transcripts, and summaries."
   - "TubeFlow public site reviewed on 2026-07-05: https://tubeflow.ai/."
   - "Fresh public-source review on 2026-07-08 for https://saaszilla.co/deals/tubeonai/."
 depends_on:
@@ -40,7 +40,7 @@ reference_categories:
 source_policy: "Track public sources only; do not copy private positioning, paid assets, credentials, or non-public customer data."
 ---
 
-# Concurrents et inspirations — ReplayGlowz
+# Concurrents et inspirations — ReplayGlows
 
 TODO
 
@@ -48,14 +48,14 @@ https://appsumo.com/products/bookster/
 
 ## Lecture projet
 
-ReplayGlowz cible les workflows d'apprentissage vidéo: notes horodatées, playlists, transcriptions et synthèses. Les liens utiles concernent audio/voix, résumé, automatisation créateur et intelligence de contenu.
+ReplayGlows cible les workflows d'apprentissage vidéo: notes horodatées, playlists, transcriptions et synthèses. Les liens utiles concernent audio/voix, résumé, automatisation créateur et intelligence de contenu.
 
 ## Liens prioritaires
 
 | Lien | Type | Score | Usage concret |
 |---|---:|:---:|---|
 | [FlowSpeech](https://betalist.com/startups/flowspeech) | Inspiration audio | 8/10 | Transformer des notes ou résumés en voix naturelle; utile pour mode révision audio. |
-| [TubeFlow](https://tubeflow.ai/) | Concurrent direct recherche vidéo | 8/10 | À surveiller de près: workspace YouTube orienté recherche avec notes, playlists et résumés IA, très proche du coeur d'usage ReplayGlowz. |
+| [TubeFlow](https://tubeflow.ai/) | Concurrent direct recherche vidéo | 8/10 | À surveiller de près: workspace YouTube orienté recherche avec notes, playlists et résumés IA, très proche du coeur d'usage ReplayGlows. |
 | [Igloo](https://betalist.com/startups/igloo-2) | Concurrent indirect créateur | 7/10 | Inspiration pour convertir un contenu long en reels courts. |
 | [AutoKap](https://betalist.com/startups/autokap) | Inspiration assets | 7/10 | Générer automatiquement captures, snippets ou visuels de release à partir de vidéos/notes. |
 | [Kurate](https://betalist.com/startups/kurate) | Inspiration curation | 6/10 | Pattern de ranking de contenus techniques/scientifiques; utile pour recommander vidéos ou sources. |
@@ -66,6 +66,6 @@ ReplayGlowz cible les workflows d'apprentissage vidéo: notes horodatées, playl
 
 | Lien | Type | Score | Pourquoi |
 |---|---:|:---:|---|
-| [MemoryPlugin](https://betalist.com/startups/memoryplugin) | Mémoire IA | 5/10 | Mémoire cross-outils intéressante si ReplayGlowz veut personnaliser apprentissage et rappels. |
+| [MemoryPlugin](https://betalist.com/startups/memoryplugin) | Mémoire IA | 5/10 | Mémoire cross-outils intéressante si ReplayGlows veut personnaliser apprentissage et rappels. |
 | [Web-Analytics.ai](https://web-analytics.ai/) | Reporting | 5/10 | Résumés simples de l'usage produit pour comprendre les flux d'apprentissage. |
 | [TubeOnAI](https://saaszilla.co/deals/tubeonai/) | Concurrent indirect / inspiration | 6/10 | Résumé et repurposing de vidéos, podcasts et articles, plus proche d'un assistant de synthèse que d'un outil de prise de notes learning. À surveiller pour les workflows d'extraction et de génération de contenu à partir de sources vidéo. |

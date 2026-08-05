@@ -17,21 +17,21 @@ evidence:
   - "README.md"
   - "server.py"
   - "requirements.txt"
-business_model: "Backend and experimental transcript worker supporting ReplayGlowz operations; user-facing monetization is owned by replayglowz-app."
-market: "Internal backend capability for ReplayGlowz transcript processing."
-target_audience: "ReplayGlowz operators, developers, and experimenters maintaining transcript execution."
+business_model: "Backend and experimental transcript worker supporting ReplayGlows operations; user-facing monetization is owned by replayglows-app."
+market: "Internal backend capability for ReplayGlows transcript processing."
+target_audience: "ReplayGlows operators, developers, and experimenters maintaining transcript execution."
 value_proposition: "Offload heavy transcript jobs from the app layer while keeping provider flexibility and operational controls."
 depends_on: []
 supersedes: []
 next_review: "2026-05-26"
-next_step: "Keep user-facing business decisions aligned with replayglowz-app product truth."
+next_step: "Keep user-facing business decisions aligned with replayglows-app product truth."
 ---
 
 # shipglows_data/business/lab/business.md
 
 ## Decision Boundary
 
-`lab` is a backend and experimental repository. User-facing product strategy, packaging, and monetization truth are owned by `replayglowz-app`.
+`lab` is a backend and experimental repository. User-facing product strategy, packaging, and monetization truth are owned by `replayglows-app`.
 
 ## Working Business Summary
 
@@ -39,7 +39,7 @@ This repository exists to execute transcript workloads that are heavy for orches
 
 ## Primary Internal Customer
 
-- ReplayGlowz operators who need stable transcript execution in production.
+- ReplayGlows operators who need stable transcript execution in production.
 - Developers who integrate transcript jobs into the parent product pipeline.
 
 ## Value Delivered By This Repository
@@ -60,4 +60,4 @@ This repository exists to execute transcript workloads that are heavy for orches
 
 - Not a standalone end-user product.
 - Not the source of truth for pricing, GTM, or public product narrative.
-- Not a generic media-processing platform outside ReplayGlowz transcript needs.
+- Not a generic media-processing platform outside ReplayGlows transcript needs.

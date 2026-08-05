@@ -2,8 +2,8 @@ import { v } from "convex/values";
 import { internalQuery, QueryCtx, MutationCtx, ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-export const REPLAYGLOWZ_PRODUCT_ID = "replayglowz";
-export const REPLAYGLOWZ_LEGACY_PRODUCT_IDS = ["tubeflow"];
+export const REPLAYGLOWS_PRODUCT_ID = "replayglows";
+export const REPLAYGLOWS_LEGACY_PRODUCT_IDS = ["replayglowz", "tubeflow"];
 export const DEFAULT_FREE_ACCESS_REASON = "default_free_entitlement";
 const DEFAULT_FREE_SNAPSHOT_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -21,15 +21,15 @@ function isActiveAccessStatus(status: string) {
   return status === "active" || status === "trialing";
 }
 
-function acceptedProductIds(productId = REPLAYGLOWZ_PRODUCT_ID, legacyProductIds = REPLAYGLOWZ_LEGACY_PRODUCT_IDS) {
+function acceptedProductIds(productId = REPLAYGLOWS_PRODUCT_ID, legacyProductIds = REPLAYGLOWS_LEGACY_PRODUCT_IDS) {
   return [productId, ...legacyProductIds];
 }
 
-async function getReplayGlowzAccessDecisionFromDb(
+async function getReplayGlowsAccessDecisionFromDb(
   ctx: DbCtx,
   userId: string,
-  productId = REPLAYGLOWZ_PRODUCT_ID,
-  legacyProductIds = REPLAYGLOWZ_LEGACY_PRODUCT_IDS,
+  productId = REPLAYGLOWS_PRODUCT_ID,
+  legacyProductIds = REPLAYGLOWS_LEGACY_PRODUCT_IDS,
 ): Promise<ProductAccessDecision> {
   const user = await ctx.db
     .query("users")
@@ -96,12 +96,12 @@ async function getReplayGlowzAccessDecisionFromDb(
   };
 }
 
-export async function ensureDefaultReplayGlowzAccessSnapshot(ctx: MutationCtx, userId: string) {
+export async function ensureDefaultReplayGlowsAccessSnapshot(ctx: MutationCtx, userId: string) {
   const now = Date.now();
   const existing = await ctx.db
     .query("productAccessSnapshots")
     .withIndex("by_user_product", (q) =>
-      q.eq("userId", userId).eq("productId", REPLAYGLOWZ_PRODUCT_ID),
+      q.eq("userId", userId).eq("productId", REPLAYGLOWS_PRODUCT_ID),
     )
     .first();
 
@@ -121,7 +121,7 @@ export async function ensureDefaultReplayGlowzAccessSnapshot(ctx: MutationCtx, u
     return existing._id;
   }
 
-  for (const legacyProductId of REPLAYGLOWZ_LEGACY_PRODUCT_IDS) {
+  for (const legacyProductId of REPLAYGLOWS_LEGACY_PRODUCT_IDS) {
     const legacySnapshot = await ctx.db
       .query("productAccessSnapshots")
       .withIndex("by_user_product", (q) =>
@@ -133,7 +133,7 @@ export async function ensureDefaultReplayGlowzAccessSnapshot(ctx: MutationCtx, u
 
   return await ctx.db.insert("productAccessSnapshots", {
     userId,
-    productId: REPLAYGLOWZ_PRODUCT_ID,
+    productId: REPLAYGLOWS_PRODUCT_ID,
     source: "legacy",
     status: "active",
     reasonCode: DEFAULT_FREE_ACCESS_REASON,
@@ -143,7 +143,7 @@ export async function ensureDefaultReplayGlowzAccessSnapshot(ctx: MutationCtx, u
   });
 }
 
-export async function requireReplayGlowzAccess(
+export async function requireReplayGlowsAccess(
   ctx: QueryCtx | MutationCtx | ActionCtx,
 ): Promise<string> {
   const identity = await ctx.auth.getUserIdentity();
@@ -152,11 +152,11 @@ export async function requireReplayGlowzAccess(
 
   const decision =
     "db" in ctx
-      ? await getReplayGlowzAccessDecisionFromDb(ctx, userId)
-      : await ctx.runQuery((internal as any).access.getReplayGlowzAccessDecision, {
+      ? await getReplayGlowsAccessDecisionFromDb(ctx, userId)
+      : await ctx.runQuery((internal as any).access.getReplayGlowsAccessDecision, {
           userId,
-          productId: REPLAYGLOWZ_PRODUCT_ID,
-          legacyProductIds: REPLAYGLOWZ_LEGACY_PRODUCT_IDS,
+          productId: REPLAYGLOWS_PRODUCT_ID,
+          legacyProductIds: REPLAYGLOWS_LEGACY_PRODUCT_IDS,
         });
 
   if (!decision.hasAccess) {
@@ -166,20 +166,20 @@ export async function requireReplayGlowzAccess(
   return userId;
 }
 
-export const getReplayGlowzAccessDecision = internalQuery({
+export const getReplayGlowsAccessDecision = internalQuery({
   args: {
     userId: v.string(),
     productId: v.optional(v.string()),
     legacyProductIds: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    return await getReplayGlowzAccessDecisionFromDb(
+    return await getReplayGlowsAccessDecisionFromDb(
       ctx,
       args.userId,
-      args.productId ?? REPLAYGLOWZ_PRODUCT_ID,
+      args.productId ?? REPLAYGLOWS_PRODUCT_ID,
       args.legacyProductIds && args.legacyProductIds.length > 0
         ? args.legacyProductIds
-        : REPLAYGLOWZ_LEGACY_PRODUCT_IDS,
+        : REPLAYGLOWS_LEGACY_PRODUCT_IDS,
     );
   },
 });
@@ -187,8 +187,8 @@ export const getReplayGlowzAccessDecision = internalQuery({
 export async function getProductAccessStatusForUser(
   ctx: QueryCtx,
   userId: string,
-  productId = REPLAYGLOWZ_PRODUCT_ID,
-  legacyProductIds = REPLAYGLOWZ_LEGACY_PRODUCT_IDS,
+  productId = REPLAYGLOWS_PRODUCT_ID,
+  legacyProductIds = REPLAYGLOWS_LEGACY_PRODUCT_IDS,
 ) {
-  return await getReplayGlowzAccessDecisionFromDb(ctx, userId, productId, legacyProductIds);
+  return await getReplayGlowsAccessDecisionFromDb(ctx, userId, productId, legacyProductIds);
 }

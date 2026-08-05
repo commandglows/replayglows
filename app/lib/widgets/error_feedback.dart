@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 
 bool _isFrench(BuildContext context) =>
     Localizations.localeOf(context).languageCode == 'fr';

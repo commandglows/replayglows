@@ -6,10 +6,10 @@ import {
   defaultTranscriptSettings,
 } from "./settings";
 import {
-  ensureDefaultReplayGlowzAccessSnapshot,
+  ensureDefaultReplayGlowsAccessSnapshot,
   getProductAccessStatusForUser,
-  REPLAYGLOWZ_LEGACY_PRODUCT_IDS,
-  REPLAYGLOWZ_PRODUCT_ID,
+  REPLAYGLOWS_LEGACY_PRODUCT_IDS,
+  REPLAYGLOWS_PRODUCT_ID,
 } from "./access";
 
 // Get current user from Convex (synced from Clerk)
@@ -40,7 +40,7 @@ export const getProductAccessStatus = query({
         loading: false,
         hasAccess: false,
         accountRecognized: false,
-        productId: args.productId ?? REPLAYGLOWZ_PRODUCT_ID,
+        productId: args.productId ?? REPLAYGLOWS_PRODUCT_ID,
         reasonCode: "unauthenticated",
       };
     }
@@ -48,8 +48,8 @@ export const getProductAccessStatus = query({
     const legacyProductIds =
       args.legacyProductIds && args.legacyProductIds.length > 0
         ? args.legacyProductIds
-        : REPLAYGLOWZ_LEGACY_PRODUCT_IDS;
-    const productId = args.productId ?? REPLAYGLOWZ_PRODUCT_ID;
+        : REPLAYGLOWS_LEGACY_PRODUCT_IDS;
+    const productId = args.productId ?? REPLAYGLOWS_PRODUCT_ID;
     const status = await getProductAccessStatusForUser(
       ctx,
       userId,
@@ -139,7 +139,7 @@ export const upsertUser = internalMutation({
         updatedAt: now,
       });
 
-      await ensureDefaultReplayGlowzAccessSnapshot(ctx, args.clerkId);
+      await ensureDefaultReplayGlowsAccessSnapshot(ctx, args.clerkId);
 
       return userId;
     }
@@ -278,7 +278,7 @@ export const ensureUser = mutation({
     const now = Date.now();
 
     if (existingUser) {
-      await ensureDefaultReplayGlowzAccessSnapshot(ctx, userId);
+      await ensureDefaultReplayGlowsAccessSnapshot(ctx, userId);
       return existingUser._id;
     }
 
@@ -320,7 +320,7 @@ export const ensureUser = mutation({
       updatedAt: now,
     });
 
-    await ensureDefaultReplayGlowzAccessSnapshot(ctx, userId);
+    await ensureDefaultReplayGlowsAccessSnapshot(ctx, userId);
 
     return newUserId;
   },

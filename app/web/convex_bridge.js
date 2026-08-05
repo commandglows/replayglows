@@ -1,6 +1,6 @@
 (function () {
   let loadPromise = null;
-  const CONVEX_SCRIPT_ID = 'replayglowz-convex-js';
+  const CONVEX_SCRIPT_ID = 'replayglows-convex-js';
   const CONVEX_BUNDLE_SOURCES = [
     {
       src: 'convex_browser.bundle.js',
@@ -108,7 +108,7 @@
     return JSON.stringify(result ?? null);
   }
 
-  window.replayGlowzConvexBridge = {
+  window.replayGlowsConvexBridge = {
     query(convexUrl, authToken, path, argsJson) {
       return run('query', convexUrl, authToken, path, argsJson);
     },

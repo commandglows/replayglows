@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-06-10"
 created_at: "2026-06-10 07:47:08 UTC"
 updated: "2026-06-10"
@@ -12,7 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "advanced-feed-source-filtering"
 owner: "Diane"
-user_story: "En tant qu'utilisatrice ReplayGlowz qui prepare une session de lecture depuis le Feed principal, je veux affiner les sources incluses dans mes feeds selectionnes, afin de masquer ponctuellement une chaine ou une source trop bruyante sans modifier le feed lui-meme."
+user_story: "En tant qu'utilisatrice ReplayGlows qui prepare une session de lecture depuis le Feed principal, je veux affiner les sources incluses dans mes feeds selectionnes, afin de masquer ponctuellement une chaine ou une source trop bruyante sans modifier le feed lui-meme."
 confidence: "high"
 risk_level: "medium"
 security_impact: "yes"
@@ -22,7 +22,7 @@ linked_systems:
   - "Flutter Web"
   - "Riverpod"
   - "Convex"
-  - "ReplayGlowz virtual feeds"
+  - "ReplayGlows virtual feeds"
 depends_on:
   - artifact: "AGENT.md"
     artifact_version: "0.1.0"
@@ -30,27 +30,27 @@ depends_on:
   - artifact: "app/AGENT.md"
     artifact_version: "1.3.0"
     required_status: "reviewed"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-virtual-feeds-channel-aggregators.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-virtual-feeds-channel-aggregators.md"
     artifact_version: "1.0.1"
     required_status: "ready"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-feed-source-discovery-playlist-channel-expansion.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-feed-source-discovery-playlist-channel-expansion.md"
     artifact_version: "1.0.1"
     required_status: "ready"
 supersedes: []
 evidence:
   - "User request 2026-06-10: recover the earlier idea of selecting sources inside selected feeds, but only as an advanced progressive-disclosure mode."
-  - "Current `videos_screen.dart` feed picker only supports `All videos` plus multi-select ReplayGlowz feeds."
+  - "Current `videos_screen.dart` feed picker only supports `All videos` plus multi-select ReplayGlows feeds."
   - "Current `VirtualFeedSource` model still exposes feed sources with source type, id, title, active state, and video count."
   - "Current `YouTubeVideo` model can carry `feedSourceType`, `feedSourceId`, and `feedSourceTitle` on virtual feed detail responses."
   - "Current main Feed merge path uses `virtualFeedDetailsProvider` and `_mergeFeedVideos`, so selected feed detail data is already available when feed filters are active."
-next_step: "/sf-start replayglowz-advanced-feed-source-filtering"
+next_step: "/sf-start replayglows-advanced-feed-source-filtering"
 ---
 
-# Spec: ReplayGlowz Advanced Feed Source Filtering
+# Spec: ReplayGlows Advanced Feed Source Filtering
 
 ## Title
 
-ReplayGlowz advanced feed source filtering
+ReplayGlows advanced feed source filtering
 
 ## Status
 
@@ -58,15 +58,15 @@ ready
 
 ## User Story
 
-En tant qu'utilisatrice ReplayGlowz qui prepare une session de lecture depuis le Feed principal, je veux affiner les sources incluses dans mes feeds selectionnes, afin de masquer ponctuellement une chaine ou une source trop bruyante sans modifier le feed lui-meme.
+En tant qu'utilisatrice ReplayGlows qui prepare une session de lecture depuis le Feed principal, je veux affiner les sources incluses dans mes feeds selectionnes, afin de masquer ponctuellement une chaine ou une source trop bruyante sans modifier le feed lui-meme.
 
 ## Minimal Behavior Contract
 
-Quand l'utilisateur ouvre le filtre du Feed principal, le mode simple doit rester centre sur `Toutes les videos` et la selection de feeds ReplayGlowz. Si au moins un feed est selectionne, l'utilisateur peut ouvrir un mode avance `Affiner les sources` qui liste les sources actives de ces feeds et permet d'en decocher certaines pour la session de lecture. Appliquer le filtre doit retirer de la vue Feed et de la queue Play les videos provenant des sources exclues, sans desactiver, supprimer, reordonner, ni modifier les sources dans le feed d'origine. Si les donnees de source ne sont pas disponibles ou deviennent obsoletes, l'UI doit rester recuperable, ignorer les exclusions invalides, et expliquer que l'affinage depend des details de feed charges. L'edge case facile a rater est qu'une meme video peut venir de plusieurs feeds ou sources: elle ne doit etre masquee que si toutes ses appartenances actuellement selectionnees sont exclues.
+Quand l'utilisateur ouvre le filtre du Feed principal, le mode simple doit rester centre sur `Toutes les videos` et la selection de feeds ReplayGlows. Si au moins un feed est selectionne, l'utilisateur peut ouvrir un mode avance `Affiner les sources` qui liste les sources actives de ces feeds et permet d'en decocher certaines pour la session de lecture. Appliquer le filtre doit retirer de la vue Feed et de la queue Play les videos provenant des sources exclues, sans desactiver, supprimer, reordonner, ni modifier les sources dans le feed d'origine. Si les donnees de source ne sont pas disponibles ou deviennent obsoletes, l'UI doit rester recuperable, ignorer les exclusions invalides, et expliquer que l'affinage depend des details de feed charges. L'edge case facile a rater est qu'une meme video peut venir de plusieurs feeds ou sources: elle ne doit etre masquee que si toutes ses appartenances actuellement selectionnees sont exclues.
 
 ## Success Behavior
 
-- Preconditions: l'utilisateur est authentifie, YouTube est connecte, et au moins un Feed ReplayGlowz actif existe avec des sources actives.
+- Preconditions: l'utilisateur est authentifie, YouTube est connecte, et au moins un Feed ReplayGlows actif existe avec des sources actives.
 - Trigger: l'utilisateur ouvre la page Feed, selectionne un ou plusieurs feeds dans le picker, puis ouvre `Affiner les sources`.
 - User result: le picker simple reste lisible; le mode source n'apparait pas avant qu'un feed soit selectionne ou avant une action explicite.
 - User result: les sources sont groupees par feed, avec leur titre, type lisible, compteur quand disponible, et etat coche/decoché.
@@ -89,7 +89,7 @@ Quand l'utilisateur ouvre le filtre du Feed principal, le mode simple doit reste
 
 ## Problem
 
-The current Feed picker was intentionally simplified to `Toutes les videos` plus multi-select ReplayGlowz feeds. That keeps the default UI understandable, but it removed the fine-grained source-level control that could help before a focused watch session. If a selected feed contains one channel that posted many irrelevant videos, the user currently has to either accept noise in the queue or edit the feed itself in `Lists`, which is too permanent for a temporary viewing decision.
+The current Feed picker was intentionally simplified to `Toutes les videos` plus multi-select ReplayGlows feeds. That keeps the default UI understandable, but it removed the fine-grained source-level control that could help before a focused watch session. If a selected feed contains one channel that posted many irrelevant videos, the user currently has to either accept noise in the queue or edit the feed itself in `Lists`, which is too permanent for a temporary viewing decision.
 
 ## Solution
 
@@ -98,7 +98,7 @@ Add a progressive-disclosure advanced mode inside the Feed filter picker. The fi
 ## Scope In
 
 - Main Feed filter UI in `app/lib/screens/videos/videos_screen.dart`.
-- Advanced source selector shown only after one or more ReplayGlowz feeds are selected.
+- Advanced source selector shown only after one or more ReplayGlows feeds are selected.
 - Source grouping by selected feed, using `VirtualFeedDetails.sources`.
 - Local filter state for excluded source keys, scoped to selected feed filters.
 - Filtering logic in the main Feed merge path so videos from excluded sources are removed from card/list/summary views and Play queue.
@@ -133,7 +133,7 @@ Add a progressive-disclosure advanced mode inside the Feed filter picker. The fi
 - surface: Flutter web/mobile shared app code in `app`, Riverpod providers, local preference state, and read-only Convex virtual feed detail data.
 - proof_profile: mixed automated and UI proof. Automated checks must cover static analysis and pure filtering behavior; browser/manual proof must cover mobile bottom-sheet interaction and Play queue coherence.
 - proof_order: `flutter analyze` -> unit/helper tests for filter semantics -> widget tests where practical -> Flutter Web preview smoke -> manual mobile QA for gestures/layout.
-- checklist_path: `shipglows_data/workflow/test-checklists/replayglowz-advanced-feed-source-filtering.md` must be created during implementation if widget tests cannot fully prove mobile interaction and Play queue behavior.
+- checklist_path: `shipglows_data/workflow/test-checklists/replayglows-advanced-feed-source-filtering.md` must be created during implementation if widget tests cannot fully prove mobile interaction and Play queue behavior.
 - required_scenario_ids: CA 1 through CA 11.
 - required_results: simple picker remains uncluttered, advanced source filtering appears only after feed selection, source exclusions hide only attributable videos, duplicate videos remain visible through non-excluded sources, Play queue matches visible videos, stale exclusions are pruned, clearing filters clears source exclusions, Feed detail source activation is unchanged, and Flutter analysis passes.
 - exception_with_proof: backend typecheck is not required if implementation remains app-only and read-only against existing providers; run backend typecheck if Convex contracts, backend queries, or source attribution payloads change.
@@ -147,9 +147,9 @@ Add a progressive-disclosure advanced mode inside the Feed filter picker. The fi
 - `app/lib/providers/providers.dart` for `virtualFeedDetailsProvider`.
 - `app/lib/i18n/en.dart` and `app/lib/i18n/fr.dart` for user-facing copy.
 - Existing specs:
-  - `shipglows_data/workflow/specs/replayglowz-virtual-feeds-channel-aggregators.md`
-  - `shipglows_data/workflow/specs/replayglowz-feed-source-discovery-playlist-channel-expansion.md`
-- Fresh external docs: not needed. This spec uses existing Flutter/Riverpod patterns and existing ReplayGlowz data contracts; no framework, SDK, auth, API, migration, cache, routing, or external integration behavior is being redefined.
+  - `shipglows_data/workflow/specs/replayglows-virtual-feeds-channel-aggregators.md`
+  - `shipglows_data/workflow/specs/replayglows-feed-source-discovery-playlist-channel-expansion.md`
+- Fresh external docs: not needed. This spec uses existing Flutter/Riverpod patterns and existing ReplayGlows data contracts; no framework, SDK, auth, API, migration, cache, routing, or external integration behavior is being redefined.
 
 ## Invariants
 
@@ -229,7 +229,7 @@ Add a progressive-disclosure advanced mode inside the Feed filter picker. The fi
   - Validate with: manual Feed -> apply source exclusion -> Play -> next/previous -> return Feed scenario.
 
 - [ ] Task 6: Add docs/checklist updates if implementation needs them.
-  - Files: `app/CHANGELOG.md`, optionally `shipglows_data/workflow/test-checklists/replayglowz-advanced-feed-source-filtering.md`, optionally app technical docs.
+  - Files: `app/CHANGELOG.md`, optionally `shipglows_data/workflow/test-checklists/replayglows-advanced-feed-source-filtering.md`, optionally app technical docs.
   - Action: Record the feature and add QA checklist if browser/manual proof remains necessary.
   - User story link: preserves future maintainability and verification memory.
   - Depends on: Tasks 1-5.
@@ -305,8 +305,8 @@ None.
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-06-10 07:47:08 UTC | sf-spec | GPT-5 Codex | Created draft spec for progressive advanced source filtering in the main Feed picker. | draft saved | /sf-ready replayglowz-advanced-feed-source-filtering |
-| 2026-06-10 07:50:26 UTC | sf-ready | GPT-5 Codex | Reviewed readiness, tightened proof contract and security notes, and promoted spec to ready. | ready | /sf-start replayglowz-advanced-feed-source-filtering |
+| 2026-06-10 07:47:08 UTC | sf-spec | GPT-5 Codex | Created draft spec for progressive advanced source filtering in the main Feed picker. | draft saved | /sf-ready replayglows-advanced-feed-source-filtering |
+| 2026-06-10 07:50:26 UTC | sf-ready | GPT-5 Codex | Reviewed readiness, tightened proof contract and security notes, and promoted spec to ready. | ready | /sf-start replayglows-advanced-feed-source-filtering |
 
 ## Current Chantier Flow
 
@@ -317,4 +317,4 @@ None.
 - sf-end: not launched
 - sf-ship: not launched
 
-Next command: `/sf-start replayglowz-advanced-feed-source-filtering`
+Next command: `/sf-start replayglows-advanced-feed-source-filtering`

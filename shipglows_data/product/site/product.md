@@ -2,7 +2,7 @@
 artifact: product_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz-site"
+project: "replayglows-site"
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -43,7 +43,7 @@ next_step: "/sf-docs audit shipglows_data/product/site/product.md"
 
 ## Product Summary
 
-`replayglowz-site` is the public marketing and conversion layer for ReplayGlowz. It describes the product promise and routes visitors to the app at `app.replayglowz.com`.
+`replayglows-site` is the public marketing and conversion layer for ReplayGlows. It describes the product promise and routes visitors to the app at `app.replayglowz.com`.
 
 Canonical product truth is `shipglows_data/product/app/product.md`. This repository must stay aligned with that contract and avoid introducing a parallel product definition.
 
@@ -61,7 +61,7 @@ Users lose value from video learning when notes are detached from source context
 
 ## Desired Outcomes
 
-ReplayGlowz should help users:
+ReplayGlows should help users:
 
 - watch with intention instead of drifting through recommendations
 - capture notes at exact timestamps
@@ -96,7 +96,7 @@ This repo does not justify treating the following as stable commitments:
 
 The clearest product framing is:
 
-`ReplayGlowz helps people learn from video by keeping notes attached to exact playback context.`
+`ReplayGlows helps people learn from video by keeping notes attached to exact playback context.`
 
 Secondary framing around escaping algorithmic distraction is acceptable as a hook, but should remain subordinate to the concrete workflow promise.
 

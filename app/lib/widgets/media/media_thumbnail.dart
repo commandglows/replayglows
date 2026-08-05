@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 
 class MediaThumbnail extends StatelessWidget {
   const MediaThumbnail({

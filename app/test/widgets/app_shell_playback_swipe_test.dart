@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:replayglowz_app/widgets/app_shell.dart';
+import 'package:replayglows_app/widgets/app_shell.dart';
 
 void main() {
   test('playback seek controls swipe action is deterministic', () {

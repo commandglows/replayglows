@@ -3,17 +3,17 @@ import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:replayglowz_app/app/build_info.dart';
-import 'package:replayglowz_app/auth/auth_state.dart';
-import 'package:replayglowz_app/auth/auth_service.dart';
-import 'package:replayglowz_app/convex/convex_client.dart';
-import 'package:replayglowz_app/convex/convex_errors.dart';
-import 'package:replayglowz_app/convex/convex_provider.dart';
-import 'package:replayglowz_app/models/models.dart';
-import 'package:replayglowz_app/utils/app_logger.dart';
+import 'package:replayglows_app/app/build_info.dart';
+import 'package:replayglows_app/auth/auth_state.dart';
+import 'package:replayglows_app/auth/auth_service.dart';
+import 'package:replayglows_app/convex/convex_client.dart';
+import 'package:replayglows_app/convex/convex_errors.dart';
+import 'package:replayglows_app/convex/convex_provider.dart';
+import 'package:replayglows_app/models/models.dart';
+import 'package:replayglows_app/utils/app_logger.dart';
 
 // =============================================================================
-// Typed Convex providers for the ReplayGlowz app.
+// Typed Convex providers for the ReplayGlows app.
 //
 // Each provider maps a Convex function path to a strongly-typed Dart model.
 //
@@ -375,7 +375,7 @@ class PlaybackSession {
     return switch (sourceType) {
       PlaybackSourceType.feed => 'Feed',
       PlaybackSourceType.playlist => 'Playlist',
-      PlaybackSourceType.virtualFeed => 'ReplayGlowz feed',
+      PlaybackSourceType.virtualFeed => 'ReplayGlows feed',
       PlaybackSourceType.direct => 'Direct video',
     };
   }
@@ -625,7 +625,7 @@ class PreferencesData {
 
   final UserSettings settings;
   final UserSubscription subscription;
-  final ReplayGlowzUser? user;
+  final ReplayGlowsUser? user;
 }
 
 class ProductAccessStatus {
@@ -644,8 +644,8 @@ class ProductAccessStatus {
   final Map<String, dynamic>? raw;
 }
 
-ReplayGlowzUser _fallbackUserFromAuth(AuthUser user) {
-  return ReplayGlowzUser(
+ReplayGlowsUser _fallbackUserFromAuth(AuthUser user) {
+  return ReplayGlowsUser(
     id: 'user:${user.id}',
     clerkId: user.id,
     email: user.email,
@@ -738,7 +738,7 @@ void _logUnauthorizedFallback(
 }
 
 List<String> _legacyProductIds() {
-  return replayGlowzLegacyProductIds
+  return replayGlowsLegacyProductIds
       .split(',')
       .map((value) => value.trim())
       .where((value) => value.isNotEmpty)
@@ -841,7 +841,7 @@ final playlistsProvider = StreamProvider<List<YouTubePlaylist>>((ref) async* {
 // 3b. virtualFeedsProvider
 // ---------------------------------------------------------------------------
 
-/// Loads local ReplayGlowz Feeds owned by the current user.
+/// Loads local ReplayGlows Feeds owned by the current user.
 final virtualFeedsProvider = FutureProvider<List<VirtualFeed>>((ref) async {
   final authState = ref.watch(authStateProvider);
   if (authState is! AuthAuthenticated) {
@@ -1071,11 +1071,11 @@ final subscriptionProvider = StreamProvider<UserSubscription?>((ref) {
 /// Subscribes to `users:getCurrentUser` — the currently authenticated user.
 ///
 /// Emits `null` when the user is not authenticated.
-final currentUserProvider = StreamProvider<ReplayGlowzUser?>((ref) {
+final currentUserProvider = StreamProvider<ReplayGlowsUser?>((ref) {
   final service = ref.watch(convexServiceProvider);
   return service.subscribe<dynamic>('users:getCurrentUser', {}).map((raw) {
     final json = _decodeMap(raw);
-    return json != null ? ReplayGlowzUser.fromJson(json) : null;
+    return json != null ? ReplayGlowsUser.fromJson(json) : null;
   });
 });
 
@@ -1169,7 +1169,7 @@ final productAccessStatusProvider = FutureProvider<ProductAccessStatus>((
     });
 
     final raw = await service.query<dynamic>('users:getProductAccessStatus', {
-      'productId': replayGlowzProductId,
+      'productId': replayGlowsProductId,
       'legacyProductIds': _legacyProductIds(),
     });
     final status = _decodeMap(raw) ?? const <String, dynamic>{};
@@ -1355,7 +1355,7 @@ final preferencesDataProvider = FutureProvider<PreferencesData?>((ref) async {
   );
   final userJson = _decodeMap(currentUserRaw);
   final user = userJson != null
-      ? ReplayGlowzUser.fromJson(userJson)
+      ? ReplayGlowsUser.fromJson(userJson)
       : _fallbackUserFromAuth(authUser);
 
   return PreferencesData(

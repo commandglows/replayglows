@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:replayglowz_app/models/settings.dart';
-import 'package:replayglowz_app/providers/providers.dart';
+import 'package:replayglows_app/models/settings.dart';
+import 'package:replayglows_app/providers/providers.dart';
 
 ThemeMode appThemeModeToThemeMode(AppThemeMode? mode) {
   switch (mode) {
@@ -24,7 +24,7 @@ final themeModeProvider = Provider<ThemeMode>((ref) {
   return appThemeModeToThemeMode(appThemeMode);
 });
 
-/// Design tokens for the ReplayGlowz app.
+/// Design tokens for the ReplayGlows app.
 ///
 /// All color constants are defined here so they can be referenced
 /// consistently across both light and dark theme configurations.
@@ -145,7 +145,7 @@ abstract final class AppSizes {
   static const authPanelMaxWidth = 520.0;
 }
 
-/// Central theme configuration for ReplayGlowz.
+/// Central theme configuration for ReplayGlows.
 ///
 /// Provides fully-specified [ThemeData] for light and dark modes using the
 /// design tokens defined in [AppColors]. Typography uses Inter for body text,

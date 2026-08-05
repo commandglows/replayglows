@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { requireReplayGlowzAccess } from "./access";
+import { requireReplayGlowsAccess } from "./access";
 
 export const getComments = query({
   args: { videoId: v.id("videos") },
@@ -15,7 +15,7 @@ export const getComments = query({
 export const createComment = mutation({
   args: { videoId: v.id("videos"), content: v.string() },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const commentId = await ctx.db.insert("comments", {
@@ -31,7 +31,7 @@ export const createComment = mutation({
 export const deleteComment = mutation({
   args: { id: v.id("comments") },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const comment = await ctx.db.get(args.id);
     if (!comment || comment.userId !== userId) throw new Error("Unauthorized");
 

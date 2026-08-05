@@ -10,13 +10,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added a web background-playback interruption dialog that explains browser-driven pauses and lets users explicitly opt out of future notices.
 
 ### Changed
-- Feed filtering now switches between all videos and one or more ReplayGlowz feeds, without exposing playlist-level filtering inside the main feed picker.
+- Feed filtering now switches between all videos and one or more ReplayGlows feeds, without exposing playlist-level filtering inside the main feed picker.
 - The Play mobile bottom bar can switch into playback controls, while a secondary action bar exposes current-video actions such as hide, mark watched, and playback speed changes.
-- The Lists page hides the technical YouTube `Subscriptions` aggregate playlist while keeping all subscriptions available as a source option for ReplayGlowz feeds.
+- The Lists page hides the technical YouTube `Subscriptions` aggregate playlist while keeping all subscriptions available as a source option for ReplayGlows feeds.
 
 ### Fixed
 - Persisted theme preferences now drive the app runtime theme mode.
-- Removing a source from a ReplayGlowz feed now removes that source card and its videos from the visible feed state immediately.
+- Removing a source from a ReplayGlows feed now removes that source card and its videos from the visible feed state immediately.
 - Adding playlist channels as feed sources now reads the backend mutation result correctly before reporting added/rejected source counts.
 
 ## [2026-05-24]
@@ -26,23 +26,23 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added app chrome quota/sync progress visibility backed by Convex quota usage and YouTube sync job state.
 
 ### Added
-- Added cache-first quota-safe sync support for ReplayGlowz YouTube imports, including backend job progress, quota threshold enforcement, and cached video-detail reuse to avoid unnecessary `videos.list` calls.
+- Added cache-first quota-safe sync support for ReplayGlows YouTube imports, including backend job progress, quota threshold enforcement, and cached video-detail reuse to avoid unnecessary `videos.list` calls.
 
 ## [2026-05-23]
 
 ### Changed
 - Migrated web auth session ownership from Firebase Auth to suite Clerk via a dedicated ClerkJS bridge (`web/clerk_bridge.js`) and Dart wrapper.
-- Added Clerk/suite auth build contract (`CLERK_*`, `REPLAYGLOWZ_PRODUCT_ID`, `REPLAYGLOWZ_LEGACY_PRODUCT_IDS`, `REPLAYGLOWZ_ACCOUNT_CENTER_URL`) and updated Vercel CSP for Clerk runtime domains.
+- Added Clerk/suite auth build contract (`CLERK_*`, `REPLAYGLOWS_PRODUCT_ID`, `REPLAYGLOWS_LEGACY_PRODUCT_IDS`, `REPLAYGLOWS_ACCOUNT_CENTER_URL`) and updated Vercel CSP for Clerk runtime domains.
 - Rewired Convex token provider to use Clerk session token minting (`template: convex`).
 - Added fail-closed client product-access gating (`account recognized, product access inactive`) driven by backend access status.
 - Replaced YouTube OAuth Firebase token handoff with Clerk session token + server entitlement verification (`SUITE_ENTITLEMENT_VERIFY_URL` / `SUITE_ENTITLEMENT_VERIFY_SECRET`) in both start and callback handlers.
 - Added focused Node tests for suite entitlement denial/success paths and callback persistence flow.
-- Updated app docs/contracts (`README.md`, `AGENT.md`, `CLAUDE.md`) to reflect suite Clerk identity and ReplayGlowz product Convex boundaries.
+- Updated app docs/contracts (`README.md`, `AGENT.md`, `CLAUDE.md`) to reflect suite Clerk identity and ReplayGlows product Convex boundaries.
 
 ## [2026-05-15]
 
 ### Changed
-- Removed legacy environment-variable compatibility fallbacks for app URL and OAuth handling (`TUBEFLOW_*`, `NEXT_PUBLIC_*`) in favor of `REPLAYGLOWZ_APP_URL`, `YOUTUBE_OAUTH_CLIENT_ID`, and `CONVEX_URL`.
+- Removed legacy environment-variable compatibility fallbacks for app URL and OAuth handling (`TUBEFLOW_*`, `NEXT_PUBLIC_*`) in favor of `REPLAYGLOWS_APP_URL`, `YOUTUBE_OAUTH_CLIENT_ID`, and `CONVEX_URL`.
 - Batched full YouTube playlist sync calls to reduce sequential backend waits during manual refresh.
 - Deferred the all-notes subscription on the Videos screen until the Notes view is active.
 
@@ -50,9 +50,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 - Renamed the app directory and Dart package namespace from `tubeflow_app` to `app`, including `package:app/...` imports and active app-side type names.
-- Migrated visible app branding, PWA metadata, diagnostics, Sentry release defaults, and YouTube OAuth copy from TubeFlow to ReplayGlowz.
-- Added `REPLAYGLOWZ_APP_URL` as the preferred app-origin build variable while keeping `TUBEFLOW_APP_URL` and `TUBEFLOW_WEB_URL` compatibility fallbacks.
-- Migrated the feedback text draft key to `replayglowz_feedback_text_draft` with a read-and-remove fallback for the legacy key.
+- Migrated visible app branding, PWA metadata, diagnostics, Sentry release defaults, and YouTube OAuth copy from TubeFlow to ReplayGlows.
+- Added `REPLAYGLOWS_APP_URL` as the preferred app-origin build variable while keeping `TUBEFLOW_APP_URL` and `TUBEFLOW_WEB_URL` compatibility fallbacks.
+- Migrated the feedback text draft key to `replayglows_feedback_text_draft` with a read-and-remove fallback for the legacy key.
 
 ## [2026-05-11]
 

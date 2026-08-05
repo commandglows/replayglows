@@ -1,16 +1,16 @@
-# ReplayGlowz App
+# ReplayGlows App
 
-Flutter app for ReplayGlowz. The web build is deployed on Vercel; Android build
+Flutter app for ReplayGlows. The web build is deployed on Vercel; Android build
 verification runs from the monorepo GitHub Actions workflow.
 
-ReplayGlowz uses suite Clerk web identity plus server-verified product access on web. Native Flutter builds use Firebase Auth as the app session adapter, then resolve suite identity and product access through the WinFlowz suite bridge. Product data (videos, notes, playlists, transcripts, preferences, YouTube tokens) stays in the ReplayGlowz product Convex backend.
+ReplayGlows uses suite Clerk web identity plus server-verified product access on web. Native Flutter builds use Firebase Auth as the app session adapter, then resolve suite identity and product access through the WinFlowz suite bridge. Product data (videos, notes, playlists, transcripts, preferences, YouTube tokens) stays in the ReplayGlows product Convex backend.
 
 ## Auth and Data Boundaries
 
 - Identity/session owner: Clerk (suite account on `app.replayglowz.com`)
 - Entitlement authority: WinFlowz suite verifier (`SUITE_ENTITLEMENT_VERIFY_URL`)
-- Product data authority: ReplayGlowz product Convex (`CONVEX_URL`)
-- Canonical entitlement product id: `replayglowz`
+- Product data authority: ReplayGlows product Convex (`CONVEX_URL`)
+- Canonical entitlement product id: `replayglows`
 - Legacy alias (read/migration only): `tubeflow`
 
 ## Quick Start
@@ -23,19 +23,19 @@ flutter run -d chrome \
   --dart-define=CLERK_PUBLISHABLE_KEY=pk_live_xxx \
   --dart-define=CLERK_SIGN_IN_URL=/sign-in \
   --dart-define=CLERK_SIGN_UP_URL=/sign-up \
-  --dart-define=REPLAYGLOWZ_PRODUCT_ID=replayglowz \
-  --dart-define=REPLAYGLOWZ_LEGACY_PRODUCT_IDS=tubeflow \
-  --dart-define=REPLAYGLOWZ_ACCOUNT_CENTER_URL=https://winflows.com/account \
-  --dart-define=REPLAYGLOWZ_APP_URL=https://app.replayglowz.com
+  --dart-define=REPLAYGLOWS_PRODUCT_ID=replayglows \
+  --dart-define=REPLAYGLOWS_LEGACY_PRODUCT_IDS=tubeflow \
+  --dart-define=REPLAYGLOWS_ACCOUNT_CENTER_URL=https://winflows.com/account \
+  --dart-define=REPLAYGLOWS_APP_URL=https://app.replayglowz.com
 
 CONVEX_URL=... \
 CLERK_PUBLISHABLE_KEY=... \
 CLERK_SIGN_IN_URL=/sign-in \
 CLERK_SIGN_UP_URL=/sign-up \
-REPLAYGLOWZ_PRODUCT_ID=replayglowz \
-REPLAYGLOWZ_LEGACY_PRODUCT_IDS=tubeflow \
-REPLAYGLOWZ_ACCOUNT_CENTER_URL=https://winflows.com/account \
-REPLAYGLOWZ_APP_URL=https://app.replayglowz.com \
+REPLAYGLOWS_PRODUCT_ID=replayglows \
+REPLAYGLOWS_LEGACY_PRODUCT_IDS=tubeflow \
+REPLAYGLOWS_ACCOUNT_CENTER_URL=https://winflows.com/account \
+REPLAYGLOWS_APP_URL=https://app.replayglowz.com \
 bash build.sh
 ```
 
@@ -47,10 +47,10 @@ Flutter build-time (`--dart-define`) values:
 - `CLERK_PUBLISHABLE_KEY`
 - `CLERK_SIGN_IN_URL`
 - `CLERK_SIGN_UP_URL`
-- `REPLAYGLOWZ_PRODUCT_ID` (`replayglowz`)
-- `REPLAYGLOWZ_LEGACY_PRODUCT_IDS` (`tubeflow`)
-- `REPLAYGLOWZ_ACCOUNT_CENTER_URL`
-- `REPLAYGLOWZ_APP_URL`
+- `REPLAYGLOWS_PRODUCT_ID` (`replayglows`)
+- `REPLAYGLOWS_LEGACY_PRODUCT_IDS` (`tubeflow`)
+- `REPLAYGLOWS_ACCOUNT_CENTER_URL`
+- `REPLAYGLOWS_APP_URL`
 - `BUILD_COMMIT_SHA`, `BUILD_ENVIRONMENT`, `BUILD_TIMESTAMP` (optional diagnostics)
 - `SENTRY_*` (optional observability)
 
@@ -61,13 +61,13 @@ Vercel server/runtime values:
 - `CLERK_SECRET_KEY`
 - `SUITE_ENTITLEMENT_VERIFY_URL` (`https://www.winflowz.com/api/bridge/entitlement`)
 - `SUITE_ENTITLEMENT_VERIFY_SECRET` (sent as `x-suite-entitlement-secret`)
-- `REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_SECRET` (encrypts the short-lived native/web YouTube OAuth handoff ticket)
+- `REPLAYGLOWS_YOUTUBE_OAUTH_TICKET_SECRET` (encrypts the short-lived native/web YouTube OAuth handoff ticket)
 
 See `.env.example` for placeholders.
 
 ## Android CI
 
-The Android target is built by `.github/workflows/replayglowz-app-android.yml`
+The Android target is built by `.github/workflows/replayglows-app-android.yml`
 from the monorepo root. It uses Blacksmith runners, path filtering, Flutter/pub
 caches, Gradle caches, and uploads a debug APK for manual workflow runs.
 
@@ -82,12 +82,12 @@ Required GitHub configuration:
 - `FIREBASE_DEV_STORAGE_BUCKET` secret (optional)
 - `FIREBASE_WEB_CLIENT_ID` secret (optional; used by Google Sign-In)
 - `SUITE_IDENTITY_BRIDGE_URL` secret (required for real native product access; the app remains fail-closed without a product token)
-- `REPLAYGLOWZ_APP_URL` secret or variable
-- `REPLAYGLOWZ_ACCOUNT_CENTER_URL` secret or variable (optional; defaults to `https://winflows.com/account`)
+- `REPLAYGLOWS_APP_URL` secret or variable
+- `REPLAYGLOWS_ACCOUNT_CENTER_URL` secret or variable (optional; defaults to `https://winflows.com/account`)
 - `SENTRY_DSN` and `SENTRY_ENVIRONMENT` secrets or variables (optional)
 
 Required Vercel runtime configuration for YouTube OAuth also includes
-`REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_SECRET`; without it, OAuth start fails closed
+`REPLAYGLOWS_YOUTUBE_OAUTH_TICKET_SECRET`; without it, OAuth start fails closed
 instead of storing raw session tokens in callback cookies.
 
 Play Store release builds are not enabled yet. They need Android keystore
@@ -95,8 +95,8 @@ secrets and a signed AAB workflow before publication.
 
 ## Android Push Notifications
 
-ReplayGlowz Android push uses Firebase Cloud Messaging as transport. The
-ReplayGlowz Convex backend remains the source of truth for notification rows,
+ReplayGlows Android push uses Firebase Cloud Messaging as transport. The
+ReplayGlows Convex backend remains the source of truth for notification rows,
 cadence, source targeting, type toggles, device registration ownership, and
 delivery attempts.
 
@@ -120,7 +120,7 @@ environment:
 
 Android QA checklist:
 
-- Sign in on a real Android 13+ device with active ReplayGlowz access.
+- Sign in on a real Android 13+ device with active ReplayGlows access.
 - Open Preferences, enable Push notifications, and grant the Android runtime
   notification permission.
 - Confirm the backend has an active Android device registration for the user.
@@ -140,14 +140,14 @@ Android QA checklist:
 - Handler verifies suite entitlement server-side before redirecting to Google.
 - The suite verifier receives the bearer token and returns a redacted entitlement snapshot.
 - Callback re-verifies entitlement and only then writes YouTube tokens to product Convex.
-- Flow is fail-closed (401/403/503) when session or product access cannot be verified. Recognized accounts without a paid entitlement are expected to pass as `replayglowz/free`.
+- Flow is fail-closed (401/403/503) when session or product access cannot be verified. Recognized accounts without a paid entitlement are expected to pass as `replayglows/free`.
 
 ## Product Convex Backend Contract
 
 The product Convex backend now lives in this monorepo at
 `../backend/packages/backend/convex`.
 
-The checker uses that path by default. Set `REPLAYGLOWZ_BACKEND_ROOT` only when
+The checker uses that path by default. Set `REPLAYGLOWS_BACKEND_ROOT` only when
 validating another checkout:
 
 ```bash

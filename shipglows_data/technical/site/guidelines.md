@@ -2,7 +2,7 @@
 artifact: project_guidelines
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz-site"
+project: "replayglows-site"
 created: "2026-04-26"
 updated: "2026-04-27"
 status: "reviewed"
@@ -24,7 +24,7 @@ supersedes: []
 next_review: "2026-05-26"
 next_step: "Keep route copy and app claims synchronized with product releases."
 ---
-# Guidelines - ReplayGlowz Site
+# Guidelines - ReplayGlows Site
 
 ## Product Truth
 

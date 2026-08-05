@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:replayglowz_app/models/playlist.dart';
-import 'package:replayglowz_app/models/transcript.dart';
-import 'package:replayglowz_app/models/video.dart';
-import 'package:replayglowz_app/models/youtube_channel.dart';
+import 'package:replayglows_app/models/playlist.dart';
+import 'package:replayglows_app/models/transcript.dart';
+import 'package:replayglows_app/models/video.dart';
+import 'package:replayglows_app/models/youtube_channel.dart';
 
 void main() {
   group('YouTubePlaylist.fromJson', () {
@@ -11,7 +11,7 @@ void main() {
         '_id': 'doc-playlist',
         'id': 'PL123',
         'youtubePlaylistId': 'PL123',
-        'title': 'ReplayGlowz',
+        'title': 'ReplayGlows',
         'description': null,
         'thumbnailUrl': null,
         'customThumbnailUrl': null,
@@ -69,7 +69,7 @@ void main() {
         'duration': 'PT1M',
         'publishedAt': '2026-05-24T20:00:00Z',
         'cachedAt': 1760000000000,
-        'playlistTitle': 'ReplayGlowz',
+        'playlistTitle': 'ReplayGlows',
       });
 
       expect(video.id, 'doc-video');

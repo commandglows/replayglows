@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 
 class TranscriptEntryTile extends StatelessWidget {
   const TranscriptEntryTile({

@@ -15,4 +15,4 @@ key.properties
 
 # Public debug-only key used to keep GitHub Actions APK fingerprints stable for
 # Firebase/Google Sign-In. Never reuse it for release builds.
-!app/replayglowz-debug.keystore
+!app/replayglows-debug.keystore

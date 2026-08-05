@@ -1,6 +1,6 @@
 import 'video.dart';
 
-/// Models for ReplayGlowz virtual Feed aggregators.
+/// Models for ReplayGlows virtual Feed aggregators.
 ///
 /// A virtual Feed is a local playlist-like resource owned by the user that
 /// aggregates YouTube videos from cached YouTube channels, playlists and the
@@ -98,7 +98,7 @@ class VirtualFeed {
     );
   }
 
-  bool get isReplayGlowzFeed => true;
+  bool get isReplayGlowsFeed => true;
 
   String get initials => title.isEmpty
       ? 'F'

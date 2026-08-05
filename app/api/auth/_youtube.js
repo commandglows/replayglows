@@ -1,7 +1,7 @@
 const DEFAULT_RETURN_TO = '/#/playlists';
 const YOUTUBE_SCOPE = 'https://www.googleapis.com/auth/youtube';
 const _HOST_PATTERN = /^[A-Za-z0-9.-]+(?::\d+)?$/;
-const DEFAULT_PRODUCT_ID = 'replayglowz';
+const DEFAULT_PRODUCT_ID = 'replayglows';
 const DEFAULT_LEGACY_PRODUCT_IDS = ['tubeflow'];
 const OAUTH_TICKET_VERSION = 1;
 const OAUTH_TICKET_TTL_MS = 15 * 60 * 1000;
@@ -19,7 +19,7 @@ function stripTrailingSlash(value) {
 }
 
 function getRequestOrigin(req) {
-  const configured = getEnv('REPLAYGLOWZ_APP_URL');
+  const configured = getEnv('REPLAYGLOWS_APP_URL');
   if (configured) return stripTrailingSlash(configured);
 
   const forwardedProto = req.headers['x-forwarded-proto'];
@@ -128,7 +128,7 @@ function buildReturnUrl(origin, returnTo, extraParams = {}) {
   const fragmentValue = safeReturn.slice(2); // '/#/playlists' -> '/playlists'
   const fragmentUrl = new URL(
     fragmentValue.startsWith('/') ? fragmentValue : `/${fragmentValue}`,
-    'https://replayglowz.local',
+    'https://replayglows.local',
   );
 
   const params = new URLSearchParams(fragmentUrl.search);
@@ -200,7 +200,7 @@ function base64UrlDecode(value) {
 
 function resolveOAuthTicketSecret() {
   return getEnv(
-    'REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_SECRET',
+    'REPLAYGLOWS_YOUTUBE_OAUTH_TICKET_SECRET',
     'SUITE_ENTITLEMENT_VERIFY_SECRET',
     'YOUTUBE_OAUTH_CLIENT_SECRET',
   );
@@ -212,7 +212,7 @@ function deriveOAuthTicketKey(secret) {
 
 function createOAuthTicket(payload, secret, now = Date.now()) {
   if (!secret) {
-    throw new Error('ReplayGlowz YouTube OAuth ticket secret is not configured.');
+    throw new Error('ReplayGlows YouTube OAuth ticket secret is not configured.');
   }
 
   const crypto = require('node:crypto');
@@ -286,9 +286,9 @@ function parseLegacyProductIds(raw) {
 
 function resolveEntitlementInputs() {
   return {
-    productId: getEnv('REPLAYGLOWZ_PRODUCT_ID') || DEFAULT_PRODUCT_ID,
+    productId: getEnv('REPLAYGLOWS_PRODUCT_ID') || DEFAULT_PRODUCT_ID,
     legacyProductIds: parseLegacyProductIds(
-      getEnv('REPLAYGLOWZ_LEGACY_PRODUCT_IDS'),
+      getEnv('REPLAYGLOWS_LEGACY_PRODUCT_IDS'),
     ),
     verifyUrl: getEnv('SUITE_ENTITLEMENT_VERIFY_URL'),
     verifySecret: getEnv('SUITE_ENTITLEMENT_VERIFY_SECRET'),
@@ -461,7 +461,7 @@ async function runConvexHttpOperation({ convexUrl, sessionToken, type, path, arg
   return { ok: true, value: payload?.value };
 }
 
-async function verifyReplayGlowzSessionAndAccess({
+async function verifyReplayGlowsSessionAndAccess({
   sessionToken,
   convexUrl,
   productId,
@@ -539,7 +539,7 @@ async function verifyReplayGlowzSessionAndAccess({
   };
 }
 
-async function verifyReplayGlowzSessionAccessWithFallback({
+async function verifyReplayGlowsSessionAccessWithFallback({
   sessionToken,
   convexUrl,
   verifyUrl,
@@ -549,7 +549,7 @@ async function verifyReplayGlowzSessionAccessWithFallback({
   requestId,
 }) {
   if (convexUrl) {
-    const productVerification = await verifyReplayGlowzSessionAndAccess({
+    const productVerification = await verifyReplayGlowsSessionAndAccess({
       sessionToken,
       convexUrl,
       productId,
@@ -581,8 +581,8 @@ module.exports = {
   decodeJwtPayload,
   parseLegacyProductIds,
   resolveEntitlementInputs,
-  verifyReplayGlowzSessionAndAccess,
-  verifyReplayGlowzSessionAccessWithFallback,
+  verifyReplayGlowsSessionAndAccess,
+  verifyReplayGlowsSessionAccessWithFallback,
   verifySuiteSessionAndEntitlement,
   resolveOAuthTicketSecret,
   createOAuthTicket,

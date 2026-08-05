@@ -3,10 +3,10 @@ import 'dart:js_interop';
 
 import 'clerk_js_bridge.dart';
 
-@JS('replayGlowzClerkBridge')
-external _ReplayGlowzClerkBridge get _bridge;
+@JS('replayGlowsClerkBridge')
+external _ReplayGlowsClerkBridge get _bridge;
 
-extension type _ReplayGlowzClerkBridge(JSObject _) implements JSObject {
+extension type _ReplayGlowsClerkBridge(JSObject _) implements JSObject {
   external JSPromise<JSString> load(JSString configJson);
 
   external JSPromise<JSBoolean> isSignedIn();

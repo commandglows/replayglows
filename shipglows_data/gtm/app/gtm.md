@@ -2,7 +2,7 @@
 artifact: gtm_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz-app"
+project: "replayglows-app"
 created: "2026-04-26"
 updated: "2026-04-26"
 status: reviewed
@@ -67,7 +67,7 @@ Working offer:
 
 "Use one web app to watch YouTube content, capture timestamped notes, manage playlists, and keep viewing context without stitching multiple personal tools together."
 
-The strongest value is workflow compression. ReplayGlowz is not positioned by the repo as an entertainment discovery engine, a creator growth platform, or a team knowledge base.
+The strongest value is workflow compression. ReplayGlows is not positioned by the repo as an entertainment discovery engine, a creator growth platform, or a team knowledge base.
 
 ## Positioning
 
@@ -131,7 +131,7 @@ This is not yet a commercial funnel because pricing, plans, checkout, lifecycle 
 ## Objections
 
 - "Why not just use YouTube plus a notes app?"  
-  ReplayGlowz's defensible answer is the unified workflow and timestamp-specific context.
+  ReplayGlows's defensible answer is the unified workflow and timestamp-specific context.
 
 - "Is this only a prototype?"  
   The repo shows deployment, auth, OAuth, and backend integration, but docs do not prove full launch maturity.

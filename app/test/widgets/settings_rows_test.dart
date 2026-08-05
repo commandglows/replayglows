@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:replayglowz_app/widgets/settings/settings_rows.dart';
+import 'package:replayglows_app/widgets/settings/settings_rows.dart';
 
 void main() {
   testWidgets('showSettingsChoiceDialog selects option and closes', (

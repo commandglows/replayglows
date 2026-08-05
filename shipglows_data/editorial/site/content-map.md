@@ -2,7 +2,7 @@
 artifact: content_map
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz-site"
+project: "replayglows-site"
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -59,7 +59,7 @@ next_step: "/sf-docs audit shipglows_data/editorial/site/content-map.md"
 
 ## Purpose
 
-This map defines where public messaging and trust content live in `replayglowz-site`, and what must be updated when core product framing changes.
+This map defines where public messaging and trust content live in `replayglows-site`, and what must be updated when core product framing changes.
 
 Canonical product truth remains `app`.
 
@@ -104,4 +104,4 @@ Canonical product truth remains `app`.
 
 ## Governance Rule
 
-When `replayglowz-site` messaging conflicts with canonical product artifacts, resolve in favor of `app`.
+When `replayglows-site` messaging conflicts with canonical product artifacts, resolve in favor of `app`.

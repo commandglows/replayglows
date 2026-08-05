@@ -1,17 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:record/record.dart';
 
-import 'package:replayglowz_app/auth/auth_state.dart';
-import 'package:replayglowz_app/providers/providers.dart';
-import 'package:replayglowz_app/screens/feedback/feedback_audio_file.dart';
-import 'package:replayglowz_app/screens/feedback/feedback_service.dart';
-import 'package:replayglowz_app/utils/duration_utils.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/auth/auth_state.dart';
+import 'package:replayglows_app/providers/providers.dart';
+import 'package:replayglows_app/screens/feedback/feedback_audio_file.dart';
+import 'package:replayglows_app/screens/feedback/feedback_service.dart';
+import 'package:replayglows_app/utils/duration_utils.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
 
 enum _FeedbackComposerMode { text, audio }
 

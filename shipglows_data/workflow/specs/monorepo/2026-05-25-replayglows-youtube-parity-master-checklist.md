@@ -2,7 +2,7 @@
 artifact: audit_report
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-25"
 updated: "2026-05-25"
 status: "draft"
@@ -30,16 +30,16 @@ linked_systems:
   - "Vercel"
 depends_on:
   - "shipglows_data/workflow/audits/2026-05-25-tubeflow-expo-feature-gap.md"
-  - "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-1.md"
-  - "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-2.md"
-  - "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-3.md"
+  - "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-1.md"
+  - "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-2.md"
+  - "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-3.md"
 supersedes: []
 evidence:
   - "P1/P2/P3 implementation work completed locally before hosted verification."
-next_step: "/sf-verify replayglowz-youtube-parity-master-checklist"
+next_step: "/sf-verify replayglows-youtube-parity-master-checklist"
 ---
 
-# ReplayGlowz YouTube Parity Master Checklist
+# ReplayGlows YouTube Parity Master Checklist
 
 ## Purpose
 
@@ -63,10 +63,10 @@ Track the end-to-end parity checks still needed after P1, P2 and P3 implementati
 
 ## Account Matrix
 
-- [ ] Fresh ReplayGlowz account before YouTube connection.
+- [ ] Fresh ReplayGlows account before YouTube connection.
 - [ ] Google account connected to OAuth but with no YouTube channel/playlists/subscriptions.
 - [ ] Normal YouTube account with playlists, subscriptions and videos.
-- [ ] Existing ReplayGlowz account with cached legacy TubeFlow/tubeflow product data where applicable.
+- [ ] Existing ReplayGlows account with cached legacy TubeFlow/tubeflow product data where applicable.
 - [ ] Browser with strict tracker blocking shows the fallback guidance instead of a blank page.
 
 ## YouTube Connection
@@ -94,9 +94,9 @@ Track the end-to-end parity checks still needed after P1, P2 and P3 implementati
 - [ ] Cards/list/notes view switch works.
 - [ ] View mode persists after reload.
 - [ ] Show/hide watched persists after reload.
-- [ ] Feed filter offers `All videos` plus multi-select ReplayGlowz Feeds, and clears stale feed selections when needed.
+- [ ] Feed filter offers `All videos` plus multi-select ReplayGlows Feeds, and clears stale feed selections when needed.
 - [ ] Feed filter does not expose direct playlist/source selection inside the main Feed picker.
-- [ ] Removing a ReplayGlowz Feed source removes the source card and that source's videos without requiring page reload.
+- [ ] Removing a ReplayGlows Feed source removes the source card and that source's videos without requiring page reload.
 - [ ] Scroll position restores after opening a video and returning.
 - [ ] Video actions work: play, share/copy, mark watched/unwatched, hide/delete where available, add to playlist.
 - [ ] No video state explains whether YouTube is disconnected, connected-empty, or filtered-empty.
@@ -105,7 +105,7 @@ Track the end-to-end parity checks still needed after P1, P2 and P3 implementati
 
 - [ ] Playlists page loads synced playlists.
 - [ ] Lists page hides the technical YouTube `Subscriptions` aggregate playlist.
-- [ ] ReplayGlowz Feed source picker still offers `All subscriptions` as a source option.
+- [ ] ReplayGlows Feed source picker still offers `All subscriptions` as a source option.
 - [ ] Add playlist button is visually low-emphasis and appears/fades as intended.
 - [ ] Create playlist works and refreshes the list.
 - [ ] Edit playlist modal works and refreshes the page/list.
@@ -172,7 +172,7 @@ Track the end-to-end parity checks still needed after P1, P2 and P3 implementati
 - [ ] Dismissible hints appear in Videos, Playlists, Playlist detail, Play and Notes.
 - [ ] Dismissed hints stay dismissed after reload.
 - [ ] Reset hints in Preferences makes hints visible again.
-- [ ] First-run copy stays ReplayGlowz-first and does not explain WinFlowz/Suite unless needed.
+- [ ] First-run copy stays ReplayGlows-first and does not explain WinFlowz/Suite unless needed.
 - [ ] Empty-state copy is short and action-oriented.
 - [ ] French copy is natural and accented for new P3 strings.
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:replayglowz_app/widgets/media/media_thumbnail.dart';
+import 'package:replayglows_app/widgets/media/media_thumbnail.dart';
 
 void main() {
   testWidgets('MediaThumbnail shows fallback icon when URL is missing', (

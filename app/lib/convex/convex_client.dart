@@ -4,9 +4,9 @@ import 'dart:convert';
 import 'package:convex_flutter/convex_flutter.dart';
 import 'package:flutter/foundation.dart';
 
-import 'package:replayglowz_app/convex/convex_errors.dart';
-import 'package:replayglowz_app/convex/convex_web_bridge.dart';
-import 'package:replayglowz_app/utils/app_logger.dart';
+import 'package:replayglows_app/convex/convex_errors.dart';
+import 'package:replayglows_app/convex/convex_web_bridge.dart';
+import 'package:replayglows_app/utils/app_logger.dart';
 
 /// A singleton service that wraps the Convex Flutter client.
 ///
@@ -54,7 +54,7 @@ class ConvexService {
       await ConvexClient.initialize(
         ConvexConfig(
           deploymentUrl: deploymentUrl,
-          clientId: 'replayglowz-flutter-1.0',
+          clientId: 'replayglows-flutter-1.0',
           operationTimeout: const Duration(seconds: 30),
         ),
       );

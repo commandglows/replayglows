@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { requireReplayGlowzAccess } from "./access";
+import { requireReplayGlowsAccess } from "./access";
 
 // =============================================================================
 // QUERIES
@@ -12,7 +12,7 @@ import { requireReplayGlowzAccess } from "./access";
 export const getAllProgress = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
 
     const items = await ctx.db
@@ -37,7 +37,7 @@ export const getProgress = query({
     youtubeVideoId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return null;
 
     const item = await ctx.db
@@ -71,7 +71,7 @@ export const saveProgress = mutation({
     durationSeconds: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const existing = await ctx.db
@@ -109,7 +109,7 @@ export const clearProgress = mutation({
     youtubeVideoId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const item = await ctx.db

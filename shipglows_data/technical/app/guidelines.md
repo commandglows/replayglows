@@ -2,7 +2,7 @@
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
 artifact_version: "1.0.1"
-project: "replayglowz-app"
+project: "replayglows-app"
 created: "2026-04-26"
 updated: "2026-05-23"
 status: "reviewed"
@@ -45,7 +45,7 @@ next_review: "2026-07-25"
 next_step: "Update when auth ownership, provider boundaries, env names, or deployment flow changes."
 ---
 
-# Guidelines — replayglowz-app
+# Guidelines — replayglows-app
 
 ## Technical stack
 
@@ -86,7 +86,7 @@ next_step: "Update when auth ownership, provider boundaries, env names, or deplo
 - Never commit real secrets, live API keys, user tokens, or deployment-only credentials.
 - Use reserved placeholders such as `example.com`, `pk_test_your_clerk_publishable_key`, and `sk_test_your_clerk_secret_key`.
 - Distinguish Flutter build-time config from Vercel serverless secrets and Convex backend env.
-- Keep `CONVEX_URL`, `CLERK_PUBLISHABLE_KEY`, and `REPLAYGLOWZ_APP_URL` documented as build-time values.
+- Keep `CONVEX_URL`, `CLERK_PUBLISHABLE_KEY`, and `REPLAYGLOWS_APP_URL` documented as build-time values.
 - Keep `CLERK_SECRET_KEY`, `YOUTUBE_OAUTH_CLIENT_ID`, and `YOUTUBE_OAUTH_CLIENT_SECRET` documented as serverless OAuth values.
 - Keep backend-only variables, including `FEEDBACK_ADMIN_EMAILS`, out of Flutter build config.
 
@@ -95,7 +95,7 @@ next_step: "Update when auth ownership, provider boundaries, env names, or deplo
 - The Convex schema and server functions live in `backend/packages/backend/convex`.
 - If Flutter starts calling a new Convex function, update and deploy the monorepo backend change first.
 - Use `dart run tool/check_shared_backend_contract.dart` for critical function-name drift checks.
-- Set `REPLAYGLOWZ_BACKEND_ROOT` only when validating an alternate backend checkout.
+- Set `REPLAYGLOWS_BACKEND_ROOT` only when validating an alternate backend checkout.
 - Keep Clerk/Convex auth contract details aligned: Clerk Convex integration session claims, backend provider `applicationID: "convex"`, and trusted Clerk issuer domain.
 
 ## Deployment conventions

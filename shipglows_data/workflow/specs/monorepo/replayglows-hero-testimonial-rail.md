@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-07-16"
 created_at: "2026-07-16 17:08:14 UTC"
 updated: "2026-07-16"
@@ -12,7 +12,7 @@ source_skill: 100-sg-spec
 source_model: "GPT-5 Codex"
 scope: "site-landing-hero-testimonial-rail"
 owner: "Diane"
-user_story: "As a ReplayGlowz landing-page visitor, I want real user testimonials visible directly beneath the hero trust message, so social proof is immediate and the page no longer needs a redundant testimonial section."
+user_story: "As a ReplayGlows landing-page visitor, I want real user testimonials visible directly beneath the hero trust message, so social proof is immediate and the page no longer needs a redundant testimonial section."
 confidence: "high"
 risk_level: "medium"
 security_impact: "none"
@@ -32,7 +32,7 @@ evidence:
   - "Operator decision on 2026-07-16: testimonials belong immediately below the hero trust message, should scroll horizontally, and should not have a dedicated titled section."
   - "Source audit: both locales currently render avatar placeholders in the hero and a separate three-card testimonial section later in the page."
   - "Source audit: both locale navs link to the standalone #reviews anchor, which would become invalid when that section is removed."
-next_step: "/005-sg-ship replayglowz hero testimonial rail, then /405-sg-prod and /108-sg-browser"
+next_step: "/005-sg-ship replayglows hero testimonial rail, then /405-sg-prod and /108-sg-browser"
 ---
 
 # Move Landing Testimonials Into The Hero Trust Rail
@@ -43,7 +43,7 @@ Implemented locally. Verification is partial until the matching Vercel preview i
 
 ## User Story
 
-As a ReplayGlowz landing-page visitor, I want real user testimonials visible directly beneath the hero trust message, so social proof is immediate and the page no longer needs a redundant testimonial section.
+As a ReplayGlows landing-page visitor, I want real user testimonials visible directly beneath the hero trust message, so social proof is immediate and the page no longer needs a redundant testimonial section.
 
 ## Minimal Behavior Contract
 
@@ -122,9 +122,9 @@ On both `/` and `/fr/`, replace the hero avatar placeholders with the existing t
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-07-16 17:08:14 UTC | 100-sg-spec | GPT-5 Codex | Framed the operator-approved hero testimonial rail, locale parity, navigation cleanup, motion, and proof contract. | Draft created. | `/101-sg-ready replayglowz-hero-testimonial-rail` |
-| 2026-07-16 17:08:14 UTC | 101-sg-ready | GPT-5 Codex | Reviewed user-story fit, scope, accessibility, design-system authority, error behavior, and hosted proof routing. | Ready. | `/102-sg-start replayglowz-hero-testimonial-rail` |
-| 2026-07-16 17:16:20 UTC | 102-sg-start | GPT-5 Codex | Replaced hero avatars with one reusable EN/FR testimonial rail, removed standalone sections and dead nav anchors, and added centralized pause/reduced-motion behavior. | Implemented locally. | `/103-sg-verify replayglowz-hero-testimonial-rail` |
+| 2026-07-16 17:08:14 UTC | 100-sg-spec | GPT-5 Codex | Framed the operator-approved hero testimonial rail, locale parity, navigation cleanup, motion, and proof contract. | Draft created. | `/101-sg-ready replayglows-hero-testimonial-rail` |
+| 2026-07-16 17:08:14 UTC | 101-sg-ready | GPT-5 Codex | Reviewed user-story fit, scope, accessibility, design-system authority, error behavior, and hosted proof routing. | Ready. | `/102-sg-start replayglows-hero-testimonial-rail` |
+| 2026-07-16 17:16:20 UTC | 102-sg-start | GPT-5 Codex | Replaced hero avatars with one reusable EN/FR testimonial rail, removed standalone sections and dead nav anchors, and added centralized pause/reduced-motion behavior. | Implemented locally. | `/103-sg-verify replayglows-hero-testimonial-rail` |
 | 2026-07-16 17:16:20 UTC | 103-sg-verify | GPT-5 Codex | Passed Astro build, metadata lint, source scope checks, changed-file drift scan, generated-DOM checks, and local desktop/mobile visual preflight; corrected a mobile intrinsic-width overflow found during proof. | Partial: matching Vercel preview proof remains unauthorized and pending. | `/005-sg-ship -> /405-sg-prod -> /108-sg-browser` |
 | 2026-07-16 17:16:20 UTC | 006-sg-design | GPT-5 Codex | Routed the approved redesign through spec, readiness, implementation, responsive correction, and local design proof. | Partial: implementation is complete; authoritative hosted visual proof remains. | `/005-sg-ship -> /405-sg-prod -> /108-sg-browser` |
 

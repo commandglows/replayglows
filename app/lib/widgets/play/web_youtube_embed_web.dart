@@ -119,8 +119,8 @@ class _WebYoutubeEmbedState extends State<WebYoutubeEmbed> {
   void initState() {
     super.initState();
     final nonce = DateTime.now().microsecondsSinceEpoch;
-    _viewType = 'replayglowz-youtube-$nonce-${widget.videoId}';
-    _playerId = 'replayglowz-player-$nonce';
+    _viewType = 'replayglows-youtube-$nonce-${widget.videoId}';
+    _playerId = 'replayglows-player-$nonce';
     _iframe = web.HTMLIFrameElement()
       ..id = _playerId
       ..tabIndex = -1

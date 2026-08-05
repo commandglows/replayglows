@@ -1,16 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 
-import 'package:replayglowz_app/models/models.dart';
-import 'package:replayglowz_app/providers/mutations.dart';
-import 'package:replayglowz_app/providers/providers.dart';
-import 'package:replayglowz_app/utils/date_utils.dart';
-import 'package:replayglowz_app/utils/duration_utils.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/models/models.dart';
+import 'package:replayglows_app/providers/mutations.dart';
+import 'package:replayglows_app/providers/providers.dart';
+import 'package:replayglows_app/utils/date_utils.dart';
+import 'package:replayglows_app/utils/duration_utils.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
 
 enum _FeedbackAdminFilter {
   all,

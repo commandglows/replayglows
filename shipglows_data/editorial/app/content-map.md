@@ -2,7 +2,7 @@
 artifact: content_map
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz-app"
+project: "replayglows-app"
 created: "2026-04-26"
 updated: "2026-04-26"
 status: reviewed

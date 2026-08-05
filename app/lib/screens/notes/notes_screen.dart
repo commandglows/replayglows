@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/i18n/translations.dart';
-import 'package:replayglowz_app/models/models.dart';
-import 'package:replayglowz_app/providers/mutations.dart';
-import 'package:replayglowz_app/providers/providers.dart';
-import 'package:replayglowz_app/widgets/app_states.dart';
-import 'package:replayglowz_app/widgets/common_app_bar_actions.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
-import 'package:replayglowz_app/widgets/notes/note_group_header.dart';
-import 'package:replayglowz_app/widgets/notes/note_tile.dart';
-import 'package:replayglowz_app/widgets/ui_hint_card.dart';
-import 'package:replayglowz_app/widgets/youtube_connect.dart';
+import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/i18n/translations.dart';
+import 'package:replayglows_app/models/models.dart';
+import 'package:replayglows_app/providers/mutations.dart';
+import 'package:replayglows_app/providers/providers.dart';
+import 'package:replayglows_app/widgets/app_states.dart';
+import 'package:replayglows_app/widgets/common_app_bar_actions.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/widgets/notes/note_group_header.dart';
+import 'package:replayglows_app/widgets/notes/note_tile.dart';
+import 'package:replayglows_app/widgets/ui_hint_card.dart';
+import 'package:replayglows_app/widgets/youtube_connect.dart';
 
 /// Notes overview screen with search and grouped display.
 ///
@@ -137,7 +137,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
                   return const YoutubeConnectRequiredState(
                     title: 'Connect YouTube to start taking notes',
                     description:
-                        'ReplayGlowz creates notes while you watch synced YouTube videos. Connect YouTube first, then your notes will appear here.',
+                        'ReplayGlows creates notes while you watch synced YouTube videos. Connect YouTube first, then your notes will appear here.',
                     returnTo: Routes.notes,
                   );
                 }
@@ -160,7 +160,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
               loading: () => const YoutubeConnectionLoadingState(
                 title: 'Checking your YouTube notes',
                 description:
-                    'ReplayGlowz is confirming your YouTube connection before loading notes.',
+                    'ReplayGlows is confirming your YouTube connection before loading notes.',
               ),
               error: (error, stack) => ErrorStateView(
                 error: error,
@@ -227,7 +227,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
         return const YoutubeConnectRequiredState(
           title: 'Connect YouTube to start taking notes',
           description:
-              'ReplayGlowz notes are attached to YouTube playback. Connect YouTube, open a video, and your notes will show up here.',
+              'ReplayGlows notes are attached to YouTube playback. Connect YouTube, open a video, and your notes will show up here.',
           returnTo: Routes.notes,
         );
       }

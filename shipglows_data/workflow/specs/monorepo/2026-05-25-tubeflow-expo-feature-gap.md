@@ -2,7 +2,7 @@
 artifact: audit_report
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-25"
 updated: "2026-05-25"
 status: "draft"
@@ -27,7 +27,7 @@ linked_systems:
   - "backend"
   - "tubeflow_expo"
 depends_on:
-  - "shipglows_data/workflow/specs/replayglowz-youtube-quota-safe-sync.md"
+  - "shipglows_data/workflow/specs/replayglows-youtube-quota-safe-sync.md"
 supersedes: []
 evidence:
   - "https://github.com/dianedef/tubeflow_expo"
@@ -37,14 +37,14 @@ evidence:
   - "/tmp/tubeflow_expo_audit/packages/backend/convex"
   - "app/lib"
   - "backend/packages/backend/convex"
-next_step: "/sf-spec Porter les features TubeFlow Expo manquantes vers ReplayGlowz Flutter"
+next_step: "/sf-spec Porter les features TubeFlow Expo manquantes vers ReplayGlows Flutter"
 ---
 
 # TubeFlow Expo Feature Gap Audit
 
 ## Purpose
 
-Trace the functional gaps found while comparing the historical TubeFlow Expo/Next app with the current ReplayGlowz Flutter web app.
+Trace the functional gaps found while comparing the historical TubeFlow Expo/Next app with the current ReplayGlows Flutter web app.
 
 This is an inventory, not an implementation spec. The next step should be a staged spec because the gaps span app UI, Convex flows, YouTube quota safeguards, player behavior, and user-facing workflows.
 
@@ -55,14 +55,14 @@ Historical source inspected:
 - `https://github.com/dianedef/tubeflow_expo`
 - Temporary local clone during audit: `/tmp/tubeflow_expo_audit`
 
-Current ReplayGlowz source inspected:
+Current ReplayGlows source inspected:
 
 - `app/lib`
 - `backend/packages/backend/convex`
 
 ## Summary
 
-The current ReplayGlowz backend already contains many of the old domain primitives: YouTube cache, playlists, watched state, progress, channel links, transcripts, quota metrics, notes, comments, likes, hidden items, and subscription feed sync.
+The current ReplayGlows backend already contains many of the old domain primitives: YouTube cache, playlists, watched state, progress, channel links, transcripts, quota metrics, notes, comments, likes, hidden items, and subscription feed sync.
 
 The main gap is product exposure in the Flutter app. Several historical features exist partially in Convex or models/providers, but are not yet wired into user-facing Flutter screens.
 
@@ -154,7 +154,7 @@ Current evidence:
 Missing or incomplete:
 
 - UI to browse subscribed channels.
-- UI to link a channel to a ReplayGlowz playlist.
+- UI to link a channel to a ReplayGlows playlist.
 - UI to toggle/unlink linked channels.
 - Sync past videos from a linked channel with quota warning.
 - Auto-sync-on-visit settings with clear user feedback.
@@ -199,7 +199,7 @@ Current evidence:
 
 Decision needed:
 
-- Either port a ReplayGlowz-native browse/discovery view or intentionally drop it from the product surface.
+- Either port a ReplayGlows-native browse/discovery view or intentionally drop it from the product surface.
 
 ### P3 - Onboarding, Hints, And Modes
 
@@ -264,7 +264,7 @@ Chantier potential: yes.
 Recommended spec:
 
 ```text
-/sf-spec Porter les features TubeFlow Expo manquantes vers ReplayGlowz Flutter
+/sf-spec Porter les features TubeFlow Expo manquantes vers ReplayGlows Flutter
 ```
 
 Spec should split implementation into quota-safe batches and require browser/manual QA for authenticated YouTube flows.

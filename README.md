@@ -1,6 +1,6 @@
-# ReplayGlowz
+# ReplayGlows
 
-Canonical monorepo for the ReplayGlowz product surfaces.
+Canonical monorepo for the ReplayGlows product surfaces.
 
 ## Repository Layout
 
@@ -13,14 +13,14 @@ Canonical monorepo for the ReplayGlowz product surfaces.
 
 ## Deployment Model
 
-- GitHub source of truth: `diane-defores/replayglowz`
-- Vercel project `ReplayGlowz-App` uses `app` as its Root Directory
-- Vercel project `ReplayGlowz-Site` uses `site` as its Root Directory
+- GitHub source of truth: `diane-defores/replayglows`
+- Vercel project `ReplayGlows-App` uses `app` as its Root Directory
+- Vercel project `ReplayGlows-Site` uses `site` as its Root Directory
 - `lab` is maintained in this monorepo and deployed separately from Vercel
 
 ## Related Repository
 
-- Historical TubeFlow repositories are migration sources only; ReplayGlowz must not depend on them for active backend code.
+- Historical TubeFlow repositories are migration sources only; ReplayGlows must not depend on them for active backend code.
 
 ## Dependency Maintenance
 

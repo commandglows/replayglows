@@ -2,7 +2,7 @@
 artifact: design_system_authority
 metadata_schema_version: "1.0"
 artifact_version: "1.1.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-06-12"
 updated: "2026-08-05"
 status: "draft"
@@ -37,15 +37,15 @@ evidence:
   - "Code scan: `app/lib/app/theme.dart` is the explicit Flutter theme token surface."
   - "Code scan: `site/src/styles/global.css` is the centralized token source for the site."
   - "Site typography and global layout container entrypoints route through `site/src/styles/global.css` + `src/layouts/Layout.astro`."
-  - "Baseline drift check: `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglowz/app --format markdown --warn-only --max-findings 5000` found 510 findings."
-  - "Baseline drift check: `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglowz/site --format markdown --warn-only --max-findings 5000` found 70 findings."
+  - "Baseline drift check: `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglows/app --format markdown --warn-only --max-findings 5000` found 510 findings."
+  - "Baseline drift check: `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglows/site --format markdown --warn-only --max-findings 5000` found 70 findings."
   - "2026-08-05: App token authority expanded in `app/lib/app/theme.dart` with spacing, radii, typography, elevation, motion, breakpoints, and accessible size roles; current app drift scan remains 515 candidates pending widget migration."
   - "2026-08-05: App screens and shared widgets migrated to consume the canonical token groups or Material theme roles; the full app drift scan fell from 515 to 131 documented functional candidates, with Flutter analysis and 49 tests passing."
 next_review: "2026-07-12"
-next_step: "run 503-sf-audit-design-tokens replayglowz"
+next_step: "run 503-sf-audit-design-tokens replayglows"
 ---
 
-# ReplayGlowz Design-System Authority
+# ReplayGlows Design-System Authority
 
 ## 1) Canonical token sources
 
@@ -59,7 +59,7 @@ next_step: "run 503-sf-audit-design-tokens replayglowz"
 - App shell and brand context in `site/src/layouts/Layout.astro`.
 
 ### Extension (Vue + Tailwind CSS)
-- Primary source: `ext/src/styles/styles.css` (`:root` ReplayGlowz extension tokens and shared component classes).
+- Primary source: `ext/src/styles/styles.css` (`:root` ReplayGlows extension tokens and shared component classes).
 - Popup and options surfaces consume the extension token layer; YouTube-injected legacy styles remain a separate migration scope.
 
 ## 2) Governance rule
@@ -110,8 +110,8 @@ The project must not introduce new visual literals directly in feature-level scr
 1. Add token(s) to canonical source first.
 2. Use tokens in the component/template.
 3. Run baseline checks:
-   - `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglowz/app --max-findings 5000`
-   - `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglowz/site --max-findings 5000`
+   - `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglows/app --max-findings 5000`
+   - `python3 /home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglows/site --max-findings 5000`
 4. If checks show new findings outside explicit exceptions, block merge.
 
 ## 7) Success criteria

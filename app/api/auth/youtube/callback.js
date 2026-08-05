@@ -10,11 +10,11 @@ const {
   serializeCookie,
   buildReturnUrl,
   sendRedirect,
-  verifyReplayGlowzSessionAccessWithFallback,
+  verifyReplayGlowsSessionAccessWithFallback,
 } = require('../_youtube');
 
-const REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_COOKIE =
-  'replayglowz_youtube_oauth_ticket';
+const REPLAYGLOWS_YOUTUBE_OAUTH_TICKET_COOKIE =
+  'replayglows_youtube_oauth_ticket';
 
 async function exchangeCodeForTokens({
   code,
@@ -92,7 +92,7 @@ async function ensureConvexUser(convexUrl, convexJwt) {
     payload?.primaryEmailAddress?.emailAddress;
 
   if (!emailAddress) {
-    throw new Error('ReplayGlowz auth token returned no email address.');
+    throw new Error('ReplayGlows auth token returned no email address.');
   }
 
   await runConvexMutation(convexUrl, convexJwt, 'users:ensureUser', {
@@ -130,7 +130,7 @@ module.exports = async function handler(req, res) {
   const returnTo = cookies.youtube_oauth_return_to;
   const ticketSecret = resolveOAuthTicketSecret();
   const oauthTicket = openOAuthTicket(
-    cookies[REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_COOKIE],
+    cookies[REPLAYGLOWS_YOUTUBE_OAUTH_TICKET_COOKIE],
     ticketSecret,
   );
   const suiteSessionToken =
@@ -160,7 +160,7 @@ module.exports = async function handler(req, res) {
       secure,
       maxAge: 0,
     }),
-    serializeCookie(REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_COOKIE, '', {
+    serializeCookie(REPLAYGLOWS_YOUTUBE_OAUTH_TICKET_COOKIE, '', {
       path: '/',
       httpOnly: true,
       sameSite: 'Lax',
@@ -192,20 +192,20 @@ module.exports = async function handler(req, res) {
   }
 
   if (!storedState || storedState !== state) {
-    redirectWithError('ReplayGlowz could not verify the YouTube OAuth state.');
+    redirectWithError('ReplayGlows could not verify the YouTube OAuth state.');
     return;
   }
 
   if (!oauthTicket || oauthTicket.state !== state) {
     redirectWithError(
-      'ReplayGlowz could not verify the YouTube OAuth handoff ticket.',
+      'ReplayGlows could not verify the YouTube OAuth handoff ticket.',
     );
     return;
   }
 
   if (!suiteSessionToken) {
     redirectWithError(
-      'ReplayGlowz lost the auth handoff before callback. Start YouTube connect again from the app.',
+      'ReplayGlows lost the auth handoff before callback. Start YouTube connect again from the app.',
     );
     return;
   }
@@ -215,7 +215,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const verification = await verifyReplayGlowzSessionAccessWithFallback({
+  const verification = await verifyReplayGlowsSessionAccessWithFallback({
     sessionToken: suiteSessionToken,
     convexUrl,
     verifyUrl,
@@ -228,7 +228,7 @@ module.exports = async function handler(req, res) {
     redirectWithError(
       verification.status === 403
         ? 'Product access inactive for this account.'
-        : 'ReplayGlowz session verification failed.',
+        : 'ReplayGlows session verification failed.',
     );
     return;
   }
@@ -260,7 +260,7 @@ module.exports = async function handler(req, res) {
     redirectWithError(
       error instanceof Error
         ? error.message
-        : 'ReplayGlowz could not complete the YouTube callback.',
+        : 'ReplayGlows could not complete the YouTube callback.',
     );
   }
 };

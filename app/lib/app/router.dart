@@ -2,23 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:replayglowz_app/auth/auth_gate.dart';
-import 'package:replayglowz_app/auth/auth_state.dart';
-import 'package:replayglowz_app/screens/feedback/feedback_admin_screen.dart';
-import 'package:replayglowz_app/screens/feedback/feedback_screen.dart';
-import 'package:replayglowz_app/screens/hidden/hidden_screen.dart';
-import 'package:replayglowz_app/screens/notes/note_detail_screen.dart';
-import 'package:replayglowz_app/screens/notes/notes_screen.dart';
-import 'package:replayglowz_app/screens/notifications/notifications_screen.dart';
-import 'package:replayglowz_app/screens/play/play_screen.dart';
-import 'package:replayglowz_app/screens/playlists/create_playlist_screen.dart';
-import 'package:replayglowz_app/screens/playlists/playlist_detail_screen.dart';
-import 'package:replayglowz_app/screens/playlists/virtual_feed_detail_screen.dart';
-import 'package:replayglowz_app/screens/playlists/playlists_screen.dart';
-import 'package:replayglowz_app/screens/preferences/preferences_screen.dart';
-import 'package:replayglowz_app/screens/stats/stats_screen.dart';
-import 'package:replayglowz_app/screens/videos/videos_screen.dart';
-import 'package:replayglowz_app/widgets/app_shell.dart';
+import 'package:replayglows_app/auth/auth_gate.dart';
+import 'package:replayglows_app/auth/auth_state.dart';
+import 'package:replayglows_app/screens/feedback/feedback_admin_screen.dart';
+import 'package:replayglows_app/screens/feedback/feedback_screen.dart';
+import 'package:replayglows_app/screens/hidden/hidden_screen.dart';
+import 'package:replayglows_app/screens/notes/note_detail_screen.dart';
+import 'package:replayglows_app/screens/notes/notes_screen.dart';
+import 'package:replayglows_app/screens/notifications/notifications_screen.dart';
+import 'package:replayglows_app/screens/play/play_screen.dart';
+import 'package:replayglows_app/screens/playlists/create_playlist_screen.dart';
+import 'package:replayglows_app/screens/playlists/playlist_detail_screen.dart';
+import 'package:replayglows_app/screens/playlists/virtual_feed_detail_screen.dart';
+import 'package:replayglows_app/screens/playlists/playlists_screen.dart';
+import 'package:replayglows_app/screens/preferences/preferences_screen.dart';
+import 'package:replayglows_app/screens/stats/stats_screen.dart';
+import 'package:replayglows_app/screens/videos/videos_screen.dart';
+import 'package:replayglows_app/widgets/app_shell.dart';
 
 // ---------------------------------------------------------------------------
 // Route paths
@@ -66,7 +66,7 @@ String _resolvedRedirectTarget(GoRouterState state) {
 // ---------------------------------------------------------------------------
 
 final rootNavigatorKey = GlobalKey<NavigatorState>(
-  debugLabel: 'replayglowz-root',
+  debugLabel: 'replayglows-root',
 );
 
 final routerProvider = Provider<GoRouter>((ref) {

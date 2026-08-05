@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { action, mutation, query, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { requireReplayGlowzAccess } from "./access";
+import { requireReplayGlowsAccess } from "./access";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -54,7 +54,7 @@ function maskValue(value: string) {
 export const getSecretsStatus = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
 
     const rows = await ctx.db
@@ -76,7 +76,7 @@ export const upsertSecret = mutation({
     apiKey: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const encryptedValue = await encryptValue(args.apiKey.trim());
@@ -111,7 +111,7 @@ export const deleteSecret = mutation({
     provider: v.union(v.literal("openai"), v.literal("deepgram")),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const existing = await ctx.db
@@ -156,7 +156,7 @@ export const testSecret = action({
     provider: v.union(v.literal("openai"), v.literal("deepgram")),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const stored = await ctx.runQuery(internal.transcriptSecrets.getDecryptedSecret, {

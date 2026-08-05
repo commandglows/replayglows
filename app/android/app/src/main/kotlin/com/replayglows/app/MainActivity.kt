@@ -1,4 +1,4 @@
-package com.replayglowz.app
+package com.replayglows.app
 
 import io.flutter.embedding.android.FlutterActivity
 

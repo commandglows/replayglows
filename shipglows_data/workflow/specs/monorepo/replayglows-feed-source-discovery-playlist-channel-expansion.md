@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.1"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-30"
 created_at: "2026-05-30 20:22:49 UTC"
 updated: "2026-05-31"
@@ -12,7 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "feed-source-discovery-playlist-channel-expansion"
 owner: "Diane"
-user_story: "En tant qu'utilisateur ReplayGlowz qui crée un Feed thématique, je veux ajouter des chaînes depuis mes abonnements ou extraire les chaînes présentes dans une playlist, afin de transformer une liste statique en Feed live qui se met à jour avec les prochaines vidéos des chaînes."
+user_story: "En tant qu'utilisateur ReplayGlows qui crée un Feed thématique, je veux ajouter des chaînes depuis mes abonnements ou extraire les chaînes présentes dans une playlist, afin de transformer une liste statique en Feed live qui se met à jour avec les prochaines vidéos des chaînes."
 confidence: "high"
 risk_level: "medium"
 security_impact: "yes"
@@ -28,7 +28,7 @@ depends_on:
   - artifact: "AGENTS.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-virtual-feeds-channel-aggregators.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-virtual-feeds-channel-aggregators.md"
     artifact_version: "1.0.0"
     required_status: "ready"
 supersedes: []
@@ -38,14 +38,14 @@ evidence:
   - "Current Flutter source picker in `virtual_feed_detail_screen.dart` already lists subscriptions, cached channels, and playlists as flat candidates."
   - "Current Convex `virtualFeeds:addFeedSource` already supports source types `channel`, `playlist`, and `subscriptions`."
   - "Current cached videos include optional `youtubeChannelId`, enabling playlist-to-channel extraction when playlist videos have owner channel metadata."
-next_step: "/sf-start replayglowz-feed-source-discovery-playlist-channel-expansion"
+next_step: "/sf-start replayglows-feed-source-discovery-playlist-channel-expansion"
 ---
 
-# Spec: ReplayGlowz Feed Source Discovery and Playlist Channel Expansion
+# Spec: ReplayGlows Feed Source Discovery and Playlist Channel Expansion
 
 ## Title
 
-ReplayGlowz Feed source discovery and playlist channel expansion
+ReplayGlows Feed source discovery and playlist channel expansion
 
 ## Status
 
@@ -53,7 +53,7 @@ ready
 
 ## User Story
 
-En tant qu'utilisateur ReplayGlowz qui crée un Feed thématique, je veux ajouter des chaînes depuis mes abonnements ou extraire les chaînes présentes dans une playlist, afin de transformer une liste statique en Feed live qui se met à jour avec les prochaines vidéos des chaînes.
+En tant qu'utilisateur ReplayGlows qui crée un Feed thématique, je veux ajouter des chaînes depuis mes abonnements ou extraire les chaînes présentes dans une playlist, afin de transformer une liste statique en Feed live qui se met à jour avec les prochaines vidéos des chaînes.
 
 ## Minimal Behavior Contract
 
@@ -61,11 +61,11 @@ Dans le détail d'un Feed, l'action `Ajouter une source` doit aider l'utilisateu
 
 ## Success Behavior
 
-- Preconditions: l'utilisateur est authentifié, a un Feed ReplayGlowz existant, et dispose de playlists/vidéos cachées ou de chaînes d'abonnements cachées.
+- Preconditions: l'utilisateur est authentifié, a un Feed ReplayGlows existant, et dispose de playlists/vidéos cachées ou de chaînes d'abonnements cachées.
 - Trigger: l'utilisateur ouvre un Feed, appuie sur `Ajouter une source`, puis choisit soit une chaîne d'abonnement, soit une playlist, soit l'action d'extraction des chaînes d'une playlist.
 - User result: le picker explique clairement la différence entre `Playlist YouTube` et `Chaînes d'une playlist`.
 - User result: l'utilisateur peut chercher/filtrer les chaînes d'abonnements et les ajouter comme sources `channel`.
-- User result: après sélection d'une playlist pour extraction, ReplayGlowz affiche les chaînes détectées, indique celles déjà ajoutées, puis permet d'ajouter les chaînes sélectionnées en une action.
+- User result: après sélection d'une playlist pour extraction, ReplayGlows affiche les chaînes détectées, indique celles déjà ajoutées, puis permet d'ajouter les chaînes sélectionnées en une action.
 - User result: le Feed affiche ensuite ces chaînes dans `Sources`, et `Play all` lit les vidéos connues provenant de ces chaînes.
 - System effect: les sources `channel` sont créées dans `virtualFeedSources`; aucune playlist YouTube n'est créée ou modifiée.
 - System effect: l'ajout en lot est idempotent: les chaînes déjà présentes ne provoquent pas d'erreur bloquante.
@@ -111,7 +111,7 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
 - No new OAuth scopes.
 - No new YouTube write endpoints.
 - No automatic background sync of every channel extracted from a playlist.
-- No export of a ReplayGlowz Feed into a real YouTube playlist.
+- No export of a ReplayGlows Feed into a real YouTube playlist.
 - No AI recommendation or semantic clustering of channels.
 - No forced migration of existing playlist sources into channel sources.
 - No public marketing site changes in this chantier unless a later content spec asks for it.
@@ -137,7 +137,7 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
   3. Flutter analyze for UI/provider/i18n changes.
   4. Source scan confirming no YouTube write endpoint is called by Feed local source actions.
   5. Authenticated browser/manual QA after explicit ship.
-- checklist_path: `shipglows_data/workflow/test-checklists/replayglowz-feed-source-discovery-playlist-channel-expansion.md`
+- checklist_path: `shipglows_data/workflow/test-checklists/replayglows-feed-source-discovery-playlist-channel-expansion.md`
 - required_scenario_ids: `CA 1` through `CA 12`.
 - required_results: source modes are clear, subscription channels can be added, playlist source behavior remains unchanged, playlist-channel extraction adds live `channel` sources, duplicate/no-op handling is user-safe, local actions remain quota-free, and Play all uses the resulting Feed queue.
 - manual_proof:
@@ -150,7 +150,7 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
 
 ## Dependencies
 
-- Existing spec: `shipglows_data/workflow/specs/replayglowz-virtual-feeds-channel-aggregators.md`
+- Existing spec: `shipglows_data/workflow/specs/replayglows-virtual-feeds-channel-aggregators.md`
 - Existing backend:
   - `backend/packages/backend/convex/schema.ts`
   - `backend/packages/backend/convex/virtualFeeds.ts`
@@ -263,7 +263,7 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
   - Validate with: Flutter analyze and visual/browser copy review after ship.
 
 - [x] Task 7: Add verification/source scans.
-  - File: `shipglows_data/workflow/test-checklists/replayglowz-feed-source-discovery-playlist-channel-expansion.md` or implementation QA notes if checklist style is not used.
+  - File: `shipglows_data/workflow/test-checklists/replayglows-feed-source-discovery-playlist-channel-expansion.md` or implementation QA notes if checklist style is not used.
   - Action: Record manual scenarios and run source scan for forbidden YouTube write endpoints in Feed local source code paths.
   - User story link: Proves the new source discovery flow stays quota-safe.
   - Depends on: Tasks 1-6.
@@ -274,8 +274,8 @@ Split `Ajouter une source` into intention-first choices and add a playlist-chann
 - [ ] CA 1: Given a Feed detail screen, when the user clicks `Ajouter une source`, then the picker shows distinct source intentions instead of one ambiguous flat list.
 - [ ] CA 2: Given cached subscription channels, when the user opens `Chaînes depuis mes abonnements`, then they can search and add a channel source to the Feed.
 - [ ] CA 3: Given a playlist source option, when the user selects `Playlist YouTube`, then the existing behavior remains: the playlist's known videos feed the Feed as a playlist source.
-- [ ] CA 4: Given a playlist with cached videos from multiple channels, when the user selects `Chaînes d'une playlist`, then ReplayGlowz shows detected channel candidates with video counts.
-- [ ] CA 5: Given detected channel candidates, when the user selects several and confirms, then ReplayGlowz adds them as `channel` sources in one recoverable flow.
+- [ ] CA 4: Given a playlist with cached videos from multiple channels, when the user selects `Chaînes d'une playlist`, then ReplayGlows shows detected channel candidates with video counts.
+- [ ] CA 5: Given detected channel candidates, when the user selects several and confirms, then ReplayGlows adds them as `channel` sources in one recoverable flow.
 - [ ] CA 6: Given some detected channels are already Feed sources, when the user confirms, then those channels are skipped or marked already added without a generic server error.
 - [ ] CA 7: Given videos in the playlist lack `youtubeChannelId`, when candidates are shown, then the UI explains that some videos could not identify a channel.
 - [ ] CA 8: Given no usable channels are detected, when the candidate query returns empty, then the UI explains why and offers adding the playlist itself or refreshing cache where relevant.
@@ -319,7 +319,7 @@ playlist videos that predate `youtubeChannelId` storage.
 - [x] CA 14: Importing subscriptions from the Feed picker uses the existing
   YouTube `subscriptions.list` path and refreshes the cached channel providers.
 - [x] CA 15: If the user chooses the aggregate `Tous les abonnements` source with
-  an empty subscription cache, ReplayGlowz imports subscriptions and then adds
+  an empty subscription cache, ReplayGlows imports subscriptions and then adds
   the aggregate source when channels are available.
 - [x] CA 16: If cached playlist videos lack `youtubeChannelId`, the playlist
   channel extraction sheet offers an explicit metadata backfill action.
@@ -383,11 +383,11 @@ None.
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-30 20:22:49 UTC | sf-spec | GPT-5 Codex | Created dedicated spec for Feed source discovery, subscription-channel selection, and playlist-to-channel expansion based on the user's testing feedback and sf-explore discussion. | draft spec created | `/sf-ready replayglowz-feed-source-discovery-playlist-channel-expansion` |
-| 2026-05-30 20:36:41 UTC | sf-ready | GPT-5 Codex | Reviewed readiness, tightened Test Contract, resolved batch-add ambiguity, clarified channel validation from cached playlist videos, and marked the spec ready. | ready | `/sf-start replayglowz-feed-source-discovery-playlist-channel-expansion` |
-| 2026-05-30 21:02:00 UTC | sf-build | GPT-5 Codex | Implemented backend playlist-channel candidate extraction, idempotent batch channel-source add, intention-first Flutter source picker, subscription search, playlist-channel extraction UI, i18n copy, and checklist evidence. | implemented | `/sf-verify replayglowz-feed-source-discovery-playlist-channel-expansion` |
+| 2026-05-30 20:22:49 UTC | sf-spec | GPT-5 Codex | Created dedicated spec for Feed source discovery, subscription-channel selection, and playlist-to-channel expansion based on the user's testing feedback and sf-explore discussion. | draft spec created | `/sf-ready replayglows-feed-source-discovery-playlist-channel-expansion` |
+| 2026-05-30 20:36:41 UTC | sf-ready | GPT-5 Codex | Reviewed readiness, tightened Test Contract, resolved batch-add ambiguity, clarified channel validation from cached playlist videos, and marked the spec ready. | ready | `/sf-start replayglows-feed-source-discovery-playlist-channel-expansion` |
+| 2026-05-30 21:02:00 UTC | sf-build | GPT-5 Codex | Implemented backend playlist-channel candidate extraction, idempotent batch channel-source add, intention-first Flutter source picker, subscription search, playlist-channel extraction UI, i18n copy, and checklist evidence. | implemented | `/sf-verify replayglows-feed-source-discovery-playlist-channel-expansion` |
 | 2026-05-30 21:10:04 UTC | sf-build | GPT-5 Codex | Verified local checks, deployed Convex and Vercel production, ran authenticated browser QA on the test account, and cleaned the temporary QA Feed. | shipped | done |
-| 2026-05-30 22:22:51 UTC | sf-build | GPT-5 Codex | Added explicit subscription import from the Feed source picker and a quota-explicit playlist video channel metadata backfill for older cached videos missing `youtubeChannelId`. | implemented | `/sf-verify replayglowz-feed-source-discovery-playlist-channel-expansion` |
+| 2026-05-30 22:22:51 UTC | sf-build | GPT-5 Codex | Added explicit subscription import from the Feed source picker and a quota-explicit playlist video channel metadata backfill for older cached videos missing `youtubeChannelId`. | implemented | `/sf-verify replayglows-feed-source-discovery-playlist-channel-expansion` |
 | 2026-05-30 22:33:06 UTC | sf-build | GPT-5 Codex | Verified extension locally, deployed Convex and Vercel production, confirmed production build SHA, tested subscription import UI on the authenticated test account, and cleaned the temporary QA Feed. | shipped | done |
 
 ## Current Chantier Flow

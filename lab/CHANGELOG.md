@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - Renamed the worker directory from `tubeflow_lab` to `lab` and aligned PM2/Docker/docs references with the new path.
-- Migrated worker app name, logging namespace, temp directory prefix, PM2 process label, Docker examples, and operator docs from TubeFlow to ReplayGlowz.
+- Migrated worker app name, logging namespace, temp directory prefix, PM2 process label, Docker examples, and operator docs from TubeFlow to ReplayGlows.
 
 ## [2026-05-10]
 

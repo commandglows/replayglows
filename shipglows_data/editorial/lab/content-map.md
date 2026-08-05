@@ -43,7 +43,7 @@ next_step: "Keep this map synced when worker API, providers, or deployment model
 
 ## Purpose
 
-`shipglows_data/editorial/lab/content-map.md` defines where canonical documentation lives for `lab` and what each surface may claim. This repository is backend/experimental; user-facing product truth is handled in `replayglowz-app`.
+`shipglows_data/editorial/lab/content-map.md` defines where canonical documentation lives for `lab` and what each surface may claim. This repository is backend/experimental; user-facing product truth is handled in `replayglows-app`.
 
 ## Content Surfaces
 
@@ -85,10 +85,10 @@ next_step: "Keep this map synced when worker API, providers, or deployment model
 | Endpoint or auth change | `README.md`, `server.py`, deployment notes |
 | Deployment model change | `README.md`, `shipglows_data/editorial/lab/content-map.md` |
 | New guardrail or warning behavior | `README.md`, `CHANGELOG.md`, `shipglows_data/product/lab/product.md` |
-| Parent-product positioning update | `shipglows_data/product/lab/product.md`, `shipglows_data/gtm/lab/gtm.md`, and boundaries referencing `replayglowz-app` |
+| Parent-product positioning update | `shipglows_data/product/lab/product.md`, `shipglows_data/gtm/lab/gtm.md`, and boundaries referencing `replayglows-app` |
 
 ## Open Gaps
 
 - No dedicated public docs surface exists in this repo.
 - API reference is still source-first (`server.py`) plus README narrative.
-- Parent-product assumptions must be validated in `replayglowz-app` before external messaging.
+- Parent-product assumptions must be validated in `replayglows-app` before external messaging.

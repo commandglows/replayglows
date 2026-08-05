@@ -2,7 +2,7 @@
 artifact: business_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz-app"
+project: "replayglows-app"
 created: "2026-04-26"
 updated: "2026-04-27"
 status: "reviewed"
@@ -36,7 +36,7 @@ next_step: "Align pricing and entitlement implementation details with this busin
 
 ## Mission
 
-ReplayGlowz App helps users turn YouTube watch time into structured productivity and learning outcomes.
+ReplayGlows App helps users turn YouTube watch time into structured productivity and learning outcomes.
 
 The core mission is to keep watching, timestamped note-taking, playlist organization, and retrieval in one authenticated workflow, with a clear emphasis on individual execution quality and repeatable learning.
 
@@ -44,9 +44,9 @@ The core mission is to keep watching, timestamped note-taking, playlist organiza
 
 YouTube is strong for discovery and playback, but weak as a structured personal workspace for notes, timestamps, organization, and retrieval.
 
-ReplayGlowz's value proposition is to reduce that fragmentation and make learning and reference work more reusable:
+ReplayGlows's value proposition is to reduce that fragmentation and make learning and reference work more reusable:
 
-"ReplayGlowz helps you capture what matters while watching, organize it, and come back to it without rebuilding context every time."
+"ReplayGlows helps you capture what matters while watching, organize it, and come back to it without rebuilding context every time."
 
 ## Target Audience
 
@@ -66,7 +66,7 @@ Language strategy:
 
 ## Positioning
 
-ReplayGlowz positions itself as a productivity and learning companion for YouTube-heavy workflows:
+ReplayGlows positions itself as a productivity and learning companion for YouTube-heavy workflows:
 
 - Productivity: reduce friction between watching and execution.
 - Learning and veille: keep useful moments, insights, and references retrievable over time.
@@ -93,10 +93,10 @@ Current and near-term distribution surfaces:
 
 Safe claims:
 
-- ReplayGlowz is a personal productivity and learning workflow for YouTube.
-- ReplayGlowz supports timestamped notes, playlist organization, and retrieval.
-- ReplayGlowz targets solo creators, students, and educators.
-- ReplayGlowz follows an `LTD + subscription` business direction.
+- ReplayGlows is a personal productivity and learning workflow for YouTube.
+- ReplayGlows supports timestamped notes, playlist organization, and retrieval.
+- ReplayGlows targets solo creators, students, and educators.
+- ReplayGlows follows an `LTD + subscription` business direction.
 
 Unsafe claims until implemented and documented:
 

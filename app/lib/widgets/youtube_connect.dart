@@ -8,19 +8,19 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:replayglowz_app/app/theme.dart';
-import 'package:replayglowz_app/app/build_info.dart';
-import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/auth/auth_service.dart';
-import 'package:replayglowz_app/providers/mutations.dart';
-import 'package:replayglowz_app/providers/providers.dart';
-import 'package:replayglowz_app/utils/app_logger.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/app/theme.dart';
+import 'package:replayglows_app/app/build_info.dart';
+import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/auth/auth_service.dart';
+import 'package:replayglows_app/providers/mutations.dart';
+import 'package:replayglows_app/providers/providers.dart';
+import 'package:replayglows_app/utils/app_logger.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
 
 part 'youtube_connect_ui_states.dart';
 
 const _youtubeConnectOrigin = String.fromEnvironment(
-  'REPLAYGLOWZ_APP_URL',
+  'REPLAYGLOWS_APP_URL',
   defaultValue: '',
 );
 
@@ -51,7 +51,7 @@ String _formatYoutubeDiagnostics(Map<String, dynamic>? status) {
 
   final lines = <String>[
     ...buildIdentityHeader(),
-    'ReplayGlowz YouTube diagnostics',
+    'ReplayGlows YouTube diagnostics',
     'Build id: $buildId',
     'Build commit: $buildCommitSha',
     'Build environment: $buildEnvironment',
@@ -200,7 +200,7 @@ Future<void> _launchYoutubeConnect(
     showErrorSnackBar(
       context,
       error:
-          'ReplayGlowz could not determine the YouTube OAuth origin for this build.',
+          'ReplayGlows could not determine the YouTube OAuth origin for this build.',
       prefix: 'YouTube connect unavailable',
     );
     return;
@@ -218,10 +218,10 @@ Future<void> _launchYoutubeConnect(
         showErrorSnackBar(
           context,
           error: accessVerificationUnavailable
-              ? 'ReplayGlowz is signed in, but secure backend access is not ready yet. Reload the app and try again.'
+              ? 'ReplayGlows is signed in, but secure backend access is not ready yet. Reload the app and try again.'
               : accessStatus.accountRecognized
-              ? 'Your account is recognized, but ReplayGlowz access is inactive.'
-              : 'ReplayGlowz could not verify product access for this account.',
+              ? 'Your account is recognized, but ReplayGlows access is inactive.'
+              : 'ReplayGlows could not verify product access for this account.',
           prefix: 'YouTube connect unavailable',
         );
       }
@@ -457,14 +457,14 @@ class _YoutubeOAuthFeedbackBannerState
     final description = isError
         ? oauthError
         : _syncError != null
-        ? 'ReplayGlowz finished server-side authorisation, but the first refresh did not complete. You can retry from here or from Playlists.'
+        ? 'ReplayGlows finished server-side authorisation, but the first refresh did not complete. You can retry from here or from Playlists.'
         : hasConnectionDelay
-        ? 'Google authorisation completed, but ReplayGlowz still cannot confirm the saved connection in Convex. Retry sync in a moment or from Preferences.'
+        ? 'Google authorisation completed, but ReplayGlows still cannot confirm the saved connection in Convex. Retry sync in a moment or from Preferences.'
         : _syncing
-        ? 'ReplayGlowz is confirming the server-completed YouTube connection and starting your first playlist sync.'
+        ? 'ReplayGlows is confirming the server-completed YouTube connection and starting your first playlist sync.'
         : _syncComplete
-        ? 'Your YouTube account is linked. ReplayGlowz has started refreshing your playlists.'
-        : 'Your YouTube account is linked. ReplayGlowz is ready to import your playlists.';
+        ? 'Your YouTube account is linked. ReplayGlows has started refreshing your playlists.'
+        : 'Your YouTube account is linked. ReplayGlows is ready to import your playlists.';
 
     final surfaceColor = isError
         ? colorScheme.errorContainer
@@ -638,7 +638,7 @@ class YoutubeConnectBanner extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.xxxs),
                     Text(
-                      'ReplayGlowz will import your playlists and refresh them after you return from Google.',
+                      'ReplayGlows will import your playlists and refresh them after you return from Google.',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onPrimaryContainer.withValues(
                           alpha: 0.82,

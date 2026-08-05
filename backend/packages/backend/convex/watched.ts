@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { requireReplayGlowzAccess } from "./access";
+import { requireReplayGlowsAccess } from "./access";
 
 // =============================================================================
 // QUERIES
@@ -12,7 +12,7 @@ import { requireReplayGlowzAccess } from "./access";
 export const getWatchedIds = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
 
     const items = await ctx.db
@@ -30,7 +30,7 @@ export const getWatchedIds = query({
 export const getWatchedVideos = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
 
     const items = await ctx.db
@@ -55,7 +55,7 @@ export const isVideoWatched = query({
     youtubeVideoId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return false;
 
     const item = await ctx.db
@@ -81,7 +81,7 @@ export const markAsWatched = mutation({
     youtubeVideoId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     // Check if already watched
@@ -117,7 +117,7 @@ export const unmarkAsWatched = mutation({
     youtubeVideoId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const item = await ctx.db
@@ -142,7 +142,7 @@ export const unmarkAsWatched = mutation({
 export const clearWatchHistory = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const items = await ctx.db

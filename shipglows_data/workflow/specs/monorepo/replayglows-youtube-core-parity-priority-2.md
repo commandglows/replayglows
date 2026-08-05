@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-25"
 created_at: "2026-05-25 16:25:34 UTC"
 updated: "2026-05-25"
@@ -12,7 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "youtube-core-feature-parity-priority-2"
 owner: "Diane"
-user_story: "En tant qu'utilisateur ReplayGlowz connecte a YouTube, je veux retrouver les workflows avances de TubeFlow qui restent utiles, afin de suivre mes chaines, gerer mes transcripts et exploiter mes notes sans perdre la simplicite du produit."
+user_story: "En tant qu'utilisateur ReplayGlows connecte a YouTube, je veux retrouver les workflows avances de TubeFlow qui restent utiles, afin de suivre mes chaines, gerer mes transcripts et exploiter mes notes sans perdre la simplicite du produit."
 confidence: "medium"
 risk_level: "high"
 security_impact: "yes"
@@ -40,10 +40,10 @@ depends_on:
   - artifact: "shipglows_data/workflow/audits/2026-05-25-tubeflow-expo-feature-gap.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-quota-safe-sync.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-quota-safe-sync.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-1.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-1.md"
     artifact_version: "1.0.0"
     required_status: "ready"
 supersedes: []
@@ -55,14 +55,14 @@ evidence:
   - "Current backend contains `channelLinks.ts`, `transcripts.ts`, `transcriptGeneration.ts`, `transcriptSecrets.ts`, `notes.ts`, and channel sync settings primitives."
   - "Current Flutter app has Preferences transcript language/settings, Notes screens, Play transcript panel, but provider catalog/secrets/version management and channel-link workflow are not fully exposed."
   - "Official YouTube docs checked 2026-05-25: `subscriptions.list` costs 1 quota unit per call and requires authorized `mine=true` for the authenticated user's subscriptions."
-next_step: "/sf-start replayglowz-youtube-core-parity-priority-2"
+next_step: "/sf-start replayglows-youtube-core-parity-priority-2"
 ---
 
-# Spec: ReplayGlowz YouTube Core Parity Priority 2
+# Spec: ReplayGlows YouTube Core Parity Priority 2
 
 ## Title
 
-ReplayGlowz YouTube core parity priority 2
+ReplayGlows YouTube core parity priority 2
 
 ## Status
 
@@ -70,18 +70,18 @@ ready
 
 ## User Story
 
-En tant qu'utilisateur ReplayGlowz connecte a YouTube, je veux retrouver les workflows avances de TubeFlow qui restent utiles, afin de suivre mes chaines, gerer mes transcripts et exploiter mes notes sans perdre la simplicite du produit.
+En tant qu'utilisateur ReplayGlows connecte a YouTube, je veux retrouver les workflows avances de TubeFlow qui restent utiles, afin de suivre mes chaines, gerer mes transcripts et exploiter mes notes sans perdre la simplicite du produit.
 
 ## Minimal Behavior Contract
 
-Apres la priorite 1, ReplayGlowz doit permettre a un utilisateur connecte de gerer les workflows avances qui enrichissent sa bibliotheque deja importee: voir ses abonnements YouTube, lier une chaine a une playlist ReplayGlowz, synchroniser les nouvelles videos de chaines liees avec estimation quota, choisir et configurer ses providers de transcript, suivre les jobs de transcript, selectionner une version de transcript, puis exporter ou partager ses notes selon son acces produit. Si l'utilisateur n'a aucun abonnement, aucune chaine YouTube active, aucun provider configure, ou aucun transcript disponible, l'app doit afficher un etat utile sans erreur serveur et sans page vide. L'edge case facile a rater est de reconstruire une recherche YouTube generale: elle reste hors scope; P2 travaille depuis les donnees de l'utilisateur, ses abonnements, ses playlists, ses videos cachees et ses transcripts.
+Apres la priorite 1, ReplayGlows doit permettre a un utilisateur connecte de gerer les workflows avances qui enrichissent sa bibliotheque deja importee: voir ses abonnements YouTube, lier une chaine a une playlist ReplayGlows, synchroniser les nouvelles videos de chaines liees avec estimation quota, choisir et configurer ses providers de transcript, suivre les jobs de transcript, selectionner une version de transcript, puis exporter ou partager ses notes selon son acces produit. Si l'utilisateur n'a aucun abonnement, aucune chaine YouTube active, aucun provider configure, ou aucun transcript disponible, l'app doit afficher un etat utile sans erreur serveur et sans page vide. L'edge case facile a rater est de reconstruire une recherche YouTube generale: elle reste hors scope; P2 travaille depuis les donnees de l'utilisateur, ses abonnements, ses playlists, ses videos cachees et ses transcripts.
 
 ## Success Behavior
 
-- Preconditions: l'utilisateur est authentifie via Clerk, dispose d'un acces ReplayGlowz actif, Convex auth est pret, et les actions YouTube/transcript verifient server-side les tokens, secrets, ownership et quota avant execution.
+- Preconditions: l'utilisateur est authentifie via Clerk, dispose d'un acces ReplayGlows actif, Convex auth est pret, et les actions YouTube/transcript verifient server-side les tokens, secrets, ownership et quota avant execution.
 - Trigger: l'utilisateur ouvre Preferences, Playlists, Play ou Notes, puis lance explicitement une action avancee: voir ses abonnements, lier une chaine, synchroniser une chaine, configurer un provider, generer un transcript ou exporter des notes.
 - User/operator result: Preferences ou une surface dediee permet de voir les abonnements YouTube importables, avec etats vide, token revoque, quota limite et dernier refresh.
-- User/operator result: l'utilisateur peut lier une chaine YouTube a une playlist ReplayGlowz existante, activer/desactiver le lien, le supprimer, et lancer une sync des videos passees ou recentes avec avertissement quota.
+- User/operator result: l'utilisateur peut lier une chaine YouTube a une playlist ReplayGlows existante, activer/desactiver le lien, le supprimer, et lancer une sync des videos passees ou recentes avec avertissement quota.
 - User/operator result: les pages Playlists/Preferences exposent les chaines liees a une playlist et les actions correspondantes sans devoir manipuler Convex directement.
 - User/operator result: le player et Preferences exposent le catalogue de providers transcript, les providers disponibles/indisponibles, les secrets requis, les tests de cle, la langue par defaut et les options d'automatisation existantes.
 - User/operator result: le player permet de generer/regenerer un transcript, voir l'etat du job, afficher les versions disponibles, selectionner la version active et conserver le seek timestamp fiable.
@@ -134,9 +134,9 @@ Construire P2 en quatre lots bornes: channel sync/subscriptions, transcript prov
 - Les appels YouTube couteux, y compris `subscriptions.list`, `playlistItems.list`, channel sync et videos details, doivent utiliser le quota-safe policy existant.
 - Le flux doit accepter les comptes YouTube neufs: pas de chaine, pas d'abonnement, pas de playlist, ou `youtubeSignupRequired` ne doivent pas casser la page.
 - Les actions de sync de chaines doivent etre explicites et visibles; pas de boucle automatique sur tous les abonnements.
-- Les surfaces avancees doivent rester discretes pour ne pas augmenter la friction du premier usage ReplayGlowz.
+- Les surfaces avancees doivent rester discretes pour ne pas augmenter la friction du premier usage ReplayGlows.
 - Pas de dependance a un test OAuth local impossible; prevoir une QA manuelle auth prod/preview en plus des checks statiques.
-- Une chaine YouTube ne peut avoir qu'un seul lien actif vers une playlist ReplayGlowz par utilisateur; l'UI peut proposer de deplacer le lien, mais le backend doit refuser les doublons actifs.
+- Une chaine YouTube ne peut avoir qu'un seul lien actif vers une playlist ReplayGlows par utilisateur; l'UI peut proposer de deplacer le lien, mais le backend doit refuser les doublons actifs.
 - Les providers transcript de production suivent un mode "available only": YouTube captions est tente en premier quand disponible; les providers worker-dependent sont visibles mais indisponibles tant que worker/secret requis manque; OpenAI/Deepgram ne sont actifs qu'apres secret utilisateur valide.
 - Notes export reste borne par `SubscriptionFeatures.exportNotes` et les plans existants; P2 n'accorde pas un nouveau droit gratuit tant que pricing/quota produit n'est pas decide.
 
@@ -160,7 +160,7 @@ Construire P2 en quatre lots bornes: channel sync/subscriptions, transcript prov
 
 ## Invariants
 
-- Une session Clerk valide ne suffit pas: chaque action privee depend aussi de l'acces ReplayGlowz et des tokens YouTube/transcript disponibles.
+- Une session Clerk valide ne suffit pas: chaque action privee depend aussi de l'acces ReplayGlows et des tokens YouTube/transcript disponibles.
 - Les donnees cachees ne sont jamais supprimees uniquement parce qu'une API externe echoue.
 - Le backend reste l'autorite pour permissions, quota, ownership, token validity, secrets et plan limits.
 - Les providers premium ne peuvent pas etre presentes comme disponibles si leur secret ou le worker requis manque.
@@ -169,7 +169,7 @@ Construire P2 en quatre lots bornes: channel sync/subscriptions, transcript prov
 
 ## Links & Consequences
 
-- Upstream: Clerk session, Convex auth, ReplayGlowz entitlement, YouTube OAuth token storage, YouTube Data API quota, transcript worker, user transcript secrets.
+- Upstream: Clerk session, Convex auth, ReplayGlows entitlement, YouTube OAuth token storage, YouTube Data API quota, transcript worker, user transcript secrets.
 - Downstream: Preferences, Playlists, Playlist detail, Play, Notes, Notifications, Stats, AppShell quota UI, diagnostics/support copy.
 - Data contracts touched: channel links, sync jobs, YouTube subscriptions, playlist/channel association, transcript provider catalog, transcript secrets status, transcript jobs, transcript versions, transcript selections, notes export.
 - Regression areas: YouTube connect state, quota-safe sync, playlist actions from P1, transcript display in player, notes timestamps, product plan/free trial messaging.
@@ -256,7 +256,7 @@ Construire P2 en quatre lots bornes: channel sync/subscriptions, transcript prov
 - [x] Task 8: Implement notes export/share/copy workflows.
   - File: `app/lib/screens/notes/notes_screen.dart`, `app/lib/screens/notes/note_detail_screen.dart`, `app/lib/screens/play/play_screen.dart`, `backend/packages/backend/convex/notes.ts`, `app/lib/models/subscription.dart`.
   - Action: Wire existing `notes:exportNotesForVideo` and share/copy actions with plan gating, video-scoped export, global notes copy where safe, and user feedback.
-  - User story link: User can reuse the notes they created in ReplayGlowz.
+  - User story link: User can reuse the notes they created in ReplayGlows.
   - Depends on: Task 1.
   - Validate with: Flutter analyze; manual QA for free/trial/pro plan states if available.
   - Notes: Do not promise PDF unless implementation actually creates a PDF.
@@ -267,7 +267,7 @@ Construire P2 en quatre lots bornes: channel sync/subscriptions, transcript prov
   - User story link: Advanced features remain discoverable without overwhelming the first-use flow.
   - Depends on: Tasks 3, 6, 7 and 8.
   - Validate with: Flutter analyze and manual first-run QA.
-  - Notes: Keep explanations hidden/progressive where they add friction to the core ReplayGlowz signup flow.
+  - Notes: Keep explanations hidden/progressive where they add friction to the core ReplayGlows signup flow.
 
 - [x] Task 10: Add focused tests, diagnostics and documentation updates.
   - File: `app/test/` where feasible, backend tests/helpers where present, `shipglows_data/workflow/audits/2026-05-25-tubeflow-expo-feature-gap.md`, possibly `app/AGENT.md`.
@@ -318,7 +318,7 @@ Construire P2 en quatre lots bornes: channel sync/subscriptions, transcript prov
 
 - Read first:
   - `shipglows_data/workflow/audits/2026-05-25-tubeflow-expo-feature-gap.md`
-  - `shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-1.md`
+  - `shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-1.md`
   - `app/lib/providers/providers.dart`
   - `app/lib/providers/mutations.dart`
   - `app/lib/screens/preferences/preferences_screen.dart`
@@ -349,10 +349,10 @@ None.
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-25 16:25:34 UTC | sf-spec | GPT-5 Codex | Created Priority 2 YouTube parity spec from Expo gap audit and P1 exclusions. | draft spec created | `/sf-ready replayglowz-youtube-core-parity-priority-2` |
-| 2026-05-25 16:34:12 UTC | sf-ready | GPT-5 Codex | Resolved blocking open questions with conservative defaults and completed readiness review. | ready | `/sf-start replayglowz-youtube-core-parity-priority-2` |
-| 2026-05-25 17:35:07 UTC | sf-start | GPT-5 Codex + bounded subagents | Implemented P2 channel automation, transcript provider/version/job UI, notes Markdown copy, and backend guardrails. | partial | Continue remaining onboarding/tests/QA polish or run `/sf-verify replayglowz-youtube-core-parity-priority-2` on current scope. |
-| 2026-05-25 17:51:12 UTC | sf-browser | GPT-5 Codex | Browser preflight for authenticated P2 testing request. | rerouted | `/sf-ship replayglowz-youtube-core-parity-priority-2`, `/sf-prod app`, then `/sf-auth-debug` or `/sf-test` on preview. |
+| 2026-05-25 16:25:34 UTC | sf-spec | GPT-5 Codex | Created Priority 2 YouTube parity spec from Expo gap audit and P1 exclusions. | draft spec created | `/sf-ready replayglows-youtube-core-parity-priority-2` |
+| 2026-05-25 16:34:12 UTC | sf-ready | GPT-5 Codex | Resolved blocking open questions with conservative defaults and completed readiness review. | ready | `/sf-start replayglows-youtube-core-parity-priority-2` |
+| 2026-05-25 17:35:07 UTC | sf-start | GPT-5 Codex + bounded subagents | Implemented P2 channel automation, transcript provider/version/job UI, notes Markdown copy, and backend guardrails. | partial | Continue remaining onboarding/tests/QA polish or run `/sf-verify replayglows-youtube-core-parity-priority-2` on current scope. |
+| 2026-05-25 17:51:12 UTC | sf-browser | GPT-5 Codex | Browser preflight for authenticated P2 testing request. | rerouted | `/sf-ship replayglows-youtube-core-parity-priority-2`, `/sf-prod app`, then `/sf-auth-debug` or `/sf-test` on preview. |
 
 ## Current Chantier Flow
 

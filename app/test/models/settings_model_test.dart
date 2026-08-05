@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:replayglowz_app/models/settings.dart';
+import 'package:replayglows_app/models/settings.dart';
 
 void main() {
   group('UserSettings.fromJson', () {

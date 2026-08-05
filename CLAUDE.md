@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides root-level guidance for agents working in the ReplayGlowz monorepo.
+This file provides root-level guidance for agents working in the ReplayGlows monorepo.
 
 ## Project Overview
 

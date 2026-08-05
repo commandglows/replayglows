@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:replayglowz_app/widgets/app_states.dart';
+import 'package:replayglows_app/widgets/app_states.dart';
 
 void main() {
   testWidgets('AppEmptyState renders icon, title and description', (

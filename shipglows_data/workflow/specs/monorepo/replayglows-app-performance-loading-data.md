@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-16"
 created_at: "2026-05-16 07:37:03 UTC"
 updated: "2026-05-16"
@@ -12,7 +12,7 @@ source_skill: sf-build
 source_model: "GPT-5 Codex"
 scope: "flutter-web-app-performance-loading-data"
 owner: "Diane"
-user_story: "As the ReplayGlowz maintainer, I want the Flutter web app to reduce avoidable initial loading and data subscription work so app navigation remains fast as the YouTube library and feature surface grow."
+user_story: "As the ReplayGlows maintainer, I want the Flutter web app to reduce avoidable initial loading and data subscription work so app navigation remains fast as the YouTube library and feature surface grow."
 confidence: "high"
 risk_level: "medium"
 security_impact: "none"
@@ -26,7 +26,7 @@ linked_systems:
 depends_on: []
 supersedes: []
 evidence:
-  - "User requested `$sf-build subagents loops` after a local ReplayGlowz app performance audit."
+  - "User requested `$sf-build subagents loops` after a local ReplayGlows app performance audit."
   - "Local audit found `app/lib/app/router.dart` statically imports all screens, including heavy play, feedback, and admin routes."
   - "Local audit found `videosProvider` uses `youtube:getAllVideos` without pagination or an explicit limit."
   - "Local audit found `PlayScreen` watches YouTube connection, notes, progress, all videos, settings, and active transcript in one build, and loads transcript when the Transcript tab is inactive."
@@ -35,10 +35,10 @@ evidence:
   - "Local audit found Sentry is imported at the app entry point."
   - "Local measurements: `flutter analyze` passed; `flutter build web --release` passed in about 89.8s; `build/web` was 37M; `main.dart.js` was 3.7M raw and about 1.08M gzip; `canvaskit.wasm` was 7.16M raw and about 2.87M gzip; `skwasm.wasm` was 3.55M raw and about 1.51M gzip."
   - "Local build emitted a non-blocking Wasm dry-run warning from transitive `flutter_rust_bridge`."
-next_step: "/sf-ship ReplayGlowz app performance loading and data if release is requested"
+next_step: "/sf-ship ReplayGlows app performance loading and data if release is requested"
 ---
 
-# ReplayGlowz App Performance Loading And Data
+# ReplayGlows App Performance Loading And Data
 
 ## Status
 
@@ -46,7 +46,7 @@ Closed locally after the first app-only implementation loop. This spec targeted 
 
 ## Minimal Behavior Contract
 
-ReplayGlowz should preserve the current user experience while reducing avoidable work during initial app load and high-traffic screens. Heavy route surfaces should not inflate or initialize common app paths when a safer lazy or isolated route pattern is available. Screen-level providers should subscribe only to data needed for the visible state, especially on Play and Videos screens.
+ReplayGlows should preserve the current user experience while reducing avoidable work during initial app load and high-traffic screens. Heavy route surfaces should not inflate or initialize common app paths when a safer lazy or isolated route pattern is available. Screen-level providers should subscribe only to data needed for the visible state, especially on Play and Videos screens.
 
 ## Scope In
 
@@ -170,10 +170,10 @@ None for the first loop. Backend pagination and new narrow Convex functions are 
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-16 07:37:03 UTC | sf-build | GPT-5 Codex | Created ready app-only performance spec from the local audit findings; scoped first loop to route isolation where feasible, PlayScreen provider gating, and local Flutter validation only. | Ready. | `/sf-start ReplayGlowz app performance loading and data` |
-| 2026-05-16 07:43:00 UTC | sf-start | GPT-5 Codex | Worker 2 implemented the first local app-only performance loop in `app/lib/screens/play/play_screen.dart`: transcript provider watching is gated to the active Transcript tab, the Play screen no longer subscribes to `videosProvider` during normal render, and queue metadata falls back to a one-shot existing `youtube:getAllVideos` query only when the queue drawer is opened. Reviewed AppShell banner usage and route-level deferred loading; no safe tiny route or banner semantic change was applied in this loop. | Implemented with route-level deferred loading deferred and single-video metadata still blocked by lack of an existing narrow provider/backend contract. Validation passed: `flutter analyze`, `flutter build web --release`, and ShipGlows metadata lint. Size observations: `build/web` 37M, `main.dart.js` 3714284 bytes, `canvaskit.wasm` 7155824 bytes, `skwasm.wasm` 3549782 bytes. | `/sf-verify ReplayGlowz app performance loading and data` |
-| 2026-05-16 07:50:00 UTC | sf-verify | GPT-5 Codex | Worker 3 performed scoped verification of the app-only performance loop and reran `flutter analyze`. | Passed with no blocking issues and no edits. Route-level deferred loading, true single-video metadata, and AppShell semantic changes remain documented deferrals. | `/sf-end ReplayGlowz app performance loading and data` |
-| 2026-05-16 07:55:00 UTC | sf-end | GPT-5 Codex | Worker 4 closed local bookkeeping for the implemented app-only performance loop. | Closed locally. No commit, push, deploy, site, or lab work requested. | `/sf-ship ReplayGlowz app performance loading and data` if release is requested |
+| 2026-05-16 07:37:03 UTC | sf-build | GPT-5 Codex | Created ready app-only performance spec from the local audit findings; scoped first loop to route isolation where feasible, PlayScreen provider gating, and local Flutter validation only. | Ready. | `/sf-start ReplayGlows app performance loading and data` |
+| 2026-05-16 07:43:00 UTC | sf-start | GPT-5 Codex | Worker 2 implemented the first local app-only performance loop in `app/lib/screens/play/play_screen.dart`: transcript provider watching is gated to the active Transcript tab, the Play screen no longer subscribes to `videosProvider` during normal render, and queue metadata falls back to a one-shot existing `youtube:getAllVideos` query only when the queue drawer is opened. Reviewed AppShell banner usage and route-level deferred loading; no safe tiny route or banner semantic change was applied in this loop. | Implemented with route-level deferred loading deferred and single-video metadata still blocked by lack of an existing narrow provider/backend contract. Validation passed: `flutter analyze`, `flutter build web --release`, and ShipGlows metadata lint. Size observations: `build/web` 37M, `main.dart.js` 3714284 bytes, `canvaskit.wasm` 7155824 bytes, `skwasm.wasm` 3549782 bytes. | `/sf-verify ReplayGlows app performance loading and data` |
+| 2026-05-16 07:50:00 UTC | sf-verify | GPT-5 Codex | Worker 3 performed scoped verification of the app-only performance loop and reran `flutter analyze`. | Passed with no blocking issues and no edits. Route-level deferred loading, true single-video metadata, and AppShell semantic changes remain documented deferrals. | `/sf-end ReplayGlows app performance loading and data` |
+| 2026-05-16 07:55:00 UTC | sf-end | GPT-5 Codex | Worker 4 closed local bookkeeping for the implemented app-only performance loop. | Closed locally. No commit, push, deploy, site, or lab work requested. | `/sf-ship ReplayGlows app performance loading and data` if release is requested |
 
 ## Current Chantier Flow
 
@@ -186,4 +186,4 @@ None for the first loop. Backend pagination and new narrow Convex functions are 
 | sf-end | closed locally | Worker 4 updated local closure bookkeeping. No commit, push, deploy, site, or lab work requested. |
 | sf-ship | pending | Not requested. No release or deploy requested for this first local loop. |
 
-Next command: `/sf-ship ReplayGlowz app performance loading and data` if release is requested.
+Next command: `/sf-ship ReplayGlows app performance loading and data` if release is requested.

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-26"
 created_at: "2026-05-26 16:45:18 UTC"
 updated: "2026-05-26"
@@ -12,7 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "youtube-parity-stabilization-qa-closure"
 owner: "Diane"
-user_story: "En tant qu'utilisatrice ReplayGlowz qui vient d'activer les workflows YouTube avances, je veux que les routes, playlists, quotas, transcripts, notes et etats vides soient fiables en production, afin de pouvoir terminer la parite TubeFlow sans regressions cachees."
+user_story: "En tant qu'utilisatrice ReplayGlows qui vient d'activer les workflows YouTube avances, je veux que les routes, playlists, quotas, transcripts, notes et etats vides soient fiables en production, afin de pouvoir terminer la parite TubeFlow sans regressions cachees."
 confidence: "high"
 risk_level: "high"
 security_impact: "yes"
@@ -36,19 +36,19 @@ depends_on:
   - artifact: "CLAUDE.md"
     artifact_version: "unknown"
     required_status: "unknown"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-2.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-2.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-3.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-3.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-channel-onboarding-playlist-url-import.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-channel-onboarding-playlist-url-import.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-quota-safe-sync.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-quota-safe-sync.md"
     artifact_version: "1.0.0"
     required_status: "ready"
-  - artifact: "shipglows_data/workflow/audits/2026-05-26-replayglowz-prod-qa-followups.md"
+  - artifact: "shipglows_data/workflow/audits/2026-05-26-replayglows-prod-qa-followups.md"
     artifact_version: "0.1.0"
     required_status: "draft"
   - artifact: "shipglows_data/workflow/bugs/app/BUG-2026-05-26-001.md"
@@ -87,14 +87,14 @@ evidence:
   - "Current backend has quota-safe YouTube sync/import code and explicit playlist cache sources: owned, url_import and subscriptions."
   - "Official YouTube docs checked 2026-05-26: playlistItems.list and subscriptions.list calls cost 1 unit, max playlistItems page size is 50, and default project quota is documented as 10,000 units/day."
   - "Official go_router docs checked 2026-05-26: go_router is a URL-based declarative router and ShellRoute wraps sub-routes in an inner Navigator."
-next_step: "/sf-verify replayglowz-youtube-parity-stabilization-qa-closure"
+next_step: "/sf-verify replayglows-youtube-parity-stabilization-qa-closure"
 ---
 
-# Spec: ReplayGlowz YouTube Parity Stabilization And QA Closure
+# Spec: ReplayGlows YouTube Parity Stabilization And QA Closure
 
 ## Title
 
-ReplayGlowz YouTube parity stabilization and QA closure
+ReplayGlows YouTube parity stabilization and QA closure
 
 ## Status
 
@@ -102,15 +102,15 @@ ready
 
 ## User Story
 
-En tant qu'utilisatrice ReplayGlowz qui vient d'activer les workflows YouTube avances, je veux que les routes, playlists, quotas, transcripts, notes et etats vides soient fiables en production, afin de pouvoir terminer la parite TubeFlow sans regressions cachees.
+En tant qu'utilisatrice ReplayGlows qui vient d'activer les workflows YouTube avances, je veux que les routes, playlists, quotas, transcripts, notes et etats vides soient fiables en production, afin de pouvoir terminer la parite TubeFlow sans regressions cachees.
 
 ## Minimal Behavior Contract
 
-ReplayGlowz doit fermer le chantier YouTube parity en corrigeant les defauts detectes en production, puis en retestant chaque surface P2/P3/import qui a ete codee mais pas encore prouvee. Les routes protegees doivent rendre la page demandee apres auth et rester rechargeables. Les actions Playlists doivent etre contextuelles, discretes et non trompeuses. La navigation cache-first ne doit jamais consommer de quota YouTube sans action explicite, ou alors l'action doit etre visible, documentee et logguee. Les imports URL, transcripts, notes, channel sync, hints, focus mode et mobile doivent avoir une preuve QA avec compte test. L'edge case facile a rater est de declarer la parite terminee parce que le happy path d'import marche: ce chantier ne se ferme que quand les regressions ouvertes et les surfaces non testees ont un statut pass/fixed/deferred explicite.
+ReplayGlows doit fermer le chantier YouTube parity en corrigeant les defauts detectes en production, puis en retestant chaque surface P2/P3/import qui a ete codee mais pas encore prouvee. Les routes protegees doivent rendre la page demandee apres auth et rester rechargeables. Les actions Playlists doivent etre contextuelles, discretes et non trompeuses. La navigation cache-first ne doit jamais consommer de quota YouTube sans action explicite, ou alors l'action doit etre visible, documentee et logguee. Les imports URL, transcripts, notes, channel sync, hints, focus mode et mobile doivent avoir une preuve QA avec compte test. L'edge case facile a rater est de declarer la parite terminee parce que le happy path d'import marche: ce chantier ne se ferme que quand les regressions ouvertes et les surfaces non testees ont un statut pass/fixed/deferred explicite.
 
 ## Success Behavior
 
-- Preconditions: l'app de production ou preview est deployee, le compte test ReplayGlowz est authentifie, YouTube OAuth est connecte, Convex auth est pret, et les variables Convex/Vercel de production pointent vers `https://joyous-chipmunk-990.convex.cloud` pour la cible production.
+- Preconditions: l'app de production ou preview est deployee, le compte test ReplayGlows est authentifie, YouTube OAuth est connecte, Convex auth est pret, et les variables Convex/Vercel de production pointent vers `https://joyous-chipmunk-990.convex.cloud` pour la cible production.
 - Trigger: l'utilisateur ouvre directement une route protegee, navigue via sidebar/bottom nav, importe/synchronise une playlist, teste une surface transcript/notes/channel, ferme un hint, utilise le player, ou recharge l'app.
 - User/operator result: `/videos`, `/playlists`, `/playlists/create`, `/notes`, `/preferences`, `/play`, `/hidden`, `/stats` et les details autorises rendent la bonne page apres auth, et une reload conserve la page visible.
 - User/operator result: la page Playlists affiche un onboarding coherent avec l'etat reel: aucun YouTube connecte, YouTube connecte mais vide, imported playlist presente, owned playlists presentes, subscriptions virtuelles ou erreur actionnable.
@@ -118,7 +118,7 @@ ReplayGlowz doit fermer le chantier YouTube parity en corrigeant les defauts det
 - User/operator result: les actions YouTube couteuses affichent clairement l'etat en cours, le cout/risque quota quand pertinent, le resultat et l'erreur utilisateur sans stack brute.
 - User/operator result: transcripts, notes export/share/copy, channel link/sync, hint dismissal, focus mode, shortcuts et mobile ont tous une preuve QA ou une decision de report documentee.
 - System effect: les lectures cachees et la navigation ne declenchent pas `playlists.list`, `playlistItems.list`, `videos.list` ou `subscriptions.list` sans action utilisateur explicite ou job planifie connu.
-- System effect: les logs Convex permettent de relier chaque depense quota au `userId`, endpoint, action ReplayGlowz, request ID et resultat, sans exposer tokens, cookies, JWT, OAuth code, email ou URL de playlist non repertoriee.
+- System effect: les logs Convex permettent de relier chaque depense quota au `userId`, endpoint, action ReplayGlows, request ID et resultat, sans exposer tokens, cookies, JWT, OAuth code, email ou URL de playlist non repertoriee.
 - Success proof: bug records fermes ou reclasses, `TEST_LOG.md` mis a jour, audit QA mis a jour, evidence screenshots/traces ajoutees, `flutter analyze`, backend typecheck, metadata lint, et QA browser auth sur prod ou preview.
 
 ## Error Behavior
@@ -218,7 +218,7 @@ Executer une passe stabilisation en ordre strict: corriger d'abord le routing po
 
 ## Invariants
 
-- Authenticated ReplayGlowz session, ReplayGlowz product access, Convex auth and YouTube OAuth are separate states.
+- Authenticated ReplayGlows session, ReplayGlows product access, Convex auth and YouTube OAuth are separate states.
 - Direct route intent survives auth bootstrap, sign-in, OAuth reconnect and reload.
 - Cache reads do not spend YouTube quota.
 - Every YouTube API spend has an explicit user action, scheduled job, or documented startup behavior with logs.
@@ -230,7 +230,7 @@ Executer une passe stabilisation en ordre strict: corriger d'abord le routing po
 
 ## Links & Consequences
 
-- Upstream: Clerk auth/session, Convex auth token, ReplayGlowz entitlement defaults, YouTube OAuth tokens, YouTube Data API quota, transcript worker env.
+- Upstream: Clerk auth/session, Convex auth token, ReplayGlows entitlement defaults, YouTube OAuth tokens, YouTube Data API quota, transcript worker env.
 - Downstream: support diagnostics, user onboarding, Playlists, Videos, Player, Notes, Preferences, Stats quota display, QA evidence, bug closure.
 - Regression risk: route fixes can break sign-in redirect, YouTube OAuth return_to, SSO callback, feedback public route, or nested playlist/note detail routes.
 - Regression risk: playlist UX fixes can accidentally hide the create action entirely or break imported playlists.
@@ -240,7 +240,7 @@ Executer une passe stabilisation en ordre strict: corriger d'abord le routing po
 ## Documentation Coherence
 
 - Update `shipglows_data/workflow/bugs/app/BUG-2026-05-26-001.md`, `shipglows_data/workflow/bugs/app/BUG-2026-05-26-002.md`, and `shipglows_data/workflow/bugs/app/BUG-2026-05-26-003.md` with fix attempts, retests and closure status.
-- Update `shipglows_data/workflow/audits/2026-05-26-replayglowz-prod-qa-followups.md` so every row is pass/fail/fixed/deferred with evidence.
+- Update `shipglows_data/workflow/audits/2026-05-26-replayglows-prod-qa-followups.md` so every row is pass/fail/fixed/deferred with evidence.
 - Update `TEST_LOG.md` with the final stabilization QA result.
 - Update `shipglows_data/workflow/audits/2026-05-26-youtube-edge-case-regression-checklist.md` if import URL or empty-channel behavior changes.
 - Update `app/AGENT.md` only if routing/auth or YouTube runtime contracts materially change.
@@ -266,7 +266,7 @@ Executer une passe stabilisation en ordre strict: corriger d'abord le routing po
 ## Implementation Tasks
 
 - [ ] Task 1: Confirm baseline and attach active bugs to this chantier.
-  - File: `shipglows_data/workflow/bugs/app/BUG-2026-05-26-001.md`, `shipglows_data/workflow/bugs/app/BUG-2026-05-26-002.md`, `shipglows_data/workflow/bugs/app/BUG-2026-05-26-003.md`, `shipglows_data/workflow/audits/2026-05-26-replayglowz-prod-qa-followups.md`.
+  - File: `shipglows_data/workflow/bugs/app/BUG-2026-05-26-001.md`, `shipglows_data/workflow/bugs/app/BUG-2026-05-26-002.md`, `shipglows_data/workflow/bugs/app/BUG-2026-05-26-003.md`, `shipglows_data/workflow/audits/2026-05-26-replayglows-prod-qa-followups.md`.
   - Action: Add this spec as related artifact, verify current prod/preview build commit, and mark which evidence is stale versus current.
   - User story link: Prevents losing known regressions while implementing fixes.
   - Depends on: none.
@@ -354,7 +354,7 @@ Executer une passe stabilisation en ordre strict: corriger d'abord le routing po
   - Notes: Site/lab checks are only required if those subprojects are touched.
 
 - [ ] Task 12: Close the stabilization records.
-  - File: `TEST_LOG.md`, `shipglows_data/workflow/bugs/app/BUG-2026-05-26-001.md`, `shipglows_data/workflow/bugs/app/BUG-2026-05-26-002.md`, `shipglows_data/workflow/bugs/app/BUG-2026-05-26-003.md`, `shipglows_data/workflow/audits/2026-05-26-replayglowz-prod-qa-followups.md`, this spec.
+  - File: `TEST_LOG.md`, `shipglows_data/workflow/bugs/app/BUG-2026-05-26-001.md`, `shipglows_data/workflow/bugs/app/BUG-2026-05-26-002.md`, `shipglows_data/workflow/bugs/app/BUG-2026-05-26-003.md`, `shipglows_data/workflow/audits/2026-05-26-replayglows-prod-qa-followups.md`, this spec.
   - Action: Mark fixed/deferred/open statuses truthfully, attach evidence, update Skill Run History through lifecycle skills, and set final next step.
   - User story link: Gives a durable master checklist for future parity regressions.
   - Depends on: Task 11.
@@ -437,11 +437,11 @@ None. Non-blocking execution notes:
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-26 16:45:18 UTC | sf-spec | GPT-5 Codex | Created stabilization and QA closure spec from production QA bugs, P2/P3/import specs, and official routing/API docs. | Spec drafted with linked bugs, tasks, acceptance criteria and freshness gate. | `/sf-ready replayglowz-youtube-parity-stabilization-qa-closure` |
-| 2026-05-26 19:13:32 UTC | sf-ready | GPT-5 Codex | Reviewed readiness, resolved non-blocking open questions, and made language/copy expectations explicit. | ready | `/sf-start replayglowz-youtube-parity-stabilization-qa-closure` |
-| 2026-05-26 19:24:03 UTC | sf-start | GPT-5 Codex | Implemented routing/auth stabilization, Playlists modal-first low-friction UX updates, and quota-spend mitigation by moving subscriptions refresh from passive load to explicit action; updated bug/audit/test records and ran required local checks. | partial | `/sf-ship replayglowz-youtube-parity-stabilization-qa-closure` |
-| 2026-05-26 19:38:55 UTC | sf-ship | GPT-5 Codex | Ran quick ship checks and prepared the stabilization implementation for push. | shipped | `/sf-prod replayglowz` |
-| 2026-05-26 19:55:00 UTC | sf-prod | GPT-5 Codex | Confirmed Vercel production deployment `dpl_9DM2pzMHBonJfrWg7uZpuodDgtF7` for commit `39c6062`, aliases including `https://app.replayglowz.com`, and HTTP 200 for root and `/playlists`. | pass | `/sf-verify replayglowz-youtube-parity-stabilization-qa-closure` |
+| 2026-05-26 16:45:18 UTC | sf-spec | GPT-5 Codex | Created stabilization and QA closure spec from production QA bugs, P2/P3/import specs, and official routing/API docs. | Spec drafted with linked bugs, tasks, acceptance criteria and freshness gate. | `/sf-ready replayglows-youtube-parity-stabilization-qa-closure` |
+| 2026-05-26 19:13:32 UTC | sf-ready | GPT-5 Codex | Reviewed readiness, resolved non-blocking open questions, and made language/copy expectations explicit. | ready | `/sf-start replayglows-youtube-parity-stabilization-qa-closure` |
+| 2026-05-26 19:24:03 UTC | sf-start | GPT-5 Codex | Implemented routing/auth stabilization, Playlists modal-first low-friction UX updates, and quota-spend mitigation by moving subscriptions refresh from passive load to explicit action; updated bug/audit/test records and ran required local checks. | partial | `/sf-ship replayglows-youtube-parity-stabilization-qa-closure` |
+| 2026-05-26 19:38:55 UTC | sf-ship | GPT-5 Codex | Ran quick ship checks and prepared the stabilization implementation for push. | shipped | `/sf-prod replayglows` |
+| 2026-05-26 19:55:00 UTC | sf-prod | GPT-5 Codex | Confirmed Vercel production deployment `dpl_9DM2pzMHBonJfrWg7uZpuodDgtF7` for commit `39c6062`, aliases including `https://app.replayglowz.com`, and HTTP 200 for root and `/playlists`. | pass | `/sf-verify replayglows-youtube-parity-stabilization-qa-closure` |
 | 2026-05-26 19:56:00 UTC | sf-verify | GPT-5 Codex | Ran authenticated production browser smoke on commit `39c6062`: Preferences, Playlists, Notes and Videos rendered correctly; Playlists hint and hidden top-rest `+` matched the new UX; visible quota stayed stable at `13 / 1000` across passive navigation. | partial | Continue remaining P2/P3/import QA matrix before `/sf-end`. |
 | 2026-05-27 03:14:26 UTC | sf-verify | GPT-5 Codex | Reran production verification on deployment `dpl_8SWzTGdT61HbmqfePKkNANJrY2Yr`: signed-out redirect and authenticated direct routes passed, visible quota stayed `13 / 1000`, but Playlists `+` is unreachable on short/non-scrollable pages while the hint tells users to use it. | partial | Fix Playlists `+` discoverability on short pages, then rerun targeted `/sf-verify`. |
 | 2026-05-27 09:04:31 UTC | sf-build | GPT-5 Codex + subagent | Implemented the short-page Playlists `+` affordance fix through a bounded worker: non-scrollable pages now keep a low-opacity clickable `+`, while scrollable pages retain hidden top-rest and scroll-reveal behavior. | partial | Ship/deploy, then rerun targeted `/sf-verify`. |

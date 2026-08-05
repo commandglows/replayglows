@@ -1,6 +1,6 @@
-/// English translations for ReplayGlowz.
+/// English translations for ReplayGlows.
 /// Full key structure matches the Next.js web app (942 keys).
-/// TODO: Copy remaining sections from replayglowz_app/src/i18n/en.ts
+/// TODO: Copy remaining sections from replayglows_app/src/i18n/en.ts
 const Map<String, dynamic> en = {
   'common': {
     'playlists': 'Lists',
@@ -79,28 +79,28 @@ const Map<String, dynamic> en = {
         'Long press the Play tab to switch the bottom bar to playback controls. Swipe up from Play to show video actions like hide, watched, and speed.',
     'backgroundPlaybackTitle': 'Background playback was interrupted',
     'backgroundPlaybackFirefoxMessage':
-        'ReplayGlowz did not pause the video. Firefox and YouTube can stop embedded playback when you switch apps. For more reliable background audio, use a browser that allows it, such as Vivaldi.',
+        'ReplayGlows did not pause the video. Firefox and YouTube can stop embedded playback when you switch apps. For more reliable background audio, use a browser that allows it, such as Vivaldi.',
     'backgroundPlaybackGenericMessage':
-        'ReplayGlowz did not pause the video. Your browser or YouTube can stop embedded playback when you switch apps. For more reliable background audio, use a browser that allows it, such as Vivaldi.',
+        'ReplayGlows did not pause the video. Your browser or YouTube can stop embedded playback when you switch apps. For more reliable background audio, use a browser that allows it, such as Vivaldi.',
   },
   'playlistsPage': {
     'title': 'Lists',
     'createPlaylist': 'Create playlist',
     'createDialogTitle': 'Create in Lists',
     'createDialogDescription':
-        'Create a classic YouTube playlist or a ReplayGlowz Feed: a live playlist that groups channels and playlists around one theme.',
+        'Create a classic YouTube playlist or a ReplayGlows Feed: a live playlist that groups channels and playlists around one theme.',
     'createSectionAction': 'Create',
     'syncComplete':
         'Sync complete. If this YouTube account is new, create a YouTube playlist or channel, then refresh again.',
     'syncFailed': 'Sync failed',
     'connectionRequiredTitle': 'Connect YouTube to create your Lists',
     'connectionRequiredDescription':
-        'ReplayGlowz can import your playlists, aggregate your subscriptions, and keep your Feeds updated from your YouTube library.',
+        'ReplayGlows can import your playlists, aggregate your subscriptions, and keep your Feeds updated from your YouTube library.',
     'noListsYetTitle': 'No Lists yet',
     'noListsYetDescription':
-        'You are connected to YouTube, but there are no YouTube playlists or ReplayGlowz Feeds yet.',
-    'loadFeedsError': 'Failed to load ReplayGlowz Feeds',
-    'failedToLoadFeeds': 'Failed to load ReplayGlowz Feeds',
+        'You are connected to YouTube, but there are no YouTube playlists or ReplayGlows Feeds yet.',
+    'loadFeedsError': 'Failed to load ReplayGlows Feeds',
+    'failedToLoadFeeds': 'Failed to load ReplayGlows Feeds',
     'failedToLoadPlaylists': 'Failed to load playlists',
     'actionError': 'Action failed',
     'playlistHidden': 'Playlist hidden.',
@@ -109,23 +109,23 @@ const Map<String, dynamic> en = {
     'editPlaylistTitle': 'Edit playlist',
     'deleteFailed': 'Delete failed',
     'confirmDeleteBody':
-        'This deletes "{title}" from YouTube and refreshes ReplayGlowz.',
+        'This deletes "{title}" from YouTube and refreshes ReplayGlows.',
     'virtualFeedSourceCountSingular': 'source',
     'virtualFeedSourceCountPlural': 'sources',
     'virtualFeedActiveSourcesSingular': 'active',
     'virtualFeedActiveSourcesPlural': 'active',
     'createInLists': 'Create in Lists',
     'createPlaylistDescription': 'Creates an actual playlist on YouTube.',
-    'createFeed': 'ReplayGlowz Feed',
+    'createFeed': 'ReplayGlows Feed',
     'createFeedDescription':
         'Group a theme’s videos and launch them in one continuous play session.',
     'youtubePlaylistOptionTitle': 'YouTube Playlist',
     'youtubePlaylistOptionDescription':
         'Creates an actual playlist on YouTube.',
-    'replayFeedOptionTitle': 'ReplayGlowz Feed',
+    'replayFeedOptionTitle': 'ReplayGlows Feed',
     'replayFeedOptionDescription':
         'Create a live playlist that auto-updates from your channels, subscriptions, and playlists.',
-    'replayFeedFormTitle': 'Create ReplayGlowz Feed',
+    'replayFeedFormTitle': 'Create ReplayGlows Feed',
     'replayFeedNameLabel': 'Feed name',
     'replayFeedNameHint': 'e.g. Cuisine',
     'replayFeedDescriptionLabel': 'Description',
@@ -135,11 +135,11 @@ const Map<String, dynamic> en = {
     'replayFeedNameErrorEmpty': 'Please enter a feed name',
     'replayFeedNameErrorShort': 'Name must be at least 2 characters',
     'replayFeedCreateAction': 'Save Feed',
-    'replayFeedCreateSuccess': 'ReplayGlowz Feed created.',
+    'replayFeedCreateSuccess': 'ReplayGlows Feed created.',
     'replayFeedCreateError': 'Error creating Feed',
     'playlistSyncTitle': 'Checking your YouTube playlists',
     'playlistSyncDescription':
-        'ReplayGlowz is confirming your YouTube connection before loading playlist data.',
+        'ReplayGlows is confirming your YouTube connection before loading playlist data.',
     'connectionErrorPrefix': 'Failed to check YouTube connection',
     'noPlaylists': 'No playlists',
     'noPlaylistsDesc': 'Create your first playlist to organize your videos.',
@@ -149,19 +149,19 @@ const Map<String, dynamic> en = {
     'confirmDelete': 'Delete this playlist?',
     'playlistDeleted': 'Playlist deleted',
     'swipeHint': 'Swipe left to manage playlists',
-    'replayFeedsSection': 'ReplayGlowz Feeds',
+    'replayFeedsSection': 'ReplayGlows Feeds',
     'youtubePlaylistsSection': 'YouTube Playlists',
   },
   'virtualFeedDetail': {
-    'title': 'ReplayGlowz Feed',
+    'title': 'ReplayGlows Feed',
     'feedNotFound': 'Feed not found',
-    'feedUnavailable': 'This ReplayGlowz Feed is not available.',
+    'feedUnavailable': 'This ReplayGlows Feed is not available.',
     'sourceSectionTitle': 'Sources',
     'sourceSectionHelp':
         'Each source feeds this Feed. A playlist adds all of its known videos; a channel or your subscriptions add new videos when the YouTube cache refreshes.',
     'addSource': 'Add source',
     'addSourceHelp':
-        'Choose what should feed this Feed. ReplayGlowz then groups videos from every active source into one play session.',
+        'Choose what should feed this Feed. ReplayGlows then groups videos from every active source into one play session.',
     'sourceModeChannels': 'Channels from my subscriptions',
     'sourceModeChannelsDescription':
         'Add channels you already follow to create a live Feed.',
@@ -184,7 +184,7 @@ const Map<String, dynamic> en = {
         'Every available playlist is already in this Feed.',
     'noPlaylistChannels': 'No channel detected',
     'noPlaylistChannelsDescription':
-        'ReplayGlowz cannot find usable channel metadata in this playlist cache. Add the playlist itself or refresh the cache.',
+        'ReplayGlows cannot find usable channel metadata in this playlist cache. Add the playlist itself or refresh the cache.',
     'playlistChannelSelectHelp':
         'Select the channels to follow as live sources.',
     'playlistChannelMissingMetadata':
@@ -250,20 +250,20 @@ const Map<String, dynamic> en = {
         'Sync YouTube playlists/channels first, then return to add sources.',
     'emptySourcePickerLoading': 'Loading cached sources...',
     'emptySourcePickerLoadingDescription':
-        'ReplayGlowz is checking your cached channels and playlists.',
+        'ReplayGlows is checking your cached channels and playlists.',
     'emptySourcePickerError': 'Could not read cached sources',
     'emptySourcePickerErrorDescription':
         'Refresh YouTube cache to update channels and playlists before adding sources.',
     'sourcePickerRefresh': 'Refresh cache',
     'sourceDescriptionTitle':
-        'ReplayGlowz Feeds are local aggregates from your cached data.',
+        'ReplayGlows Feeds are local aggregates from your cached data.',
     'feedDescriptionFallback': 'No description yet',
     'delete': 'Delete Feed',
     'deleteConfirmTitle': 'Delete Feed?',
-    'deleteConfirmBody': 'This deletes the ReplayGlowz Feed from your account.',
+    'deleteConfirmBody': 'This deletes the ReplayGlows Feed from your account.',
     'refreshing': 'Refreshing cache...',
     'refreshDone': 'YouTube cache refresh complete.',
-    'sourceAdded': 'Source added. Its videos now feed this ReplayGlowz Feed.',
+    'sourceAdded': 'Source added. Its videos now feed this ReplayGlows Feed.',
     'sourceRemoved': 'Source removed from Feed.',
     'sourceUpdated': 'Source updated.',
     'sourceReordered': 'Sources reordered.',
@@ -316,7 +316,7 @@ const Map<String, dynamic> en = {
   },
   'preferencesPage': {
     'title': 'Preferences',
-    'subtitle': 'Customize your ReplayGlowz experience',
+    'subtitle': 'Customize your ReplayGlows experience',
     'appearanceTitle': 'Appearance',
     'theme': 'Theme',
     'light': 'Light',
@@ -397,7 +397,7 @@ const Map<String, dynamic> en = {
     'videos': {
       'connectTitle': 'Connect YouTube to browse videos',
       'connectDesc':
-          'ReplayGlowz builds your library from synced YouTube playlists.',
+          'ReplayGlows builds your library from synced YouTube playlists.',
       'noVideosTitle': 'No YouTube videos yet',
       'noVideosDesc':
           'This account is connected but has no imported videos yet.',
@@ -405,10 +405,10 @@ const Map<String, dynamic> en = {
       'noFilterMatchDesc': 'Clear filters or show watched videos.',
       'filterByFeeds': 'Filter by feeds',
       'filterByFeedsDesc':
-          'Choose one or more ReplayGlowz feeds shown in Feed and Play.',
+          'Choose one or more ReplayGlows feeds shown in Feed and Play.',
       'allVideos': 'All videos',
       'sourceCount': '{count} sources',
-      'noFeedFilterOptions': 'No ReplayGlowz feed is available yet.',
+      'noFeedFilterOptions': 'No ReplayGlows feed is available yet.',
       'applyFilters': 'Apply',
       'hintTitle': 'Tip',
       'hintMessage':
@@ -418,9 +418,9 @@ const Map<String, dynamic> en = {
     'playlists': {
       'hintTitle': 'Create your Lists',
       'hintMessage':
-          'Use YouTube playlists when you want to publish on YouTube, or create a ReplayGlowz Feed to group one theme’s videos and watch everything with one Play button.',
+          'Use YouTube playlists when you want to publish on YouTube, or create a ReplayGlows Feed to group one theme’s videos and watch everything with one Play button.',
       'hintMessageImported':
-          'Your imported playlists are ready. Use + to create a ReplayGlowz Feed that aggregates your channels, subscriptions, and playlists into one live playlist.',
+          'Your imported playlists are ready. Use + to create a ReplayGlows Feed that aggregates your channels, subscriptions, and playlists into one live playlist.',
       'hintMessageOwned':
           'Use + to create a thematic Feed that refreshes from YouTube, or a YouTube playlist only when you want to write back to YouTube.',
     },

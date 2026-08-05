@@ -21,7 +21,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Renamed the site directory from `tubeflow_site` to `site` and aligned active docs/scripts with the new path.
-- Migrated public site branding, canonical URLs, app URLs, SEO metadata, RSS metadata, i18n copy, blog copy, legal pages, and package metadata from TubeFlow to ReplayGlowz.
+- Migrated public site branding, canonical URLs, app URLs, SEO metadata, RSS metadata, i18n copy, blog copy, legal pages, and package metadata from TubeFlow to ReplayGlows.
 
 ## [2026-05-10]
 

@@ -5,11 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:replayglowz_app/app/build_info.dart';
-import 'package:replayglowz_app/providers/mutations.dart';
-import 'package:replayglowz_app/screens/feedback/feedback_audio_file.dart';
+import 'package:replayglows_app/app/build_info.dart';
+import 'package:replayglows_app/providers/mutations.dart';
+import 'package:replayglows_app/screens/feedback/feedback_audio_file.dart';
 
-const feedbackTextDraftKey = 'replayglowz_feedback_text_draft';
+const feedbackTextDraftKey = 'replayglows_feedback_text_draft';
 
 class FeedbackSubmissionService {
   const FeedbackSubmissionService(this.ref);
@@ -69,7 +69,7 @@ class FeedbackSubmissionService {
       Uri.parse(uploadUrl),
       headers: {
         'Content-Type': uploadData.contentType,
-        'X-Requested-With': 'ReplayGlowzFeedback',
+        'X-Requested-With': 'ReplayGlowsFeedback',
       },
       body: uploadData.bytes,
     );

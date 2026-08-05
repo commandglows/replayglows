@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.1.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-07-16"
 created_at: "2026-07-16 12:57:58 UTC"
 updated: "2026-07-16"
@@ -12,7 +12,7 @@ source_skill: 100-sg-spec
 source_model: "GPT-5 Codex"
 scope: "site-landing-benefits-features-card-harmonization"
 owner: "Diane"
-user_story: "As a ReplayGlowz landing-page visitor, I want the Benefits and Features cards to follow the same centered, scannable visual grammar as the Solution cards, so the page feels coherent without changing its content, testimonials, or pricing presentation."
+user_story: "As a ReplayGlows landing-page visitor, I want the Benefits and Features cards to follow the same centered, scannable visual grammar as the Solution cards, so the page feels coherent without changing its content, testimonials, or pricing presentation."
 confidence: "high"
 risk_level: "medium"
 security_impact: "none"
@@ -43,12 +43,12 @@ evidence:
   - "Source audit: Benefits uses horizontal small-icon cards while Features uses an asymmetric bento layout; Solution uses centered stacked cards with large icons."
   - "Local browser evidence at 1440x1000 and 390x844 confirmed the anatomy drift and the readability of the Solution pattern."
   - "Repository contract: `site/AGENT.md` requires intentional English/French parity and identifies the duplicated French landing as a drift risk."
-next_step: "/005-sg-ship replayglowz landing cards, then /405-sg-prod and /108-sg-browser"
+next_step: "/005-sg-ship replayglows landing cards, then /405-sg-prod and /108-sg-browser"
 ---
 
 # Title
 
-Harmonize ReplayGlowz Landing Benefits And Features Cards
+Harmonize ReplayGlows Landing Benefits And Features Cards
 
 ## Status
 
@@ -56,7 +56,7 @@ Implemented locally. Verification is partial until the matching Vercel preview i
 
 ## User Story
 
-As a ReplayGlowz landing-page visitor, I want the Benefits and Features cards to follow the same centered, scannable visual grammar as the Solution cards, so the page feels coherent without changing its content, testimonials, or pricing presentation.
+As a ReplayGlows landing-page visitor, I want the Benefits and Features cards to follow the same centered, scannable visual grammar as the Solution cards, so the page feels coherent without changing its content, testimonials, or pricing presentation.
 
 ## Minimal Behavior Contract
 
@@ -204,7 +204,7 @@ No public documentation or copy update is required because product behavior, cla
 
 1. Inspect the scoped diff and explicitly compare Testimonials/Pricing source regions.
 2. Run `(cd site && npm run build)`.
-3. Run `/home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglowz/site --changed --format markdown --max-findings 5000`; any new unexplained visual literal fails the check.
+3. Run `/home/claude/shipglows/tools/design_system_drift_check.py --root /home/claude/replayglows/site --changed --format markdown --max-findings 5000`; any new unexplained visual literal fails the check.
 4. After authorized ship and Vercel target discovery, capture Playwright snapshot plus screenshot on the matching preview for `LG-EN`, `LG-FR`, `MD-EN`, `MD-FR`, `SM-EN`, and `SM-FR`.
 5. Check document overflow and card alignment at each viewport; inspect the accessibility snapshot for headings, text order, and absence of redundant emoji names.
 6. Do not claim authoritative visual verification until the matching Vercel preview scenarios pass.
@@ -234,11 +234,11 @@ None. The operator explicitly approved the centered Solution direction and exclu
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-07-16 12:57:58 UTC | 100-sg-spec | GPT-5 Codex | Created a bounded implementation contract from the approved design audit and scope reduction. | Draft created. | `/101-sg-ready replayglowz-harmonize-landing-benefits-features-cards` |
-| 2026-07-16 13:02:18 UTC | 101-sg-ready | GPT-5 Codex | Reviewed structure, user-story fit, adversarial scope, security, design-system authority, and proof coverage; added the missing medium-width scenarios and canonical changed-file drift check. | Ready. | `/102-sg-start replayglowz-harmonize-landing-benefits-features-cards` |
-| 2026-07-16 13:09:54 UTC | 102-sg-start | GPT-5 Codex | Harmonized Benefits and Features in EN/FR, removed the bento-only previews and animation, preserved copy and excluded sections, then ran the site build, diff check, and changed-file drift scan. | Implemented locally; hosted preview proof remains unauthorized and pending. | `/103-sg-verify replayglowz-harmonize-landing-benefits-features-cards` |
-| 2026-07-16 13:16:22 UTC | 103-sg-verify | GPT-5 Codex | Verified the source contract, build, metadata, excluded-section scope, CSS cleanup, accessibility structure, and zero changed-file design drift; corrected the proof route to match the repository preview-push policy. | Partial: implementation is locally proven, but the required preview browser scenarios are not authorized or run. | `/005-sg-ship replayglowz landing cards, then /405-sg-prod and /108-sg-browser` |
-| 2026-07-16 13:16:22 UTC | 006-sg-design | GPT-5 Codex | Piloted audit, operator validation, spec/readiness, implementation, and local design proof for the bounded Benefits and Features redesign. | Partial: design implementation is complete; authoritative visual proof awaits the matching Vercel preview. | `/005-sg-ship replayglowz landing cards, then /405-sg-prod and /108-sg-browser` |
+| 2026-07-16 12:57:58 UTC | 100-sg-spec | GPT-5 Codex | Created a bounded implementation contract from the approved design audit and scope reduction. | Draft created. | `/101-sg-ready replayglows-harmonize-landing-benefits-features-cards` |
+| 2026-07-16 13:02:18 UTC | 101-sg-ready | GPT-5 Codex | Reviewed structure, user-story fit, adversarial scope, security, design-system authority, and proof coverage; added the missing medium-width scenarios and canonical changed-file drift check. | Ready. | `/102-sg-start replayglows-harmonize-landing-benefits-features-cards` |
+| 2026-07-16 13:09:54 UTC | 102-sg-start | GPT-5 Codex | Harmonized Benefits and Features in EN/FR, removed the bento-only previews and animation, preserved copy and excluded sections, then ran the site build, diff check, and changed-file drift scan. | Implemented locally; hosted preview proof remains unauthorized and pending. | `/103-sg-verify replayglows-harmonize-landing-benefits-features-cards` |
+| 2026-07-16 13:16:22 UTC | 103-sg-verify | GPT-5 Codex | Verified the source contract, build, metadata, excluded-section scope, CSS cleanup, accessibility structure, and zero changed-file design drift; corrected the proof route to match the repository preview-push policy. | Partial: implementation is locally proven, but the required preview browser scenarios are not authorized or run. | `/005-sg-ship replayglows landing cards, then /405-sg-prod and /108-sg-browser` |
+| 2026-07-16 13:16:22 UTC | 006-sg-design | GPT-5 Codex | Piloted audit, operator validation, spec/readiness, implementation, and local design proof for the bounded Benefits and Features redesign. | Partial: design implementation is complete; authoritative visual proof awaits the matching Vercel preview. | `/005-sg-ship replayglows landing cards, then /405-sg-prod and /108-sg-browser` |
 
 ## Current Chantier Flow
 
@@ -251,4 +251,4 @@ None. The operator explicitly approved the centered Solution direction and exclu
 | 104-sg-end | not started | Local closure pending. |
 | 005-sg-ship | awaiting authorization | Required before Vercel target discovery and authoritative browser proof. |
 
-Next command: `/005-sg-ship replayglowz landing cards`, then `/405-sg-prod` and `/108-sg-browser` on the matching preview.
+Next command: `/005-sg-ship replayglows landing cards`, then `/405-sg-prod` and `/108-sg-browser` on the matching preview.

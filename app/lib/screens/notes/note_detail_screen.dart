@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/i18n/translations.dart';
-import 'package:replayglowz_app/models/models.dart';
-import 'package:replayglowz_app/providers/mutations.dart';
-import 'package:replayglowz_app/providers/providers.dart';
-import 'package:replayglowz_app/utils/date_utils.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/i18n/translations.dart';
+import 'package:replayglows_app/models/models.dart';
+import 'package:replayglows_app/providers/mutations.dart';
+import 'package:replayglows_app/providers/providers.dart';
+import 'package:replayglows_app/utils/date_utils.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
 
 /// Note detail screen showing the full content of a single note.
 ///

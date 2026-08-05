@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-25"
 created_at: "2026-05-25 06:34:59 UTC"
 updated: "2026-05-25"
@@ -12,7 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "youtube-core-feature-parity"
 owner: "Diane"
-user_story: "En tant qu'utilisateur ReplayGlowz connecte a YouTube, je veux retrouver le coeur des workflows TubeFlow dans l'app Flutter, afin de parcourir, organiser et lire mes videos sans friction ni gaspillage de quota."
+user_story: "En tant qu'utilisateur ReplayGlows connecte a YouTube, je veux retrouver le coeur des workflows TubeFlow dans l'app Flutter, afin de parcourir, organiser et lire mes videos sans friction ni gaspillage de quota."
 confidence: "medium"
 risk_level: "high"
 security_impact: "yes"
@@ -45,7 +45,7 @@ depends_on:
   - artifact: "shipglows_data/workflow/audits/2026-05-25-tubeflow-expo-feature-gap.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-quota-safe-sync.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-quota-safe-sync.md"
     artifact_version: "1.0.0"
     required_status: "ready"
 supersedes: []
@@ -56,14 +56,14 @@ evidence:
   - "Current Flutter app now routes sync through quota-safe primitives referenced in `app/AGENT.md` and backend `youtube:startQuotaSafeSync`."
   - "Current Flutter web player uses a native iframe wrapper, but player state is not yet bridged back into notes/transcript/progress controls."
   - "Historical TubeFlow source inspected at `https://github.com/dianedef/tubeflow_expo` with relevant components under `apps/web/src/app`, `apps/web/src/components`, and `apps/web/src/hooks`."
-next_step: "/sf-start replayglowz-youtube-core-parity-priority-1"
+next_step: "/sf-start replayglows-youtube-core-parity-priority-1"
 ---
 
-# Spec: ReplayGlowz YouTube Core Parity Priority 1
+# Spec: ReplayGlows YouTube Core Parity Priority 1
 
 ## Title
 
-ReplayGlowz YouTube core parity priority 1
+ReplayGlows YouTube core parity priority 1
 
 ## Status
 
@@ -71,19 +71,19 @@ ready
 
 ## User Story
 
-En tant qu'utilisateur ReplayGlowz connecte a YouTube, je veux retrouver le coeur des workflows TubeFlow dans l'app Flutter, afin de parcourir, organiser et lire mes videos sans friction ni gaspillage de quota.
+En tant qu'utilisateur ReplayGlows connecte a YouTube, je veux retrouver le coeur des workflows TubeFlow dans l'app Flutter, afin de parcourir, organiser et lire mes videos sans friction ni gaspillage de quota.
 
 ## Problem
 
-ReplayGlowz a maintenant une connexion YouTube fonctionnelle et une base backend proche de l'ancienne application TubeFlow, mais l'interface Flutter n'expose pas encore les workflows essentiels: filtrer et agir sur le feed video, manipuler les videos dans les playlists, garder la lecture synchronisee avec notes/transcripts/progression sur le web, et proteger les actions couteuses avec des garde-fous quota visibles.
+ReplayGlows a maintenant une connexion YouTube fonctionnelle et une base backend proche de l'ancienne application TubeFlow, mais l'interface Flutter n'expose pas encore les workflows essentiels: filtrer et agir sur le feed video, manipuler les videos dans les playlists, garder la lecture synchronisee avec notes/transcripts/progression sur le web, et proteger les actions couteuses avec des garde-fous quota visibles.
 
 ## Solution
 
-Porter la priorite 1 de l'ancien TubeFlow sous forme de quatre lots bornes: feed videos avancé, player web avec etat synchronise, actions playlist/video, et UX quota-safe commune. La spec depend de `replayglowz-youtube-quota-safe-sync.md`; elle ne reimplemente pas le moteur quota-safe backend, mais impose que toutes les actions couteuses l'utilisent et que l'UI expose clairement cout, progression et erreurs.
+Porter la priorite 1 de l'ancien TubeFlow sous forme de quatre lots bornes: feed videos avancé, player web avec etat synchronise, actions playlist/video, et UX quota-safe commune. La spec depend de `replayglows-youtube-quota-safe-sync.md`; elle ne reimplemente pas le moteur quota-safe backend, mais impose que toutes les actions couteuses l'utilisent et que l'UI expose clairement cout, progression et erreurs.
 
 ## Minimal Behavior Contract
 
-Quand l'utilisateur ouvre Videos, Playlists ou Play, ReplayGlowz doit afficher les donnees YouTube cachees, signaler clairement l'etat de connexion/sync/quota, puis permettre les actions coeur: masquer/afficher les videos vues, masquer/supprimer/liker/ajouter une video a une playlist, reorganiser ou nettoyer une playlist, et lire une video avec notes/progression/timestamps fiables. Si une action consomme trop du quota YouTube ou modifie YouTube, l'UI doit annoncer ou bloquer selon les seuils quota, le backend doit verifier auth/acces/tokens, et l'echec doit conserver le cache local visible. L'edge case facile a rater est le player web: un iframe qui joue la video ne suffit pas si l'app ne recupere pas le temps courant pour notes, transcripts, seek et progression.
+Quand l'utilisateur ouvre Videos, Playlists ou Play, ReplayGlows doit afficher les donnees YouTube cachees, signaler clairement l'etat de connexion/sync/quota, puis permettre les actions coeur: masquer/afficher les videos vues, masquer/supprimer/liker/ajouter une video a une playlist, reorganiser ou nettoyer une playlist, et lire une video avec notes/progression/timestamps fiables. Si une action consomme trop du quota YouTube ou modifie YouTube, l'UI doit annoncer ou bloquer selon les seuils quota, le backend doit verifier auth/acces/tokens, et l'echec doit conserver le cache local visible. L'edge case facile a rater est le player web: un iframe qui joue la video ne suffit pas si l'app ne recupere pas le temps courant pour notes, transcripts, seek et progression.
 
 ## Scope In
 
@@ -107,8 +107,8 @@ Quand l'utilisateur ouvre Videos, Playlists ou Play, ReplayGlowz doit afficher l
 
 ## Constraints
 
-- Flutter must not read, store, log, or send YouTube OAuth access/refresh tokens directly; all YouTube Data API calls stay behind Vercel handlers or Convex/server-side actions already authorized by Clerk and ReplayGlowz product access.
-- Any action that costs YouTube quota must reuse the quota-safe policy from `replayglowz-youtube-quota-safe-sync.md`
+- Flutter must not read, store, log, or send YouTube OAuth access/refresh tokens directly; all YouTube Data API calls stay behind Vercel handlers or Convex/server-side actions already authorized by Clerk and ReplayGlows product access.
+- Any action that costs YouTube quota must reuse the quota-safe policy from `replayglows-youtube-quota-safe-sync.md`
 - The Flutter app must use existing Riverpod providers, GoRouter routes, shared error/snackbar helpers, and media widgets before creating new abstractions.
 - Web player work must respect Flutter Web platform-view constraints: the YouTube iframe must keep stable dimensions and cannot rely on Flutter overlay behavior that platform views may intercept.
 - P1 UI must stay usable on mobile and desktop with stable icon/menu controls; avoid adding large explanatory cards or nested cards inside existing surfaces.
@@ -151,7 +151,7 @@ Quand l'utilisateur ouvre Videos, Playlists ou Play, ReplayGlowz doit afficher l
 
 ## Invariants
 
-- A connected Clerk user is not enough to run YouTube actions; ReplayGlowz product access and YouTube token availability remain separate server-side checks.
+- A connected Clerk user is not enough to run YouTube actions; ReplayGlows product access and YouTube token availability remain separate server-side checks.
 - Cached YouTube library data remains the first UI source of truth; failed refreshes must not blank feed, playlist, or player screens.
 - UI state cannot be trusted for permissions, quota limits, ownership, playlist membership, or token validity; backend/server actions must enforce those checks.
 - Each successful user action must produce a visible UI state change, a toast/snackbar, or refreshed data that proves the action did something.
@@ -160,7 +160,7 @@ Quand l'utilisateur ouvre Videos, Playlists ou Play, ReplayGlowz doit afficher l
 
 ## Links & Consequences
 
-- Upstream systems: Clerk JS bridge, Convex auth token, ReplayGlowz entitlement status, YouTube OAuth tokens, Google YouTube Data API, YouTube IFrame API.
+- Upstream systems: Clerk JS bridge, Convex auth token, ReplayGlows entitlement status, YouTube OAuth tokens, Google YouTube Data API, YouTube IFrame API.
 - Downstream surfaces: Videos, Playlists overview, Playlist detail, Play, AppShell quota indicator, Stats, i18n, diagnostics, user support messages.
 - Data contracts affected: `YouTubeVideo`, `YouTubePlaylist`, watched state, hidden items, playlist/video order, quota metrics, sync jobs, notes timestamps, progress.
 - Regression risks: YouTube connect prompts, cached feed loading, playlist sync, iframe playback, notes creation, progress save, and quota stats must be retested.
@@ -170,7 +170,7 @@ Quand l'utilisateur ouvre Videos, Playlists ou Play, ReplayGlowz doit afficher l
 
 - `app/AGENT.md`: update only if action contracts or runtime flow change beyond the existing quota-safe sync statement.
 - `shipglows_data/workflow/audits/2026-05-25-tubeflow-expo-feature-gap.md`: update after implementation to mark P1 gaps closed or partially closed.
-- `shipglows_data/workflow/specs/replayglowz-youtube-quota-safe-sync.md`: do not mutate unless implementation changes the quota-safe backend contract.
+- `shipglows_data/workflow/specs/replayglows-youtube-quota-safe-sync.md`: do not mutate unless implementation changes the quota-safe backend contract.
 - `app/lib/i18n/en.dart` and `fr.dart`: keep visible user copy natural in each language; French copy must use accents.
 - Public site/pricing docs: no update in this chantier because marketing claims and pricing remain out of scope.
 - Changelog/task trackers: update during implementation or ship, not during readiness.
@@ -217,10 +217,10 @@ Quand l'utilisateur ouvre Videos, Playlists ou Play, ReplayGlowz doit afficher l
 
 - [x] Task 2: Implement feed filters, sort, and watched toggle.
   - Files: `app/lib/screens/videos/videos_screen.dart`, `app/lib/providers/providers.dart`, `app/lib/widgets/media/video_card.dart`, `app/lib/widgets/media/video_list_tile.dart`.
-  - Action: Replace the current filter stubs with usable controls for the decided feed-level picker: `All videos` plus multi-select ReplayGlowz Feeds. Playlist/channel/date filters are intentionally not exposed in this picker because playlists and channels can be modeled as Feed sources.
+  - Action: Replace the current filter stubs with usable controls for the decided feed-level picker: `All videos` plus multi-select ReplayGlows Feeds. Playlist/channel/date filters are intentionally not exposed in this picker because playlists and channels can be modeled as Feed sources.
   - Depends on: Task 1.
   - Validation: `cd app && flutter analyze`; manual filter QA with cached data.
-  - Acceptance: A user can reduce a large feed to one or more ReplayGlowz Feeds without triggering YouTube network calls; selected Feed details are merged and deduped from cached/backend Feed data.
+  - Acceptance: A user can reduce a large feed to one or more ReplayGlows Feeds without triggering YouTube network calls; selected Feed details are merged and deduped from cached/backend Feed data.
 
 - [ ] Task 3: Add video action menu parity on feed cards and rows.
   - Files: `app/lib/widgets/media/video_card.dart`, `app/lib/widgets/media/video_list_tile.dart`, `app/lib/screens/videos/videos_screen.dart`, `app/lib/providers/mutations.dart`.
@@ -378,10 +378,10 @@ None.
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-25 06:34:59 UTC | sf-spec | GPT-5 Codex | Created Priority 1 YouTube core parity spec from audit intake. | draft spec created | `/sf-ready replayglowz-youtube-core-parity-priority-1` |
-| 2026-05-25 09:06:41 UTC | sf-ready | GPT-5 Codex | Reviewed and completed readiness gate for Priority 1 YouTube core parity. | ready | `/sf-start replayglowz-youtube-core-parity-priority-1` |
-| 2026-05-25 09:24:46 UTC | sf-ready | GPT-5 Codex | Rechecked user-edited spec and removed stale YouTube search requirements from P1 scope. | ready | `/sf-start replayglowz-youtube-core-parity-priority-1` |
-| 2026-05-25 09:39:53 UTC | sf-start | GPT-5 Codex | Implemented initial P1 contract fixes and web player bridge with delegated workers; integrated playlist removal through the YouTube action. | partial | Continue `/sf-start replayglowz-youtube-core-parity-priority-1` for feed, playlist actions, quota UI, i18n, tests, and preview QA. |
+| 2026-05-25 06:34:59 UTC | sf-spec | GPT-5 Codex | Created Priority 1 YouTube core parity spec from audit intake. | draft spec created | `/sf-ready replayglows-youtube-core-parity-priority-1` |
+| 2026-05-25 09:06:41 UTC | sf-ready | GPT-5 Codex | Reviewed and completed readiness gate for Priority 1 YouTube core parity. | ready | `/sf-start replayglows-youtube-core-parity-priority-1` |
+| 2026-05-25 09:24:46 UTC | sf-ready | GPT-5 Codex | Rechecked user-edited spec and removed stale YouTube search requirements from P1 scope. | ready | `/sf-start replayglows-youtube-core-parity-priority-1` |
+| 2026-05-25 09:39:53 UTC | sf-start | GPT-5 Codex | Implemented initial P1 contract fixes and web player bridge with delegated workers; integrated playlist removal through the YouTube action. | partial | Continue `/sf-start replayglows-youtube-core-parity-priority-1` for feed, playlist actions, quota UI, i18n, tests, and preview QA. |
 | 2026-05-25 10:06:00 UTC | sf-start | GPT-5 Codex | Added cached feed sort/show-watched/playlist filtering, feed video action menus, add-to-playlist from feed, and playlist detail share/watched actions. | partial | Continue quota UI, remaining playlist actions, i18n, tests, and preview QA. |
 | 2026-05-25 10:22:21 UTC | sf-start | GPT-5 Codex | Continued playlist detail action parity with copy-to-playlist, YouTube-backed move up/down, targeted provider refreshes, and quota prompts for playlist item writes. | partial | Continue playlist overview parity, i18n cleanup, tests, and authenticated preview QA. |
-| 2026-05-25 10:39:00 UTC | sf-start | GPT-5 Codex | Integrated quota guard, fixed YouTube playlist ID routing/action contracts, applied saved playlist video order in backend query, added playlist item model coverage, and ran static checks. | implemented | `/sf-verify replayglowz-youtube-core-parity-priority-1` then authenticated preview QA. |
+| 2026-05-25 10:39:00 UTC | sf-start | GPT-5 Codex | Integrated quota guard, fixed YouTube playlist ID routing/action contracts, applied saved playlist video order in backend query, added playlist item model coverage, and ran static checks. | implemented | `/sf-verify replayglows-youtube-core-parity-priority-1` then authenticated preview QA. |

@@ -17,8 +17,8 @@ void main() {
   final backendRoot = _resolveBackendRoot();
   if (!backendRoot.existsSync()) {
     stderr.writeln(
-      'ReplayGlowz product backend not found at ${backendRoot.path}.\n'
-      'Set REPLAYGLOWZ_BACKEND_ROOT to the ReplayGlowz product Convex backend directory if needed.',
+      'ReplayGlows product backend not found at ${backendRoot.path}.\n'
+      'Set REPLAYGLOWS_BACKEND_ROOT to the ReplayGlows product Convex backend directory if needed.',
     );
     exitCode = 1;
     return;
@@ -45,13 +45,13 @@ void main() {
 
   if (missing.isEmpty) {
     stdout.writeln(
-      'ReplayGlowz product backend contract OK: ${_requiredFunctions.length} critical '
-      'ReplayGlowz product backend functions found in ${backendRoot.path}',
+      'ReplayGlows product backend contract OK: ${_requiredFunctions.length} critical '
+      'ReplayGlows product backend functions found in ${backendRoot.path}',
     );
     return;
   }
 
-  stderr.writeln('ReplayGlowz product backend contract check failed:');
+  stderr.writeln('ReplayGlows product backend contract check failed:');
   for (final item in missing) {
     stderr.writeln('- $item');
   }
@@ -59,7 +59,7 @@ void main() {
 }
 
 Directory _resolveBackendRoot() {
-  final fromEnv = Platform.environment['REPLAYGLOWZ_BACKEND_ROOT'];
+  final fromEnv = Platform.environment['REPLAYGLOWS_BACKEND_ROOT'];
   if (fromEnv != null && fromEnv.trim().isNotEmpty) {
     return Directory(fromEnv.trim());
   }

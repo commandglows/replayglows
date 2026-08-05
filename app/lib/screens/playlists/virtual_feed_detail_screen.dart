@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/app/theme.dart';
-import 'package:replayglowz_app/i18n/translations.dart';
-import 'package:replayglowz_app/models/models.dart';
-import 'package:replayglowz_app/providers/mutations.dart';
-import 'package:replayglowz_app/providers/providers.dart';
-import 'package:replayglowz_app/utils/color_utils.dart';
-import 'package:replayglowz_app/widgets/app_states.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
-import 'package:replayglowz_app/widgets/media/video_list_tile.dart';
-import 'package:replayglowz_app/widgets/youtube_quota_guard.dart';
+import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/app/theme.dart';
+import 'package:replayglows_app/i18n/translations.dart';
+import 'package:replayglows_app/models/models.dart';
+import 'package:replayglows_app/providers/mutations.dart';
+import 'package:replayglows_app/providers/providers.dart';
+import 'package:replayglows_app/utils/color_utils.dart';
+import 'package:replayglows_app/widgets/app_states.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/widgets/media/video_list_tile.dart';
+import 'package:replayglows_app/widgets/youtube_quota_guard.dart';
 
 const String _subscriptionsSourceId = '__subscriptions__';
 
@@ -391,7 +391,7 @@ class _VirtualFeedDetailScreenState
           .start(
             sourceType: PlaybackSourceType.virtualFeed,
             sourceId: widget.feedId,
-            sourceTitle: sourceTitle ?? 'ReplayGlowz feed',
+            sourceTitle: sourceTitle ?? 'ReplayGlows feed',
             items: queueItems,
             currentVideoId: videoId,
           );

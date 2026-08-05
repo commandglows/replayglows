@@ -206,9 +206,9 @@ test(
       YOUTUBE_OAUTH_CLIENT_ID: 'client-id',
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
-      REPLAYGLOWZ_PRODUCT_ID: 'replayglowz',
-      REPLAYGLOWZ_LEGACY_PRODUCT_IDS: 'tubeflow',
-      REPLAYGLOWZ_APP_URL: 'https://app.example.com',
+      REPLAYGLOWS_PRODUCT_ID: 'replayglows',
+      REPLAYGLOWS_LEGACY_PRODUCT_IDS: 'tubeflow',
+      REPLAYGLOWS_APP_URL: 'https://app.example.com',
     },
     async () => {
       global.fetch = async () => {
@@ -252,9 +252,9 @@ test(
       YOUTUBE_OAUTH_CLIENT_ID: 'client-id',
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
-      REPLAYGLOWZ_PRODUCT_ID: 'replayglowz',
-      REPLAYGLOWZ_LEGACY_PRODUCT_IDS: 'tubeflow',
-      REPLAYGLOWZ_APP_URL: 'https://app.example.com',
+      REPLAYGLOWS_PRODUCT_ID: 'replayglows',
+      REPLAYGLOWS_LEGACY_PRODUCT_IDS: 'tubeflow',
+      REPLAYGLOWS_APP_URL: 'https://app.example.com',
     },
     async () => {
       const calls = [];
@@ -267,7 +267,7 @@ test(
             return {
               hasAccess: true,
               globalUserId: 'gu_123',
-              matchedProductId: 'replayglowz',
+              matchedProductId: 'replayglows',
             };
           },
         };
@@ -308,7 +308,7 @@ test(
       assert.ok(Array.isArray(setCookie));
       assert.ok(
         setCookie.some((value) =>
-          value.includes('replayglowz_youtube_oauth_ticket='),
+          value.includes('replayglows_youtube_oauth_ticket='),
         ),
       );
       assert.equal(
@@ -316,10 +316,10 @@ test(
         false,
       );
       const ticketCookie = setCookie.find((value) =>
-        value.includes('replayglowz_youtube_oauth_ticket='),
+        value.includes('replayglows_youtube_oauth_ticket='),
       );
       const ticketValue = decodeURIComponent(
-        ticketCookie.split('replayglowz_youtube_oauth_ticket=')[1].split(';')[0],
+        ticketCookie.split('replayglows_youtube_oauth_ticket=')[1].split(';')[0],
       );
       const opened = openOAuthTicket(ticketValue, 'secret');
       assert.equal(opened.sessionToken, 'suite-session-token');
@@ -330,7 +330,7 @@ test(
 );
 
 test(
-  'youtube start verifies ReplayGlowz product access through Convex before suite fallback',
+  'youtube start verifies ReplayGlows product access through Convex before suite fallback',
   { concurrency: false },
   async () => {
   await withEnv(
@@ -339,9 +339,9 @@ test(
       CONVEX_URL: 'https://product.convex.cloud',
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
-      REPLAYGLOWZ_PRODUCT_ID: 'replayglowz',
-      REPLAYGLOWZ_LEGACY_PRODUCT_IDS: 'tubeflow',
-      REPLAYGLOWZ_APP_URL: 'https://app.example.com',
+      REPLAYGLOWS_PRODUCT_ID: 'replayglows',
+      REPLAYGLOWS_LEGACY_PRODUCT_IDS: 'tubeflow',
+      REPLAYGLOWS_APP_URL: 'https://app.example.com',
     },
     async () => {
       const calls = [];
@@ -365,7 +365,7 @@ test(
                 status: 'success',
                 value: {
                   hasAccess: true,
-                  matchedProductId: 'replayglowz',
+                  matchedProductId: 'replayglows',
                   reasonCode: 'default_free_entitlement',
                 },
               };
@@ -423,7 +423,7 @@ test(
       CONVEX_URL: 'https://product.convex.cloud',
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
-      REPLAYGLOWZ_APP_URL: 'https://app.example.com',
+      REPLAYGLOWS_APP_URL: 'https://app.example.com',
     },
     async () => {
       global.fetch = async () => {
@@ -463,9 +463,9 @@ test(
       CONVEX_URL: 'https://product.convex.cloud',
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
-      REPLAYGLOWZ_PRODUCT_ID: 'replayglowz',
-      REPLAYGLOWZ_LEGACY_PRODUCT_IDS: 'tubeflow',
-      REPLAYGLOWZ_APP_URL: 'https://app.example.com',
+      REPLAYGLOWS_PRODUCT_ID: 'replayglows',
+      REPLAYGLOWS_LEGACY_PRODUCT_IDS: 'tubeflow',
+      REPLAYGLOWS_APP_URL: 'https://app.example.com',
     },
     async () => {
       const calls = [];
@@ -535,13 +535,13 @@ test(
         headers: {
           cookie:
             'youtube_oauth_state=s1; youtube_oauth_return_to=%2F%23%2Fplaylists;' +
-            ` replayglowz_youtube_oauth_ticket=${encodeURIComponent(
+            ` replayglows_youtube_oauth_ticket=${encodeURIComponent(
               createOAuthTicket(
                 {
                   state: 's1',
                   sessionToken: suiteToken,
                   globalUserId: 'gu_123',
-                  matchedProductId: 'replayglowz',
+                  matchedProductId: 'replayglows',
                   localConvexVerified: false,
                 },
                 'secret',
@@ -566,7 +566,7 @@ test(
       const setCookie = res.getHeader('set-cookie');
       assert.ok(
         setCookie.some((value) =>
-          value.includes('replayglowz_youtube_oauth_ticket='),
+          value.includes('replayglows_youtube_oauth_ticket='),
         ),
       );
     },

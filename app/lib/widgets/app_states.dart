@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 
 class AppSectionHeader extends StatelessWidget {
   const AppSectionHeader(this.title, {super.key});

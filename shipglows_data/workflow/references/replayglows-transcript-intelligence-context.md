@@ -2,7 +2,7 @@
 artifact: reference
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-07-11"
 updated: "2026-07-11"
 status: active
@@ -18,17 +18,17 @@ linked_systems:
   - "backend"
   - "lab"
   - "shipglows_data/workflow/TASKS.md"
-  - "shipglows_data/workflow/specs/monorepo/replayglowz-learning-behavior-intelligence.md"
+  - "shipglows_data/workflow/specs/monorepo/replayglows-learning-behavior-intelligence.md"
 depends_on: []
 supersedes: []
 evidence:
-  - "ReplayGlowz backlog now groups several analytics, activation, and transcript-value tasks around one upstream behavior model."
-  - "A draft spec already exists under shipglows_data/workflow/specs/monorepo/replayglowz-learning-behavior-intelligence.md."
+  - "ReplayGlows backlog now groups several analytics, activation, and transcript-value tasks around one upstream behavior model."
+  - "A draft spec already exists under shipglows_data/workflow/specs/monorepo/replayglows-learning-behavior-intelligence.md."
   - "The term transcript intelligence is used informally, but the broader canonical lane name is Learning Behavior Intelligence."
-next_step: "/101-sg-ready replayglowz-learning-behavior-intelligence"
+next_step: "/101-sg-ready replayglows-learning-behavior-intelligence"
 ---
 
-# Reference: ReplayGlowz transcript intelligence context
+# Reference: ReplayGlows transcript intelligence context
 
 ## Why this file exists
 
@@ -36,7 +36,7 @@ This note makes the first intelligence lane easy to rediscover later.
 
 When the shorthand in conversation is `transcript intelligence`, the canonical durable chantier to reopen is:
 
-- `shipglows_data/workflow/specs/monorepo/replayglowz-learning-behavior-intelligence.md`
+- `shipglows_data/workflow/specs/monorepo/replayglows-learning-behavior-intelligence.md`
 
 The broader name matters because the intended model is not only about transcripts. It covers the full path from watch session to reusable learning, with transcript usage as one important signal inside that system.
 
@@ -45,7 +45,7 @@ The broader name matters because the intended model is not only about transcript
 - Informal label: `transcript intelligence`
 - Canonical lane: `Learning Behavior Intelligence`
 - Tracker entry: `shipglows_data/workflow/TASKS.md`
-- Current next command: `/101-sg-ready replayglowz-learning-behavior-intelligence`
+- Current next command: `/101-sg-ready replayglows-learning-behavior-intelligence`
 
 ## What this lane is supposed to unlock
 
@@ -70,6 +70,6 @@ Use this lane as the upstream contract when continuing the other branches that w
 Before coding or instrumenting anything in this lane:
 
 1. Re-open `shipglows_data/workflow/TASKS.md` and the linked spec.
-2. Run `/101-sg-ready replayglowz-learning-behavior-intelligence`.
+2. Run `/101-sg-ready replayglows-learning-behavior-intelligence`.
 3. Resolve the open decisions around meaningful watch, meaningful revisit, transcript-use event shape, attribution windows, and deletion/privacy rules.
 4. Only then open downstream specs for transcript impact, activation/retention, joins, or instrumentation.

@@ -3,7 +3,7 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { requireReplayGlowzAccess } from "./access";
+import { requireReplayGlowsAccess } from "./access";
 import { type TranscriptProviderId } from "./transcriptProviders";
 import {
   normalizeWorkerEntries,
@@ -164,7 +164,7 @@ export const generateTranscript = action({
     ctx,
     args
   ): Promise<{ versionId: any; reused: boolean; provider: TranscriptProviderId }> => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const language = args.language || "en";

@@ -7,22 +7,22 @@ import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-import 'package:replayglowz_app/app/build_info.dart';
-import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/app/theme.dart';
-import 'package:replayglowz_app/auth/auth_service.dart';
-import 'package:replayglowz_app/convex/convex_client.dart';
-import 'package:replayglowz_app/convex/convex_provider.dart';
-import 'package:replayglowz_app/notifications/push_notification_service.dart';
-import 'package:replayglowz_app/utils/app_logger.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/app/build_info.dart';
+import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/app/theme.dart';
+import 'package:replayglows_app/auth/auth_service.dart';
+import 'package:replayglows_app/convex/convex_client.dart';
+import 'package:replayglows_app/convex/convex_provider.dart';
+import 'package:replayglows_app/notifications/push_notification_service.dart';
+import 'package:replayglows_app/utils/app_logger.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (kIsWeb) {
     usePathUrlStrategy();
   } else {
-    registerReplayGlowzBackgroundMessageHandler();
+    registerReplayGlowsBackgroundMessageHandler();
   }
 
   if (sentryDsn.isEmpty) {
@@ -131,21 +131,21 @@ Future<void> _configureSentryScope() async {
     await scope.setTag('build_commit', buildCommitSha);
     await scope.setTag('build_environment', buildEnvironment);
     await scope.setTag('build_mode', buildModeLabel());
-    await scope.setContexts('replayglowz_build', {
+    await scope.setContexts('replayglows_build', {
       'commit': buildCommitSha,
       'environment': buildEnvironment,
       'timestamp': buildTimestamp,
       'mode': buildModeLabel(),
-      'app_url_host': hostForUrl(replayGlowzAppUrl),
+      'app_url_host': hostForUrl(replayGlowsAppUrl),
       'has_auth_config': hasAuthConfig,
       'has_clerk_config': hasClerkConfig,
       'has_native_firebase_config': hasFirebaseNativeConfig,
-      'product_id': replayGlowzProductId,
+      'product_id': replayGlowsProductId,
       'sentry_traces_sample_rate': sentryTracesSampleRate,
     });
     if (kIsWeb) {
       await scope.setTag('current_host', Uri.base.host);
-      await scope.setContexts('replayglowz_web', {
+      await scope.setContexts('replayglows_web', {
         'origin': Uri.base.origin,
         'path': Uri.base.path,
         'fragment_path': Uri.base.fragment,
@@ -257,7 +257,7 @@ class _AppBootstrapState extends ConsumerState<_AppBootstrap> {
       );
     }
 
-    return const ReplayGlowzApp();
+    return const ReplayGlowsApp();
   }
 }
 
@@ -275,7 +275,7 @@ class _ConfigFallbackScreen extends StatelessWidget {
   Future<void> _copyDiagnostics(BuildContext context) async {
     final lines = <String>[
       ...buildIdentityHeader(),
-      'ReplayGlowz bootstrap diagnostics',
+      'ReplayGlows bootstrap diagnostics',
       'Build id: $buildId',
       'Build commit: $buildCommitSha',
       'Build environment: $buildEnvironment',
@@ -295,11 +295,11 @@ class _ConfigFallbackScreen extends StatelessWidget {
       'SUITE_IDENTITY_BRIDGE_URL: ${trimmedSuiteIdentityBridgeUrl.isNotEmpty ? trimmedSuiteIdentityBridgeUrl : '(missing)'}',
       'CLERK_SIGN_IN_URL: $clerkSignInUrl',
       'CLERK_SIGN_UP_URL: $clerkSignUpUrl',
-      'REPLAYGLOWZ_PRODUCT_ID: $replayGlowzProductId',
-      'REPLAYGLOWZ_LEGACY_PRODUCT_IDS: $replayGlowzLegacyProductIds',
-      'REPLAYGLOWZ_ACCOUNT_CENTER_URL: $replayGlowzAccountCenterUrl',
-      'REPLAYGLOWZ_APP_URL: ${replayGlowzAppUrl.isNotEmpty ? replayGlowzAppUrl : '(missing)'}',
-      'REPLAYGLOWZ_APP_URL host match: ${hostMatchLabel(replayGlowzAppUrl)}',
+      'REPLAYGLOWS_PRODUCT_ID: $replayGlowsProductId',
+      'REPLAYGLOWS_LEGACY_PRODUCT_IDS: $replayGlowsLegacyProductIds',
+      'REPLAYGLOWS_ACCOUNT_CENTER_URL: $replayGlowsAccountCenterUrl',
+      'REPLAYGLOWS_APP_URL: ${replayGlowsAppUrl.isNotEmpty ? replayGlowsAppUrl : '(missing)'}',
+      'REPLAYGLOWS_APP_URL host match: ${hostMatchLabel(replayGlowsAppUrl)}',
       'SENTRY: ${sentryStatusLabel()}',
       'Bootstrap error: ${bootstrapError ?? 'none'}',
       '',
@@ -345,7 +345,7 @@ class _ConfigFallbackScreen extends StatelessWidget {
                           SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: Text(
-                              'ReplayGlowz bootstrap failed',
+                              'ReplayGlows bootstrap failed',
                               style: TextStyle(
                                 fontSize: AppTypography.titleLarge,
                                 fontWeight: FontWeight.w700,
@@ -404,11 +404,11 @@ class _ConfigFallbackScreen extends StatelessWidget {
                         'SUITE_IDENTITY_BRIDGE_URL: ${trimmedSuiteIdentityBridgeUrl.isNotEmpty ? trimmedSuiteIdentityBridgeUrl : '(missing)'}\n'
                         'CLERK_SIGN_IN_URL: $clerkSignInUrl\n'
                         'CLERK_SIGN_UP_URL: $clerkSignUpUrl\n'
-                        'REPLAYGLOWZ_PRODUCT_ID: $replayGlowzProductId\n'
-                        'REPLAYGLOWZ_LEGACY_PRODUCT_IDS: $replayGlowzLegacyProductIds\n'
-                        'REPLAYGLOWZ_ACCOUNT_CENTER_URL: $replayGlowzAccountCenterUrl\n'
-                        'REPLAYGLOWZ_APP_URL: ${replayGlowzAppUrl.isNotEmpty ? replayGlowzAppUrl : '(missing)'}\n'
-                        'REPLAYGLOWZ_APP_URL host match: ${hostMatchLabel(replayGlowzAppUrl)}\n'
+                        'REPLAYGLOWS_PRODUCT_ID: $replayGlowsProductId\n'
+                        'REPLAYGLOWS_LEGACY_PRODUCT_IDS: $replayGlowsLegacyProductIds\n'
+                        'REPLAYGLOWS_ACCOUNT_CENTER_URL: $replayGlowsAccountCenterUrl\n'
+                        'REPLAYGLOWS_APP_URL: ${replayGlowsAppUrl.isNotEmpty ? replayGlowsAppUrl : '(missing)'}\n'
+                        'REPLAYGLOWS_APP_URL host match: ${hostMatchLabel(replayGlowsAppUrl)}\n'
                         'SENTRY: ${sentryStatusLabel()}',
                       ),
                       if (bootstrapError != null) ...[
@@ -461,8 +461,8 @@ class _ConfigFallbackScreen extends StatelessWidget {
 /// Auth state changes from [authStateProvider] trigger router redirects so
 /// the user is automatically sent to the sign-in screen when unauthenticated
 /// and back to the main app when authenticated.
-class ReplayGlowzApp extends ConsumerWidget {
-  const ReplayGlowzApp({super.key});
+class ReplayGlowsApp extends ConsumerWidget {
+  const ReplayGlowsApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -470,7 +470,7 @@ class ReplayGlowzApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
-      title: 'ReplayGlowz',
+      title: 'ReplayGlows',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

@@ -2,7 +2,7 @@
 artifact: "architecture_context"
 metadata_schema_version: "1.0"
 artifact_version: "1.1.1"
-project: "replayglowz-app"
+project: "replayglows-app"
 created: "2026-04-26"
 updated: "2026-06-01"
 status: "reviewed"
@@ -44,14 +44,14 @@ linked_systems:
   - "lib/convex"
   - "api/auth"
   - "Vercel"
-  - "ReplayGlowz product Convex backend"
+  - "ReplayGlows product Convex backend"
 external_dependencies:
   - "Clerk"
   - "Convex"
   - "Vercel"
   - "Google YouTube OAuth"
 invariants:
-  - "The product Convex backend lives in the ReplayGlowz monorepo under backend/packages/backend."
+  - "The product Convex backend lives in the ReplayGlows monorepo under backend/packages/backend."
   - "Authenticated data access depends on Clerk session tokens carrying the Convex audience."
   - "Writes continue to route through provider and mutation layers rather than ad hoc screen logic."
   - "Backend function names are a deployment contract between app and backend."
@@ -68,7 +68,7 @@ next_step: "Re-run backend contract review before changes that add or rename Con
 
 ## System role
 
-`replayglowz-app` is the Flutter web frontend for ReplayGlowz. It is responsible for rendering the authenticated user experience, restoring Clerk sessions in web environments, acquiring Clerk-minted Convex JWTs, reading and mutating app data through a shared Convex backend, and packaging the app as a Vercel deployment.
+`replayglows-app` is the Flutter web frontend for ReplayGlows. It is responsible for rendering the authenticated user experience, restoring Clerk sessions in web environments, acquiring Clerk-minted Convex JWTs, reading and mutating app data through a shared Convex backend, and packaging the app as a Vercel deployment.
 
 The repository also owns Vercel Node handlers for the YouTube OAuth browser flow under `api/auth/`. It does not own Convex schema or backend server functions.
 
@@ -185,10 +185,10 @@ Fallback behavior:
 
 Feed-specific behavior:
 
-- The global Videos screen can render either the all-videos provider or a merged union of selected ReplayGlowz feed details.
+- The global Videos screen can render either the all-videos provider or a merged union of selected ReplayGlows feed details.
 - Feed selections are persisted locally as a set of feed ids; legacy single-feed and playlist-filter preferences are cleared during migration.
-- ReplayGlowz feed source mutations must invalidate matching detail providers and visible video providers. Source deletion also removes matching source/video rows optimistically so the UI does not wait for a full reload.
-- YouTube playlists are not direct main-feed filter entries; playlist/channel/subscription sources are managed from ReplayGlowz feed source flows. Individual videos are added to YouTube playlists, while channels can be added as live ReplayGlowz feed sources.
+- ReplayGlows feed source mutations must invalidate matching detail providers and visible video providers. Source deletion also removes matching source/video rows optimistically so the UI does not wait for a full reload.
+- YouTube playlists are not direct main-feed filter entries; playlist/channel/subscription sources are managed from ReplayGlows feed source flows. Individual videos are added to YouTube playlists, while channels can be added as live ReplayGlows feed sources.
 
 ## Navigation architecture
 
@@ -201,10 +201,10 @@ Feed-specific behavior:
 ## Playback architecture
 
 - `AppPlaybackController` is a Riverpod command bridge between shell controls and `PlayScreen`.
-- Shell playback controls emit request counters for play/pause, previous, next, loop, hide current video, mark current video watched, add current video to a YouTube playlist, add current channel to a ReplayGlowz feed, speed changes, and seek requests, plus transient previous/next preview state for long-press thumbnails and shared playback position for the swipe-up timeline.
-- `PlaybackSession` is the in-memory source of truth for the active "Up next" context. Feed, playlist, and ReplayGlowz feed entry points create typed sessions with source metadata and ordered queue items before routing to `PlayScreen`; direct links fall back to a one-video direct session.
+- Shell playback controls emit request counters for play/pause, previous, next, loop, hide current video, mark current video watched, add current video to a YouTube playlist, add current channel to a ReplayGlows feed, speed changes, and seek requests, plus transient previous/next preview state for long-press thumbnails and shared playback position for the swipe-up timeline.
+- `PlaybackSession` is the in-memory source of truth for the active "Up next" context. Feed, playlist, and ReplayGlows feed entry points create typed sessions with source metadata and ordered queue items before routing to `PlayScreen`; direct links fall back to a one-video direct session.
 - `PlayScreen` owns player execution, progress persistence, playback-session previous/next navigation, loop handling, current-video mutations, and the "Up next" drawer.
-- Web playback uses YouTube iframe/player state snapshots with YouTube keyboard and visible controls disabled where the IFrame API allows it; ReplayGlowz renders a pre-play thumbnail poster over the player, long-press previous/next thumbnail previews from the playback bar, and swipe-up timeline controls from the bottom Play button. Native/non-web playback uses the package controller path already present in the screen.
+- Web playback uses YouTube iframe/player state snapshots with YouTube keyboard and visible controls disabled where the IFrame API allows it; ReplayGlows renders a pre-play thumbnail poster over the player, long-press previous/next thumbnail previews from the playback bar, and swipe-up timeline controls from the bottom Play button. Native/non-web playback uses the package controller path already present in the screen.
 - Web background playback is treated as an external browser/YouTube iframe behavior. The app observes lifecycle transitions and player snapshots, then shows guidance only when playback appears to have been interrupted while the app was backgrounded. Native playback behavior is a separate future product surface and should not inherit web iframe constraints by default.
 
 ## Deployment architecture

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { requireReplayGlowzAccess } from "./access";
+import { requireReplayGlowsAccess } from "./access";
 
 export const getLikes = query({
   args: { videoId: v.id("videos") },
@@ -18,7 +18,7 @@ export const toggleLike = mutation({
     type: v.union(v.literal("like"), v.literal("dislike")),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const existing = await ctx.db

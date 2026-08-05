@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-24"
 created_at: "2026-05-24 22:43:59 UTC"
 updated: "2026-05-24"
@@ -12,7 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "youtube-quota-safe-sync"
 owner: "Diane"
-user_story: "En tant qu'utilisateur ReplayGlowz connecte a YouTube, je veux synchroniser ma bibliotheque avec un usage de quota controle, visible et economique, afin de retrouver mes playlists et videos sans epuiser le quota YouTube quotidien du produit."
+user_story: "En tant qu'utilisateur ReplayGlows connecte a YouTube, je veux synchroniser ma bibliotheque avec un usage de quota controle, visible et economique, afin de retrouver mes playlists et videos sans epuiser le quota YouTube quotidien du produit."
 confidence: "high"
 risk_level: "high"
 security_impact: "yes"
@@ -27,10 +27,10 @@ depends_on:
   - artifact: "AGENTS.md"
     artifact_version: "0.1.0"
     required_status: "draft"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-suite-auth-migration.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-suite-auth-migration.md"
     artifact_version: "unknown"
     required_status: "reviewed"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-app-performance-loading-data.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-app-performance-loading-data.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
   - artifact: "YouTube Data API quota cost documentation"
@@ -44,14 +44,14 @@ evidence:
   - "Current app has `quotaUsageProvider` and `StatsScreen`, but lacks a globally visible quota/progress guard for YouTube sync actions."
   - "Old TubeFlow repo `https://github.com/dianedef/tubeflow_expo` used centralized quota state, a quota indicator, local cache TTL, refresh disablement near 90 percent usage, and explicit refresh behavior."
   - "Official YouTube Data API quota docs checked 2026-05-24: default project quota is 10,000 units/day, every request costs at least 1 unit, additional pages cost additional units, `playlistItems.list`, `playlists.list`, and `videos.list` each cost 1 unit, while `search.list` costs 100 units."
-next_step: "/sf-ship ReplayGlowz YouTube quota-safe sync"
+next_step: "/sf-ship ReplayGlows YouTube quota-safe sync"
 ---
 
-# Spec: ReplayGlowz YouTube Quota-Safe Sync
+# Spec: ReplayGlows YouTube Quota-Safe Sync
 
 ## Title
 
-ReplayGlowz YouTube quota-safe sync
+ReplayGlows YouTube quota-safe sync
 
 ## Status
 
@@ -59,15 +59,15 @@ ready
 
 ## User Story
 
-En tant qu'utilisateur ReplayGlowz connecte a YouTube, je veux synchroniser ma bibliotheque avec un usage de quota controle, visible et economique, afin de retrouver mes playlists et videos sans epuiser le quota YouTube quotidien du produit.
+En tant qu'utilisateur ReplayGlows connecte a YouTube, je veux synchroniser ma bibliotheque avec un usage de quota controle, visible et economique, afin de retrouver mes playlists et videos sans epuiser le quota YouTube quotidien du produit.
 
 ## Minimal Behavior Contract
 
-ReplayGlowz doit afficher les donnees YouTube deja cachees sans declencher d'appel YouTube externe, puis lancer une synchronisation seulement quand l'utilisateur la demande explicitement ou quand une connexion YouTube vient d'etre etablie et qu'aucune donnee n'existe encore. Avant tout refresh couteux, l'app doit calculer le plan de synchronisation, afficher l'estimation de quota, verifier les limites utilisateur et projet, refuser les actions dangereuses au-dessus du seuil de securite, puis montrer une progression lisible pendant l'execution. Si YouTube, Convex, l'auth ou le quota echoue, l'utilisateur voit un etat recuperable, les donnees cachees restent visibles, aucun token n'est expose, et aucun job concurrent ne duplique les appels. L'edge case facile a rater est de croire que `maxResults=50` consomme 50 unites: c'est au contraire le choix efficace pour reduire le nombre de pages; le risque vient des boucles sur beaucoup de playlists, des pages supplementaires et des refresh automatiques.
+ReplayGlows doit afficher les donnees YouTube deja cachees sans declencher d'appel YouTube externe, puis lancer une synchronisation seulement quand l'utilisateur la demande explicitement ou quand une connexion YouTube vient d'etre etablie et qu'aucune donnee n'existe encore. Avant tout refresh couteux, l'app doit calculer le plan de synchronisation, afficher l'estimation de quota, verifier les limites utilisateur et projet, refuser les actions dangereuses au-dessus du seuil de securite, puis montrer une progression lisible pendant l'execution. Si YouTube, Convex, l'auth ou le quota echoue, l'utilisateur voit un etat recuperable, les donnees cachees restent visibles, aucun token n'est expose, et aucun job concurrent ne duplique les appels. L'edge case facile a rater est de croire que `maxResults=50` consomme 50 unites: c'est au contraire le choix efficace pour reduire le nombre de pages; le risque vient des boucles sur beaucoup de playlists, des pages supplementaires et des refresh automatiques.
 
 ## Success Behavior
 
-- Preconditions: l'utilisateur est authentifie via Clerk, dispose de l'acces ReplayGlowz actif, a connecte YouTube, et Convex auth est pret.
+- Preconditions: l'utilisateur est authentifie via Clerk, dispose de l'acces ReplayGlows actif, a connecte YouTube, et Convex auth est pret.
 - Trigger: ouverture des pages Videos/Playlists/Preferences, clic manuel sur Sync, ou retour OAuth YouTube avec bibliotheque locale vide.
 - User/operator result: les donnees cachees apparaissent immediatement; les actions Sync indiquent cout estime, quota restant et progression; les refresh risqués sont desactives ou demandent confirmation selon le seuil.
 - System effect: Convex conserve un job de sync par utilisateur, journalise chaque appel YouTube avec ses unites, met a jour les caches playlists/videos progressivement, et invalide les providers Flutter seulement apres mutation utile.
@@ -79,7 +79,7 @@ ReplayGlowz doit afficher les donnees YouTube deja cachees sans declencher d'app
 - Expected failures: session expiree, entitlement absent, YouTube non connecte, token YouTube revoque, quota restant insuffisant, job deja en cours, timeout YouTube, erreur partielle sur une playlist, schema cache inattendu.
 - User/operator response: message contextualise, bouton reconnecter/reessayer quand pertinent, donnees cachees conservees, progression marquee failed/partial, et lien vers Stats si le quota bloque.
 - System effect: pas de suppression de cache sur erreur externe, pas de relance automatique non bornee, metriques d'erreur journalisees sans secret, lock de job libere a la fin ou apres timeout controle.
-- Must never happen: appel YouTube depuis Flutter directement, boucle full-sync automatique a chaque visite, fuite de token OAuth, contournement de l'entitlement ReplayGlowz, double job concurrent pour le meme utilisateur, depassement volontaire du seuil projet configure.
+- Must never happen: appel YouTube depuis Flutter directement, boucle full-sync automatique a chaque visite, fuite de token OAuth, contournement de l'entitlement ReplayGlows, double job concurrent pour le meme utilisateur, depassement volontaire du seuil projet configure.
 - Silent failure: non autorise; les echecs de sync doivent etre visibles dans l'UI et les logs applicatifs.
 
 ## Problem
@@ -88,12 +88,12 @@ La connexion YouTube fonctionne maintenant, mais la synchronisation reste trop b
 
 ## Solution
 
-Porter le modele quota-safe de TubeFlow dans ReplayGlowz avec un orchestrateur backend Convex: un plan de sync estime les appels, un job unique execute par etapes, les metriques bornent le quota utilisateur/projet, et Flutter affiche cache, quota et progression sans piloter une boucle N-playlists a l'aveugle. Garder `maxResults=50` pour les endpoints list car cela minimise les pages, mais controler explicitement combien de pages et playlists sont synchronisees.
+Porter le modele quota-safe de TubeFlow dans ReplayGlows avec un orchestrateur backend Convex: un plan de sync estime les appels, un job unique execute par etapes, les metriques bornent le quota utilisateur/projet, et Flutter affiche cache, quota et progression sans piloter une boucle N-playlists a l'aveugle. Garder `maxResults=50` pour les endpoints list car cela minimise les pages, mais controler explicitement combien de pages et playlists sont synchronisees.
 
 ## Scope In
 
-- Backend Convex ReplayGlowz: planification quota, job de sync, verrou utilisateur, progression, erreurs partielles, metriques et cache playlists/videos.
-- Flutter web ReplayGlowz: centralisation de l'etat quota, indicateur visible, etats Sync disabled/warning/progress, refresh cache-first, invalidations Riverpod controlees.
+- Backend Convex ReplayGlows: planification quota, job de sync, verrou utilisateur, progression, erreurs partielles, metriques et cache playlists/videos.
+- Flutter web ReplayGlows: centralisation de l'etat quota, indicateur visible, etats Sync disabled/warning/progress, refresh cache-first, invalidations Riverpod controlees.
 - YouTube Data API read paths: `playlists.list`, `playlistItems.list`, `videos.list`, `subscriptions.list` si deja present dans le flux subscriptions.
 - Tests backend et Flutter pour quota plan, seuils, jobs concurrents, erreurs partielles, et UI connectee/non connectee.
 - Documentation technique courte sur la politique quota et la difference entre quota Google projet et limites produit internes.
@@ -102,7 +102,7 @@ Porter le modele quota-safe de TubeFlow dans ReplayGlowz avec un orchestrateur b
 
 - Pas de changement des credentials OAuth YouTube, des redirect URIs, ou du flow start/callback deja repare.
 - Pas de changement des scopes YouTube sans decision produit separee.
-- Pas de modification des entitlements WinFlowz/ReplayGlowz hors verification deja requise avant sync.
+- Pas de modification des entitlements WinFlowz/ReplayGlows hors verification deja requise avant sync.
 - Pas d'ajout de fonctions d'ecriture YouTube couteuses (`insert`, `update`, `delete`) dans ce chantier.
 - Pas de promesse publique de quota utilisateur superieure au quota reel du projet Google Cloud.
 - Pas de migration massive de donnees legacy TubeFlow dans ce chantier.
@@ -120,16 +120,16 @@ Porter le modele quota-safe de TubeFlow dans ReplayGlowz avec un orchestrateur b
 ## Dependencies
 
 - Runtime: Flutter web, Riverpod, Convex actions/queries/mutations, Clerk-authenticated Convex context, YouTube Data API OAuth tokens stockes cote backend.
-- Document contracts: `AGENTS.md`, `replayglowz-suite-auth-migration.md`, `replayglowz-app-performance-loading-data.md`, official YouTube Data API quota docs.
+- Document contracts: `AGENTS.md`, `replayglows-suite-auth-migration.md`, `replayglows-app-performance-loading-data.md`, official YouTube Data API quota docs.
 - External docs: fresh-docs checked 2026-05-24 via official Google docs:
   - `https://developers.google.com/youtube/v3/determine_quota_cost`
   - `https://developers.google.com/youtube/v3/docs/playlistItems/list`
   - `https://developers.google.com/youtube/v3/guides/quota_and_compliance_audits`
-- Metadata gaps: `replayglowz-suite-auth-migration.md` artifact version is unknown in frontmatter; this does not block this draft but should be cleaned during docs maintenance.
+- Metadata gaps: `replayglows-suite-auth-migration.md` artifact version is unknown in frontmatter; this does not block this draft but should be cleaned during docs maintenance.
 
 ## Invariants
 
-- Une session Clerk valide prouve l'identite; l'acces ReplayGlowz et les tokens YouTube restent verifies separement avant toute action privee.
+- Une session Clerk valide prouve l'identite; l'acces ReplayGlows et les tokens YouTube restent verifies separement avant toute action privee.
 - Les donnees cachees sont preferables a une page vide; l'absence de refresh ne doit pas masquer les videos deja importees.
 - Le compteur quota est une protection operationnelle, pas une source de facturation publique.
 - Un job de sync ne doit jamais supprimer des videos/playlists du cache uniquement parce qu'un appel YouTube a echoue.
@@ -137,7 +137,7 @@ Porter le modele quota-safe de TubeFlow dans ReplayGlowz avec un orchestrateur b
 
 ## Links & Consequences
 
-- Upstream systems: Clerk session, ReplayGlowz entitlement, YouTube OAuth token storage, Convex auth, Google Cloud YouTube Data API quota.
+- Upstream systems: Clerk session, ReplayGlows entitlement, YouTube OAuth token storage, Convex auth, Google Cloud YouTube Data API quota.
 - Downstream systems: pages Videos, Playlists, Play, Preferences, Stats, AppShell/header, diagnostics, support copy, i18n strings, and operational monitoring.
 - Cross-cutting checks: auth/session, data privacy, quota cost, concurrent jobs, i18n copy, responsive UI, backend type safety, Flutter analyze, deploy env consistency.
 
@@ -173,7 +173,7 @@ Porter le modele quota-safe de TubeFlow dans ReplayGlowz avec un orchestrateur b
 - [ ] Task 2: Add backend quota planning helpers.
   - File: `backend/packages/backend/convex/metrics.ts`, `backend/packages/backend/convex/youtube.ts`
   - Action: Expose typed helpers/actions that return current usage, smallest applicable daily limit, warning state, and estimated cost for playlist sync modes using `YOUTUBE_QUOTA_COSTS`.
-  - User story link: User sees cost before ReplayGlowz spends quota.
+  - User story link: User sees cost before ReplayGlows spends quota.
   - Depends on: Task 1
   - Validate with: `cd backend/packages/backend && npm run typecheck`
   - Notes: Include `YOUTUBE_PROJECT_DAILY_QUOTA` default 10000 and Pacific-day reset.
@@ -189,7 +189,7 @@ Porter le modele quota-safe de TubeFlow dans ReplayGlowz avec un orchestrateur b
 - [ ] Task 4: Replace client-driven full sync with backend-orchestrated bounded sync.
   - File: `backend/packages/backend/convex/youtube.ts`, `app/lib/providers/mutations.dart`
   - Action: Add a backend action such as `youtube:startQuotaSafeSync` plus status query; make Flutter call that action instead of looping over every playlist locally.
-  - User story link: ReplayGlowz controls cost centrally and can stop before quota damage.
+  - User story link: ReplayGlows controls cost centrally and can stop before quota damage.
   - Depends on: Task 3
   - Validate with: backend typecheck plus a targeted Flutter test or source-level smoke of sync button calls.
   - Notes: Use `maxResults=50`; fetch pages only inside the approved plan.
@@ -244,11 +244,11 @@ Porter le modele quota-safe de TubeFlow dans ReplayGlowz avec un orchestrateur b
 
 ## Acceptance Criteria
 
-- [ ] AC 1: Given cached YouTube playlists/videos exist, when the user opens Videos or Playlists, then ReplayGlowz renders cached data without calling YouTube Data API.
-- [ ] AC 2: Given the user clicks Sync, when quota usage is below warning thresholds, then ReplayGlowz displays estimated quota cost and starts one backend job with visible progress.
+- [ ] AC 1: Given cached YouTube playlists/videos exist, when the user opens Videos or Playlists, then ReplayGlows renders cached data without calling YouTube Data API.
+- [ ] AC 2: Given the user clicks Sync, when quota usage is below warning thresholds, then ReplayGlows displays estimated quota cost and starts one backend job with visible progress.
 - [ ] AC 3: Given quota usage is at or above 90% of the applicable limit, when the user tries to refresh, then the action is disabled or refused with clear copy and no YouTube call is made.
 - [ ] AC 4: Given quota usage is at or above 80%, when a manual sync is available, then the UI shows cost and asks for explicit confirmation before spending quota.
-- [ ] AC 5: Given multiple tabs or repeated clicks start sync, when a job already exists for the user, then ReplayGlowz reuses the active job/status instead of starting duplicate YouTube calls.
+- [ ] AC 5: Given multiple tabs or repeated clicks start sync, when a job already exists for the user, then ReplayGlows reuses the active job/status instead of starting duplicate YouTube calls.
 - [ ] AC 6: Given a playlist has more than 50 videos, when sync runs, then each page is counted as a separate unit and sync stops before exceeding the plan.
 - [ ] AC 7: Given video details already exist in cache and are not stale, when playlist items are synced, then `videos.list` is called only for missing/stale IDs.
 - [ ] AC 8: Given YouTube token revocation or API failure occurs mid-sync, when the job fails partially, then cached data remains visible and the UI offers reconnect/retry.
@@ -291,10 +291,10 @@ None for the first implementation pass. If usage later proves the project-level 
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-05-24 22:43:59 UTC | sf-spec | GPT-5 Codex | Created spec for ReplayGlowz YouTube quota-safe sync from user request, current ReplayGlowz sync code, old TubeFlow quota/caching behavior, and official YouTube Data API quota docs. | draft | `/sf-ready ReplayGlowz YouTube quota-safe sync` |
-| 2026-05-24 23:05:44 UTC | sf-ready | GPT-5 Codex | Reviewed the quota-safe sync spec against the user story, behavior contract, security posture, external-doc freshness, implementation ordering, acceptance criteria, and adversarial edge cases. | ready | `/sf-start ReplayGlowz YouTube quota-safe sync` |
-| 2026-05-24 23:13:51 UTC | sf-start | GPT-5 Codex | Implemented the first quota-safe sync pass: backend `youtube:startQuotaSafeSync`, `youtubeSyncJobs` state, quota-limit enforcement, cached video-detail reuse, Flutter sync routing through the backend action, app quota/progress strip, and app docs/changelog updates. | implemented | `/sf-verify ReplayGlowz YouTube quota-safe sync` |
-| 2026-05-24 23:14:29 UTC | sf-verify | GPT-5 Codex | Verified local implementation with backend typecheck, Flutter analyze, focused Flutter model tests, Convex deploy dry-run, diff whitespace check, and metadata lint. Hosted Vercel/browser proof and real connected YouTube sync remain pending because the project is `vercel-preview-push`. | partial | `/sf-ship ReplayGlowz YouTube quota-safe sync` |
+| 2026-05-24 22:43:59 UTC | sf-spec | GPT-5 Codex | Created spec for ReplayGlows YouTube quota-safe sync from user request, current ReplayGlows sync code, old TubeFlow quota/caching behavior, and official YouTube Data API quota docs. | draft | `/sf-ready ReplayGlows YouTube quota-safe sync` |
+| 2026-05-24 23:05:44 UTC | sf-ready | GPT-5 Codex | Reviewed the quota-safe sync spec against the user story, behavior contract, security posture, external-doc freshness, implementation ordering, acceptance criteria, and adversarial edge cases. | ready | `/sf-start ReplayGlows YouTube quota-safe sync` |
+| 2026-05-24 23:13:51 UTC | sf-start | GPT-5 Codex | Implemented the first quota-safe sync pass: backend `youtube:startQuotaSafeSync`, `youtubeSyncJobs` state, quota-limit enforcement, cached video-detail reuse, Flutter sync routing through the backend action, app quota/progress strip, and app docs/changelog updates. | implemented | `/sf-verify ReplayGlows YouTube quota-safe sync` |
+| 2026-05-24 23:14:29 UTC | sf-verify | GPT-5 Codex | Verified local implementation with backend typecheck, Flutter analyze, focused Flutter model tests, Convex deploy dry-run, diff whitespace check, and metadata lint. Hosted Vercel/browser proof and real connected YouTube sync remain pending because the project is `vercel-preview-push`. | partial | `/sf-ship ReplayGlows YouTube quota-safe sync` |
 
 ## Current Chantier Flow
 
@@ -305,4 +305,4 @@ None for the first implementation pass. If usage later proves the project-level 
 - `sf-end`: not launched.
 - `sf-ship`: not launched.
 
-Next step: `/sf-ship ReplayGlowz YouTube quota-safe sync`
+Next step: `/sf-ship ReplayGlows YouTube quota-safe sync`

@@ -14,7 +14,7 @@ risk_level: "medium"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "ReplayGlowz Convex app"
+  - "ReplayGlows Convex app"
   - "YouTube"
   - "FastAPI"
   - "yt-dlp"
@@ -40,7 +40,7 @@ next_step: "sed -n '1,220p' server.py"
 
 ## Project summary
 
-`lab` is a standalone Python/FastAPI transcript worker for ReplayGlowz. It exists to offload CPU-heavy and binary-dependent transcription work that should not run inside Convex.
+`lab` is a standalone Python/FastAPI transcript worker for ReplayGlows. It exists to offload CPU-heavy and binary-dependent transcription work that should not run inside Convex.
 
 ## Core responsibilities
 

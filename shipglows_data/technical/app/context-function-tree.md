@@ -2,7 +2,7 @@
 artifact: documentation
 metadata_schema_version: "1.0"
 artifact_version: "1.1.0"
-project: "replayglowz-app"
+project: "replayglows-app"
 created: "2026-04-26"
 updated: "2026-05-31"
 status: "reviewed"
@@ -75,7 +75,7 @@ _AppBootstrapState._bootstrap()
 _AppBootstrapState.build()
 ├── loading MaterialApp while bootstrap runs
 ├── _ConfigFallbackScreen on bootstrap error or missing required config
-└── ReplayGlowzApp on success
+└── ReplayGlowsApp on success
 ```
 
 ## Routing and shell
@@ -172,7 +172,7 @@ providers.dart
 ├── virtualFeedsProvider -> virtualFeeds:getVirtualFeeds
 ├── virtualFeedDetailsProvider -> virtualFeeds:getVirtualFeedDetails
 ├── appPlaybackControllerProvider -> shell-to-Play command state
-├── playbackSessionProvider -> active Feed/playlist/ReplayGlowz feed/direct Up next context
+├── playbackSessionProvider -> active Feed/playlist/ReplayGlows feed/direct Up next context
 ├── notesProvider -> notes:getNotes
 ├── settingsProvider -> settings:getSettings
 ├── subscriptionProvider -> subscriptions:getSubscription
@@ -217,7 +217,7 @@ mutations.dart
 │   ├── disconnectYoutube() -> youtube:disconnectYoutube
 │   ├── removeVideoFromPlaylist() -> playlists:removeVideoFromPlaylist
 │   └── createPlaylist() -> playlists:createPlaylist
-├── ReplayGlowz feeds
+├── ReplayGlows feeds
 │   ├── createVirtualFeed() -> virtualFeeds:createVirtualFeed
 │   ├── updateVirtualFeed() -> virtualFeeds:updateVirtualFeed
 │   ├── deleteVirtualFeed() -> virtualFeeds:deleteVirtualFeed
@@ -297,7 +297,7 @@ FeedbackSubmissionService
 GET /api/auth/youtube
 ├── getRequestOrigin(req)
 ├── sanitizeReturnTo(return_to)
-├── require YOUTUBE_OAUTH_CLIENT_ID and replayglowz_youtube_clerk_session_id cookie
+├── require YOUTUBE_OAUTH_CLIENT_ID and replayglows_youtube_clerk_session_id cookie
 ├── create state
 ├── set youtube_oauth_state and youtube_oauth_return_to cookies
 └── redirect to Google OAuth consent
@@ -317,7 +317,7 @@ GET /api/auth/youtube/callback
 
 ```text
 dart run tool/check_shared_backend_contract.dart
-├── resolve REPLAYGLOWZ_BACKEND_ROOT
+├── resolve REPLAYGLOWS_BACKEND_ROOT
 ├── fallback to backend/packages/backend/convex
 ├── verify module file exists for each required function
 └── verify `export const <function> =` exists

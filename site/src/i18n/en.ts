@@ -26,17 +26,17 @@ export default {
   solution: {
     label: 'One repeatable workflow',
     title: 'Choose. Capture. Return.',
-    intro: 'ReplayGlowz keeps the path from video to idea intact, so every session leaves something useful behind.',
+    intro: 'ReplayGlows keeps the path from video to idea intact, so every session leaves something useful behind.',
     items: [
       { icon: '\uD83D\uDCC2\uFE0F', title: 'Choose the next video with purpose', desc: 'Bring the videos worth your attention into playlists and focused feeds built around your goals.' },
-      { icon: '\u270D\uFE0F', title: 'Capture the idea while it is clear', desc: 'Write a note as you watch. ReplayGlowz keeps it tied to the moment that gives it meaning.' },
+      { icon: '\u270D\uFE0F', title: 'Capture the idea while it is clear', desc: 'Write a note as you watch. ReplayGlows keeps it tied to the moment that gives it meaning.' },
       { icon: '\uD83C\uDFAF', title: 'Return without retracing your steps', desc: 'Open the saved note and jump back to the relevant passage instead of searching the timeline again.' },
     ],
   },
   productProof: {
     label: 'The difference is the context',
     title: 'A useful note should lead you straight back to the idea.',
-    body: "ReplayGlowz keeps the note, video, and exact moment together. You don't have to remember where the explanation was\u2014or scrub through the timeline to find it again.",
+    body: "ReplayGlows keeps the note, video, and exact moment together. You don't have to remember where the explanation was\u2014or scrub through the timeline to find it again.",
     noteLabel: 'Example note',
     noteText: 'This is where the concept becomes practical',
     timestamp: '12:48',
@@ -48,10 +48,10 @@ export default {
   },
   comparison: {
     label: 'One learning path, not two disconnected tools',
-    title: 'YouTube for discovery. ReplayGlowz for continuity.',
-    intro: 'YouTube helps you find and play the video. A separate notes app captures text. ReplayGlowz connects both parts of the learning process.',
+    title: 'YouTube for discovery. ReplayGlows for continuity.',
+    intro: 'YouTube helps you find and play the video. A separate notes app captures text. ReplayGlows connects both parts of the learning process.',
     leftTitle: 'YouTube + a notes app',
-    rightTitle: 'ReplayGlowz',
+    rightTitle: 'ReplayGlows',
     rows: [
       { before: 'Save the video in one place and the notes in another', after: 'Keep the video and its notes together' },
       { before: 'Type a timestamp into every useful note', after: 'Save the note at the moment it matters' },
@@ -72,7 +72,7 @@ export default {
     ],
   },
   features: {
-    label: 'Inside ReplayGlowz',
+    label: 'Inside ReplayGlows',
     title: 'Six essentials. One connected learning workflow.',
     items: [
       { icon: '\u23F1\uFE0F', title: 'Timestamped Notes', desc: 'Capture a thought while it is fresh. Open it later at the relevant moment in the video.', tag: 'Note + context' },
@@ -119,13 +119,13 @@ export default {
   },
   closingCta: {
     title: 'One video is enough to start.',
-    subtitle: 'Open ReplayGlowz, choose what you want to learn, and keep every useful moment connected to its source.',
+    subtitle: 'Open ReplayGlows, choose what you want to learn, and keep every useful moment connected to its source.',
     cta: 'Start for free',
     reassurance: 'Start with the Free plan.',
   },
   newsletter: {
     title: 'Stay in the Loop',
-    subtitle: 'Get the latest ReplayGlowz updates, tips, and productivity insights delivered to your inbox.',
+    subtitle: 'Get the latest ReplayGlows updates, tips, and productivity insights delivered to your inbox.',
     placeholder: 'Enter your email',
     subscribe: 'Subscribe',
     noSpam: 'No spam, unsubscribe anytime.',
@@ -133,7 +133,7 @@ export default {
   footer: {
     tagline: 'Keep every useful idea connected to its source.',
     status: 'All Systems Operational',
-    copyright: '\u00A9 {year} ReplayGlowz. All rights reserved.',
+    copyright: '\u00A9 {year} ReplayGlows. All rights reserved.',
     product: 'Product',
     resources: 'Resources',
     company: 'Company',

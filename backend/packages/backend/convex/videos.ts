@@ -1,12 +1,12 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { requireReplayGlowzAccess } from "./access";
+import { requireReplayGlowsAccess } from "./access";
 
 // YouTube feed functions
 export const getYouTubeFeed = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
 
     // In a real implementation, this would fetch from YouTube API
@@ -36,7 +36,7 @@ export const getYouTubeFeed = query({
 export const getVideos = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
     return await ctx.db
       .query("videos")
@@ -48,7 +48,7 @@ export const getVideos = query({
 export const getVideo = query({
   args: { id: v.id("videos") },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const video = await ctx.db.get(args.id);
     if (!video || video.userId !== userId) return null;
     return video;
@@ -58,7 +58,7 @@ export const getVideo = query({
 export const updateVideoViews = mutation({
   args: { id: v.id("videos") },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const video = await ctx.db.get(args.id);
     if (!video || video.userId !== userId) throw new Error("Video not found");
 
@@ -69,7 +69,7 @@ export const updateVideoViews = mutation({
 export const deleteVideo = mutation({
   args: { id: v.id("videos") },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const video = await ctx.db.get(args.id);
     if (!video || video.userId !== userId) throw new Error("Unauthorized");
 

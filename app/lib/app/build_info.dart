@@ -52,25 +52,57 @@ const clerkSignUpUrl = String.fromEnvironment(
   defaultValue: '/sign-up',
 );
 
-const replayGlowzProductId = String.fromEnvironment(
+const _replayGlowsProductId = String.fromEnvironment(
+  'REPLAYGLOWS_PRODUCT_ID',
+  defaultValue: '',
+);
+const _replayGlowzProductId = String.fromEnvironment(
   'REPLAYGLOWZ_PRODUCT_ID',
-  defaultValue: 'replayglowz',
+  defaultValue: '',
 );
+const replayGlowsProductId = _replayGlowsProductId != ''
+    ? _replayGlowsProductId
+    : (_replayGlowzProductId != '' ? _replayGlowzProductId : 'replayglows');
 
-const replayGlowzLegacyProductIds = String.fromEnvironment(
+const _replayGlowsLegacyProductIds = String.fromEnvironment(
+  'REPLAYGLOWS_LEGACY_PRODUCT_IDS',
+  defaultValue: '',
+);
+const _replayGlowzLegacyProductIds = String.fromEnvironment(
   'REPLAYGLOWZ_LEGACY_PRODUCT_IDS',
-  defaultValue: 'tubeflow',
+  defaultValue: '',
 );
+const replayGlowsLegacyProductIds = _replayGlowsLegacyProductIds != ''
+    ? _replayGlowsLegacyProductIds
+    : (_replayGlowzLegacyProductIds != ''
+          ? _replayGlowzLegacyProductIds
+          : 'replayglowz,tubeflow');
 
-const replayGlowzAccountCenterUrl = String.fromEnvironment(
+const _replayGlowsAccountCenterUrl = String.fromEnvironment(
+  'REPLAYGLOWS_ACCOUNT_CENTER_URL',
+  defaultValue: '',
+);
+const _replayGlowzAccountCenterUrl = String.fromEnvironment(
   'REPLAYGLOWZ_ACCOUNT_CENTER_URL',
-  defaultValue: 'https://winflows.com/account',
+  defaultValue: '',
 );
+const replayGlowsAccountCenterUrl = _replayGlowsAccountCenterUrl != ''
+    ? _replayGlowsAccountCenterUrl
+    : (_replayGlowzAccountCenterUrl != ''
+          ? _replayGlowzAccountCenterUrl
+          : 'https://winflows.com/account');
 
-const replayGlowzAppUrl = String.fromEnvironment(
+const _replayGlowsAppUrl = String.fromEnvironment(
+  'REPLAYGLOWS_APP_URL',
+  defaultValue: '',
+);
+const _replayGlowzAppUrl = String.fromEnvironment(
   'REPLAYGLOWZ_APP_URL',
   defaultValue: '',
 );
+const replayGlowsAppUrl = _replayGlowsAppUrl != ''
+    ? _replayGlowsAppUrl
+    : _replayGlowzAppUrl;
 
 const sentryDsn = String.fromEnvironment('SENTRY_DSN', defaultValue: '');
 
@@ -154,7 +186,7 @@ String sentryEnvironmentLabel() {
 
 String sentryReleaseLabel() {
   if (sentryRelease.isNotEmpty) return sentryRelease;
-  return 'replayglowz_app@$buildCommitSha';
+  return 'replayglows_app@$buildCommitSha';
 }
 
 double get sentryTracesSampleRate =>

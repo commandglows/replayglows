@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-07-11"
 created_at: "2026-07-11 00:00:00 UTC"
 updated: "2026-07-11"
@@ -12,7 +12,7 @@ source_skill: 100-sg-spec
 source_model: "GPT-5 Codex"
 scope: "learning-behavior-intelligence"
 owner: "Diane"
-user_story: "En tant que mainteneur de ReplayGlowz, je veux comprendre quels comportements transforment une session YouTube en apprentissage réutilisable, afin de prioriser le produit et l'intelligence transcript sur des signaux observables."
+user_story: "En tant que mainteneur de ReplayGlows, je veux comprendre quels comportements transforment une session YouTube en apprentissage réutilisable, afin de prioriser le produit et l'intelligence transcript sur des signaux observables."
 confidence: "medium"
 risk_level: "high"
 security_impact: "medium"
@@ -32,18 +32,18 @@ depends_on:
     required_status: "draft"
 supersedes: []
 evidence:
-  - "Le tracker ReplayGlowz identifie l'apprentissage structure comme promesse centrale, mais aucun modèle comportemental canonique n'est encore validé."
+  - "Le tracker ReplayGlows identifie l'apprentissage structure comme promesse centrale, mais aucun modèle comportemental canonique n'est encore validé."
   - "Les surfaces existantes exposent déjà vidéos, watch progress, notes horodatées, playlists, transcripts, jobs et notifications."
   - "Les travaux transcript intelligence des points 2 et 3 doivent pouvoir réutiliser les mêmes événements, identifiants et jointures."
-  - "La référence shipglows_data/workflow/references/replayglowz-transcript-intelligence-context.md rattache explicitement le raccourci transcript intelligence à ce chantier canonique."
-next_step: "/101-sg-ready replayglowz-learning-behavior-intelligence"
+  - "La référence shipglows_data/workflow/references/replayglows-transcript-intelligence-context.md rattache explicitement le raccourci transcript intelligence à ce chantier canonique."
+next_step: "/101-sg-ready replayglows-learning-behavior-intelligence"
 ---
 
-# Spec: ReplayGlowz Learning Behavior Intelligence
+# Spec: ReplayGlows Learning Behavior Intelligence
 
 ## Title
 
-ReplayGlowz learning behavior intelligence
+ReplayGlows learning behavior intelligence
 
 ## Aliases
 
@@ -56,7 +56,7 @@ Draft. This document prepares the context for the first intelligence lane; it is
 
 ## Problem
 
-ReplayGlowz currently has product data that can describe consumption and capture, but not yet a shared definition of learning value. Without that definition, transcript analysis, activation/retention analysis, and product decisions risk using different event names, joins, and proxy metrics.
+ReplayGlows currently has product data that can describe consumption and capture, but not yet a shared definition of learning value. Without that definition, transcript analysis, activation/retention analysis, and product decisions risk using different event names, joins, and proxy metrics.
 
 ## Intended Outcome
 
@@ -125,7 +125,7 @@ The model must distinguish passive consumption from learning-value actions. It s
 
 | Stage | Status | Notes |
 |-------|--------|-------|
-| 100-sg-spec | in_progress | Draft context prepared from the existing ReplayGlowz intelligence backlog. |
+| 100-sg-spec | in_progress | Draft context prepared from the existing ReplayGlows intelligence backlog. |
 | 101-sg-ready | pending | Resolve entity, event, privacy, and attribution decisions before implementation. |
 | 102-sg-start | pending | Do not implement instrumentation or schema changes before readiness. |
 | 103-sg-verify | pending | Verify contract coherence, data safety, and implementation evidence. |
@@ -134,5 +134,5 @@ The model must distinguish passive consumption from learning-value actions. It s
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-07-11 00:00:00 UTC | 309-sg-tasks | GPT-5 Codex | Added the first intelligence-lane spec and linked the operational task tracker. | draft spec created | `/101-sg-ready replayglowz-learning-behavior-intelligence` |
-| 2026-07-11 00:00:00 UTC | 309-sg-tasks | GPT-5 Codex | Added an explicit transcript-intelligence reference and updated the tracker entry so this chantier is easier to rediscover from backlog wording. | tracker alias + reference added | `/101-sg-ready replayglowz-learning-behavior-intelligence` |
+| 2026-07-11 00:00:00 UTC | 309-sg-tasks | GPT-5 Codex | Added the first intelligence-lane spec and linked the operational task tracker. | draft spec created | `/101-sg-ready replayglows-learning-behavior-intelligence` |
+| 2026-07-11 00:00:00 UTC | 309-sg-tasks | GPT-5 Codex | Added an explicit transcript-intelligence reference and updated the tracker entry so this chantier is easier to rediscover from backlog wording. | tracker alias + reference added | `/101-sg-ready replayglows-learning-behavior-intelligence` |

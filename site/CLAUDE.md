@@ -4,12 +4,12 @@ This file provides guidance to coding agents working in this repository.
 
 ## Project Overview
 
-- Project: `replayglowz-site`
+- Project: `replayglows-site`
 - Type: Astro marketing site
 - Runtime: Node.js `>=22.12.0`
 - Styling: Tailwind CSS v4 through Vite
 - Locales: `en` and `fr`
-- Purpose: public-facing site for ReplayGlowz, with marketing pages and blog content that route users into the app
+- Purpose: public-facing site for ReplayGlows, with marketing pages and blog content that route users into the app
 
 ## Commands
 

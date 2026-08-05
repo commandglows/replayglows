@@ -7,22 +7,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/app/theme.dart';
-import 'package:replayglowz_app/i18n/translations.dart';
-import 'package:replayglowz_app/models/models.dart';
-import 'package:replayglowz_app/providers/mutations.dart';
-import 'package:replayglowz_app/providers/providers.dart';
-import 'package:replayglowz_app/utils/duration_utils.dart';
-import 'package:replayglowz_app/widgets/app_states.dart';
-import 'package:replayglowz_app/widgets/common_app_bar_actions.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
-import 'package:replayglowz_app/widgets/media/video_card.dart';
-import 'package:replayglowz_app/widgets/media/video_list_tile.dart';
-import 'package:replayglowz_app/widgets/ui_hint_card.dart';
-import 'package:replayglowz_app/widgets/youtube_channel_onboarding.dart';
-import 'package:replayglowz_app/widgets/youtube_quota_guard.dart';
-import 'package:replayglowz_app/widgets/youtube_connect.dart';
+import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/app/theme.dart';
+import 'package:replayglows_app/i18n/translations.dart';
+import 'package:replayglows_app/models/models.dart';
+import 'package:replayglows_app/providers/mutations.dart';
+import 'package:replayglows_app/providers/providers.dart';
+import 'package:replayglows_app/utils/duration_utils.dart';
+import 'package:replayglows_app/widgets/app_states.dart';
+import 'package:replayglows_app/widgets/common_app_bar_actions.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/widgets/media/video_card.dart';
+import 'package:replayglows_app/widgets/media/video_list_tile.dart';
+import 'package:replayglows_app/widgets/ui_hint_card.dart';
+import 'package:replayglows_app/widgets/youtube_channel_onboarding.dart';
+import 'package:replayglows_app/widgets/youtube_quota_guard.dart';
+import 'package:replayglows_app/widgets/youtube_connect.dart';
 
 /// Video feed screen with multiple view modes.
 ///
@@ -1601,7 +1601,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
         loading: () => const YoutubeConnectionLoadingState(
           title: 'Checking your YouTube library',
           description:
-              'ReplayGlowz is confirming whether your YouTube account is connected before loading your videos.',
+              'ReplayGlows is confirming whether your YouTube account is connected before loading your videos.',
         ),
         error: (error, stack) => ErrorStateView(
           error: error,

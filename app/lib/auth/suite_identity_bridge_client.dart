@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import 'package:replayglowz_app/app/build_info.dart';
-import 'package:replayglowz_app/auth/product_entitlement.dart';
-import 'package:replayglowz_app/auth/suite_identity.dart';
+import 'package:replayglows_app/app/build_info.dart';
+import 'package:replayglows_app/auth/product_entitlement.dart';
+import 'package:replayglows_app/auth/suite_identity.dart';
 
 typedef FirebaseIdTokenResolver =
     Future<String?> Function({required bool forceRefresh});

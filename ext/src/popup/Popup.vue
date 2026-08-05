@@ -7,7 +7,7 @@ const openOptions = () => chrome.runtime.openOptionsPage()
     <div class="sg-brand-row">
       <div class="sg-brand-mark" aria-hidden="true">R</div>
       <div>
-        <p class="sg-eyebrow">ReplayGlowz</p>
+        <p class="sg-eyebrow">ReplayGlows</p>
         <h1 class="sg-title">YouTube Bookmarker</h1>
       </div>
     </div>

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:replayglowz_app/i18n/translations.dart';
-import 'package:replayglowz_app/providers/mutations.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/i18n/translations.dart';
+import 'package:replayglows_app/providers/mutations.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
 
 const _youtubeCreateChannelHelpUrl =
     'https://support.google.com/youtube/answer/1646861';

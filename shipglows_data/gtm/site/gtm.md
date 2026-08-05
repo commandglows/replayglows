@@ -2,7 +2,7 @@
 artifact: gtm_context
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz-site"
+project: "replayglows-site"
 created: "2026-04-26"
 updated: "2026-04-27"
 status: reviewed
@@ -47,7 +47,7 @@ next_step: "/sf-docs audit shipglows_data/gtm/site/gtm.md"
 
 ## GTM Scope
 
-This repository is the acquisition and conversion layer for ReplayGlowz. Canonical product truth is maintained in `app`.
+This repository is the acquisition and conversion layer for ReplayGlows. Canonical product truth is maintained in `app`.
 
 GTM claims in this file are reviewed for marketing use, not for implementation proof.
 
@@ -78,14 +78,14 @@ Operational expression:
 
 ## Positioning
 
-ReplayGlowz is positioned between:
+ReplayGlows is positioned between:
 
 1. Algorithm-first video platforms optimized for watch time.
 2. Generic notes tools that break source context.
 
 Positioning line:
 
-`ReplayGlowz is a learning layer for video, not a replacement video platform.`
+`ReplayGlows is a learning layer for video, not a replacement video platform.`
 
 ## Channels
 
@@ -117,16 +117,16 @@ Evidence-backed channels:
 - Numeric trust claims (for example "2,000+ users") need independent proof.
 - Security depth claims (for example encryption wording) need technical substantiation.
 - Real-time sync and broad compatibility claims should be treated as marketing assertions.
-- Pricing page packaging (Free/Pro monthly) must stay compatible with canonical `LTD + subscription` direction in `replayglowz-app`.
+- Pricing page packaging (Free/Pro monthly) must stay compatible with canonical `LTD + subscription` direction in `replayglows-app`.
 
 ## Core Objections
 
 | Objection | Response direction supported by the repo |
 |---|---|
-| "Why not just use YouTube?" | YouTube is for discovery and entertainment; ReplayGlowz is for intentional learning and retrieval |
-| "Why not use YouTube plus a notes app?" | External notes lose source context; ReplayGlowz keeps timestamps connected |
+| "Why not just use YouTube?" | YouTube is for discovery and entertainment; ReplayGlows is for intentional learning and retrieval |
+| "Why not use YouTube plus a notes app?" | External notes lose source context; ReplayGlows keeps timestamps connected |
 | "Is this only for students?" | No; copy also addresses creators, educators, and professionals |
-| "Does this replace YouTube?" | No; ReplayGlowz is complementary |
+| "Does this replace YouTube?" | No; ReplayGlows is complementary |
 
 ## GTM Discipline
 

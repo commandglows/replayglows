@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:replayglowz_app/app/theme.dart';
-import 'package:replayglowz_app/widgets/app_states.dart';
+import 'package:replayglows_app/app/theme.dart';
+import 'package:replayglows_app/widgets/app_states.dart';
 
 class NoteTile extends StatelessWidget {
   const NoteTile({

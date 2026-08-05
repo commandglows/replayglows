@@ -2,7 +2,7 @@
 artifact: business_context
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-10"
 updated: "2026-05-10"
 status: "draft"
@@ -33,7 +33,7 @@ next_step: "/sf-docs audit"
 
 ## Mission
 
-ReplayGlowz helps learning-focused YouTube users turn watch sessions into structured notes, playlists, retrieval, and review workflows.
+ReplayGlows helps learning-focused YouTube users turn watch sessions into structured notes, playlists, retrieval, and review workflows.
 
 ## Monorepo Role
 
@@ -41,7 +41,7 @@ This repository consolidates four active surfaces:
 
 - `app`: the authenticated Flutter application and primary product contract.
 - `site`: the public acquisition and education site.
-- `ext`: the browser extension integrated into the ReplayGlowz product surface.
+- `ext`: the browser extension integrated into the ReplayGlows product surface.
 - `lab`: the transcript worker and backend experimentation surface.
 
 ## Audience

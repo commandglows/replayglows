@@ -140,8 +140,8 @@ class YoutubeConnectRequiredState extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     kIsWeb
-                        ? 'ReplayGlowz redirects this tab to Google, then brings you back automatically after YouTube authorisation.'
-                        : 'Google opens in this tab, then returns to ReplayGlowz automatically.',
+                        ? 'ReplayGlows redirects this tab to Google, then brings you back automatically after YouTube authorisation.'
+                        : 'Google opens in this tab, then returns to ReplayGlows automatically.',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.textTheme.bodySmall?.color?.withValues(
                         alpha: 0.74,
@@ -264,10 +264,10 @@ class _YoutubeConnectionSettingsCardState
         : Icons.smart_display_rounded;
     final title = connected ? 'YouTube connected' : 'Connect your YouTube';
     final description = connected
-        ? 'ReplayGlowz can now refresh your playlists and imported videos. Use this card to sync again or disconnect cleanly.'
+        ? 'ReplayGlows can now refresh your playlists and imported videos. Use this card to sync again or disconnect cleanly.'
         : hasTokens
-        ? 'ReplayGlowz found a partial YouTube authorisation. Connect YouTube again to refresh Google access cleanly.'
-        : 'Authorise Google once to import your playlists, watch queue, and future video syncs directly in ReplayGlowz.';
+        ? 'ReplayGlows found a partial YouTube authorisation. Connect YouTube again to refresh Google access cleanly.'
+        : 'Authorise Google once to import your playlists, watch queue, and future video syncs directly in ReplayGlows.';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -395,7 +395,7 @@ class _YoutubeConnectionSettingsCardState
                   child: Text(
                     connected
                         ? 'Google authorisation is active for this account.'
-                        : 'ReplayGlowz found a partial YouTube authorisation. Reconnect YouTube to refresh access.',
+                        : 'ReplayGlows found a partial YouTube authorisation. Reconnect YouTube to refresh access.',
                     style: theme.textTheme.bodySmall,
                   ),
                 ),
@@ -433,7 +433,7 @@ class _YoutubeConnectionSettingsCardState
                     connected
                         ? 'Connection confirmed. Copy recent sync logs if something still looks wrong.'
                         : hasTokens
-                        ? 'ReplayGlowz sees saved tokens but not a confirmed connected state yet.'
+                        ? 'ReplayGlows sees saved tokens but not a confirmed connected state yet.'
                         : 'Copy this if YouTube connect stalls or comes back incomplete.',
                     style: theme.textTheme.bodySmall,
                   ),
@@ -547,7 +547,7 @@ class _ConnectYoutubeEmptyState extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.xs + AppSpacing.xxxs),
               Text(
-                'ReplayGlowz needs Google access once to import your playlists and keep your video library in sync.',
+                'ReplayGlows needs Google access once to import your playlists and keep your video library in sync.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.textTheme.bodySmall?.color,
                 ),
@@ -587,8 +587,8 @@ class _ConnectYoutubeEmptyState extends ConsumerWidget {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 kIsWeb
-                    ? 'ReplayGlowz redirects this tab to Google, then returns you to the same screen after YouTube authorisation.'
-                    : 'Google opens in this tab, then returns to ReplayGlowz automatically.',
+                    ? 'ReplayGlows redirects this tab to Google, then returns you to the same screen after YouTube authorisation.'
+                    : 'Google opens in this tab, then returns to ReplayGlows automatically.',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.textTheme.bodySmall?.color?.withValues(
                     alpha: 0.74,

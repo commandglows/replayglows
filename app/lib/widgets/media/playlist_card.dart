@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:replayglowz_app/app/theme.dart';
-import 'package:replayglowz_app/models/models.dart';
-import 'package:replayglowz_app/utils/color_utils.dart';
-import 'package:replayglowz_app/utils/date_utils.dart';
-import 'package:replayglowz_app/widgets/media/media_thumbnail.dart';
-import 'package:replayglowz_app/i18n/translations.dart';
+import 'package:replayglows_app/app/theme.dart';
+import 'package:replayglows_app/models/models.dart';
+import 'package:replayglows_app/utils/color_utils.dart';
+import 'package:replayglows_app/utils/date_utils.dart';
+import 'package:replayglows_app/widgets/media/media_thumbnail.dart';
+import 'package:replayglows_app/i18n/translations.dart';
 
 class PlaylistCard extends StatelessWidget {
   const PlaylistCard({

@@ -7,9 +7,9 @@ import {
 } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
 import {
-  REPLAYGLOWZ_LEGACY_PRODUCT_IDS,
-  REPLAYGLOWZ_PRODUCT_ID,
-  requireReplayGlowzAccess,
+  REPLAYGLOWS_LEGACY_PRODUCT_IDS,
+  REPLAYGLOWS_PRODUCT_ID,
+  requireReplayGlowsAccess,
 } from "./access";
 import { normalizeNotifications } from "./settings";
 
@@ -139,11 +139,11 @@ async function getLastNewVideoPushAt(ctx: MutationCtx, userId: string) {
   return 0;
 }
 
-async function hasCurrentReplayGlowzAccess(ctx: MutationCtx, userId: string) {
+async function hasCurrentReplayGlowsAccess(ctx: MutationCtx, userId: string) {
   const now = Date.now();
   for (const productId of [
-    REPLAYGLOWZ_PRODUCT_ID,
-    ...REPLAYGLOWZ_LEGACY_PRODUCT_IDS,
+    REPLAYGLOWS_PRODUCT_ID,
+    ...REPLAYGLOWS_LEGACY_PRODUCT_IDS,
   ]) {
     const snapshot = await ctx.db
       .query("productAccessSnapshots")
@@ -168,7 +168,7 @@ async function isNotificationPushEligible(
   ctx: MutationCtx,
   notification: Doc<"notifications">,
 ) {
-  const hasAccess = await hasCurrentReplayGlowzAccess(
+  const hasAccess = await hasCurrentReplayGlowsAccess(
     ctx,
     notification.userId,
   );
@@ -222,7 +222,7 @@ async function isNotificationPushEligible(
 export const registerAndroidDevice = mutation({
   args: deviceMetadataValidator,
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const token = sanitizeToken(args.token);
     const now = Date.now();
 
@@ -290,7 +290,7 @@ export const deactivateAndroidDevice = mutation({
     reason: v.optional(deactivationReasonValidator),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     const now = Date.now();
 
     const registration = args.registrationId

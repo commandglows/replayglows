@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { requireReplayGlowzAccess } from "./access";
+import { requireReplayGlowsAccess } from "./access";
 
 // Maximum hidden items per user (free tier limit)
 const MAX_HIDDEN_ITEMS = 100;
@@ -17,7 +17,7 @@ export const getHiddenItems = query({
     itemType: v.optional(v.union(v.literal("video"), v.literal("playlist"))),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
 
     let items;
@@ -52,7 +52,7 @@ export const getHiddenIds = query({
     itemType: v.union(v.literal("video"), v.literal("playlist")),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return [];
 
     const items = await ctx.db
@@ -75,7 +75,7 @@ export const isItemHidden = query({
     youtubeId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return false;
 
     const item = await ctx.db
@@ -106,7 +106,7 @@ export const hideItem = mutation({
     youtubeId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     // Check if already hidden
@@ -168,7 +168,7 @@ export const unhideItem = mutation({
     youtubeId: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const item = await ctx.db

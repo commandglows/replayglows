@@ -5,13 +5,13 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="ReplayGlowz - Video Note-Taking App">
+  <meta name="description" content="ReplayGlows - Video Note-Taking App">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="ReplayGlowz">
+  <meta name="apple-mobile-web-app-title" content="ReplayGlows">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
   <link rel="icon" type="image/png" href="favicon.png"/>
-  <title>ReplayGlowz</title>
+  <title>ReplayGlows</title>
   <link rel="manifest" href="manifest.json">
   <style>
     html,
@@ -20,7 +20,7 @@
       margin: 0;
     }
 
-    #replayglowz-boot-fallback {
+    #replayglows-boot-fallback {
       align-items: center;
       background: #f7f8fb;
       box-sizing: border-box;
@@ -37,7 +37,7 @@
       z-index: 0;
     }
 
-    #replayglowz-boot-fallback.is-hidden {
+    #replayglows-boot-fallback.is-hidden {
       display: none;
     }
 
@@ -138,25 +138,25 @@
   </style>
 </head>
 <body>
-  <div id="replayglowz-boot-fallback" role="status" aria-live="polite">
+  <div id="replayglows-boot-fallback" role="status" aria-live="polite">
     <div class="boot-panel">
       <div class="boot-mark" aria-hidden="true">R</div>
-      <p class="boot-title">Opening ReplayGlowz...</p>
+      <p class="boot-title">Opening ReplayGlows...</p>
       <p class="boot-copy">The app is loading in your browser.</p>
       <div class="boot-help">
-        ReplayGlowz could not finish loading. If you use Vivaldi, Brave, uBlock,
+        ReplayGlows could not finish loading. If you use Vivaldi, Brave, uBlock,
         or another privacy blocker, set this site to no blocking and allow
         app.replayglowz.com and clerk.replayglowz.com, then reload.
         <div class="boot-actions">
           <a href="/">Reload</a>
-          <a href="https://replayglowz.com">ReplayGlowz site</a>
+          <a href="https://replayglowz.com">ReplayGlows site</a>
         </div>
       </div>
     </div>
   </div>
   <script>
     window.addEventListener('flutter-first-frame', function () {
-      var fallback = document.getElementById('replayglowz-boot-fallback');
+      var fallback = document.getElementById('replayglows-boot-fallback');
       if (fallback) {
         fallback.className = 'is-hidden';
       }

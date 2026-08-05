@@ -2,7 +2,7 @@
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-10"
 updated: "2026-05-10"
 status: "draft"
@@ -49,7 +49,7 @@ next_step: "/sf-docs technical audit"
 
 - Use build-time `--dart-define` values for Flutter web configuration.
 - Keep Clerk session handling and Convex JWT minting aligned with `app/README.md` and `shipglows_data/technical/app/architecture.md`.
-- Treat the shared Convex backend as external unless `REPLAYGLOWZ_BACKEND_ROOT` points to a local checkout.
+- Treat the shared Convex backend as external unless `REPLAYGLOWS_BACKEND_ROOT` points to a local checkout.
 
 ## Astro Site
 

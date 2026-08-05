@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart';
 import 'package:http/testing.dart';
-import 'package:replayglowz_app/auth/product_entitlement.dart';
-import 'package:replayglowz_app/auth/suite_identity.dart';
-import 'package:replayglowz_app/auth/suite_identity_bridge_client.dart';
+import 'package:replayglows_app/auth/product_entitlement.dart';
+import 'package:replayglows_app/auth/suite_identity.dart';
+import 'package:replayglows_app/auth/suite_identity_bridge_client.dart';
 
 void main() {
   group('SuiteIdentityBridgeClient', () {
     const config = SuiteIdentityBridgeRuntimeConfig(
-      url: 'https://example.invalid/api/bridge/replayglowz/native',
+      url: 'https://example.invalid/api/bridge/replayglows/native',
       endpointLabel: 'example.invalid',
     );
 
@@ -63,7 +63,7 @@ void main() {
               },
             ],
             'entitlements': [
-              {'productId': 'replayglowz', 'status': 'active', 'plan': 'pro'},
+              {'productId': 'replayglows', 'status': 'active', 'plan': 'pro'},
             ],
             'productToken': 'bridge-token',
           };
@@ -94,12 +94,12 @@ void main() {
         expect(snapshot.accounts.single.provider, SuiteIdentityProvider.clerk);
         expect(snapshot.accounts.single.providerUserId, 'clerk-u1');
         expect(snapshot.entitlements, hasLength(1));
-        expect(snapshot.entitlements.single.productId, 'replayglowz');
+        expect(snapshot.entitlements.single.productId, 'replayglows');
         expect(snapshot.entitlements.single.grantsAccess, isTrue);
       },
     );
 
-    test('treats legacy tubeflow entitlement as ReplayGlowz access', () {
+    test('treats legacy tubeflow entitlement as ReplayGlows access', () {
       const snapshot = SuiteIdentitySnapshot(
         status: SuiteIdentityStatus.accessActive,
         entitlements: [
@@ -111,7 +111,7 @@ void main() {
         productToken: 'bridge-token',
       );
 
-      expect(snapshot.hasReplayGlowzAccess, isTrue);
+      expect(snapshot.hasReplayGlowsAccess, isTrue);
     });
 
     test('returns issue on non-200 bridge response', () async {

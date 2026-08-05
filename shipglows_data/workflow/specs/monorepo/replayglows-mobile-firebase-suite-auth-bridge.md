@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-06-02"
 created_at: "2026-06-02 21:52:34 UTC"
 updated: "2026-06-02"
@@ -12,16 +12,16 @@ source_skill: sf-spec
 source_model: "GPT-5.5 HIGH (requested via runtime)"
 scope: "mobile-firebase-suite-auth-bridge"
 owner: "Diane"
-user_story: "En tant qu'utilisateur ReplayGlowz sur app Flutter native, je veux me connecter avec Firebase Auth, etre mappe vers mon identite suite et mon entitlement replayglowz via le bridge suite, afin d'acceder aux donnees ReplayGlowz et a YouTube OAuth seulement quand mon acces produit est verifie."
+user_story: "En tant qu'utilisateur ReplayGlows sur app Flutter native, je veux me connecter avec Firebase Auth, etre mappe vers mon identite suite et mon entitlement replayglows via le bridge suite, afin d'acceder aux donnees ReplayGlows et a YouTube OAuth seulement quand mon acces produit est verifie."
 confidence: "medium"
 risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
 linked_systems:
-  - "ReplayGlowz Flutter native app"
-  - "ReplayGlowz Flutter web app"
-  - "ReplayGlowz product Convex backend"
-  - "ReplayGlowz Vercel YouTube OAuth handlers"
+  - "ReplayGlows Flutter native app"
+  - "ReplayGlows Flutter web app"
+  - "ReplayGlows product Convex backend"
+  - "ReplayGlows Vercel YouTube OAuth handlers"
   - "WinFlowz suite identity bridge"
   - "WinFlowz suite entitlement ledger"
   - "Firebase Auth"
@@ -30,7 +30,7 @@ linked_systems:
   - "YouTube OAuth"
   - "GitHub Actions / Blacksmith Android CI"
 depends_on:
-  - artifact: "shipglows_data/workflow/specs/replayglowz-suite-auth-migration.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-suite-auth-migration.md"
     artifact_version: "1.0.8"
     required_status: "ready"
   - artifact: "/home/claude/winflowz_app/shipglows_data/workflow/specs/unified-suite-authentication.md"
@@ -50,59 +50,59 @@ depends_on:
     required_status: "reviewed"
 supersedes: []
 evidence:
-  - "ReplayGlowz web auth is currently ClerkJS through `app/lib/auth/auth_service.dart`, `lib/auth/clerk_js_bridge*.dart`, and `web/clerk_bridge.js`."
-  - "ReplayGlowz native builds currently hit the non-web ClerkJS stub, which returns unauthenticated and cannot provide a Convex token."
-  - "ReplayGlowz product Convex backend currently stores product data under `backend/packages/backend/convex` and is configured for Clerk Convex JWTs in `auth.config.ts`."
-  - "ReplayGlowz app docs say product data stays in ReplayGlowz product Convex while identity and entitlements are suite-owned."
+  - "ReplayGlows web auth is currently ClerkJS through `app/lib/auth/auth_service.dart`, `lib/auth/clerk_js_bridge*.dart`, and `web/clerk_bridge.js`."
+  - "ReplayGlows native builds currently hit the non-web ClerkJS stub, which returns unauthenticated and cannot provide a Convex token."
+  - "ReplayGlows product Convex backend currently stores product data under `backend/packages/backend/convex` and is configured for Clerk Convex JWTs in `auth.config.ts`."
+  - "ReplayGlows app docs say product data stays in ReplayGlows product Convex while identity and entitlements are suite-owned."
   - "WinFlowz app implements the requested native pattern through `FirebaseAuthSessionStore`, `SuiteIdentityBridgeClient`, `suiteIdentityProvider`, and fail-closed entitlement-gated store selection."
   - "WinFlowz suite auth pointer says Firebase Auth remains the active app adapter, Clerk is long-term suite identity, Firebase uid maps to `global_user_id`, and product access comes from server-owned entitlements."
   - "Official Firebase docs checked 2026-06-02: Flutter Auth exposes auth/id-token state and Firebase ID tokens can be sent to a backend for verification."
   - "Official Firebase Admin docs checked 2026-06-02: backend verification must validate Firebase ID token integrity and retrieve uid server-side; revocation checking is separate and must be enabled for disabled/revoked session rejection."
   - "Official Convex docs checked 2026-06-02: custom OIDC/JWT providers require exact issuer/audience matching; omitting audience verification is insecure."
-next_step: "/sf-ready replayglowz-mobile-firebase-suite-auth-bridge"
+next_step: "/sf-ready replayglows-mobile-firebase-suite-auth-bridge"
 ---
 
 # Title
 
-ReplayGlowz Mobile Firebase Suite Auth Bridge
+ReplayGlows Mobile Firebase Suite Auth Bridge
 
 # Status
 
-Ready for `/sf-ready`. The implementation path is fixed: ReplayGlowz web keeps ClerkJS as the web session owner, while native Flutter builds use Firebase Auth as the app adapter. Native Firebase sessions are mapped by a server-owned suite bridge to `global_user_id` and the `replayglowz` entitlement. Product data access and YouTube OAuth remain fail-closed until the server bridge and ReplayGlowz product Convex backend have both verified product access.
+Ready for `/sf-ready`. The implementation path is fixed: ReplayGlows web keeps ClerkJS as the web session owner, while native Flutter builds use Firebase Auth as the app adapter. Native Firebase sessions are mapped by a server-owned suite bridge to `global_user_id` and the `replayglows` entitlement. Product data access and YouTube OAuth remain fail-closed until the server bridge and ReplayGlows product Convex backend have both verified product access.
 
 # User Story
 
-En tant qu'utilisateur ReplayGlowz sur app Flutter native, je veux me connecter avec Firebase Auth, etre mappe vers mon identite suite et mon entitlement `replayglowz` via le bridge suite, afin d'acceder aux donnees ReplayGlowz et a YouTube OAuth seulement quand mon acces produit est verifie.
+En tant qu'utilisateur ReplayGlows sur app Flutter native, je veux me connecter avec Firebase Auth, etre mappe vers mon identite suite et mon entitlement `replayglows` via le bridge suite, afin d'acceder aux donnees ReplayGlows et a YouTube OAuth seulement quand mon acces produit est verifie.
 
-Acteur principal: utilisateur ReplayGlowz sur app Flutter native.
+Acteur principal: utilisateur ReplayGlows sur app Flutter native.
 
 Acteurs secondaires:
 
-- builder ReplayGlowz qui doit shipper une app native sans casser le web ClerkJS;
+- builder ReplayGlows qui doit shipper une app native sans casser le web ClerkJS;
 - WinFlowz suite bridge qui verifie Firebase ID tokens et resolve `global_user_id`;
-- WinFlowz suite entitlement ledger qui decide `product_id=replayglowz`;
-- ReplayGlowz product Convex qui garde videos, notes, playlists, transcripts, preferences, settings, snapshots et tokens YouTube;
-- ReplayGlowz Vercel OAuth handlers qui lancent et finalisent YouTube OAuth;
+- WinFlowz suite entitlement ledger qui decide `product_id=replayglows`;
+- ReplayGlows product Convex qui garde videos, notes, playlists, transcripts, preferences, settings, snapshots et tokens YouTube;
+- ReplayGlows Vercel OAuth handlers qui lancent et finalisent YouTube OAuth;
 - support operator qui doit diagnostiquer sans voir de token.
 
-Declencheur: un utilisateur lance ReplayGlowz sur Android ou autre cible Flutter native, se connecte avec Firebase Auth, puis tente de charger des donnees produit ou de connecter YouTube.
+Declencheur: un utilisateur lance ReplayGlows sur Android ou autre cible Flutter native, se connecte avec Firebase Auth, puis tente de charger des donnees produit ou de connecter YouTube.
 
-Resultat observable attendu: la session Firebase native est reconnue localement, le bridge suite mappe cette session vers une identite globale et un entitlement `replayglowz`, ReplayGlowz product Convex accepte uniquement une session produit serveur-verifiee, et l'app refuse les donnees produit/YouTube OAuth quand le bridge, l'entitlement ou le backend produit ne sont pas disponibles.
+Resultat observable attendu: la session Firebase native est reconnue localement, le bridge suite mappe cette session vers une identite globale et un entitlement `replayglows`, ReplayGlows product Convex accepte uniquement une session produit serveur-verifiee, et l'app refuse les donnees produit/YouTube OAuth quand le bridge, l'entitlement ou le backend produit ne sont pas disponibles.
 
 # Minimal Behavior Contract
 
-ReplayGlowz accepte deux chemins d'auth selon la plateforme. Sur web, le chemin existant ClerkJS reste inchangé et continue de fournir les tokens Clerk/Convex aux handlers web. Sur native, Firebase Auth est le seul proprietaire de session app; l'app recupere un Firebase ID token, l'envoie au bridge suite via HTTPS, et recoit seulement un snapshot redige plus un jeton produit court-terme quand le bridge a verifie le token, mappe le Firebase `uid` vers `global_user_id`, et confirme un entitlement `replayglowz` actif. ReplayGlowz product Convex verifie ce jeton produit ou un provider equivalent configure avec issuer/audience stricts, puis applique encore un check serveur d'access snapshot avant toute lecture ou mutation privee. Si une etape echoue, l'app garde la session Firebase comme "account recognized" mais n'accede pas aux donnees produit, ne lance pas YouTube OAuth, ne fait pas de merge email, ne loggue aucun token et ne fait jamais confiance a un entitlement client.
+ReplayGlows accepte deux chemins d'auth selon la plateforme. Sur web, le chemin existant ClerkJS reste inchangé et continue de fournir les tokens Clerk/Convex aux handlers web. Sur native, Firebase Auth est le seul proprietaire de session app; l'app recupere un Firebase ID token, l'envoie au bridge suite via HTTPS, et recoit seulement un snapshot redige plus un jeton produit court-terme quand le bridge a verifie le token, mappe le Firebase `uid` vers `global_user_id`, et confirme un entitlement `replayglows` actif. ReplayGlows product Convex verifie ce jeton produit ou un provider equivalent configure avec issuer/audience stricts, puis applique encore un check serveur d'access snapshot avant toute lecture ou mutation privee. Si une etape echoue, l'app garde la session Firebase comme "account recognized" mais n'accede pas aux donnees produit, ne lance pas YouTube OAuth, ne fait pas de merge email, ne loggue aucun token et ne fait jamais confiance a un entitlement client.
 
 L'edge case facile a rater est le split-brain utilisateur: un Firebase `uid`, un Clerk user id et un `global_user_id` peuvent representer la meme personne, mais l'app native ne doit ni creer un second espace produit par email, ni accorder l'acces par simple presence du compte Firebase.
 
 # Success Behavior
 
-- Given un utilisateur ouvre l'app native sans session, when il choisit sign-in, then ReplayGlowz utilise Firebase Auth natif et non ClerkJS.
+- Given un utilisateur ouvre l'app native sans session, when il choisit sign-in, then ReplayGlows utilise Firebase Auth natif et non ClerkJS.
 - Given Firebase sign-in reussit, when l'app recoit une session Firebase, then elle envoie un Firebase ID token au bridge suite et attend le resultat avant de selectionner les stores Convex distants.
-- Given le bridge suite reconnait le Firebase `uid`, resolve `global_user_id`, et trouve un entitlement `replayglowz` actif, when l'app configure Convex, then elle utilise le jeton produit serveur-verifie et peut lire/muter les donnees produit autorisees.
-- Given la session Firebase est valide mais l'entitlement `replayglowz` est absent, revoked, expired ou inconnu, when l'utilisateur ouvre une route protegee, then l'app affiche un etat "account recognized, product access inactive" et ne charge aucune donnee privee.
+- Given le bridge suite reconnait le Firebase `uid`, resolve `global_user_id`, et trouve un entitlement `replayglows` actif, when l'app configure Convex, then elle utilise le jeton produit serveur-verifie et peut lire/muter les donnees produit autorisees.
+- Given la session Firebase est valide mais l'entitlement `replayglows` est absent, revoked, expired ou inconnu, when l'utilisateur ouvre une route protegee, then l'app affiche un etat "account recognized, product access inactive" et ne charge aucune donnee privee.
 - Given le bridge suite est indisponible, mal configure ou retourne un schema inattendu, when l'utilisateur est connecte a Firebase, then l'app reste fail-closed et expose seulement des diagnostics rediges.
-- Given l'utilisateur autorise tente YouTube OAuth sur native, when l'app demande le start URL, then ReplayGlowz product backend ou Vercel verifie la session produit et l'entitlement avant de rediriger vers Google.
+- Given l'utilisateur autorise tente YouTube OAuth sur native, when l'app demande le start URL, then ReplayGlows product backend ou Vercel verifie la session produit et l'entitlement avant de rediriger vers Google.
 - Given l'utilisateur se deconnecte de Firebase native, when l'etat auth change, then l'app efface le jeton produit Convex, invalide l'access snapshot local et renvoie les routes protegees vers l'etat signed-out.
 
 # Error Behavior
@@ -112,21 +112,21 @@ L'edge case facile a rater est le split-brain utilisateur: un Firebase `uid`, un
 - Firebase ID token absent, expire, mauvais `aud`, mauvais `iss`, revoked ou disabled: le bridge suite refuse et l'app reste sans acces produit.
 - Bridge suite absent, secret manquant, JSON invalide ou HTTP non-200: la session Firebase reste locale; `global_user_id`, entitlement et token produit restent absents.
 - Entitlement absent ou inactif: aucune lecture/mutation privee, aucune creation de token YouTube, aucun fallback free cote client.
-- ReplayGlowz product Convex auth provider non deploye ou issuer/audience mismatch: Convex calls echouent en 401/403; l'app ne bascule pas vers une API non protegee.
+- ReplayGlows product Convex auth provider non deploye ou issuer/audience mismatch: Convex calls echouent en 401/403; l'app ne bascule pas vers une API non protegee.
 - YouTube OAuth start/callback sans session produit verifiee: 401/403/503 redige, cookies/tickets temporaires nettoyes.
 - Duplicate email entre Firebase et Clerk: ouvrir un etat linking/support explicite; aucun merge email-only.
 
 # Problem
 
-ReplayGlowz web a ete migre vers ClerkJS pour respecter la suite WinFlowz: Clerk reste l'identite web centrale, WinFlowz garde les entitlements, et ReplayGlowz product Convex garde les donnees produit. Ce chemin ne marche pas comme cible native parce que `clerk_js_bridge_stub.dart` est explicitement non-web et ne peut pas fournir de session ou de token Convex aux builds Android.
+ReplayGlows web a ete migre vers ClerkJS pour respecter la suite WinFlowz: Clerk reste l'identite web centrale, WinFlowz garde les entitlements, et ReplayGlows product Convex garde les donnees produit. Ce chemin ne marche pas comme cible native parce que `clerk_js_bridge_stub.dart` est explicitement non-web et ne peut pas fournir de session ou de token Convex aux builds Android.
 
-WinFlowz app a deja formalise le modele cible pour les apps Flutter natives: Firebase Auth est l'adaptateur app, un bridge serveur mappe Firebase `uid` vers `global_user_id`, et les stores produit restent fail-closed tant que le snapshot suite ne grant pas le product id. ReplayGlowz doit adopter le meme modele sans revenir a Firebase web, sans deplacer ses donnees produit dans WinFlowz, et sans faire confiance a des entitlements client.
+WinFlowz app a deja formalise le modele cible pour les apps Flutter natives: Firebase Auth est l'adaptateur app, un bridge serveur mappe Firebase `uid` vers `global_user_id`, et les stores produit restent fail-closed tant que le snapshot suite ne grant pas le product id. ReplayGlows doit adopter le meme modele sans revenir a Firebase web, sans deplacer ses donnees produit dans WinFlowz, et sans faire confiance a des entitlements client.
 
 # Solution
 
-Ajouter un adaptateur auth natif ReplayGlowz base sur Firebase Auth et reutiliser le pattern WinFlowz `FirebaseAuthSessionStore` + `SuiteIdentityBridgeClient` + `suiteIdentityProvider`, adapte au product id `replayglowz`. Le bridge suite verifie les Firebase ID tokens cote serveur, resout ou cree le mapping suite auditable, verifie l'entitlement, puis emet un snapshot redige et un jeton produit court-terme accepte par ReplayGlowz product Convex.
+Ajouter un adaptateur auth natif ReplayGlows base sur Firebase Auth et reutiliser le pattern WinFlowz `FirebaseAuthSessionStore` + `SuiteIdentityBridgeClient` + `suiteIdentityProvider`, adapte au product id `replayglows`. Le bridge suite verifie les Firebase ID tokens cote serveur, resout ou cree le mapping suite auditable, verifie l'entitlement, puis emet un snapshot redige et un jeton produit court-terme accepte par ReplayGlows product Convex.
 
-Le backend produit ReplayGlowz ajoute un chemin d'auth mobile distinct du chemin web ClerkJS, avec issuer/audience stricts et checks d'access snapshot cote serveur. Le client natif ne choisit les providers Convex distants et ne lance YouTube OAuth qu'apres validation serveur. Le web ClerkJS path, les handlers web actuels et le product Convex data boundary sont explicitement preserves.
+Le backend produit ReplayGlows ajoute un chemin d'auth mobile distinct du chemin web ClerkJS, avec issuer/audience stricts et checks d'access snapshot cote serveur. Le client natif ne choisit les providers Convex distants et ne lance YouTube OAuth qu'apres validation serveur. Le web ClerkJS path, les handlers web actuels et le product Convex data boundary sont explicitement preserves.
 
 # Scope In
 
@@ -134,10 +134,10 @@ Le backend produit ReplayGlowz ajoute un chemin d'auth mobile distinct du chemin
 - Ajouter `firebase_core`, `firebase_auth`, `google_sign_in` et configuration Firebase native uniquement pour les builds non-web.
 - Garder `AuthState` SDK-neutral et separer l'auth owner par plateforme: ClerkJS web, Firebase native.
 - Ajouter une configuration `SUITE_IDENTITY_BRIDGE_URL` native et un client bridge inspire de WinFlowz app.
-- Etendre le bridge suite pour accepter Firebase ID tokens ReplayGlowz, verifier revocation/disabled state, mapper vers `global_user_id`, verifier `product_id=replayglowz`, et retourner un snapshot redige.
-- Ajouter un jeton produit court-terme ou provider equivalent accepte par ReplayGlowz product Convex avec issuer/audience stricts.
+- Etendre le bridge suite pour accepter Firebase ID tokens ReplayGlows, verifier revocation/disabled state, mapper vers `global_user_id`, verifier `product_id=replayglows`, et retourner un snapshot redige.
+- Ajouter un jeton produit court-terme ou provider equivalent accepte par ReplayGlows product Convex avec issuer/audience stricts.
 - Adapter `ConvexService.setAuth` non-web pour utiliser le token produit serveur-verifie, pas un token Firebase brut non mappe.
-- Ajouter ou ajuster `productAccessSnapshots`/helpers Convex pour lier Firebase account, Clerk account et `global_user_id` sans deplacer les donnees produit hors ReplayGlowz product Convex.
+- Ajouter ou ajuster `productAccessSnapshots`/helpers Convex pour lier Firebase account, Clerk account et `global_user_id` sans deplacer les donnees produit hors ReplayGlows product Convex.
 - Gate native private reads/mutations and YouTube OAuth on server-verified product access.
 - Mettre a jour Android CI/build variables, docs app et diagnostics rediges.
 
@@ -147,10 +147,10 @@ Le backend produit ReplayGlowz ajoute un chemin d'auth mobile distinct du chemin
 - Ne pas reintroduire Firebase Auth comme proprietaire de session web.
 - Ne pas utiliser `clerk_flutter` ou Clerk natif comme cible production mobile.
 - Ne pas deplacer videos, notes, playlists, transcripts, preferences, settings, snapshots ou tokens YouTube vers WinFlowz suite Convex.
-- Ne pas faire de ReplayGlowz product Convex la source de verite des entitlements.
+- Ne pas faire de ReplayGlows product Convex la source de verite des entitlements.
 - Ne pas accorder un acces produit par simple compte Firebase, email, domaine email, local cache ou claim client.
 - Ne pas faire de merge email-only entre comptes Firebase et Clerk.
-- Ne pas creer de nouveaux grants `tubeflow`; `replayglowz` reste le product id canonique.
+- Ne pas creer de nouveaux grants `tubeflow`; `replayglows` reste le product id canonique.
 - Ne pas ajouter iOS release/App Store, keystore release, pricing ou achat in-app dans ce chantier.
 - Ne pas changer les scopes YouTube OAuth sauf bug bloquant prouve.
 
@@ -161,7 +161,7 @@ Le backend produit ReplayGlowz ajoute un chemin d'auth mobile distinct du chemin
 - Le bridge suite et le backend produit doivent verifier les tokens cote serveur.
 - Product access is denied by default.
 - Entitlements sont serveur-owned; le client ne peut fournir ni `global_user_id`, ni `product_id`, ni status d'entitlement de confiance.
-- ReplayGlowz product Convex reste l'autorite des donnees produit.
+- ReplayGlows product Convex reste l'autorite des donnees produit.
 - WinFlowz suite bridge/ledger reste l'autorite de `global_user_id` et des entitlements.
 - Audience and issuer checks are mandatory for Convex auth providers.
 - Session/access tokens, Firebase ID tokens, OAuth codes, YouTube access/refresh tokens and bridge secrets must never be logged, screenshotted, stored in diagnostics, or committed.
@@ -194,7 +194,7 @@ Proof order: static/typecheck -> unit/contract tests -> backend auth deploy proo
 
 ## Local Dependencies
 
-- `shipglows_data/workflow/specs/replayglowz-suite-auth-migration.md`: web ClerkJS path and two-Convex boundary to preserve.
+- `shipglows_data/workflow/specs/replayglows-suite-auth-migration.md`: web ClerkJS path and two-Convex boundary to preserve.
 - `/home/claude/winflowz_app/docs/technical/suite-authentication.md`: Firebase native adapter + suite bridge + fail-closed entitlement pattern.
 - `/home/claude/winflowz_app/lib/core/bootstrap/firebase_bootstrap.dart`: Firebase runtime config pattern.
 - `/home/claude/winflowz_app/lib/features/auth/data/firebase_auth_session_store.dart`: Firebase native session store pattern.
@@ -209,7 +209,7 @@ Proof order: static/typecheck -> unit/contract tests -> backend auth deploy proo
 - `backend/packages/backend/convex/auth.config.ts`: add mobile product token provider while preserving Clerk provider.
 - `backend/packages/backend/convex/users.ts`: product access status and snapshot mapping.
 - `backend/packages/backend/convex/schema.ts`: product access/account mapping schema.
-- `.github/workflows/replayglowz-app-android.yml`: native build config and artifact proof.
+- `.github/workflows/replayglows-app-android.yml`: native build config and artifact proof.
 
 ## Fresh External Docs Checked
 
@@ -222,11 +222,11 @@ Fresh-docs verdict: `fresh-docs checked`.
 
 # Invariants
 
-- Authenticated Firebase user is not ReplayGlowz product access.
+- Authenticated Firebase user is not ReplayGlows product access.
 - Authenticated Clerk user on web is not product access unless server access status allows it.
 - Product access is checked server-side before private data and YouTube OAuth.
 - Native Firebase ID token is bridge evidence only; it is not a client-trusted entitlement.
-- Product data remains in ReplayGlowz product Convex.
+- Product data remains in ReplayGlows product Convex.
 - Suite identity and entitlements remain in WinFlowz suite.
 - Web ClerkJS route and native Firebase route are platform-specific, not fallback chains.
 - No email-only merge.
@@ -253,7 +253,7 @@ Update after implementation:
 - `app/.env.example`: add native Firebase dart-defines and `SUITE_IDENTITY_BRIDGE_URL`; keep Clerk vars clearly web-owned.
 - `app/CHANGELOG.md`: note native auth bridge when shipped.
 - `shipglows_data/technical/app/architecture.md` if it exists and maps app auth/data contracts.
-- WinFlowz suite docs only through the suite owner path; do not fork canonical suite auth decisions in ReplayGlowz docs.
+- WinFlowz suite docs only through the suite owner path; do not fork canonical suite auth decisions in ReplayGlows docs.
 
 # Edge Cases
 
@@ -261,7 +261,7 @@ Update after implementation:
 - Firebase token is valid but belongs to the wrong Firebase project.
 - Firebase user is disabled/revoked after session restore.
 - Firebase user and Clerk user share an email but are not linked in suite identity.
-- Suite bridge returns `global_user_id` but no `replayglowz` entitlement.
+- Suite bridge returns `global_user_id` but no `replayglows` entitlement.
 - Suite bridge returns active entitlement but product Convex token provider is not deployed.
 - Product Convex accepts the token but no product user mapping exists yet.
 - Existing web user has product data keyed by Clerk id; native user resolves to same `global_user_id`.
@@ -293,21 +293,21 @@ Update after implementation:
   - Validate with : adapter tests using fakes and `flutter test`.
   - Notes : Do not send raw Firebase errors to user-facing diagnostics without sanitizing.
 
-- [ ] Tache 4 : Add ReplayGlowz suite identity bridge client
+- [ ] Tache 4 : Add ReplayGlows suite identity bridge client
   - Fichiers : `app/lib/auth/suite_identity_bridge_client.dart`, `app/lib/auth/suite_identity.dart`, `app/lib/auth/product_entitlement.dart`, `app/lib/app/build_info.dart`
   - Action : Port the WinFlowz bridge client pattern, parse `globalUserId`, provider accounts, entitlements and optional product token, and return conservative snapshots on every failure.
   - Depends on : Tache 3.
   - Validate with : tests for missing config, network failure, invalid JSON, active entitlement, revoked entitlement and malformed token fields.
-  - Notes : `ProductId` must include canonical `replayglowz`; `tubeflow` is legacy only.
+  - Notes : `ProductId` must include canonical `replayglows`; `tubeflow` is legacy only.
 
-- [ ] Tache 5 : Extend suite bridge server contract for ReplayGlowz native
-  - Fichiers : suite repo bridge endpoint such as `/api/bridge/firebase` or `/api/bridge/replayglowz/native`, suite Convex bridge functions, suite auth docs
-  - Action : Verify Firebase ID tokens with Firebase Admin and revocation checks, require expected Firebase project/audience, map Firebase uid to `global_user_id`, verify `product_id=replayglowz`, and return a redacted snapshot plus short-lived product Convex JWT or equivalent product token.
+- [ ] Tache 5 : Extend suite bridge server contract for ReplayGlows native
+  - Fichiers : suite repo bridge endpoint such as `/api/bridge/firebase` or `/api/bridge/replayglows/native`, suite Convex bridge functions, suite auth docs
+  - Action : Verify Firebase ID tokens with Firebase Admin and revocation checks, require expected Firebase project/audience, map Firebase uid to `global_user_id`, verify `product_id=replayglows`, and return a redacted snapshot plus short-lived product Convex JWT or equivalent product token.
   - Depends on : Tache 4.
   - Validate with : server tests for missing token, wrong project, revoked user, duplicate email/linking required, no entitlement, active entitlement, and redaction.
   - Notes : Server owns mapping and token issuance; client cannot choose `global_user_id` or entitlement.
 
-- [ ] Tache 6 : Add mobile product token provider to ReplayGlowz product Convex
+- [ ] Tache 6 : Add mobile product token provider to ReplayGlows product Convex
   - Fichiers : `backend/packages/backend/convex/auth.config.ts`, `convex/users.ts`, `convex/schema.ts`, `convex/utils.ts`
   - Action : Preserve Clerk provider and add a suite-issued custom JWT/OIDC provider for native product sessions with strict issuer/audience. Add user/account mapping for Clerk id, Firebase uid and `global_user_id`.
   - Depends on : Tache 5.
@@ -350,7 +350,7 @@ Update after implementation:
   - Notes : If deep link support is implemented, restrict schemes/hosts and document Google OAuth redirect configuration.
 
 - [ ] Tache 12 : Update Android CI and build contracts
-  - Fichiers : `.github/workflows/replayglowz-app-android.yml`, `app/build.sh` if shared vars change, `app/README.md`
+  - Fichiers : `.github/workflows/replayglows-app-android.yml`, `app/build.sh` if shared vars change, `app/README.md`
   - Action : Replace native Clerk-required config with Firebase native config plus suite bridge URL; keep Clerk vars only where web build needs them.
   - Depends on : Taches 2 and 4.
   - Validate with : GitHub manual workflow debug APK artifact.
@@ -366,20 +366,20 @@ Update after implementation:
   - Fichiers : deployment surfaces and test evidence logs
   - Action : Run local checks, backend checks, Android CI, Android real-device auth/access/OAuth smoke, and web ClerkJS regression.
   - Depends on : all previous tasks.
-  - Validate with : `/sf-verify replayglowz-mobile-firebase-suite-auth-bridge`.
+  - Validate with : `/sf-verify replayglows-mobile-firebase-suite-auth-bridge`.
 
 # Acceptance Criteria
 
-- [ ] CA 1 : Given ReplayGlowz runs on web, when the app boots and signs in, then it still uses ClerkJS and does not require Firebase native configuration.
-- [ ] CA 2 : Given ReplayGlowz runs on Android, when the app boots, then it selects Firebase Auth as the session owner and does not call ClerkJS.
+- [ ] CA 1 : Given ReplayGlows runs on web, when the app boots and signs in, then it still uses ClerkJS and does not require Firebase native configuration.
+- [ ] CA 2 : Given ReplayGlows runs on Android, when the app boots, then it selects Firebase Auth as the session owner and does not call ClerkJS.
 - [ ] CA 3 : Given Firebase native sign-in succeeds, when the app asks for suite identity, then it sends a Firebase ID token only over HTTPS to the bridge and never logs it.
 - [ ] CA 4 : Given bridge verification fails or is unavailable, when the user is signed in locally, then product data and YouTube OAuth remain unavailable.
-- [ ] CA 5 : Given bridge verification succeeds but no active `replayglowz` entitlement exists, when a protected screen loads, then no private product data is fetched and the inactive-access state is shown.
-- [ ] CA 6 : Given bridge verification succeeds with active `replayglowz` entitlement, when the app calls ReplayGlowz product Convex, then Convex verifies a suite-issued product token or equivalent server-authenticated provider and permits only the mapped product user.
+- [ ] CA 5 : Given bridge verification succeeds but no active `replayglows` entitlement exists, when a protected screen loads, then no private product data is fetched and the inactive-access state is shown.
+- [ ] CA 6 : Given bridge verification succeeds with active `replayglows` entitlement, when the app calls ReplayGlows product Convex, then Convex verifies a suite-issued product token or equivalent server-authenticated provider and permits only the mapped product user.
 - [ ] CA 7 : Given a user has existing web product data linked through Clerk and the same suite `global_user_id`, when they sign in natively through Firebase, then they access the same product user mapping without email-only merge.
 - [ ] CA 8 : Given native sign-out occurs, when routes/providers refresh, then product token, access snapshot and Convex auth are cleared.
 - [ ] CA 9 : Given YouTube OAuth is started on native, when session or entitlement is missing, then the start handler returns a redacted deny response and does not redirect to Google.
-- [ ] CA 10 : Given YouTube OAuth completes for an authorized native user, when callback persists tokens, then tokens are stored only in ReplayGlowz product Convex under the mapped product user.
+- [ ] CA 10 : Given YouTube OAuth completes for an authorized native user, when callback persists tokens, then tokens are stored only in ReplayGlows product Convex under the mapped product user.
 - [ ] CA 11 : Given logs, diagnostics, tests and screenshots are reviewed, then no Firebase ID token, suite token, Convex token, OAuth code, YouTube token or bridge secret is present.
 - [ ] CA 12 : Given implementation is complete, when validation runs, then `flutter analyze`, `flutter test`, YouTube Node tests, backend typecheck, Android debug APK build and web regression smoke pass or have documented blocking evidence.
 
@@ -403,7 +403,7 @@ Update after implementation:
 - High: YouTube OAuth tokens are sensitive and must not cross client logs or URL query strings.
 - Medium: Firebase native dependencies can increase web build complexity if imports are not platform-gated.
 - Medium: Android CI may pass buildability while provider config still fails on a real device.
-- Medium: current WinFlowz app `ProductId` enum still has legacy `tubeflow`; ReplayGlowz native bridge must use `replayglowz` canon.
+- Medium: current WinFlowz app `ProductId` enum still has legacy `tubeflow`; ReplayGlows native bridge must use `replayglows` canon.
 - Medium: no `/home/claude/winflowz` checkout is present locally, so suite bridge implementation requires the actual suite repo or owning workflow.
 
 # Execution Notes
@@ -427,14 +427,14 @@ None. The user request and local WinFlowz architecture provide the material deci
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-06-02 21:52:34 UTC | sf-spec | GPT-5.5 HIGH (requested via runtime) | Created ready spec for ReplayGlowz native mobile Firebase auth adapter, suite identity/entitlement bridge, fail-closed product access, web ClerkJS preservation and product Convex boundary. | ready | `/sf-ready replayglowz-mobile-firebase-suite-auth-bridge` |
-| 2026-06-02 22:02:00 UTC | sf-ready | GPT-5 Codex | Evaluated readiness after spec creation against ShipGlows lifecycle gates, existing suite-auth constraints, execution batches and security stop conditions. | ready: the spec is implementable in sequential batches without new user decisions; Batch 1 can start while later backend/bridge batches remain gated by their own proof. | `/sf-start replayglowz-mobile-firebase-suite-auth-bridge batch-1` |
-| 2026-06-02 22:12:00 UTC | sf-build | GPT-5 Codex + GPT-5.3 Codex Spark worker + GPT-5.5 explorer | Implemented Batch 1 app-side native Firebase auth foundation, Android CI config, fail-closed bridge client, tests and docs; corrected native Convex token fallback to require active ReplayGlowz entitlement plus suite product token. | partial: Batch 1 complete and local app checks pass; local APK build is blocked by this aarch64 server having x86-64 Android AAPT2 binaries; Batch 2 suite bridge/product token is blocked from this run because `/home/claude/winflowz` has unrelated dirty work and the existing suite bridge does not yet emit a ReplayGlowz product token. | Run Blacksmith Android workflow for x64 APK proof, then clean or isolate WinFlowz suite bridge work and implement Batch 2 product token contract. |
-| 2026-06-02 23:02:00 UTC | continue | GPT-5 Codex + GPT-5.3 Codex Spark worker | Continued the chantier by implementing the WinFlowz suite ReplayGlowz product token bridge and ReplayGlowz Convex custom JWT provider configuration. | partial: Batch 2 bridge product token is implemented and validated; ReplayGlowz backend typecheck passes. Remaining proof requires deployed env keys/JWKS, Blacksmith APK build, and end-to-end Firebase-to-Convex smoke. | Configure RS256 JWT env/JWKS and run deployed bridge + Android CI proof. |
+| 2026-06-02 21:52:34 UTC | sf-spec | GPT-5.5 HIGH (requested via runtime) | Created ready spec for ReplayGlows native mobile Firebase auth adapter, suite identity/entitlement bridge, fail-closed product access, web ClerkJS preservation and product Convex boundary. | ready | `/sf-ready replayglows-mobile-firebase-suite-auth-bridge` |
+| 2026-06-02 22:02:00 UTC | sf-ready | GPT-5 Codex | Evaluated readiness after spec creation against ShipGlows lifecycle gates, existing suite-auth constraints, execution batches and security stop conditions. | ready: the spec is implementable in sequential batches without new user decisions; Batch 1 can start while later backend/bridge batches remain gated by their own proof. | `/sf-start replayglows-mobile-firebase-suite-auth-bridge batch-1` |
+| 2026-06-02 22:12:00 UTC | sf-build | GPT-5 Codex + GPT-5.3 Codex Spark worker + GPT-5.5 explorer | Implemented Batch 1 app-side native Firebase auth foundation, Android CI config, fail-closed bridge client, tests and docs; corrected native Convex token fallback to require active ReplayGlows entitlement plus suite product token. | partial: Batch 1 complete and local app checks pass; local APK build is blocked by this aarch64 server having x86-64 Android AAPT2 binaries; Batch 2 suite bridge/product token is blocked from this run because `/home/claude/winflowz` has unrelated dirty work and the existing suite bridge does not yet emit a ReplayGlows product token. | Run Blacksmith Android workflow for x64 APK proof, then clean or isolate WinFlowz suite bridge work and implement Batch 2 product token contract. |
+| 2026-06-02 23:02:00 UTC | continue | GPT-5 Codex + GPT-5.3 Codex Spark worker | Continued the chantier by implementing the WinFlowz suite ReplayGlows product token bridge and ReplayGlows Convex custom JWT provider configuration. | partial: Batch 2 bridge product token is implemented and validated; ReplayGlows backend typecheck passes. Remaining proof requires deployed env keys/JWKS, Blacksmith APK build, and end-to-end Firebase-to-Convex smoke. | Configure RS256 JWT env/JWKS and run deployed bridge + Android CI proof. |
 | 2026-06-03 04:57:00 UTC | sf-build | GPT-5 Codex | Continued implementation after user escalation: replaced YouTube OAuth raw session-token callback cookie with an encrypted short-lived OAuth ticket, documented the ticket secret, and retested app/backend/bridge surfaces. | partial: native/web YouTube OAuth start/callback code is implemented and unit-tested fail-closed; remaining proof requires deployed secrets, Blacksmith APK build, and real provider smoke. | Configure secrets and run deployed smoke + Blacksmith workflow. |
-| 2026-06-10 19:41:11 UTC | continue + sf-ci-build | GPT-5 Codex | Resumed deployment configuration, verified Convex product JWT envs, corrected the production/dev issuer from `https://winflowz.com` to `https://www.winflowz.com`, deployed ReplayGlowz Convex production auth config, created the Firebase Android app for `com.replayglowz.app`, configured GitHub Actions Android build secrets, and ran the Blacksmith Android workflow. | partial: deployed Convex production provider config is active, issuer/JWKS/audience are aligned, and GitHub Actions run `27300444261` passed `Detect Android-impacting changes`, `Flutter Test`, `Flutter Analyze`, and `Build Debug APK`; artifact `replayglowz-app-debug-apk` was produced. Remaining proof is end-to-end Firebase bridge product-token smoke on a real app session. | Run Firebase sign-in to suite bridge to ReplayGlowz Convex product-token smoke. |
-| 2026-06-10 20:00:00 UTC | sf-fix | GPT-5 Codex | Investigated installed Android bootstrap fallback showing `CLERK_PUBLISHABLE_KEY` missing, added platform-aware auth diagnostics, made fallback diagnostics scrollable with copy control near the top, and recorded `BUG-2026-06-10-001`. | fixed-pending-verify: `flutter analyze`, `flutter test`, targeted auth config test, metadata lint, and GitHub Actions run `27302777396` pass; replacement artifact `replayglowz-app-debug-apk` was produced. Remaining proof is device retest. | Install replacement APK and retest on device. |
-| 2026-06-10 20:52:23 UTC | sf-fix | GPT-5 Codex | Investigated user retest diagnostics from run `27302777396`, fixed native Firebase init order by deferring `FirebaseAuth.instance` until after `FirebaseBootstrap.initialise()`, pinned `flutter_rust_bridge` to `2.11.1` for `convex_flutter 3.0.1`, and added a constructor regression test. | fixed-pending-verify: local `flutter analyze` and `flutter test` pass; lockfile now resolves `flutter_rust_bridge 2.11.1`; GitHub Actions run `27305689222` passed detect/test/analyze/build/upload and produced artifact `replayglowz-app-debug-apk` id `7548282685`. Remaining proof is device retest. | Install GitHub artifact from run `27305689222` and retest on device. |
+| 2026-06-10 19:41:11 UTC | continue + sf-ci-build | GPT-5 Codex | Resumed deployment configuration, verified Convex product JWT envs, corrected the production/dev issuer from `https://winflowz.com` to `https://www.winflowz.com`, deployed ReplayGlows Convex production auth config, created the Firebase Android app for `com.replayglows.app`, configured GitHub Actions Android build secrets, and ran the Blacksmith Android workflow. | partial: deployed Convex production provider config is active, issuer/JWKS/audience are aligned, and GitHub Actions run `27300444261` passed `Detect Android-impacting changes`, `Flutter Test`, `Flutter Analyze`, and `Build Debug APK`; artifact `replayglows-app-debug-apk` was produced. Remaining proof is end-to-end Firebase bridge product-token smoke on a real app session. | Run Firebase sign-in to suite bridge to ReplayGlows Convex product-token smoke. |
+| 2026-06-10 20:00:00 UTC | sf-fix | GPT-5 Codex | Investigated installed Android bootstrap fallback showing `CLERK_PUBLISHABLE_KEY` missing, added platform-aware auth diagnostics, made fallback diagnostics scrollable with copy control near the top, and recorded `BUG-2026-06-10-001`. | fixed-pending-verify: `flutter analyze`, `flutter test`, targeted auth config test, metadata lint, and GitHub Actions run `27302777396` pass; replacement artifact `replayglows-app-debug-apk` was produced. Remaining proof is device retest. | Install replacement APK and retest on device. |
+| 2026-06-10 20:52:23 UTC | sf-fix | GPT-5 Codex | Investigated user retest diagnostics from run `27302777396`, fixed native Firebase init order by deferring `FirebaseAuth.instance` until after `FirebaseBootstrap.initialise()`, pinned `flutter_rust_bridge` to `2.11.1` for `convex_flutter 3.0.1`, and added a constructor regression test. | fixed-pending-verify: local `flutter analyze` and `flutter test` pass; lockfile now resolves `flutter_rust_bridge 2.11.1`; GitHub Actions run `27305689222` passed detect/test/analyze/build/upload and produced artifact `replayglows-app-debug-apk` id `7548282685`. Remaining proof is device retest. | Install GitHub artifact from run `27305689222` and retest on device. |
 | 2026-06-11 01:06:18 UTC | sf-auth-debug | GPT-5 Codex | Diagnosed Android post-bootstrap Google Sign-In failure `ApiException: 10`, switched native Google Sign-In from `clientId` to `serverClientId`, added a stable debug-only APK signing keystore, configured Gradle debug signing, added CI fingerprint logging, and recorded `BUG-2026-06-11-001`. | fix-attempted: local `flutter analyze` and `flutter test` pass; stable debug APK fingerprints are SHA-1 `FD:13:36:6A:C0:7D:A2:69:5D:FF:74:5C:D6:F4:E1:A5:05:CC:DE:F2` and SHA-256 `13:42:31:15:7B:1E:8C:70:7F:F3:AF:94:2E:85:DF:D0:B5:D4:FE:F0:BD:44:DD:B1:00:CC:FE:0C:7C:A4:E9:9F`. Remaining proof requires registering those fingerprints in Firebase/Google and retesting a new CI artifact. | Register fingerprints in Firebase/Google, run Android CI, and retest uploaded artifact. |
 
 # Current Chantier Flow
@@ -443,7 +443,7 @@ None. The user request and local WinFlowz architecture provide the material deci
 |-------|--------|----------|------|
 | sf-spec | done | This spec defines user story, behavior contract, scope, constraints, dependencies, tasks, acceptance criteria, validation, risks and sequential execution batches. | sf-ready |
 | sf-ready | ready | Readiness gate passed: no open product decision, safe sequential batches, and explicit stop conditions for backend/bridge proof. | sf-start |
-| sf-start | partial | Batch 1 completed in ReplayGlowz app; Batch 2 completed in WinFlowz suite bridge; ReplayGlowz backend now has an optional RS256 custom JWT provider deployed to Convex production; YouTube OAuth start/callback now uses an encrypted short-lived handoff ticket instead of a raw session-token cookie; Firebase Android app `com.replayglowz.app` and GitHub Actions Android build secrets are configured. | provider smoke |
-| sf-verify | partial | `flutter analyze`, `flutter test`, `flutter test test/auth/build_info_config_test.dart`, `node --test api/auth/_youtube.test.js`, workflow YAML parse, metadata lint, ReplayGlowz backend `npm run typecheck`, WinFlowz `pnpm vitest run tests/bridge/suiteBridge.test.ts tests/middleware/authRouting.test.ts`, and WinFlowz `pnpm build:check` pass locally. Convex production product JWT envs now align on issuer `https://www.winflowz.com`, audience `replayglowz-convex`, and WinFlowz JWKS URL. GitHub Actions runs `27300444261` and `27302777396` on Blacksmith passed Android detect/test/analyze/build and uploaded artifact `replayglowz-app-debug-apk`; device retest of run `27302777396` failed with Firebase `[core/no-app]` and Convex FRB `2.11.1`/`2.12.0` mismatch. The Firebase init-order and FRB lockfile fixes now pass local `flutter analyze`, `flutter test`, metadata lint, and GitHub Actions run `27305689222`, which produced artifact `replayglowz-app-debug-apk` id `7548282685`. Device retest of run `27305689222` reached auth but failed Google Sign-In with `ApiException: 10`; local fix now passes `flutter analyze` and `flutter test`, and the next proof needs Firebase/Google SHA registration plus new CI artifact. Local APK debug build remains blocked on this server only because it is `aarch64` and installed AAPT2 binaries are `x86-64`. | register debug SHA fingerprints and retest new Android CI artifact |
+| sf-start | partial | Batch 1 completed in ReplayGlows app; Batch 2 completed in WinFlowz suite bridge; ReplayGlows backend now has an optional RS256 custom JWT provider deployed to Convex production; YouTube OAuth start/callback now uses an encrypted short-lived handoff ticket instead of a raw session-token cookie; Firebase Android app `com.replayglows.app` and GitHub Actions Android build secrets are configured. | provider smoke |
+| sf-verify | partial | `flutter analyze`, `flutter test`, `flutter test test/auth/build_info_config_test.dart`, `node --test api/auth/_youtube.test.js`, workflow YAML parse, metadata lint, ReplayGlows backend `npm run typecheck`, WinFlowz `pnpm vitest run tests/bridge/suiteBridge.test.ts tests/middleware/authRouting.test.ts`, and WinFlowz `pnpm build:check` pass locally. Convex production product JWT envs now align on issuer `https://www.winflowz.com`, audience `replayglows-convex`, and WinFlowz JWKS URL. GitHub Actions runs `27300444261` and `27302777396` on Blacksmith passed Android detect/test/analyze/build and uploaded artifact `replayglows-app-debug-apk`; device retest of run `27302777396` failed with Firebase `[core/no-app]` and Convex FRB `2.11.1`/`2.12.0` mismatch. The Firebase init-order and FRB lockfile fixes now pass local `flutter analyze`, `flutter test`, metadata lint, and GitHub Actions run `27305689222`, which produced artifact `replayglows-app-debug-apk` id `7548282685`. Device retest of run `27305689222` reached auth but failed Google Sign-In with `ApiException: 10`; local fix now passes `flutter analyze` and `flutter test`, and the next proof needs Firebase/Google SHA registration plus new CI artifact. Local APK debug build remains blocked on this server only because it is `aarch64` and installed AAPT2 binaries are `x86-64`. | register debug SHA fingerprints and retest new Android CI artifact |
 | sf-end | pending | Closure not started. | after sf-verify |
 | sf-ship | pending | Shipping not started. | after sf-end |

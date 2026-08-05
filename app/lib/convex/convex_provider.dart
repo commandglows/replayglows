@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:replayglowz_app/convex/convex_client.dart';
+import 'package:replayglows_app/convex/convex_client.dart';
 
 // ---------------------------------------------------------------------------
 // Singleton Convex service

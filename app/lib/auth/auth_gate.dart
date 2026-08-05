@@ -3,13 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:replayglowz_app/app/build_info.dart';
-import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/app/theme.dart';
-import 'package:replayglowz_app/auth/auth_state.dart';
-import 'package:replayglowz_app/auth/auth_service.dart';
-import 'package:replayglowz_app/utils/app_logger.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/app/build_info.dart';
+import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/app/theme.dart';
+import 'package:replayglows_app/auth/auth_state.dart';
+import 'package:replayglows_app/auth/auth_service.dart';
+import 'package:replayglows_app/utils/app_logger.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
 
 class AuthSignInPage extends ConsumerStatefulWidget {
   const AuthSignInPage({super.key});
@@ -73,10 +73,10 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
                   color: theme.colorScheme.primary,
                 ),
                 const SizedBox(height: AppSpacing.md),
-                Text('ReplayGlowz', style: theme.textTheme.headlineMedium),
+                Text('ReplayGlows', style: theme.textTheme.headlineMedium),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Create or sign in to your ReplayGlowz account to sync '
+                  'Create or sign in to your ReplayGlows account to sync '
                   'videos, playlists, notes, and YouTube connection state.',
                   style: theme.textTheme.bodyLarge,
                 ),
@@ -101,8 +101,8 @@ class _AuthSignInPageState extends ConsumerState<AuthSignInPage> {
                       : const Icon(Icons.login),
                   label: Text(
                     hasAuthConfig
-                        ? 'Continue to ReplayGlowz'
-                        : 'ReplayGlowz sign-in not configured',
+                        ? 'Continue to ReplayGlows'
+                        : 'ReplayGlows sign-in not configured',
                   ),
                 ),
               ],

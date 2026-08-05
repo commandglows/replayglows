@@ -4,14 +4,14 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:replayglowz_app/convex/convex_client.dart';
-import 'package:replayglowz_app/convex/convex_errors.dart';
-import 'package:replayglowz_app/convex/convex_provider.dart';
-import 'package:replayglowz_app/models/models.dart';
-import 'package:replayglowz_app/providers/providers.dart';
+import 'package:replayglows_app/convex/convex_client.dart';
+import 'package:replayglows_app/convex/convex_errors.dart';
+import 'package:replayglows_app/convex/convex_provider.dart';
+import 'package:replayglows_app/models/models.dart';
+import 'package:replayglows_app/providers/providers.dart';
 
 // =============================================================================
-// Convex mutation helpers for the ReplayGlowz app.
+// Convex mutation helpers for the ReplayGlows app.
 //
 // Each function accepts a [Ref] (or [WidgetRef]) so it can access the
 // [ConvexService] singleton through Riverpod, then calls the appropriate
@@ -518,7 +518,7 @@ Future<dynamic> removeVideoFromYoutubePlaylist(
   return result;
 }
 
-/// Removes a cached video from a ReplayGlowz playlist without spending YouTube quota.
+/// Removes a cached video from a ReplayGlows playlist without spending YouTube quota.
 Future<dynamic> removeCachedVideoFromPlaylist(
   WidgetRef ref, {
   required String playlistId,

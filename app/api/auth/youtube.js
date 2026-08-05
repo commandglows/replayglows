@@ -9,13 +9,13 @@ const {
   resolveEntitlementInputs,
   resolveOAuthTicketSecret,
   createOAuthTicket,
-  verifyReplayGlowzSessionAccessWithFallback,
+  verifyReplayGlowsSessionAccessWithFallback,
   serializeCookie,
   sanitizeReturnTo,
 } = require('./_youtube');
 
-const REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_COOKIE =
-  'replayglowz_youtube_oauth_ticket';
+const REPLAYGLOWS_YOUTUBE_OAUTH_TICKET_COOKIE =
+  'replayglows_youtube_oauth_ticket';
 
 function sendJsonError(res, statusCode, message) {
   res.statusCode = statusCode;
@@ -53,16 +53,16 @@ module.exports = async function handler(req, res) {
   }
 
   if (!sessionToken) {
-    sendJsonError(res, 401, 'Missing ReplayGlowz session token.');
+    sendJsonError(res, 401, 'Missing ReplayGlows session token.');
     return;
   }
 
   if (!ticketSecret) {
-    sendJsonError(res, 500, 'ReplayGlowz YouTube OAuth ticketing is not configured.');
+    sendJsonError(res, 500, 'ReplayGlows YouTube OAuth ticketing is not configured.');
     return;
   }
 
-  const verification = await verifyReplayGlowzSessionAccessWithFallback({
+  const verification = await verifyReplayGlowsSessionAccessWithFallback({
     sessionToken,
     convexUrl,
     verifyUrl,
@@ -77,7 +77,7 @@ module.exports = async function handler(req, res) {
       verification.status,
       verification.status === 403
         ? 'Product access inactive for this account.'
-        : 'ReplayGlowz session verification failed.',
+        : 'ReplayGlows session verification failed.',
     );
     return;
   }
@@ -122,7 +122,7 @@ module.exports = async function handler(req, res) {
       secure,
       maxAge: 600,
     }),
-    serializeCookie(REPLAYGLOWZ_YOUTUBE_OAUTH_TICKET_COOKIE, oauthTicket, {
+    serializeCookie(REPLAYGLOWS_YOUTUBE_OAUTH_TICKET_COOKIE, oauthTicket, {
       path: '/',
       httpOnly: true,
       sameSite: 'Lax',

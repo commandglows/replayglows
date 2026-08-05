@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-06-09"
 created_at: "2026-06-09 14:54:22 UTC"
 updated: "2026-06-09"
@@ -12,7 +12,7 @@ source_skill: sf-spec
 source_model: "GPT-5 Codex"
 scope: "feature"
 owner: "Diane"
-user_story: "En tant qu'utilisatrice ReplayGlowz en train de regarder, trier, lire ou prendre des notes, je veux passer dans un mode focus qui masque le chrome classique et expose les actions utiles par swipe selon la page, afin de garder une interface plus directe, tactile et moins dispersée."
+user_story: "En tant qu'utilisatrice ReplayGlows en train de regarder, trier, lire ou prendre des notes, je veux passer dans un mode focus qui masque le chrome classique et expose les actions utiles par swipe selon la page, afin de garder une interface plus directe, tactile et moins dispersée."
 confidence: medium
 risk_level: medium
 security_impact: yes
@@ -33,7 +33,7 @@ depends_on:
   - artifact: "shipglows_data/branding/branding.md"
     artifact_version: "1.0.0"
     required_status: "reviewed"
-  - artifact: "shipglows_data/workflow/specs/replayglowz-youtube-core-parity-priority-3.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-3.md"
     artifact_version: "1.0.0"
     required_status: "ready"
 supersedes: []
@@ -43,14 +43,14 @@ evidence:
   - "Current code has Play-local focus mode in app/lib/screens/play/play_screen.dart."
   - "Current code has global bottom-bar playback swipe behavior in app/lib/widgets/app_shell.dart."
   - "Current i18n already contains fullscreen/focus labels in app/lib/i18n/en.dart and fr.dart."
-next_step: "/sf-start replayglowz-global-focus-swipe-menus"
+next_step: "/sf-start replayglows-global-focus-swipe-menus"
 ---
 
-# Spec: ReplayGlowz Global Focus Swipe Menus
+# Spec: ReplayGlows Global Focus Swipe Menus
 
 ## Title
 
-ReplayGlowz global focus swipe menus
+ReplayGlows global focus swipe menus
 
 ## Status
 
@@ -60,11 +60,11 @@ This spec is updated after readiness review. It intentionally keeps the implemen
 
 ## User Story
 
-En tant qu'utilisatrice ReplayGlowz en train de regarder, trier, lire ou prendre des notes, je veux passer dans un mode focus qui masque le chrome classique et expose les actions utiles par swipe selon la page, afin de garder une interface plus directe, tactile et moins dispersée.
+En tant qu'utilisatrice ReplayGlows en train de regarder, trier, lire ou prendre des notes, je veux passer dans un mode focus qui masque le chrome classique et expose les actions utiles par swipe selon la page, afin de garder une interface plus directe, tactile et moins dispersée.
 
 ## Minimal Behavior Contract
 
-ReplayGlowz must provide a global focus mode that hides normal screen chrome and makes bottom swipe menus page-aware. When focus mode is off, the app keeps its normal app bars, top actions, bottom navigation, and current playback controls. When focus mode is on, each primary page exposes its defined action menu through an upward swipe from the bottom bar. A downward swipe closes an open menu. A downward swipe while the menu is closed exits focus mode. The Play page keeps the current advanced playback menu behavior as its page menu, while Feed, Lists, and Notes receive their own exact action menus. If a page has no valid context for one of its actions, that action must render disabled with a short reason and must not fire a destructive or stale action. The edge case most likely to be missed is moving between pages while a menu is open: the menu must reset to the new page's action model and must not execute actions from the previous page.
+ReplayGlows must provide a global focus mode that hides normal screen chrome and makes bottom swipe menus page-aware. When focus mode is off, the app keeps its normal app bars, top actions, bottom navigation, and current playback controls. When focus mode is on, each primary page exposes its defined action menu through an upward swipe from the bottom bar. A downward swipe closes an open menu. A downward swipe while the menu is closed exits focus mode. The Play page keeps the current advanced playback menu behavior as its page menu, while Feed, Lists, and Notes receive their own exact action menus. If a page has no valid context for one of its actions, that action must render disabled with a short reason and must not fire a destructive or stale action. The edge case most likely to be missed is moving between pages while a menu is open: the menu must reset to the new page's action model and must not execute actions from the previous page.
 
 ## Success Behavior
 
@@ -96,7 +96,7 @@ ReplayGlowz must provide a global focus mode that hides normal screen chrome and
 
 ## Problem
 
-ReplayGlowz is moving toward a tactile watch-and-work interface where the bottom bar and swipe gestures are more natural than scattered top-right icons. The current code already has a Play-local focus mode and a global playback swipe menu, but these concepts are not unified. Users can control playback from multiple routes, yet a future page-specific menu system would become confusing if it simply adds more swipe layers on top of normal app bars and route-specific top actions.
+ReplayGlows is moving toward a tactile watch-and-work interface where the bottom bar and swipe gestures are more natural than scattered top-right icons. The current code already has a Play-local focus mode and a global playback swipe menu, but these concepts are not unified. Users can control playback from multiple routes, yet a future page-specific menu system would become confusing if it simply adds more swipe layers on top of normal app bars and route-specific top actions.
 
 ## Solution
 
@@ -160,7 +160,7 @@ Every menu also includes `Exit focus`. Destructive or external-side-effect actio
 - `surface`: Flutter Web compact/mobile UI, Riverpod state, GoRouter route awareness, gesture-driven bottom bar.
 - `proof_profile`: automated widget/provider tests plus manual Flutter Web mobile-viewport QA.
 - `proof_order`: run static checks first, then focused widget/provider tests, then manual checklist, then authenticated YouTube-write smoke if credentials are available.
-- `checklist_path`: `shipglows_data/workflow/test-checklists/replayglowz-global-focus-swipe-menus.md`.
+- `checklist_path`: `shipglows_data/workflow/test-checklists/replayglows-global-focus-swipe-menus.md`.
 - `automated_commands`:
   - `(cd app && flutter analyze)`
   - `(cd app && flutter test test/widgets/app_shell_playback_swipe_test.dart test/app/playback_session_provider_test.dart)`
@@ -322,7 +322,7 @@ Every menu also includes `Exit focus`. Destructive or external-side-effect actio
   - Notes: Avoid long labels that overflow narrow cells.
 
 - [ ] Task 11: Add validation checklist.
-  - File: `shipglows_data/workflow/test-checklists/replayglowz-global-focus-swipe-menus.md`
+  - File: `shipglows_data/workflow/test-checklists/replayglows-global-focus-swipe-menus.md`
   - Action: Create a manual checklist containing all required scenario IDs from the Test Contract.
   - User story link: The feature needs gesture/runtime proof beyond static tests.
   - Depends on: Tasks 1-10.
@@ -360,7 +360,7 @@ Every menu also includes `Exit focus`. Destructive or external-side-effect actio
   - `(cd app && flutter analyze)`
   - `(cd app && flutter test test/widgets/app_shell_playback_swipe_test.dart test/app/playback_session_provider_test.dart)`
 - Manual proof:
-  - execute every scenario ID in `shipglows_data/workflow/test-checklists/replayglowz-global-focus-swipe-menus.md`;
+  - execute every scenario ID in `shipglows_data/workflow/test-checklists/replayglows-global-focus-swipe-menus.md`;
   - include active video and no-active-video states;
   - include YouTube disconnected behavior;
   - include narrow French labels.
@@ -401,12 +401,12 @@ Every menu also includes `Exit focus`. Destructive or external-side-effect actio
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-06-09 | sf-spec | GPT-5 Codex | Created global focus swipe menus spec from user product direction and current AppShell/Play focus context. | draft saved | `/sf-ready replayglowz-global-focus-swipe-menus` |
-| 2026-06-09 | sf-ready | GPT-5 Codex | Reviewed structure, user-story alignment, scope, test contract, adversarial risks, and security posture. | not ready | `/sf-spec replayglowz-global-focus-swipe-menus` |
-| 2026-06-09 | sf-spec | GPT-5 Codex | Clarified exact page actions, focus entry/exit behavior, and formal test contract after readiness review. | draft updated | `/sf-ready replayglowz-global-focus-swipe-menus` |
-| 2026-06-09 | sf-ready | GPT-5 Codex | Re-reviewed clarified spec for implementation readiness, language doctrine, test contract, and security posture. | not ready | `/sf-spec replayglowz-global-focus-swipe-menus` |
-| 2026-06-09 | sf-spec | GPT-5 Codex | Integrated user decisions: keep `Sort lists` with local sort behavior, unify Play focus into global focus, make focus session-local, and document existing guarded action paths. | draft updated | `/sf-ready replayglowz-global-focus-swipe-menus` |
-| 2026-06-09 | sf-ready | GPT-5 Codex | Validated updated spec against readiness checklist, adversarial risks, security posture, and test contract. | ready | `/sf-start replayglowz-global-focus-swipe-menus` |
+| 2026-06-09 | sf-spec | GPT-5 Codex | Created global focus swipe menus spec from user product direction and current AppShell/Play focus context. | draft saved | `/sf-ready replayglows-global-focus-swipe-menus` |
+| 2026-06-09 | sf-ready | GPT-5 Codex | Reviewed structure, user-story alignment, scope, test contract, adversarial risks, and security posture. | not ready | `/sf-spec replayglows-global-focus-swipe-menus` |
+| 2026-06-09 | sf-spec | GPT-5 Codex | Clarified exact page actions, focus entry/exit behavior, and formal test contract after readiness review. | draft updated | `/sf-ready replayglows-global-focus-swipe-menus` |
+| 2026-06-09 | sf-ready | GPT-5 Codex | Re-reviewed clarified spec for implementation readiness, language doctrine, test contract, and security posture. | not ready | `/sf-spec replayglows-global-focus-swipe-menus` |
+| 2026-06-09 | sf-spec | GPT-5 Codex | Integrated user decisions: keep `Sort lists` with local sort behavior, unify Play focus into global focus, make focus session-local, and document existing guarded action paths. | draft updated | `/sf-ready replayglows-global-focus-swipe-menus` |
+| 2026-06-09 | sf-ready | GPT-5 Codex | Validated updated spec against readiness checklist, adversarial risks, security posture, and test contract. | ready | `/sf-start replayglows-global-focus-swipe-menus` |
 
 ## Current Chantier Flow
 
@@ -419,4 +419,4 @@ Every menu also includes `Exit focus`. Destructive or external-side-effect actio
 | sf-end | not launched | Close after verification and documentation/changelog decisions. |
 | sf-ship | not launched | Ship only after focused runtime QA. |
 
-Next command: `/sf-start replayglowz-global-focus-swipe-menus`
+Next command: `/sf-start replayglows-global-focus-swipe-menus`

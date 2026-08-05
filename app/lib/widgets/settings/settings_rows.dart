@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:replayglowz_app/widgets/app_states.dart';
+import 'package:replayglows_app/widgets/app_states.dart';
 
 class SettingsSection extends StatelessWidget {
   const SettingsSection({super.key, required this.title});

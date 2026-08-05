@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:replayglowz_app/app/theme.dart';
-import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/auth/auth_service.dart';
-import 'package:replayglowz_app/auth/auth_state.dart';
-import 'package:replayglowz_app/providers/providers.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
-import 'package:replayglowz_app/widgets/play/playback_controls.dart';
-import 'package:replayglowz_app/widgets/youtube_connect.dart';
+import 'package:replayglows_app/app/theme.dart';
+import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/auth/auth_service.dart';
+import 'package:replayglows_app/auth/auth_state.dart';
+import 'package:replayglows_app/providers/providers.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/widgets/play/playback_controls.dart';
+import 'package:replayglows_app/widgets/youtube_connect.dart';
 
 @visibleForTesting
 enum PlaybackSeekControlsSwipeAction { show, hide, none }
@@ -962,10 +962,10 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                           const SizedBox(width: AppSpacing.sm),
                           Text(
                             isNewAccount
-                                ? 'Setting up your ReplayGlowz account'
+                                ? 'Setting up your ReplayGlows account'
                                 : status.accountRecognized
                                 ? 'Account recognized, product access inactive'
-                                : 'ReplayGlowz access check required',
+                                : 'ReplayGlows access check required',
                             style: theme.textTheme.titleMedium,
                           ),
                         ],
@@ -973,10 +973,10 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.sm),
                       Text(
                         isNewAccount
-                            ? 'Your sign-in worked. ReplayGlowz is creating your workspace and free access; retry in a moment if this message stays visible.'
+                            ? 'Your sign-in worked. ReplayGlows is creating your workspace and free access; retry in a moment if this message stays visible.'
                             : status.accountRecognized
-                            ? 'Your account is valid, but it does not have active ReplayGlowz access yet.'
-                            : 'ReplayGlowz could not confirm your product access for this account.',
+                            ? 'Your account is valid, but it does not have active ReplayGlows access yet.'
+                            : 'ReplayGlows could not confirm your product access for this account.',
                       ),
                       const SizedBox(height: AppSpacing.md),
                       const _FreeTrialAccessSummary(),
@@ -1040,7 +1040,7 @@ class _ProductAccessInactiveView extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'ReplayGlowz cannot verify product access right now.',
+                      'ReplayGlows cannot verify product access right now.',
                       style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.xs),

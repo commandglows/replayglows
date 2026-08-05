@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: replayglowz-app
+project: replayglows-app
 created: "2026-04-25"
 updated: "2026-04-26"
 status: ready
@@ -30,7 +30,7 @@ next_step: "Keep aligned with the Convex backend feedback contract before implem
 Date: 2026-04-19
 Branche front: `main`
 Frontend repo: `app`
-Backend Convex repo: `/home/claude/replayglowz/backend/packages/backend/convex`
+Backend Convex repo: `/home/claude/replayglows/backend/packages/backend/convex`
 
 ## Titre
 
@@ -67,7 +67,7 @@ Ajouter un flux de feedback unifié dans l’app Flutter existante, utilisable s
 ## Constat d’architecture
 
 - Le frontend est une app Flutter unique ciblant au moins le web et potentiellement Android.
-- Le backend Convex vit dans un autre repo: `/home/claude/replayglowz/backend/packages/backend/convex`.
+- Le backend Convex vit dans un autre repo: `/home/claude/replayglows/backend/packages/backend/convex`.
 - Les writes Convex front passent par `lib/providers/mutations.dart`.
 - Les reads typed sont centralisés dans `lib/providers/providers.dart`.
 - Le router actuel force l’auth sur toutes les routes sauf `/sign-in`; un feedback anonyme exige donc une nouvelle route publique autorisée.
@@ -92,7 +92,7 @@ Ajouter un flux de feedback unifié dans l’app Flutter existante, utilisable s
 
 ## Modèle serveur proposé
 
-Nouvelle table `feedbackEntries` dans `/home/claude/replayglowz/backend/packages/backend/convex/schema.ts`.
+Nouvelle table `feedbackEntries` dans `/home/claude/replayglows/backend/packages/backend/convex/schema.ts`.
 
 Champs:
 
@@ -126,7 +126,7 @@ Notes:
 
 ## Opérations Convex proposées
 
-Nouveau module: `/home/claude/replayglowz/backend/packages/backend/convex/feedback.ts`
+Nouveau module: `/home/claude/replayglows/backend/packages/backend/convex/feedback.ts`
 
 Fonctions publiques:
 
@@ -229,16 +229,16 @@ TubeFlow n’a pas encore de locale globale appliquée à `MaterialApp.router`. 
 ## Implémentation détaillée
 
 - [ ] Tâche 1: Ajouter le schéma feedback côté Convex
-  - Fichier: `/home/claude/replayglowz/backend/packages/backend/convex/schema.ts`
+  - Fichier: `/home/claude/replayglows/backend/packages/backend/convex/schema.ts`
   - Action: créer la table `feedbackEntries` avec ses validateurs et indexes.
 
 - [ ] Tâche 2: Créer le module backend feedback
-  - Fichier: `/home/claude/replayglowz/backend/packages/backend/convex/feedback.ts`
+  - Fichier: `/home/claude/replayglows/backend/packages/backend/convex/feedback.ts`
   - Action: implémenter `isAdmin`, `getUploadUrl`, `createText`, `createAudio`, `listAdmin`, `markReviewed`.
   - Notes: toutes les protections admin doivent être faites côté serveur, pas seulement dans l’UI.
 
 - [ ] Tâche 3: Rendre l’allowlist admin configurable
-  - Fichier: `/home/claude/replayglowz/backend/packages/backend/convex/feedback.ts`
+  - Fichier: `/home/claude/replayglows/backend/packages/backend/convex/feedback.ts`
   - Action: parser `process.env.FEEDBACK_ADMIN_EMAILS` en helper réutilisable.
   - Notes: comparaison lowercase + trim, valeurs vides ignorées.
 
@@ -315,7 +315,7 @@ TubeFlow n’a pas encore de locale globale appliquée à `MaterialApp.router`. 
   - Action: documenter `FEEDBACK_ADMIN_EMAILS` et la présence du flux feedback.
 
 - [ ] Tâche 20: Régénérer les artefacts si nécessaire
-  - Fichier: `/home/claude/replayglowz/backend/packages/backend/convex/_generated/*`
+  - Fichier: `/home/claude/replayglows/backend/packages/backend/convex/_generated/*`
   - Action: régénérer les bindings Convex après ajout du module backend.
   - Notes: seulement si le workflow de l’équipe versionne ces fichiers générés.
 
@@ -424,7 +424,7 @@ Spec: Feedback App + Admin v1
 Tâches: 20
 Critères: 12
 Frontend files: `lib/app/router.dart`, `lib/providers/mutations.dart`, `lib/providers/providers.dart`, `lib/screens/preferences/preferences_screen.dart`, `lib/auth/auth_gate.dart`, `lib/screens/feedback/*`, `lib/models/*`, `pubspec.yaml`, `vercel.json`
-Backend files: `/home/claude/replayglowz/backend/packages/backend/convex/schema.ts`, `/home/claude/replayglowz/backend/packages/backend/convex/feedback.ts`
+Backend files: `/home/claude/replayglows/backend/packages/backend/convex/schema.ts`, `/home/claude/replayglows/backend/packages/backend/convex/feedback.ts`
 ─────────────────────────
 
 ## Prochaine étape

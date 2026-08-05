@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-06-11"
 created_at: "2026-06-11 11:02:13 UTC"
 updated: "2026-06-11"
@@ -13,7 +13,7 @@ source_model: "GPT-5 Codex"
 scope: "android-notifications"
 owner: "Diane"
 confidence: "high"
-user_story: "En tant qu'utilisatrice ReplayGlowz sur Android, je veux choisir exactement quelles notifications je recois, a quelle cadence, et pour quels feeds ou chaines, afin de rester informee sans subir de bruit inutile et revenir vite dans l'app quand quelque chose d'utile arrive."
+user_story: "En tant qu'utilisatrice ReplayGlows sur Android, je veux choisir exactement quelles notifications je recois, a quelle cadence, et pour quels feeds ou chaines, afin de rester informee sans subir de bruit inutile et revenir vite dans l'app quand quelque chose d'utile arrive."
 risk_level: "high"
 security_impact: "yes"
 docs_impact: "yes"
@@ -48,28 +48,28 @@ evidence:
   - "FCM Android setup docs: https://firebase.google.com/docs/cloud-messaging/android/get-started"
   - "FCM Android receive docs: https://firebase.google.com/docs/cloud-messaging/android/receive-messages"
   - "Convex actions docs: https://docs.convex.dev/api/modules/server"
-next_step: "/102-sf-start replayglowz-android-notifications"
+next_step: "/102-sf-start replayglows-android-notifications"
 ---
 
-# Spec: ReplayGlowz Android Notifications
+# Spec: ReplayGlows Android Notifications
 
 ## Title
 
-ReplayGlowz Android notifications
+ReplayGlows Android notifications
 
 ## Status
 
 ready
 
-This spec launches the notifications chantier with the current product decision: Firebase Cloud Messaging is the Android push transport, but ReplayGlowz backend logic remains the source of truth for user preferences, cadence, targeting, and delivery eligibility.
+This spec launches the notifications chantier with the current product decision: Firebase Cloud Messaging is the Android push transport, but ReplayGlows backend logic remains the source of truth for user preferences, cadence, targeting, and delivery eligibility.
 
 ## User Story
 
-En tant qu'utilisatrice ReplayGlowz sur Android, je veux choisir exactement quelles notifications je recois, a quelle cadence, et pour quels feeds ou chaines, afin de rester informee sans subir de bruit inutile et revenir vite dans l'app quand quelque chose d'utile arrive.
+En tant qu'utilisatrice ReplayGlows sur Android, je veux choisir exactement quelles notifications je recois, a quelle cadence, et pour quels feeds ou chaines, afin de rester informee sans subir de bruit inutile et revenir vite dans l'app quand quelque chose d'utile arrive.
 
 ## Minimal Behavior Contract
 
-ReplayGlowz must support Android push notifications that reflect the user's own preferences, not a generic global alert stream. The app must let the user opt into Android push notifications, select a delivery cadence from a bounded product list (`hourly`, `every_6_hours`, `daily`, `every_3_days`), and define notification targeting for ReplayGlowz feeds and eligible YouTube-channel-backed content. The backend must remain the decision engine: it stores device tokens, user preference state, cadence windows, and targeting rules; computes which pending in-app notifications are push-eligible; and sends push delivery through Firebase Cloud Messaging. The Android app must request notification permission at an intentional user moment, register/update its FCM token, receive push notifications, deep-link into the correct ReplayGlowz route, and keep the in-app notifications center consistent with push-delivered items. The easy edge case to miss is duplicate or stale delivery across multiple Android installs: the system must deduplicate by notification record and only send to active device registrations that still belong to the signed-in ReplayGlowz user.
+ReplayGlows must support Android push notifications that reflect the user's own preferences, not a generic global alert stream. The app must let the user opt into Android push notifications, select a delivery cadence from a bounded product list (`hourly`, `every_6_hours`, `daily`, `every_3_days`), and define notification targeting for ReplayGlows feeds and eligible YouTube-channel-backed content. The backend must remain the decision engine: it stores device tokens, user preference state, cadence windows, and targeting rules; computes which pending in-app notifications are push-eligible; and sends push delivery through Firebase Cloud Messaging. The Android app must request notification permission at an intentional user moment, register/update its FCM token, receive push notifications, deep-link into the correct ReplayGlows route, and keep the in-app notifications center consistent with push-delivered items. The easy edge case to miss is duplicate or stale delivery across multiple Android installs: the system must deduplicate by notification record and only send to active device registrations that still belong to the signed-in ReplayGlows user.
 
 ## Success Behavior
 
@@ -81,47 +81,47 @@ ReplayGlowz must support Android push notifications that reflect the user's own 
   - every 3 days
 - Android users can choose the content sources they want push notifications for:
   - all eligible new videos
-  - selected ReplayGlowz feeds
-  - selected ReplayGlowz channel sources already known to the current user context
+  - selected ReplayGlows feeds
+  - selected ReplayGlows channel sources already known to the current user context
 - Android users can keep `transcript_ready` notifications enabled even if some new-video notifications are filtered out, and `transcript_ready` bypasses the new-video cadence buckets.
-- ReplayGlowz requests Android notification permission only when the user enables push or enters the notification setup flow, not blindly on first launch.
-- The Android app registers an FCM token after permission is granted and syncs token changes to ReplayGlowz backend.
-- ReplayGlowz backend stores Android device registrations per user and can deactivate stale tokens.
-- ReplayGlowz backend sends FCM notifications only for notifications that match the user's cadence, source targeting, and enabled types.
-- Push notifications open the correct ReplayGlowz destination with a valid back stack:
+- ReplayGlows requests Android notification permission only when the user enables push or enters the notification setup flow, not blindly on first launch.
+- The Android app registers an FCM token after permission is granted and syncs token changes to ReplayGlows backend.
+- ReplayGlows backend stores Android device registrations per user and can deactivate stale tokens.
+- ReplayGlows backend sends FCM notifications only for notifications that match the user's cadence, source targeting, and enabled types.
+- Push notifications open the correct ReplayGlows destination with a valid back stack:
   - `new_video` opens Play with the target `videoId`
   - `transcript_ready` opens Play on the target `videoId` and lands in transcript-capable context
   - `system` opens Notifications unless a more precise route is defined
-- Opening a push-delivered notification marks the underlying ReplayGlowz notification as read through the existing mutation path.
+- Opening a push-delivered notification marks the underlying ReplayGlows notification as read through the existing mutation path.
 - The in-app Notifications screen remains the durable history; push is a delivery surface, not a separate notification store.
-- Users who deny Android notification permission can continue using ReplayGlowz normally and still see the in-app notification center.
+- Users who deny Android notification permission can continue using ReplayGlows normally and still see the in-app notification center.
 
 ## Error Behavior
 
 - If Android notification permission is denied, the app must not keep prompting aggressively. It should show a clear in-app state explaining that push is disabled and how to re-enable it in system settings.
 - If FCM token registration fails, the app must not pretend push is active. It should keep the push toggle in a recoverable error state and allow retry.
-- If backend delivery to a device token fails with an invalid or unregistered token, ReplayGlowz must deactivate that token registration rather than retry forever.
+- If backend delivery to a device token fails with an invalid or unregistered token, ReplayGlows must deactivate that token registration rather than retry forever.
 - If a notification references a video that no longer resolves in the current user context, the app should fall back to Notifications screen with a non-blocking explanation instead of opening a broken Play state.
-- If a user signs out, the app must unregister or invalidate the device binding for the signed-in ReplayGlowz user before another user can inherit those pushes.
+- If a user signs out, the app must unregister or invalidate the device binding for the signed-in ReplayGlows user before another user can inherit those pushes.
 - If multiple Android devices are registered for the same user, delivery may fan out to all active devices, but each device should receive at most one push per notification record.
-- Push delivery must not bypass product access checks. Notification generation and delivery are only for users with active ReplayGlowz access.
+- Push delivery must not bypass product access checks. Notification generation and delivery are only for users with active ReplayGlows access.
 - If a `transcript_ready` event is eligible, it may be delivered immediately even when `new_video` pushes are currently deferred by cadence.
 
 ## Problem
 
-ReplayGlowz already has in-app notifications, unread counts, notification settings primitives, and backend generation for at least `new_video` events. But today the product does not provide Android-native push delivery, does not model per-device push registration, and does not give the user precise control over cadence or source targeting. If notifications are important to ReplayGlowz, the current setup is incomplete: it surfaces records only after the user opens the app, and the preference model is too coarse for a high-value productivity workflow.
+ReplayGlows already has in-app notifications, unread counts, notification settings primitives, and backend generation for at least `new_video` events. But today the product does not provide Android-native push delivery, does not model per-device push registration, and does not give the user precise control over cadence or source targeting. If notifications are important to ReplayGlows, the current setup is incomplete: it surfaces records only after the user opens the app, and the preference model is too coarse for a high-value productivity workflow.
 
 ## Solution
 
 Implement Android notifications as a two-layer system:
 
-1. ReplayGlowz backend is the source of truth for notification records, push preferences, cadence windows, source targeting, and delivery attempts.
+1. ReplayGlows backend is the source of truth for notification records, push preferences, cadence windows, source targeting, and delivery attempts.
 2. Firebase Cloud Messaging is the transport for Android push delivery.
 
 The architecture decision is explicit:
 
 - do not make Flutter the system that decides who should receive a push
-- do not make Firebase the place where ReplayGlowz product rules live
+- do not make Firebase the place where ReplayGlows product rules live
 - keep product logic in `backend`
 - use Android-native/Firebase-native surfaces only for token registration, permission, local handling, and deep-link routing
 
@@ -138,7 +138,7 @@ This chantier should extend the existing notification model instead of creating 
   - source targeting
   - notification type targeting
 - Backend delivery logic that selects eligible notifications and sends them through Firebase Cloud Messaging
-- Actionable Android notifications and deep links into ReplayGlowz routes
+- Actionable Android notifications and deep links into ReplayGlows routes
 - Notification channel design for Android with separate OS-level channels by type
 - Keeping in-app notifications and push-delivered notifications coherent
 - Focused tests and manual Android-device QA
@@ -158,14 +158,14 @@ This chantier should extend the existing notification model instead of creating 
 ## Constraints
 
 - Firebase/FCM is the Android push transport because the app already uses Firebase runtime configuration and auth-adjacent mobile setup.
-- ReplayGlowz backend remains the source of truth for product logic and eligibility.
+- ReplayGlows backend remains the source of truth for product logic and eligibility.
 - Prefer existing Convex backend patterns: generate durable notification rows first, then deliver push through a server-side action.
 - Delivery code must run server-side with Firebase Admin credentials; client-side send paths are forbidden.
 - The implementation must not leak FCM device tokens in logs, browser diagnostics, analytics, or client-visible error strings.
 - Android 13+ runtime permission behavior must be respected.
 - Notification routing must use explicit deep links/back stack handling, not fragile ad hoc route strings with missing parent navigation context.
 - The bounded cadence list is product-defined for the MVP; do not add custom cron builders in v1.
-- Source targeting must be conservative: only ReplayGlowz-owned source ids already associated with the current user should be selectable in the MVP. The MVP must not rely on free-form raw YouTube channel ids as the preference contract.
+- Source targeting must be conservative: only ReplayGlows-owned source ids already associated with the current user should be selectable in the MVP. The MVP must not rely on free-form raw YouTube channel ids as the preference contract.
 - Android OS-level notification channels must be split at least into `Transcript ready`, `New videos`, and `System`, so urgent/personal workflow notifications can stay enabled even if lower-priority content noise is muted.
 
 ## Test Contract
@@ -179,14 +179,14 @@ This chantier should extend the existing notification model instead of creating 
   - `(cd app && flutter test <targeted notification tests>)`
   - `/home/claude/shipglows/tools/shipglows_metadata_lint.py AGENTS.md shipglows_data`
 - `required_scenario_ids`:
-  - `RGN-001`: User enables push from Android settings flow, grants permission, and ReplayGlowz stores a device token registration.
-  - `RGN-002`: User denies Android notification permission and ReplayGlowz shows a recoverable disabled state without crashing.
+  - `RGN-001`: User enables push from Android settings flow, grants permission, and ReplayGlows stores a device token registration.
+  - `RGN-002`: User denies Android notification permission and ReplayGlows shows a recoverable disabled state without crashing.
   - `RGN-003`: User chooses each bounded cadence value and the backend stores it exactly.
-  - `RGN-004`: User selects feed/channel targeting and ReplayGlowz persists only valid ReplayGlowz feed ids or channel-source ids for that user.
+  - `RGN-004`: User selects feed/channel targeting and ReplayGlows persists only valid ReplayGlows feed ids or channel-source ids for that user.
   - `RGN-005`: Backend generates a `new_video` notification that matches the user's preferences and sends exactly one push per active Android device token.
   - `RGN-006`: Backend generates a notification that does not match cadence or targeting and sends no push while preserving the in-app notification row.
-  - `RGN-007`: Tapping a `new_video` push opens ReplayGlowz Play for the correct `videoId`.
-  - `RGN-008`: Tapping a `transcript_ready` push opens ReplayGlowz in a transcript-capable Play context for the correct `videoId`.
+  - `RGN-007`: Tapping a `new_video` push opens ReplayGlows Play for the correct `videoId`.
+  - `RGN-008`: Tapping a `transcript_ready` push opens ReplayGlows in a transcript-capable Play context for the correct `videoId`.
   - `RGN-009`: Opening a push-linked notification marks the underlying notification as read.
   - `RGN-010`: Invalid/unregistered FCM token responses deactivate the backend device registration.
   - `RGN-011`: Signing out prevents the old user from continuing to receive pushes on that device registration.
@@ -216,11 +216,11 @@ This chantier should extend the existing notification model instead of creating 
 
 ## Invariants
 
-- Notification rows in ReplayGlowz backend remain canonical even when push delivery is unavailable.
+- Notification rows in ReplayGlows backend remain canonical even when push delivery is unavailable.
 - Push delivery never creates a second source of truth for read/unread state.
-- Only authenticated ReplayGlowz users with active product access can register push devices or receive pushes.
+- Only authenticated ReplayGlows users with active product access can register push devices or receive pushes.
 - Delivery eligibility must always be computed from current server-side preferences, not cached client assumptions.
-- Device registrations belong to one ReplayGlowz user at a time.
+- Device registrations belong to one ReplayGlows user at a time.
 - Delivery attempts must be idempotent at the notification-record x device-registration level.
 
 ## Links & Consequences
@@ -231,7 +231,7 @@ This chantier should extend the existing notification model instead of creating 
 - Environment/secrets management expands to include Firebase server credentials for push delivery.
 - Android QA becomes a real release gate for this feature; Flutter analyze alone is not meaningful proof.
 - Public claims should remain narrow: "configurable Android notifications" is safe only after end-to-end delivery is proven.
-- Android OS settings will expose multiple ReplayGlowz notification channels, which becomes part of the product contract and support surface.
+- Android OS settings will expose multiple ReplayGlows notification channels, which becomes part of the product contract and support surface.
 
 ## Documentation Coherence
 
@@ -239,7 +239,7 @@ This chantier should extend the existing notification model instead of creating 
 - Update app/architecture docs if new Android messaging services or device-registration flows are introduced.
 - Document required Firebase server credentials and where they live.
 - Add release-note/changelog copy when this ships because it changes a core re-engagement surface.
-- Keep user-facing copy practical and low-hype, consistent with ReplayGlowz brand voice.
+- Keep user-facing copy practical and low-hype, consistent with ReplayGlows brand voice.
 
 ## Edge Cases
 
@@ -247,7 +247,7 @@ This chantier should extend the existing notification model instead of creating 
 - User selects feeds that are later deleted or revoked.
 - User reinstalls the app and receives a new FCM token.
 - User has two Android devices with different local permission states.
-- User disables an Android notification channel at OS level while ReplayGlowz still has push enabled.
+- User disables an Android notification channel at OS level while ReplayGlows still has push enabled.
 - `transcript_ready` arrives after the video has already been opened and read in-app.
 - Backend creates `new_video` notifications in bursts while cadence is `every_3_days`.
 - User changes cadence from `hourly` to `daily` after pending notifications already exist.
@@ -305,7 +305,7 @@ This chantier should extend the existing notification model instead of creating 
     - `app/lib/screens/preferences/preferences_screen.dart`
     - `app/lib/models/settings.dart`
     - related providers/mutations
-  - Action: Add the bounded cadence controls, type toggles, and source-targeting selectors with safe empty/loading/error states. Source targeting must operate on ReplayGlowz feeds and ReplayGlowz channel-source entries already known to the user.
+  - Action: Add the bounded cadence controls, type toggles, and source-targeting selectors with safe empty/loading/error states. Source targeting must operate on ReplayGlows feeds and ReplayGlows channel-source entries already known to the user.
   - Depends on: Tasks 1 and 5.
   - Validate with: targeted widget tests and manual Android QA.
 
@@ -322,7 +322,7 @@ This chantier should extend the existing notification model instead of creating 
   - Files:
     - Android platform setup
     - app messaging service/presentation layer
-  - Action: Define stable Android channels for ReplayGlowz notifications, handle foreground message presentation, and keep OS-level channel behavior explicit. The MVP must create distinct channels for `Transcript ready`, `New videos`, and `System`.
+  - Action: Define stable Android channels for ReplayGlows notifications, handle foreground message presentation, and keep OS-level channel behavior explicit. The MVP must create distinct channels for `Transcript ready`, `New videos`, and `System`.
   - Depends on: Task 5.
   - Validate with: manual Android QA and channel-state checks.
 
@@ -339,13 +339,13 @@ This chantier should extend the existing notification model instead of creating 
 
 - [ ] CA 1: Android users can enable or disable push notifications independently of other notification surfaces.
 - [ ] CA 2: Android users can choose exactly one cadence value from `hourly`, `every_6_hours`, `daily`, or `every_3_days`.
-- [ ] CA 3: Android users can target notifications to all eligible sources or selected ReplayGlowz feeds/channel-source entries that belong to them.
+- [ ] CA 3: Android users can target notifications to all eligible sources or selected ReplayGlows feeds/channel-source entries that belong to them.
 - [ ] CA 4: `new_video`, `transcript_ready`, and `system` notifications can be independently gated where the product allows it, with conservative defaults, and `transcript_ready` is treated as the higher-priority workflow class.
 - [ ] CA 5: Android 13+ runtime notification permission is requested from a deliberate user action or setup step, not at arbitrary startup.
-- [ ] CA 6: ReplayGlowz stores and updates Android FCM device registrations per user securely.
+- [ ] CA 6: ReplayGlows stores and updates Android FCM device registrations per user securely.
 - [ ] CA 7: Backend push delivery uses server-side Firebase credentials and never sends from client code.
-- [ ] CA 8: A push for `new_video` opens ReplayGlowz Play for the correct video.
-- [ ] CA 9: A push for `transcript_ready` opens ReplayGlowz in a usable transcript-capable context for the correct video.
+- [ ] CA 8: A push for `new_video` opens ReplayGlows Play for the correct video.
+- [ ] CA 9: A push for `transcript_ready` opens ReplayGlows in a usable transcript-capable context for the correct video.
 - [ ] CA 10: Invalid/unregistered device tokens are deactivated automatically after delivery failures.
 - [ ] CA 11: The in-app Notifications screen remains the canonical history even when push is disabled, denied, or unavailable.
 - [ ] CA 12: Sign-out and user switching do not leak one user's notifications to another user's device session.
@@ -370,13 +370,13 @@ This chantier should extend the existing notification model instead of creating 
 
 ## Execution Notes
 
-- Prefer ReplayGlowz backend as the decision engine because it already owns settings, notification rows, and scheduled feed-check work.
+- Prefer ReplayGlows backend as the decision engine because it already owns settings, notification rows, and scheduled feed-check work.
 - Use Firebase Cloud Messaging as transport only.
 - Use Convex internal actions for delivery because official Convex docs allow third-party integrations and side effects in actions.
 - Keep client code focused on permission, token sync, foreground handling, and deep-link routing.
 - Product decisions fixed in this spec:
   - `transcript_ready` is a higher-priority class than `new_video` and bypasses the deferred new-video cadence buckets.
-  - MVP targeting is modeled with ReplayGlowz feed ids and ReplayGlowz channel-source ids, not arbitrary raw YouTube channel ids.
+  - MVP targeting is modeled with ReplayGlows feed ids and ReplayGlows channel-source ids, not arbitrary raw YouTube channel ids.
   - Android OS channels are distinct by type: `Transcript ready`, `New videos`, `System`.
 - Read first:
   - `backend/packages/backend/convex/notifications.ts`
@@ -393,7 +393,7 @@ This chantier should extend the existing notification model instead of creating 
   - `(cd app && flutter analyze)`
   - `(cd app && flutter test <targeted notification tests>)`
   - `/home/claude/shipglows/tools/shipglows_metadata_lint.py AGENTS.md shipglows_data`
-- Do not attempt to encode cadence or targeting rules into Firebase topics as the primary source of truth; ReplayGlowz needs per-user product logic that should remain backend-owned.
+- Do not attempt to encode cadence or targeting rules into Firebase topics as the primary source of truth; ReplayGlows needs per-user product logic that should remain backend-owned.
 - Do not ship broad default push-on behavior without a deliberate permission/setup UX.
 - Stop and reroute if implementation requires:
   - client-side push send logic
@@ -410,21 +410,21 @@ None.
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-06-11 11:02:13 UTC | sf-spec | GPT-5 Codex | Created Android notifications chantier spec from product direction, current backend/app notification surfaces, and official Android/FCM/Convex docs. | draft spec created | `/101-sf-ready replayglowz-android-notifications` |
-| 2026-06-11 11:17:25 UTC | sf-ready | GPT-5 Codex | Reviewed structure, metadata, freshness, adversarial and security posture; kept the spec out of ready because three product decisions still change delivery behavior and Android OS contract. | not ready | `/100-sf-spec replayglowz-android-notifications` |
-| 2026-06-11 11:17:25 UTC | sf-build | GPT-5 Codex | Applied the operator decision that `transcript_ready` is higher priority, fixed the MVP targeting model to ReplayGlowz feed/source ids, fixed Android OS channels by type, and prepared the spec for a final readiness pass. | draft updated | `/101-sf-ready replayglowz-android-notifications` |
-| 2026-06-11 11:17:25 UTC | sf-ready | GPT-5 Codex | Re-ran readiness after the product decisions were fixed in the spec; structure, security posture, delivery contract, and proof path are now coherent enough for implementation. | ready | `/102-sf-start replayglowz-android-notifications` |
-| 2026-06-11 15:55:00 UTC | sf-start | GPT-5 Codex | Implemented backend Android push settings/device/delivery/cadence logic, Flutter Android FCM permission/token/foreground/tap handling, precise Preferences controls, Android channels, and setup docs. | implemented | `/103-sf-verify replayglowz-android-notifications` |
-| 2026-06-11 14:54:05 UTC | sf-verify | GPT-5 Codex | Re-ran Flutter/backend checks after verification pass; local quality holds but Android-hosted proof remains missing and a verified route/read gap for system pushes persists. | partial | `005-sf-ship replayglowz-android-notifications` |
-| 2026-06-11 15:07:21 UTC | 103-sf-verify | GPT-5 Codex | Re-verified Android push routing/read path: local Flutter analyze + tests + backend typecheck pass. Android-hosted end-to-end proof still missing. | partial | `005-sf-ship replayglowz-android-notifications` |
+| 2026-06-11 11:02:13 UTC | sf-spec | GPT-5 Codex | Created Android notifications chantier spec from product direction, current backend/app notification surfaces, and official Android/FCM/Convex docs. | draft spec created | `/101-sf-ready replayglows-android-notifications` |
+| 2026-06-11 11:17:25 UTC | sf-ready | GPT-5 Codex | Reviewed structure, metadata, freshness, adversarial and security posture; kept the spec out of ready because three product decisions still change delivery behavior and Android OS contract. | not ready | `/100-sf-spec replayglows-android-notifications` |
+| 2026-06-11 11:17:25 UTC | sf-build | GPT-5 Codex | Applied the operator decision that `transcript_ready` is higher priority, fixed the MVP targeting model to ReplayGlows feed/source ids, fixed Android OS channels by type, and prepared the spec for a final readiness pass. | draft updated | `/101-sf-ready replayglows-android-notifications` |
+| 2026-06-11 11:17:25 UTC | sf-ready | GPT-5 Codex | Re-ran readiness after the product decisions were fixed in the spec; structure, security posture, delivery contract, and proof path are now coherent enough for implementation. | ready | `/102-sf-start replayglows-android-notifications` |
+| 2026-06-11 15:55:00 UTC | sf-start | GPT-5 Codex | Implemented backend Android push settings/device/delivery/cadence logic, Flutter Android FCM permission/token/foreground/tap handling, precise Preferences controls, Android channels, and setup docs. | implemented | `/103-sf-verify replayglows-android-notifications` |
+| 2026-06-11 14:54:05 UTC | sf-verify | GPT-5 Codex | Re-ran Flutter/backend checks after verification pass; local quality holds but Android-hosted proof remains missing and a verified route/read gap for system pushes persists. | partial | `005-sf-ship replayglows-android-notifications` |
+| 2026-06-11 15:07:21 UTC | 103-sf-verify | GPT-5 Codex | Re-verified Android push routing/read path: local Flutter analyze + tests + backend typecheck pass. Android-hosted end-to-end proof still missing. | partial | `005-sf-ship replayglows-android-notifications` |
 | 2026-06-11 17:18:18 UTC | 405-sf-prod | GPT-5 Codex | Diagnosed failed Blacksmith Android APK build, enabled Android core library desugaring required by `flutter_local_notifications`, pushed the fix, and verified push + workflow_dispatch CI runs. | APK CI green; artifact uploaded | real-device Android notification QA |
 
 ## Current Chantier Flow
 
 | Stage | Status | Notes |
 |-------|--------|-------|
-| sf-spec | complete | Draft created with architecture decision: ReplayGlowz backend owns rules, Firebase/FCM owns Android push transport. |
-| sf-ready | complete | Product decisions fixed: `transcript_ready` is higher priority, MVP targeting uses ReplayGlowz feed/source ids, and Android OS channels are split by type. |
+| sf-spec | complete | Draft created with architecture decision: ReplayGlows backend owns rules, Firebase/FCM owns Android push transport. |
+| sf-ready | complete | Product decisions fixed: `transcript_ready` is higher priority, MVP targeting uses ReplayGlows feed/source ids, and Android OS channels are split by type. |
 | sf-start | complete | Implementation complete locally; `flutter analyze`, backend `npm run typecheck`, and metadata lint pass. |
 | sf-verify | partial | Local checks pass; Android device + Firebase credential proof required. |
 | sf-end | pending | Close bookkeeping after implementation and QA. |

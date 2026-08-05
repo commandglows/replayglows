@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: replayglowz-app
+project: replayglows-app
 created: "2026-04-25"
 updated: "2026-04-26"
 status: ready
@@ -93,9 +93,9 @@ This keeps the Clerk beta workaround where needed, but removes popup orchestrati
 - Refresh helpers in [lib/providers/mutations.dart](app/lib/providers/mutations.dart:177)
 - YouTube status query in [lib/providers/providers.dart](app/lib/providers/providers.dart:295)
 - Reference architecture migrated into `backend`:
-  - [apps/web/src/hooks/use-youtube.ts](/home/claude/replayglowz/backend/packages/backend/src/hooks/use-youtube.ts:55)
-  - [apps/web/src/app/api/auth/youtube/route.ts](/home/claude/replayglowz/backend/packages/backend/src/app/api/auth/youtube/route.ts:1)
-  - [apps/web/src/app/api/auth/youtube/callback/route.ts](/home/claude/replayglowz/backend/packages/backend/src/app/api/auth/youtube/callback/route.ts:1)
+  - [apps/web/src/hooks/use-youtube.ts](/home/claude/replayglows/backend/packages/backend/src/hooks/use-youtube.ts:55)
+  - [apps/web/src/app/api/auth/youtube/route.ts](/home/claude/replayglows/backend/packages/backend/src/app/api/auth/youtube/route.ts:1)
+  - [apps/web/src/app/api/auth/youtube/callback/route.ts](/home/claude/replayglows/backend/packages/backend/src/app/api/auth/youtube/callback/route.ts:1)
 
 # Invariants
 
@@ -247,9 +247,9 @@ This keeps the Clerk beta workaround where needed, but removes popup orchestrati
   - `api/auth/_youtube.js`
   - `lib/providers/mutations.dart`
 - Reference implementation to mirror conceptually:
-  - `/home/claude/replayglowz/backend/packages/backend/src/hooks/use-youtube.ts`
-  - `/home/claude/replayglowz/backend/packages/backend/src/app/api/auth/youtube/route.ts`
-  - `/home/claude/replayglowz/backend/packages/backend/src/app/api/auth/youtube/callback/route.ts`
+  - `/home/claude/replayglows/backend/packages/backend/src/hooks/use-youtube.ts`
+  - `/home/claude/replayglows/backend/packages/backend/src/app/api/auth/youtube/route.ts`
+  - `/home/claude/replayglows/backend/packages/backend/src/app/api/auth/youtube/callback/route.ts`
 - Recommended execution order:
   1. simplify server handlers
   2. simplify Flutter connect initiation

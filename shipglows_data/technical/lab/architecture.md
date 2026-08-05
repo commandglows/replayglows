@@ -26,7 +26,7 @@ evidence:
 linked_systems:
   - "main.py"
   - "server.py"
-  - "ReplayGlowz Convex app"
+  - "ReplayGlows Convex app"
   - "yt-dlp"
   - "ffmpeg"
 external_dependencies:
@@ -36,7 +36,7 @@ external_dependencies:
   - "faster_whisper"
   - "FunASR / SenseVoice"
 invariants:
-  - "The worker stays a narrow transcript service, not the main ReplayGlowz app."
+  - "The worker stays a narrow transcript service, not the main ReplayGlows app."
   - "The POST /transcribe response contract remains stable for the Convex caller."
   - "Media download and normalization continue to happen before provider transcription."
 depends_on:
@@ -51,7 +51,7 @@ next_step: "sed -n '1,260p' shipglows_data/technical/lab/architecture.md"
 
 ## System role
 
-This repository contains a narrow worker service that sits beside the main ReplayGlowz application. Convex remains the orchestrator and system of record, while this worker performs external-binary and compute-heavy transcript generation.
+This repository contains a narrow worker service that sits beside the main ReplayGlows application. Convex remains the orchestrator and system of record, while this worker performs external-binary and compute-heavy transcript generation.
 
 ## Primary components
 
@@ -186,6 +186,6 @@ The worker response returns:
 
 ## Architectural boundaries
 
-- This repo is not the full ReplayGlowz app
+- This repo is not the full ReplayGlows app
 - It does not own transcript persistence, user management, or UI state
 - It should remain a focused worker rather than absorb Convex orchestration logic

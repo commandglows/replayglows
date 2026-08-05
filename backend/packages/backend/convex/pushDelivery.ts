@@ -95,10 +95,10 @@ function deliveryToMessage(delivery: PreparedDelivery): Message {
       notification: {
         channelId:
           delivery.data.type === "transcript_ready"
-            ? "replayglowz_transcript_ready"
+            ? "replayglows_transcript_ready"
             : delivery.data.type === "new_video"
-              ? "replayglowz_new_videos"
-              : "replayglowz_system",
+              ? "replayglows_new_videos"
+              : "replayglows_system",
         clickAction: "FLUTTER_NOTIFICATION_CLICK",
       },
     },

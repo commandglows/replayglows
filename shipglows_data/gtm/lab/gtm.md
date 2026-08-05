@@ -11,7 +11,7 @@ scope: "gtm"
 owner: "Diane"
 confidence: "medium"
 risk_level: "medium"
-target_segment: "Primary: ReplayGlowz internal builders/operators. Secondary: technical teams needing a dedicated YouTube transcript worker."
+target_segment: "Primary: ReplayGlows internal builders/operators. Secondary: technical teams needing a dedicated YouTube transcript worker."
 offer: "A focused transcript execution worker that keeps the app layer responsive while handling extraction, normalization, provider execution, and guardrails."
 channels: "README onboarding, deployment runbooks, internal engineering docs, and architecture documentation in parent repos."
 proof_points: "FastAPI API, multiple providers, yt-dlp preflight, concurrency and timeout controls, structured logs, health endpoint, bearer-token protection."
@@ -31,18 +31,18 @@ depends_on:
     required_status: "reviewed"
 supersedes: []
 next_review: "2026-05-26"
-next_step: "Keep GTM language scoped to backend value; defer user-facing claims to replayglowz-app."
+next_step: "Keep GTM language scoped to backend value; defer user-facing claims to replayglows-app."
 ---
 
 # GTM Context
 
 ## Decision Boundary
 
-This GTM artifact is for backend positioning only. User-facing GTM truth belongs to `replayglowz-app`.
+This GTM artifact is for backend positioning only. User-facing GTM truth belongs to `replayglows-app`.
 
 ## Target Segment
 
-- Primary: internal ReplayGlowz builder/operator maintaining transcript infrastructure.
+- Primary: internal ReplayGlows builder/operator maintaining transcript infrastructure.
 - Secondary: technical team deploying a dedicated transcript worker for a video workflow.
 
 ## Offer
@@ -56,7 +56,7 @@ This GTM artifact is for backend positioning only. User-facing GTM truth belongs
 - Not a standalone end-user SaaS.
 - Not a generic AI gateway for arbitrary workloads.
 - Not a replacement for the app orchestrator.
-- Best fit: dedicated transcript execution service for ReplayGlowz pipeline operations.
+- Best fit: dedicated transcript execution service for ReplayGlows pipeline operations.
 
 ## Channels
 
@@ -87,4 +87,4 @@ This GTM artifact is for backend positioning only. User-facing GTM truth belongs
 ## Evidence Limits
 
 - No validated acquisition funnel, pricing, or revenue evidence exists in this repo.
-- External-market messaging should stay conservative and defer to `replayglowz-app`.
+- External-market messaging should stay conservative and defer to `replayglows-app`.

@@ -2,7 +2,7 @@
 artifact: technical_module_context
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-10"
 updated: "2026-05-10"
 status: "draft"
@@ -41,7 +41,7 @@ Route changed paths to the technical docs and validation commands that must be c
 | `app/lib/**` | Flutter app | `shipglows_data/technical/app/architecture.md` | `(cd app && flutter analyze)` | Auth, routing, Convex client, screens, models, providers, i18n, or widget behavior changes. |
 | `app/api/**` | Vercel YouTube OAuth handlers | `shipglows_data/technical/app/architecture.md` | `(cd app && node --test api/auth/_youtube.test.js)` | OAuth request/return flow, cookie handling, token exchange, Clerk, or Convex mutation behavior changes. |
 | `app/build.sh`, `app/vercel.json`, `app/.env.example` | Flutter app deployment | `app/README.md` | `(cd app && bash -n build.sh)` | Build variables, Vercel routing, install/build commands, or deployment headers change. |
-| `backend/packages/backend/convex/**` | ReplayGlowz product Convex backend | `shipglows_data/technical/architecture.md` | `(cd backend/packages/backend && npm run typecheck)` | Schema, auth provider, product access, YouTube tokens, settings, videos, playlists, notes, transcripts, or function names change. |
+| `backend/packages/backend/convex/**` | ReplayGlows product Convex backend | `shipglows_data/technical/architecture.md` | `(cd backend/packages/backend && npm run typecheck)` | Schema, auth provider, product access, YouTube tokens, settings, videos, playlists, notes, transcripts, or function names change. |
 | `site/src/pages/**`, `site/src/components/**`, `site/src/i18n/**` | Astro public site | `shipglows_data/technical/site/architecture.md` | `(cd site && npm run build)` | Public route, CTA, pricing, claim, i18n, layout, or component changes. |
 | `site/src/content.config.ts`, `site/src/content/**` | Astro runtime content | `shipglows_data/editorial/astro-content-schema-policy.md` | `(cd site && npm run build)` | Content schema or blog frontmatter changes. |
 | `ext/src/**`, `ext/*.js`, `ext/public/manifest.json`, `ext/vite.config.ts`, `ext/package.json` | Chrome extension | `ext/AGENT.md`, `shipglows_data/technical/architecture.md` | `(cd ext && pnpm type-check)` and `(cd ext && pnpm build:ext)` | Extension behavior, YouTube content integration, manifest permissions, extension packaging, or build entrypoints change. |

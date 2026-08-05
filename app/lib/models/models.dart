@@ -1,8 +1,8 @@
-/// Barrel export for all ReplayGlowz model classes.
+/// Barrel export for all ReplayGlows model classes.
 ///
 /// Usage:
 /// ```dart
-/// import 'package:replayglowz_app/models/models.dart';
+/// import 'package:replayglows_app/models/models.dart';
 /// ```
 library;
 

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:replayglowz_app/app/build_info.dart';
+import 'package:replayglows_app/app/build_info.dart';
 
 void main() {
   group('FirebaseRuntimeConfig.resolve', () {

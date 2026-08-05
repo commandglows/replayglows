@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 
 Color? _controlOverlayColor(ColorScheme colorScheme, Set<WidgetState> states) {
   if (states.contains(WidgetState.pressed)) {

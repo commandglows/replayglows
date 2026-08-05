@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:js_interop';
 
-@JS('replayGlowzConvexBridge')
-external _ReplayGlowzConvexBridge get _bridge;
+@JS('replayGlowsConvexBridge')
+external _ReplayGlowsConvexBridge get _bridge;
 
-extension type _ReplayGlowzConvexBridge(JSObject _) implements JSObject {
+extension type _ReplayGlowsConvexBridge(JSObject _) implements JSObject {
   external JSPromise<JSString> query(
     JSString convexUrl,
     JSString authToken,

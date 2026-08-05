@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-import 'package:replayglowz_app/widgets/media/media_thumbnail.dart';
-import 'package:replayglowz_app/widgets/play/web_youtube_embed.dart';
+import 'package:replayglows_app/widgets/media/media_thumbnail.dart';
+import 'package:replayglows_app/widgets/play/web_youtube_embed.dart';
 
 class PlayerPanel extends StatelessWidget {
   const PlayerPanel({

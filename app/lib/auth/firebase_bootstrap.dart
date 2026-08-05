@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 
-import 'package:replayglowz_app/app/build_info.dart';
+import 'package:replayglows_app/app/build_info.dart';
 
 class FirebaseBootstrap {
   static const String projectIdEnvironmentName =

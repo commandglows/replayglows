@@ -7,30 +7,30 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:replayglowz_app/app/build_info.dart';
-import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/auth/auth_service.dart';
-import 'package:replayglowz_app/auth/firebase_bootstrap.dart';
-import 'package:replayglowz_app/convex/convex_provider.dart';
-import 'package:replayglowz_app/providers/mutations.dart';
-import 'package:replayglowz_app/utils/app_logger.dart';
+import 'package:replayglows_app/app/build_info.dart';
+import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/auth/auth_service.dart';
+import 'package:replayglows_app/auth/firebase_bootstrap.dart';
+import 'package:replayglows_app/convex/convex_provider.dart';
+import 'package:replayglows_app/providers/mutations.dart';
+import 'package:replayglows_app/utils/app_logger.dart';
 
 const _transcriptReadyChannel = AndroidNotificationChannel(
-  'replayglowz_transcript_ready',
+  'replayglows_transcript_ready',
   'Transcript ready',
   description: 'Transcript generation is complete.',
   importance: Importance.high,
 );
 
 const _newVideosChannel = AndroidNotificationChannel(
-  'replayglowz_new_videos',
+  'replayglows_new_videos',
   'New videos',
-  description: 'New videos from selected ReplayGlowz feeds and sources.',
+  description: 'New videos from selected ReplayGlows feeds and sources.',
   importance: Importance.defaultImportance,
 );
 
 const _systemChannel = AndroidNotificationChannel(
-  'replayglowz_system',
+  'replayglows_system',
   'System',
   description: 'Account, sync, and service notifications.',
   importance: Importance.defaultImportance,
@@ -45,7 +45,7 @@ final pushNotificationServiceProvider = Provider<PushNotificationService>((
 });
 
 @pragma('vm:entry-point')
-Future<void> replayGlowzFirebaseMessagingBackgroundHandler(
+Future<void> replayGlowsFirebaseMessagingBackgroundHandler(
   RemoteMessage message,
 ) async {
   if (kIsWeb) return;
@@ -56,10 +56,10 @@ Future<void> replayGlowzFirebaseMessagingBackgroundHandler(
   );
 }
 
-void registerReplayGlowzBackgroundMessageHandler() {
+void registerReplayGlowsBackgroundMessageHandler() {
   if (kIsWeb) return;
   FirebaseMessaging.onBackgroundMessage(
-    replayGlowzFirebaseMessagingBackgroundHandler,
+    replayGlowsFirebaseMessagingBackgroundHandler,
   );
 }
 
@@ -188,7 +188,7 @@ class PushNotificationService {
     final channel = _channelForMessage(message);
     await _localNotifications.show(
       id: message.messageId.hashCode,
-      title: title ?? 'ReplayGlowz',
+      title: title ?? 'ReplayGlows',
       body: body,
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(

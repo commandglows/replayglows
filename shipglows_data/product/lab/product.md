@@ -11,7 +11,7 @@ scope: "product"
 owner: "Diane"
 confidence: "medium"
 risk_level: "medium"
-target_user: "ReplayGlowz operators and developers needing reliable transcript execution outside the app runtime"
+target_user: "ReplayGlows operators and developers needing reliable transcript execution outside the app runtime"
 user_problem: "the app layer should not own long-running media downloads, ffmpeg normalization, model loading, or provider-specific transcription failures"
 desired_outcomes: "offload heavy jobs safely, keep orchestration responsive, support multiple providers, and expose clear health/limit/failure signals"
 non_goals: "being the main user-facing product, owning transcript editing UX, replacing app orchestration, or becoming a generic media-processing platform"
@@ -29,14 +29,14 @@ linked_artifacts:
 depends_on: []
 supersedes: []
 next_review: "2026-05-26"
-next_step: "Keep user-facing product claims in replayglowz-app and limit this doc to worker scope."
+next_step: "Keep user-facing product claims in replayglows-app and limit this doc to worker scope."
 ---
 
 # Product Context
 
 ## Decision Boundary
 
-`lab` documents a backend and experimental worker surface. The user-facing product truth is in `replayglowz-app`.
+`lab` documents a backend and experimental worker surface. The user-facing product truth is in `replayglows-app`.
 
 ## Target User
 
@@ -72,7 +72,7 @@ next_step: "Keep user-facing product claims in replayglowz-app and limit this do
 
 ## Scope In
 
-- YouTube transcript execution for ReplayGlowz pipeline needs.
+- YouTube transcript execution for ReplayGlows pipeline needs.
 - Provider switching across local and API-backed transcription options.
 - Runtime controls for limits, timeouts, concurrency, and auth.
 - Deployment patterns for local, Docker, and server hosting.
@@ -82,7 +82,7 @@ next_step: "Keep user-facing product claims in replayglowz-app and limit this do
 - User-facing UI, onboarding, and pricing narrative.
 - Transcript browsing/editing experience.
 - Product packaging and commercialization decisions.
-- Non-ReplayGlowz media workflows.
+- Non-ReplayGlows media workflows.
 
 ## Success Signals
 

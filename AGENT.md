@@ -2,7 +2,7 @@
 artifact: documentation
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-10"
 updated: "2026-05-10"
 status: "draft"
@@ -36,12 +36,12 @@ next_step: "/sf-docs audit"
 
 ## Purpose
 
-This repository is the canonical ReplayGlowz monorepo for the Flutter app, product Convex backend, Astro marketing site, browser extension, and transcript worker.
+This repository is the canonical ReplayGlows monorepo for the Flutter app, product Convex backend, Astro marketing site, browser extension, and transcript worker.
 
 ## Repository Layout
 
 - `app/`: Flutter web app, Vercel API handlers for YouTube OAuth, and app-level product contracts.
-- `backend/`: ReplayGlowz product Convex backend for product data, YouTube tokens, preferences, playlists, transcripts, and product access snapshots.
+- `backend/`: ReplayGlows product Convex backend for product data, YouTube tokens, preferences, playlists, transcripts, and product access snapshots.
 - `site/`: Astro public marketing site, blog, pricing, comparison, privacy, and terms pages.
 - `ext/`: standalone Chrome extension source, Vue/Vite migration, legacy YouTube integration, and extension packaging.
 - `lab/`: FastAPI transcript worker and operational tooling.

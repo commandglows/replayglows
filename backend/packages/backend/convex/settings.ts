@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { MutationCtx, mutation, query } from "./_generated/server";
-import { requireReplayGlowzAccess } from "./access";
+import { requireReplayGlowsAccess } from "./access";
 import { DEFAULT_TRANSCRIPT_PROVIDER } from "./transcriptProviders";
 import { Id } from "./_generated/dataModel";
 
@@ -243,7 +243,7 @@ export function normalizeNotifications(
 export const getSettings = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) return null;
 
     const settings = await ctx.db
@@ -296,7 +296,7 @@ export const updateTheme = mutation({
     theme: v.union(v.literal("light"), v.literal("dark"), v.literal("system")),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const settings = await ctx.db
@@ -325,7 +325,7 @@ export const updateLanguage = mutation({
     language: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const settings = await ctx.db
@@ -354,7 +354,7 @@ export const updateNotifications = mutation({
     notifications: notificationsValidator,
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const settings = await ctx.db
@@ -389,7 +389,7 @@ export const updatePlayback = mutation({
     playback: playbackValidator,
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const settings = await ctx.db
@@ -418,7 +418,7 @@ export const updateNotesSettings = mutation({
     notes: notesValidator,
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const settings = await ctx.db
@@ -447,7 +447,7 @@ export const updateChannelSyncSettings = mutation({
     channelSync: channelSyncValidator,
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const settings = await ctx.db
@@ -475,7 +475,7 @@ export const updateTranscriptSettings = mutation({
     transcripts: transcriptsValidator,
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const settings = await ctx.db
@@ -503,7 +503,7 @@ export const updateUxSettings = mutation({
     ux: uxSettingsValidator,
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const settings = await ctx.db
@@ -541,7 +541,7 @@ export const updateAllSettings = mutation({
     ux: v.optional(uxSettingsValidator),
   },
   handler: async (ctx, args) => {
-    const userId = await requireReplayGlowzAccess(ctx);
+    const userId = await requireReplayGlowsAccess(ctx);
     if (!userId) throw new Error("Unauthorized");
 
     const settings = await ctx.db

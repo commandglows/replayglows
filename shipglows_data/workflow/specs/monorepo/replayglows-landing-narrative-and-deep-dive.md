@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-07-16"
 created_at: "2026-07-16 18:56:30 UTC"
 updated: "2026-07-17"
@@ -12,7 +12,7 @@ source_skill: 100-sg-spec
 source_model: "GPT-5 Codex"
 scope: "site-landing-narrative-copy-and-section-architecture"
 owner: "Diane"
-user_story: "As a ReplayGlowz landing-page visitor, I want a clear learning-first story followed by scannable benefit and feature summaries, so I understand the product before pricing and can still explore its capabilities afterward."
+user_story: "As a ReplayGlows landing-page visitor, I want a clear learning-first story followed by scannable benefit and feature summaries, so I understand the product before pricing and can still explore its capabilities afterward."
 confidence: "high"
 risk_level: "medium"
 security_impact: "none"
@@ -41,20 +41,20 @@ depends_on:
     artifact_version: "1.0.0"
     required_status: "reviewed"
 supersedes:
-  - artifact: "shipglows_data/workflow/specs/monorepo/replayglowz-harmonize-landing-benefits-features-cards.md"
+  - artifact: "shipglows_data/workflow/specs/monorepo/replayglows-harmonize-landing-benefits-features-cards.md"
     artifact_version: "1.1.0"
 evidence:
   - "Operator validated a learning-first promise with anti-distraction as a secondary benefit."
   - "Operator validated this sequence: narrative landing, pricing, primary CTA, then retained icon-based benefits and feature summaries."
   - "Operator selected the centered three-card row with large icons as the preferred visual grammar."
-  - "Product contract positions ReplayGlowz as a learning layer for video built around timestamped notes, organization, and retrieval."
+  - "Product contract positions ReplayGlows as a learning layer for video built around timestamped notes, organization, and retrieval."
   - "GTM contract requires the learning workflow to remain primary and algorithm-escape framing to remain subordinate."
-next_step: "/103-sg-verify replayglowz-landing-narrative-and-deep-dive"
+next_step: "/103-sg-verify replayglows-landing-narrative-and-deep-dive"
 ---
 
 # Title
 
-Rebuild ReplayGlowz Landing Narrative And Deep-Dive Flow
+Rebuild ReplayGlows Landing Narrative And Deep-Dive Flow
 
 ## Status
 
@@ -62,11 +62,11 @@ Implemented locally. The bilingual copywriting review gives every section a dist
 
 ## User Story
 
-As a ReplayGlowz landing-page visitor, I want a clear learning-first story followed by scannable benefit and feature summaries, so I understand the product before pricing and can still explore its capabilities afterward.
+As a ReplayGlows landing-page visitor, I want a clear learning-first story followed by scannable benefit and feature summaries, so I understand the product before pricing and can still explore its capabilities afterward.
 
 ## Minimal Behavior Contract
 
-When a visitor opens the English or French homepage, the page first explains how ReplayGlowz turns YouTube viewing into reusable learning through organized videos, timestamped notes, and exact-context retrieval; it then answers the YouTube-plus-notes objection, presents the unchanged pricing, and offers a primary conversion CTA before revealing the retained icon-based benefit and feature summaries. If a claim is not supported by the product contract, it must be removed or made neutral instead of being strengthened. The easy-to-miss edge case is that the post-pricing summaries must deepen the story without restarting it or making the first CTA feel like the end of the page.
+When a visitor opens the English or French homepage, the page first explains how ReplayGlows turns YouTube viewing into reusable learning through organized videos, timestamped notes, and exact-context retrieval; it then answers the YouTube-plus-notes objection, presents the unchanged pricing, and offers a primary conversion CTA before revealing the retained icon-based benefit and feature summaries. If a claim is not supported by the product contract, it must be removed or made neutral instead of being strengthened. The easy-to-miss edge case is that the post-pricing summaries must deepen the story without restarting it or making the first CTA feel like the end of the page.
 
 ## Success Behavior
 
@@ -89,7 +89,7 @@ When a visitor opens the English or French homepage, the page first explains how
 
 ## Problem
 
-The current homepage presents several disconnected product stories: algorithm control, generic productivity, generic notes, and AI. Repeated card sections create volume but not progression, so visitors can scan features without understanding why ReplayGlowz is a distinct learning workflow or why it is better than YouTube plus a separate notes app.
+The current homepage presents several disconnected product stories: algorithm control, generic productivity, generic notes, and AI. Repeated card sections create volume but not progression, so visitors can scan features without understanding why ReplayGlows is a distinct learning workflow or why it is better than YouTube plus a separate notes app.
 
 ## Solution
 
@@ -102,7 +102,7 @@ Create a two-level homepage. The first level is a conversion narrative: learning
 - A concise single problem narrative rather than a four-problem card grid.
 - A centered three-step workflow row with large icons.
 - A concrete product proof section for timestamped notes, organization, and exact-context retrieval.
-- A side-by-side comparison between YouTube plus a notes app and ReplayGlowz.
+- A side-by-side comparison between YouTube plus a notes app and ReplayGlows.
 - Repositioning the existing Benefits and Features sections after Pricing and the first CTA.
 - Rewriting Benefits/Features copy only where required to remove generic, AI, privacy-certification, or unsupported claims and reduce duplication.
 - A post-feature attention-control punchline and compact final CTA.
@@ -177,7 +177,7 @@ The homepage itself is the public documentation surface being changed. No README
 - Intended buyer: an individual who uses YouTube to learn, research, teach, or return to useful explanations and is frustrated by disconnected notes and lost source context.
 - Funnel position: homepage bridge from problem-aware to solution-aware, with a product-led app CTA after mechanism, objection handling, and offer visibility.
 - Awareness path: lost idea -> repeatable workflow -> timestamp/context mechanism -> YouTube-plus-notes objection -> Pricing -> action -> optional capability deep dive.
-- Inspiration Gate: the private inspiration index was unavailable, so no external reference was selected or loaded; decisions use only ReplayGlowz product, GTM, brand, and operator evidence.
+- Inspiration Gate: the private inspiration index was unavailable, so no external reference was selected or loaded; decisions use only ReplayGlows product, GTM, brand, and operator evidence.
 - Persuasion grades: persona alignment `A`; value proposition `A`; persuasion structure `A`; objections `A`; emotional path `A-`; CTA strategy `A`; journey coherence `A`.
 - Content-quality rubric: clarity `94`; structure `95`; source faithfulness `96`; compliance `94`; brand voice `93`; call to action `92`; weighted overall `94`; status `publishable with caveats`; confidence `0.90`.
 - Caveat: existing AI and cross-device wording inside Pricing remains outside this chantier by explicit invariant and still requires separate proof review. Testimonial review text is intentionally non-final placeholder content.
@@ -196,7 +196,7 @@ The homepage itself is the public documentation surface being changed. No README
 
 #### Claim Impact Plan
 
-- Changed claim: qualitative promise that ReplayGlowz keeps YouTube videos, timestamped notes, and exact playback context connected for later retrieval.
+- Changed claim: qualitative promise that ReplayGlows keeps YouTube videos, timestamped notes, and exact playback context connected for later retrieval.
 - Surface: English and French homepages.
 - Evidence checked: canonical app product contract, site product/GTM contracts, and editorial claim register.
 - Status: supported.
@@ -277,7 +277,7 @@ The homepage itself is the public documentation surface being changed. No README
 2. Assert section order and unique IDs in both locale sources.
 3. Scan homepage-owned copy for `2,000`, `AI`, `SOC2`, `E2E`, and unsupported guarantee language; assert testimonial review text is placeholder-only and classify unavoidable Pricing occurrences as out of this chantier.
 4. Run `(cd site && pnpm build)`.
-5. Run `python3 /home/claude/shipglowz/tools/design_system_drift_check.py --root /home/claude/replayglowz/site --changed --format markdown --max-findings 5000` after canonical tool preflight.
+5. Run `python3 /home/claude/shipglowz/tools/design_system_drift_check.py --root /home/claude/replayglows/site --changed --format markdown --max-findings 5000` after canonical tool preflight.
 6. After authorized ship and target discovery, run `108-sg-browser` at the required desktop, medium, and mobile viewports for `/` and `/fr/`, including accessibility/reduced-motion inspection.
 
 ## Risks
@@ -308,14 +308,14 @@ None. The operator approved the learning-first plus anti-distraction hybrid posi
 
 | Date UTC | Skill | Model | Action | Result | Next step |
 |----------|-------|-------|--------|--------|-----------|
-| 2026-07-16 18:56:30 UTC | 100-sg-spec | GPT-5 Codex | Converted the operator-approved landing narrative, section order, retained deep-dive blocks, claim boundaries, and proof route into a durable implementation contract. | Draft created. | `/101-sg-ready replayglowz-landing-narrative-and-deep-dive` |
-| 2026-07-16 18:58:13 UTC | 101-sg-ready | GPT-5 Codex | Reviewed user-story fit, mandatory structure, product truth, claim boundaries, locale parity, pricing non-regression, accessibility, design-system authority, edge cases, and hosted proof routing. | Ready. | `/102-sg-start replayglowz-landing-narrative-and-deep-dive` |
-| 2026-07-16 19:07:51 UTC | 102-sg-start | GPT-5 Codex | Implemented the bilingual learning-first narrative, product proof, comparison, post-pricing deep dive, shared locale-driven components, and homepage newsletter removal while preserving Pricing and testimonial content. Ran rendered-order assertions, Pricing source comparison, Astro build, metadata lint, and design drift checks. | Implemented locally; preview responsive and motion proof remains pending. | `/103-sg-verify replayglowz-landing-narrative-and-deep-dive` |
+| 2026-07-16 18:56:30 UTC | 100-sg-spec | GPT-5 Codex | Converted the operator-approved landing narrative, section order, retained deep-dive blocks, claim boundaries, and proof route into a durable implementation contract. | Draft created. | `/101-sg-ready replayglows-landing-narrative-and-deep-dive` |
+| 2026-07-16 18:58:13 UTC | 101-sg-ready | GPT-5 Codex | Reviewed user-story fit, mandatory structure, product truth, claim boundaries, locale parity, pricing non-regression, accessibility, design-system authority, edge cases, and hosted proof routing. | Ready. | `/102-sg-start replayglows-landing-narrative-and-deep-dive` |
+| 2026-07-16 19:07:51 UTC | 102-sg-start | GPT-5 Codex | Implemented the bilingual learning-first narrative, product proof, comparison, post-pricing deep dive, shared locale-driven components, and homepage newsletter removal while preserving Pricing and testimonial content. Ran rendered-order assertions, Pricing source comparison, Astro build, metadata lint, and design drift checks. | Implemented locally; preview responsive and motion proof remains pending. | `/103-sg-verify replayglows-landing-narrative-and-deep-dive` |
 | 2026-07-16 19:13:39 UTC | 106-sg-fix | GPT-5 Codex | Diagnosed and repaired the testimonial rail's finite native-scroll endpoint by using one scroll coordinate system, triple buffering, and bidirectional position normalization. | Fix attempted locally; build and static checks pass, but preview interaction retest remains required. | `/005-sg-ship -> /405-sg-prod -> /107-sg-test --preview --retest BUG-2026-07-16-001` |
 | 2026-07-17 08:00:06 UTC | 103-sg-verify | GPT-5 Codex | Exercised the testimonial rail in local development and compiled-preview browsers at mobile, medium, and desktop widths across both locales; then strengthened animation scheduling, focus handling, and duplicate accessibility isolation and reran focused scenarios. | Partial: local browser, build, metadata, and design-system evidence pass; the declared development mode still requires matching Vercel preview proof for a verified verdict. | `/005-sg-ship -> /405-sg-prod -> /108-sg-browser` |
-| 2026-07-17 08:25:06 UTC | 009-sg-marketing | GPT-5 Codex | Audited persona fit, value proposition, persuasion sequence, objections, CTA strategy, claim safety, and bilingual journey coherence; rewrote the homepage narrative and metadata so each section has one distinct role while preserving Pricing and testimonial content. | Copywriting remediated locally; rubric 94/100, build/static proof and six local responsive browser scenarios pass; matching preview proof remains pending. | `/103-sg-verify replayglowz-landing-narrative-and-deep-dive` |
-| 2026-07-17 08:34:05 UTC | 007-sg-content | GPT-5 Codex | Routed and applied the operator-requested public testimonial placeholder update across both homepage locales. | Implemented locally; testimonial identities, ratings, cards, and rail behavior preserved. | `/103-sg-verify replayglowz-landing-narrative-and-deep-dive` |
-| 2026-07-17 08:34:05 UTC | 201-sg-enrich | GPT-5 Codex | Replaced the three testimonial review claims with matching Lorem ipsum placeholder copy in English and French. | Placeholder content applied; final testimonial copy remains intentionally unresolved. | `/103-sg-verify replayglowz-landing-narrative-and-deep-dive` |
+| 2026-07-17 08:25:06 UTC | 009-sg-marketing | GPT-5 Codex | Audited persona fit, value proposition, persuasion sequence, objections, CTA strategy, claim safety, and bilingual journey coherence; rewrote the homepage narrative and metadata so each section has one distinct role while preserving Pricing and testimonial content. | Copywriting remediated locally; rubric 94/100, build/static proof and six local responsive browser scenarios pass; matching preview proof remains pending. | `/103-sg-verify replayglows-landing-narrative-and-deep-dive` |
+| 2026-07-17 08:34:05 UTC | 007-sg-content | GPT-5 Codex | Routed and applied the operator-requested public testimonial placeholder update across both homepage locales. | Implemented locally; testimonial identities, ratings, cards, and rail behavior preserved. | `/103-sg-verify replayglows-landing-narrative-and-deep-dive` |
+| 2026-07-17 08:34:05 UTC | 201-sg-enrich | GPT-5 Codex | Replaced the three testimonial review claims with matching Lorem ipsum placeholder copy in English and French. | Placeholder content applied; final testimonial copy remains intentionally unresolved. | `/103-sg-verify replayglows-landing-narrative-and-deep-dive` |
 
 ## Current Chantier Flow
 
@@ -332,4 +332,4 @@ None. The operator approved the learning-first plus anti-distraction hybrid posi
 | 104-sg-end | not started | Closure not started. |
 | 005-sg-ship | not started | No commit or push authorized in this workflow. |
 
-Next command: `/103-sg-verify replayglowz-landing-narrative-and-deep-dive`; hosted proof then routes through `/005-sg-ship`, `/405-sg-prod`, and `/108-sg-browser`.
+Next command: `/103-sg-verify replayglows-landing-narrative-and-deep-dive`; hosted proof then routes through `/005-sg-ship`, `/405-sg-prod`, and `/108-sg-browser`.

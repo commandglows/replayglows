@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.replayglowz.app"
+    namespace = "com.replayglows.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.replayglowz.app"
+        applicationId = "com.replayglows.app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -30,9 +30,9 @@ android {
 
     signingConfigs {
         getByName("debug") {
-            storeFile = file("replayglowz-debug.keystore")
+            storeFile = file("replayglows-debug.keystore")
             storePassword = "android"
-            keyAlias = "replayglowzdebug"
+            keyAlias = "replayglowsdebug"
             keyPassword = "android"
         }
     }

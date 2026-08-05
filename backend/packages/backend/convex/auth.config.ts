@@ -7,19 +7,19 @@ const providers: AuthConfig["providers"] = [
   },
 ];
 
-const replayGlowzProductJwtIssuer =
-  process.env.REPLAYGLOWZ_PRODUCT_JWT_ISSUER?.trim();
-const replayGlowzProductJwtJwks =
-  process.env.REPLAYGLOWZ_PRODUCT_JWT_JWKS_URL?.trim();
-const replayGlowzProductJwtAudience =
-  process.env.REPLAYGLOWZ_PRODUCT_JWT_AUDIENCE?.trim() ?? "replayglowz-convex";
+const replayGlowsProductJwtIssuer =
+  process.env.REPLAYGLOWS_PRODUCT_JWT_ISSUER?.trim();
+const replayGlowsProductJwtJwks =
+  process.env.REPLAYGLOWS_PRODUCT_JWT_JWKS_URL?.trim();
+const replayGlowsProductJwtAudience =
+  process.env.REPLAYGLOWS_PRODUCT_JWT_AUDIENCE?.trim() ?? "replayglows-convex";
 
-if (replayGlowzProductJwtIssuer && replayGlowzProductJwtJwks) {
+if (replayGlowsProductJwtIssuer && replayGlowsProductJwtJwks) {
   providers.push({
     type: "customJwt",
-    issuer: replayGlowzProductJwtIssuer,
-    jwks: replayGlowzProductJwtJwks,
-    applicationID: replayGlowzProductJwtAudience,
+    issuer: replayGlowsProductJwtIssuer,
+    jwks: replayGlowsProductJwtJwks,
+    applicationID: replayGlowsProductJwtAudience,
     algorithm: "RS256",
   });
 }

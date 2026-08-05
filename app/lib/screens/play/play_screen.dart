@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,25 +10,25 @@ import 'package:go_router/go_router.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/i18n/translations.dart';
-import 'package:replayglowz_app/models/models.dart';
-import 'package:replayglowz_app/providers/mutations.dart';
-import 'package:replayglowz_app/providers/providers.dart';
-import 'package:replayglowz_app/utils/browser_environment.dart';
-import 'package:replayglowz_app/utils/duration_utils.dart';
-import 'package:replayglowz_app/widgets/app_states.dart';
-import 'package:replayglowz_app/widgets/common_app_bar_actions.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
-import 'package:replayglowz_app/widgets/media/media_thumbnail.dart';
-import 'package:replayglowz_app/widgets/notes/note_tile.dart';
-import 'package:replayglowz_app/widgets/play/comments_placeholder.dart';
-import 'package:replayglowz_app/widgets/play/player_panel.dart';
-import 'package:replayglowz_app/widgets/play/web_youtube_embed.dart';
-import 'package:replayglowz_app/widgets/transcripts/transcript_entry_tile.dart';
-import 'package:replayglowz_app/widgets/ui_hint_card.dart';
-import 'package:replayglowz_app/widgets/youtube_connect.dart';
-import 'package:replayglowz_app/widgets/youtube_quota_guard.dart';
+import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/i18n/translations.dart';
+import 'package:replayglows_app/models/models.dart';
+import 'package:replayglows_app/providers/mutations.dart';
+import 'package:replayglows_app/providers/providers.dart';
+import 'package:replayglows_app/utils/browser_environment.dart';
+import 'package:replayglows_app/utils/duration_utils.dart';
+import 'package:replayglows_app/widgets/app_states.dart';
+import 'package:replayglows_app/widgets/common_app_bar_actions.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/widgets/media/media_thumbnail.dart';
+import 'package:replayglows_app/widgets/notes/note_tile.dart';
+import 'package:replayglows_app/widgets/play/comments_placeholder.dart';
+import 'package:replayglows_app/widgets/play/player_panel.dart';
+import 'package:replayglows_app/widgets/play/web_youtube_embed.dart';
+import 'package:replayglows_app/widgets/transcripts/transcript_entry_tile.dart';
+import 'package:replayglows_app/widgets/ui_hint_card.dart';
+import 'package:replayglows_app/widgets/youtube_connect.dart';
+import 'package:replayglows_app/widgets/youtube_quota_guard.dart';
 
 class _TranscriptEntry {
   const _TranscriptEntry({
@@ -915,7 +915,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         loading: () => const YoutubeConnectionLoadingState(
           title: 'Checking playback access',
           description:
-              'ReplayGlowz is confirming your YouTube connection before opening the player.',
+              'ReplayGlows is confirming your YouTube connection before opening the player.',
         ),
         error: (error, stack) => ErrorStateView(
           error: error,
@@ -2114,7 +2114,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                             ),
                             const SizedBox(height: AppSpacing.xs),
                             Text(
-                              'Create a ReplayGlowz feed first.',
+                              'Create a ReplayGlows feed first.',
                               style: theme.textTheme.bodyMedium,
                               textAlign: TextAlign.center,
                             ),
@@ -2502,7 +2502,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.lg),
                         child: Text(
-                          'No active queue. Start playback from Feed, a playlist, or a ReplayGlowz feed to build Up next.',
+                          'No active queue. Start playback from Feed, a playlist, or a ReplayGlows feed to build Up next.',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(

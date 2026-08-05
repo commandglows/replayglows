@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:replayglowz_app/app/theme.dart';
+import 'package:replayglows_app/app/theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:replayglowz_app/app/build_info.dart';
-import 'package:replayglowz_app/app/router.dart';
-import 'package:replayglowz_app/auth/auth_state.dart';
-import 'package:replayglowz_app/i18n/translations.dart';
-import 'package:replayglowz_app/auth/auth_service.dart';
-import 'package:replayglowz_app/models/models.dart';
-import 'package:replayglowz_app/notifications/push_notification_service.dart';
-import 'package:replayglowz_app/providers/mutations.dart';
-import 'package:replayglowz_app/providers/providers.dart';
-import 'package:replayglowz_app/utils/app_logger.dart';
-import 'package:replayglowz_app/widgets/error_feedback.dart';
-import 'package:replayglowz_app/widgets/settings/settings_rows.dart';
-import 'package:replayglowz_app/widgets/youtube_channel_onboarding.dart';
-import 'package:replayglowz_app/widgets/youtube_connect.dart';
+import 'package:replayglows_app/app/build_info.dart';
+import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/auth/auth_state.dart';
+import 'package:replayglows_app/i18n/translations.dart';
+import 'package:replayglows_app/auth/auth_service.dart';
+import 'package:replayglows_app/models/models.dart';
+import 'package:replayglows_app/notifications/push_notification_service.dart';
+import 'package:replayglows_app/providers/mutations.dart';
+import 'package:replayglows_app/providers/providers.dart';
+import 'package:replayglows_app/utils/app_logger.dart';
+import 'package:replayglows_app/widgets/error_feedback.dart';
+import 'package:replayglows_app/widgets/settings/settings_rows.dart';
+import 'package:replayglows_app/widgets/youtube_channel_onboarding.dart';
+import 'package:replayglows_app/widgets/youtube_connect.dart';
 
 /// Preferences screen with grouped settings sections.
 ///
@@ -176,7 +176,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               ),
               SizedBox(height: AppSpacing.sm),
               Text(
-                'ReplayGlowz is fetching your settings, subscription, and profile data from Convex.',
+                'ReplayGlows is fetching your settings, subscription, and profile data from Convex.',
               ),
             ],
           ),
@@ -614,7 +614,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
         // App info
         Center(
           child: Text(
-            'ReplayGlowz v1.0.0',
+            'ReplayGlows v1.0.0',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -1381,7 +1381,7 @@ class _DiagnosticsCard extends ConsumerWidget {
 
     return [
       ...buildIdentityHeader(),
-      'ReplayGlowz preferences diagnostics',
+      'ReplayGlows preferences diagnostics',
       'Build id: $buildId',
       'Build commit: $buildCommitSha',
       'Build environment: $buildEnvironment',
@@ -1394,13 +1394,13 @@ class _DiagnosticsCard extends ConsumerWidget {
       'CLERK_PUBLISHABLE_KEY: ${clerkPublishableKeyStatusLabel()}',
       'CLERK_SIGN_IN_URL: $clerkSignInUrl',
       'CLERK_SIGN_UP_URL: $clerkSignUpUrl',
-      'REPLAYGLOWZ_PRODUCT_ID: $replayGlowzProductId',
-      'REPLAYGLOWZ_LEGACY_PRODUCT_IDS: $replayGlowzLegacyProductIds',
-      'REPLAYGLOWZ_ACCOUNT_CENTER_URL: $replayGlowzAccountCenterUrl',
-      'REPLAYGLOWZ_APP_URL: ${replayGlowzAppUrl.isNotEmpty ? replayGlowzAppUrl : '(missing)'}',
-      'REPLAYGLOWZ_APP_URL host match: ${hostMatchLabel(replayGlowzAppUrl)}',
+      'REPLAYGLOWS_PRODUCT_ID: $replayGlowsProductId',
+      'REPLAYGLOWS_LEGACY_PRODUCT_IDS: $replayGlowsLegacyProductIds',
+      'REPLAYGLOWS_ACCOUNT_CENTER_URL: $replayGlowsAccountCenterUrl',
+      'REPLAYGLOWS_APP_URL: ${replayGlowsAppUrl.isNotEmpty ? replayGlowsAppUrl : '(missing)'}',
+      'REPLAYGLOWS_APP_URL host match: ${hostMatchLabel(replayGlowsAppUrl)}',
       'SENTRY: ${sentryStatusLabel()}',
-      'ReplayGlowz sign-in initialised: ${auth.isInitialised ? 'yes' : 'no'}',
+      'ReplayGlows sign-in initialised: ${auth.isInitialised ? 'yes' : 'no'}',
       'Auth state: $authLabel',
       'Current user: ${auth.currentUser?.id ?? 'none'}',
       '',
@@ -1441,14 +1441,14 @@ class _DiagnosticsCard extends ConsumerWidget {
         ok: clerkSignInUrl.isNotEmpty,
       ),
       (
-        key: 'REPLAYGLOWZ_PRODUCT_ID',
-        value: replayGlowzProductId,
-        ok: replayGlowzProductId.isNotEmpty,
+        key: 'REPLAYGLOWS_PRODUCT_ID',
+        value: replayGlowsProductId,
+        ok: replayGlowsProductId.isNotEmpty,
       ),
       (
-        key: 'REPLAYGLOWZ_LEGACY_PRODUCT_IDS',
-        value: replayGlowzLegacyProductIds,
-        ok: replayGlowzLegacyProductIds.isNotEmpty,
+        key: 'REPLAYGLOWS_LEGACY_PRODUCT_IDS',
+        value: replayGlowsLegacyProductIds,
+        ok: replayGlowsLegacyProductIds.isNotEmpty,
       ),
       (
         key: 'BUILD_COMMIT_SHA',
@@ -1456,19 +1456,19 @@ class _DiagnosticsCard extends ConsumerWidget {
         ok: buildCommitSha != 'unknown',
       ),
       (
-        key: 'REPLAYGLOWZ_APP_URL',
-        value: replayGlowzAppUrl.isNotEmpty ? replayGlowzAppUrl : '(missing)',
-        ok: replayGlowzAppUrl.isNotEmpty,
+        key: 'REPLAYGLOWS_APP_URL',
+        value: replayGlowsAppUrl.isNotEmpty ? replayGlowsAppUrl : '(missing)',
+        ok: replayGlowsAppUrl.isNotEmpty,
       ),
       (
         key: 'APP_URL host match',
-        value: hostMatchLabel(replayGlowzAppUrl),
+        value: hostMatchLabel(replayGlowsAppUrl),
         ok:
-            hostMatchLabel(replayGlowzAppUrl) == 'yes' ||
-            hostMatchLabel(replayGlowzAppUrl) == 'not-web',
+            hostMatchLabel(replayGlowsAppUrl) == 'yes' ||
+            hostMatchLabel(replayGlowsAppUrl) == 'not-web',
       ),
       (
-        key: 'ReplayGlowz sign-in initialised',
+        key: 'ReplayGlows sign-in initialised',
         value: auth.isInitialised ? 'yes' : 'no',
         ok: auth.isInitialised,
       ),

@@ -1,5 +1,5 @@
-import 'package:replayglowz_app/app/build_info.dart';
-import 'package:replayglowz_app/auth/product_entitlement.dart';
+import 'package:replayglows_app/app/build_info.dart';
+import 'package:replayglows_app/auth/product_entitlement.dart';
 
 enum SuiteIdentityStatus {
   unknown,
@@ -52,10 +52,10 @@ class SuiteIdentitySnapshot {
       status != SuiteIdentityStatus.unavailable &&
       status != SuiteIdentityStatus.unknown;
 
-  bool get hasReplayGlowzAccess {
+  bool get hasReplayGlowsAccess {
     final productIds = {
-      replayGlowzProductId.trim(),
-      ...replayGlowzLegacyProductIds
+      replayGlowsProductId.trim(),
+      ...replayGlowsLegacyProductIds
           .split(',')
           .map((value) => value.trim())
           .where((value) => value.isNotEmpty),

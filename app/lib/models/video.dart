@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:replayglowz_app/utils/duration_utils.dart';
+import 'package:replayglows_app/utils/duration_utils.dart';
 
 enum ShortFormVideoFilter { all, excludeShorts, onlyShorts }
 

@@ -2,7 +2,7 @@
 artifact: spec
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-06-09"
 created_at: "2026-06-09 21:02:45 UTC"
 updated: "2026-06-10"
@@ -41,12 +41,12 @@ depends_on:
   - artifact: "skills/references/chantier-tracking.md"
     artifact_version: "0.5.0"
     required_status: "draft"
-  - artifact: "shipglows_data/workflow/conversation-audits/2026-06-09-replayglowz-skill-application-audit.md"
+  - artifact: "shipglows_data/workflow/conversation-audits/2026-06-09-replayglows-skill-application-audit.md"
     artifact_version: "1.0.0"
     required_status: "draft"
 supersedes: []
 evidence:
-  - "Conversation audit 2026-06-09 found literalism_over_intent, over_reporting, proof_gap, stale_skill_contract, and weak_follow_through in the ReplayGlowz session."
+  - "Conversation audit 2026-06-09 found literalism_over_intent, over_reporting, proof_gap, stale_skill_contract, and weak_follow_through in the ReplayGlows session."
   - "User decision 2026-06-09: technical detail is acceptable for individual skills, but human-launched skills should not return verbose or incomprehensible reports."
   - "User decision 2026-06-09: sf-ready is too verbose, asks unclear questions, and should become more autonomous and professionally effective."
   - "Existing reporting-contract.md already distinguishes report=user and report=agent but needs stronger enforcement scenarios."
@@ -113,8 +113,8 @@ Harden the shared ShipGlows contracts and the high-risk lifecycle skills so user
 - Rewriting every ShipGlows skill from scratch.
 - Removing technical detail from `report=agent`, handoff, blocked security-sensitive reports, or internal governance artifacts.
 - Weakening readiness, proof, security, or metadata standards to make reports shorter.
-- Changing ReplayGlowz application code.
-- Changing the public product copy of ReplayGlowz.
+- Changing ReplayGlows application code.
+- Changing the public product copy of ReplayGlows.
 - Replacing ShipGlows lifecycle steps or removing chantier tracking.
 - Creating a new runtime UI for skill reports.
 
@@ -165,7 +165,7 @@ Harden the shared ShipGlows contracts and the high-risk lifecycle skills so user
 - Update `sf-ready/SKILL.md` because readiness reports were the clearest failure mode.
 - Update `templates/artifacts/readiness_report.md` if its default shape encourages verbose user-mode output.
 - Update or add validation notes in the relevant skill references so future skill edits keep the distinction between human and agent output.
-- No ReplayGlowz product docs need updates because this is a ShipGlows workflow improvement, not an app feature.
+- No ReplayGlows product docs need updates because this is a ShipGlows workflow improvement, not an app feature.
 
 ## Edge Cases
 

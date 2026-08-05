@@ -1,7 +1,7 @@
-import 'package:replayglowz_app/app/build_info.dart';
-import 'package:replayglowz_app/auth/auth_session_adapter.dart';
-import 'package:replayglowz_app/auth/auth_state.dart';
-import 'package:replayglowz_app/auth/clerk_js_bridge.dart';
+import 'package:replayglows_app/app/build_info.dart';
+import 'package:replayglows_app/auth/auth_session_adapter.dart';
+import 'package:replayglows_app/auth/auth_state.dart';
+import 'package:replayglows_app/auth/clerk_js_bridge.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class _WebAuthSessionAdapter implements AuthSessionAdapter {
@@ -33,7 +33,7 @@ class _WebAuthSessionAdapter implements AuthSessionAdapter {
   @override
   Future<void> initialise() async {
     if (!hasClerkConfig) {
-      _statusMessage = 'ReplayGlowz sign-in is not configured for this build.';
+      _statusMessage = 'ReplayGlows sign-in is not configured for this build.';
       _initialised = true;
       _currentUser = null;
       return;
@@ -44,7 +44,7 @@ class _WebAuthSessionAdapter implements AuthSessionAdapter {
         publishableKey: clerkPublishableKey,
         signInUrl: clerkSignInUrl,
         signUpUrl: clerkSignUpUrl,
-        accountCenterUrl: replayGlowzAccountCenterUrl,
+        accountCenterUrl: replayGlowsAccountCenterUrl,
       ),
     );
 
@@ -114,7 +114,7 @@ class _WebAuthSessionAdapter implements AuthSessionAdapter {
 
   @override
   Future<bool> openAccountCenter() async {
-    final url = Uri.tryParse(replayGlowzAccountCenterUrl);
+    final url = Uri.tryParse(replayGlowsAccountCenterUrl);
     if (url == null || !url.hasScheme || url.host.isEmpty) {
       return false;
     }
