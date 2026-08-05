@@ -67,7 +67,7 @@ next_step: "/sf-verify replayglowz-feed-source-discovery-playlist-channel-expans
 
 ## Browser Evidence
 
-- [x] Production app loaded `BUILD_COMMIT_SHA=d37e225c32b8eb9c4c05e9159903a687800e08c6` on `https://app.replayglowz.com` with authenticated test account.
+- [x] Production app loaded `BUILD_COMMIT_SHA=d37e225c32b8eb9c4c05e9159903a687800e08c6` on `https://app.replayglows.com` with authenticated test account.
 - [x] Created temporary Feed `QA Feed Source 0530`.
 - [x] Confirmed source picker shows distinct modes: channels from subscriptions, YouTube playlist, channels from a playlist, and all subscriptions.
 - [x] Selected playlist `Fun`; candidate query returned `Sheena Melwani` with `1 videos`.
@@ -75,7 +75,7 @@ next_step: "/sf-verify replayglowz-feed-source-discovery-playlist-channel-expans
 - [x] Reopened extraction flow and confirmed the same channel is disabled as `Already in this Feed` instead of throwing a generic server error.
 - [x] Clicked `Play all`; app routed to `/play?videoId=vSCF6pTxqJ8&autoPlay=1`.
 - [x] Deleted temporary Feed `QA Feed Source 0530` after QA.
-- [x] Extension production app loaded `BUILD_COMMIT_SHA=703d7a22d1526862ca600833546d29721ecf1d6f` on `https://app.replayglowz.com`.
+- [x] Extension production app loaded `BUILD_COMMIT_SHA=703d7a22d1526862ca600833546d29721ecf1d6f` on `https://app.replayglows.com`.
 - [x] Created temporary Feed `QA Feed Import 0530`.
 - [x] Confirmed empty subscription cache UI now shows import copy for `Channels from my subscriptions` and `All subscriptions`.
 - [x] Triggered `Channels from my subscriptions` import from the Feed source picker; YouTube quota display moved from `0 / 1000` to `1 / 1000`, proving the explicit `subscriptions.list` path ran.

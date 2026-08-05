@@ -399,4 +399,4 @@ None.
 | sf-start | complete | Implemented source discovery expansion plus subscription import and playlist channel-metadata backfill extension. |
 | sf-verify | complete | Backend typecheck, Flutter analyze/test, metadata lint, diff quota scan, Convex deploy proof, Vercel production proof, and authenticated browser proof completed for the extension. |
 | sf-end | complete | Checklist updated with extension evidence and fixture limits; temporary QA Feed cleaned from the test account. |
-| sf-ship | complete | Convex deployed to production and `main` pushed to GitHub; Vercel production deployment is Ready on `app.replayglowz.com`. |
+| sf-ship | complete | Convex deployed to production and `main` pushed to GitHub; Vercel production deployment is Ready on `app.replayglows.com`. |

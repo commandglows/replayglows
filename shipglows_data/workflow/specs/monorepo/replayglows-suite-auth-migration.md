@@ -85,17 +85,17 @@ Acteurs secondaires:
 - ReplayGlows product Convex qui garde les donnees metier produit;
 - Vercel API handlers qui gerent le depart et le retour YouTube OAuth.
 
-Declencheur: l'utilisateur ouvre une route protegee de `https://app.replayglowz.com`, clique pour se connecter, puis utilise ReplayGlows ou connecte YouTube.
+Declencheur: l'utilisateur ouvre une route protegee de `https://app.replayglows.com`, clique pour se connecter, puis utilise ReplayGlows ou connecte YouTube.
 
 Resultat observable attendu: l'utilisateur se connecte dans ReplayGlows avec le compte suite Clerk, ReplayGlows obtient un jeton serveur-verifiable, le backend produit ReplayGlows reconnait l'identite suite, l'acces produit est refuse par defaut sans entitlement `replayglows` actif dans le ledger WinFlowz, et YouTube OAuth ne demarre que pour un utilisateur authentifie et autorise.
 
 # Minimal Behavior Contract
 
-ReplayGlows accepte une session Clerk suite sur `app.replayglowz.com` via un bridge ClerkJS, utilise le jeton Clerk Convex pour son backend produit ReplayGlows, et verifie l'entitlement `replayglows` dans le ledger WinFlowz avant toute lecture ou mutation privee. Une session valide prouve l'identite, pas l'acces; les videos, notes, playlists, transcriptions, preferences et tokens YouTube restent dans le backend produit ReplayGlows, tandis que `global_user_id` et les entitlements restent dans WinFlowz. Si Clerk, le backend produit Convex, le bridge suite, l'entitlement, ou YouTube OAuth echoue, ReplayGlows affiche un etat recuperable, ne cree pas de second compte Firebase, ne tente pas de fusion email, ne loggue aucun token et n'elargit jamais les droits. L'edge case facile a rater est le split-brain Convex: le backend ReplayGlows peut stocker les donnees produit, mais il ne doit jamais devenir la source de verite des droits produit; `tubeflow` doit etre traite comme alias legacy seulement si des droits anciens existent.
+ReplayGlows accepte une session Clerk suite sur `app.replayglows.com` via un bridge ClerkJS, utilise le jeton Clerk Convex pour son backend produit ReplayGlows, et verifie l'entitlement `replayglows` dans le ledger WinFlowz avant toute lecture ou mutation privee. Une session valide prouve l'identite, pas l'acces; les videos, notes, playlists, transcriptions, preferences et tokens YouTube restent dans le backend produit ReplayGlows, tandis que `global_user_id` et les entitlements restent dans WinFlowz. Si Clerk, le backend produit Convex, le bridge suite, l'entitlement, ou YouTube OAuth echoue, ReplayGlows affiche un etat recuperable, ne cree pas de second compte Firebase, ne tente pas de fusion email, ne loggue aucun token et n'elargit jamais les droits. L'edge case facile a rater est le split-brain Convex: le backend ReplayGlows peut stocker les donnees produit, mais il ne doit jamais devenir la source de verite des droits produit; `tubeflow` doit etre traite comme alias legacy seulement si des droits anciens existent.
 
 # Success Behavior
 
-- Given un utilisateur non connecte ouvre `/videos`, when ReplayGlows detecte l'absence de session, then il redirige vers `/sign-in?tf_redirect=/videos` et propose le login Clerk suite sur `app.replayglowz.com`.
+- Given un utilisateur non connecte ouvre `/videos`, when ReplayGlows detecte l'absence de session, then il redirige vers `/sign-in?tf_redirect=/videos` et propose le login Clerk suite sur `app.replayglows.com`.
 - Given un utilisateur a deja une session Clerk suite valide, when il ouvre ReplayGlows, then le bridge ClerkJS restaure la session sans Firebase popup et retourne vers la route demandee.
 - Given un utilisateur est reconnu par Clerk mais n'a pas d'entitlement `replayglows` actif dans le ledger WinFlowz, when il ouvre une route protegee, then il voit un etat "account recognized, product access inactive" sans donnees privees.
 - Given un utilisateur a l'entitlement produit actif, when l'app appelle ReplayGlows product Convex, then ce backend valide le token Clerk, derive l'identite serveur, verifie ou consomme un snapshot d'entitlement issu de WinFlowz, et autorise seulement les fonctions produit attendues.
@@ -122,14 +122,14 @@ En parallele, la suite WinFlowz a formalise une strategie differente: Clerk est 
 
 # Solution
 
-Migrer ReplayGlows vers l'auth suite Clerk sur `app.replayglowz.com`, avec WinFlows comme account center et source d'entitlements. L'app Flutter web garde son experience locale, ses routes et son backend produit Convex, mais remplace `AuthService` Firebase par un proprietaire de session ClerkJS, remplace les tokens Firebase envoyes a ReplayGlows product Convex et YouTube OAuth par des tokens Clerk/suite, et ajoute un etat produit "account recognized, product access inactive". WinFlowz Convex fournit l'identite globale et l'entitlement canonique `replayglows`; ReplayGlows product Convex reste responsable des donnees metier.
+Migrer ReplayGlows vers l'auth suite Clerk sur `app.replayglows.com`, avec WinFlows comme account center et source d'entitlements. L'app Flutter web garde son experience locale, ses routes et son backend produit Convex, mais remplace `AuthService` Firebase par un proprietaire de session ClerkJS, remplace les tokens Firebase envoyes a ReplayGlows product Convex et YouTube OAuth par des tokens Clerk/suite, et ajoute un etat produit "account recognized, product access inactive". WinFlowz Convex fournit l'identite globale et l'entitlement canonique `replayglows`; ReplayGlows product Convex reste responsable des donnees metier.
 
 # Scope In
 
 - Integrer l'identite Clerk suite dans ReplayGlows web via un bridge ClerkJS maintenu dans `web/` et un wrapper Dart, sans `clerk_flutter` beta.
 - Remplacer `firebase_auth` comme proprietaire de session web.
 - Garder un seul proprietaire de session dans l'app Flutter.
-- Configurer les routes sign-in/sign-up/callback sur `app.replayglowz.com`.
+- Configurer les routes sign-in/sign-up/callback sur `app.replayglows.com`.
 - Adapter ReplayGlows product Convex auth pour accepter le provider Clerk/suite attendu.
 - Adapter le bridge HTTP Convex web pour utiliser le nouveau token.
 - Adapter `/api/auth/youtube` et `/api/auth/youtube/callback` pour une session suite au lieu du cookie Firebase ID token.
@@ -168,7 +168,7 @@ Migrer ReplayGlows vers l'auth suite Clerk sur `app.replayglowz.com`, avec WinFl
 - Local, preview et production restent des environnements auth separes.
 - Les callbacks Clerk et YouTube doivent correspondre exactement aux domaines deployes.
 - Convex auth config doit etre deployee apres ajout ou changement de provider.
-- Le domaine Vercel brut peut etre protege; la verification utilisateur doit viser `https://app.replayglowz.com`.
+- Le domaine Vercel brut peut etre protege; la verification utilisateur doit viser `https://app.replayglows.com`.
 
 # Dependencies
 
@@ -199,7 +199,7 @@ Migrer ReplayGlows vers l'auth suite Clerk sur `app.replayglowz.com`, avec WinFl
 
 - Clerk Astro middleware docs, checked 2026-05-23: `clerkMiddleware()` injects auth state into Astro middleware and supports protected route redirects. This confirms the WinFlows account-center side remains Clerk-owned.
 - Clerk JavaScript session token docs, checked 2026-05-23: the web bridge can use the active Clerk session to mint a Convex JWT template token for the product Convex client and a default session token for Vercel handlers.
-- Clerk satellite domains docs, checked 2026-05-23: cross-domain auth sharing is possible but advanced; for ReplayGlows, the spec prefers embedding Clerk on `app.replayglowz.com` instead of making the app depend on an implicit cross-domain redirect-only session.
+- Clerk satellite domains docs, checked 2026-05-23: cross-domain auth sharing is possible but advanced; for ReplayGlows, the spec prefers embedding Clerk on `app.replayglows.com` instead of making the app depend on an implicit cross-domain redirect-only session.
 - Convex Clerk auth docs, checked 2026-05-23: Convex + Clerk requires provider configuration in `auth.config.ts`; after adding auth provider config, the backend must be synced/deployed, and clients should use the Convex auth-ready signal rather than only provider UI state.
 
 Fresh-docs verdict: fresh-docs checked.
@@ -255,7 +255,7 @@ Update:
 - YouTube OAuth callback returns after sign-out or expired state cookie.
 - Vercel preview and production use different Clerk callback URLs.
 - CSP allows the app shell but blocks Clerk frontend API, accounts iframe or callback script.
-- The app URL is `app.replayglowz.com` while account/billing CTAs point to WinFlows.
+- The app URL is `app.replayglows.com` while account/billing CTAs point to WinFlows.
 
 # Implementation Tasks
 
@@ -360,7 +360,7 @@ Update:
   - Action : Ajouter les domaines Clerk/suite strictement necessaires a `connect-src`, `script-src`, `frame-src` ou equivalents; retirer les allowances Firebase inutiles apres migration.
   - User story link : le login suite fonctionne sur domaine production.
   - Depends on : Taches 2 a 4.
-  - Validate with : `curl -sI https://app.replayglowz.com/` apres deploy, browser auth smoke.
+  - Validate with : `curl -sI https://app.replayglows.com/` apres deploy, browser auth smoke.
   - Notes : Eviter les wildcards larges sans justification.
 
 - [ ] Tache 14 : Update docs and operator diagnostics
@@ -373,15 +373,15 @@ Update:
 
 - [ ] Tache 15 : Hosted auth verification
   - Fichier : deployment Vercel `app`
-  - Action : Pousser, attendre Vercel Ready, verifier `app.replayglowz.com`, tester login Clerk, session restore, entitlement denied, entitlement allowed, logout, YouTube OAuth start/callback, et verifier que les donnees metier viennent du backend produit ReplayGlows.
+  - Action : Pousser, attendre Vercel Ready, verifier `app.replayglows.com`, tester login Clerk, session restore, entitlement denied, entitlement allowed, logout, YouTube OAuth start/callback, et verifier que les donnees metier viennent du backend produit ReplayGlows.
   - User story link : prouve le comportement utilisateur final.
   - Depends on : Taches 1 a 14.
-  - Validate with : `/sf-prod app`, `/sf-auth-debug https://app.replayglowz.com ReplayGlows suite auth`, puis `/sf-verify replayglows-suite-auth-migration`.
+  - Validate with : `/sf-prod app`, `/sf-auth-debug https://app.replayglows.com ReplayGlows suite auth`, puis `/sf-verify replayglows-suite-auth-migration`.
   - Notes : Le succes local ne prouve pas callbacks/cookies/OAuth en production.
 
 # Acceptance Criteria
 
-- [ ] CA 1 : Given `app.replayglowz.com` est deploye, when un utilisateur clique sign-in, then le flow Clerk suite demarre sans Firebase popup.
+- [ ] CA 1 : Given `app.replayglows.com` est deploye, when un utilisateur clique sign-in, then le flow Clerk suite demarre sans Firebase popup.
 - [ ] CA 2 : Given l'utilisateur termine Clerk sign-in, when il revient dans ReplayGlows, then la route `tf_redirect` est respectee.
 - [ ] CA 3 : Given l'utilisateur a une session suite mais pas d'entitlement `replayglows`, when il ouvre une route protegee, then aucune donnee privee n'est chargee et un etat acces non actif est affiche.
 - [ ] CA 4 : Given l'utilisateur a une session suite et un entitlement actif, when l'app appelle ReplayGlows product Convex, then les queries/mutations protegees passent avec un token Clerk/suite valide et une verification entitlement serveur.
@@ -400,8 +400,8 @@ Update:
 - Node tests: YouTube OAuth start/callback state mismatch, missing session, missing entitlement, Google token exchange failure, Convex mutation failure.
 - Suite backend checks: WinFlowz bridge Clerk endpoint rejects missing secret, invalid token, wrong product and no entitlement; returns redacted snapshot for active `replayglows` and explicitly documents any temporary `tubeflow` legacy alias behavior.
 - Product backend checks: ReplayGlows product Convex auth config deployed for Clerk/suite provider; protected functions reject missing/invalid auth and missing entitlement.
-- Browser checks: hosted `app.replayglowz.com` sign-in, redirect restore, session reload, logout.
-- Auth debug: `/sf-auth-debug https://app.replayglowz.com ReplayGlows suite auth`.
+- Browser checks: hosted `app.replayglows.com` sign-in, redirect restore, session reload, logout.
+- Auth debug: `/sf-auth-debug https://app.replayglows.com ReplayGlows suite auth`.
 - Prod proof: `/sf-prod app` before browser/user-flow conclusions.
 - Redaction check: no tokens, cookies, OAuth codes, refresh tokens, or secrets in logs, diagnostics, screenshots or docs.
 
@@ -419,7 +419,7 @@ Update:
 
 # Execution Notes
 
-- Preferred UX: sign in inside ReplayGlows on `app.replayglowz.com`; use WinFlows for account management, billing, subscription and support.
+- Preferred UX: sign in inside ReplayGlows on `app.replayglows.com`; use WinFlows for account management, billing, subscription and support.
 - Product id: `replayglows` for this migration, because ReplayGlows is the current product name. `tubeflow` is legacy only and must not be used for new grants.
 - Data boundary: WinFlowz suite Convex owns identity and entitlements; ReplayGlows product Convex owns videos, notes, playlists, transcripts, preferences and YouTube tokens.
 - Integration path: ClerkJS bridge in `web/` plus Dart wrapper; do not use `clerk_flutter` beta.
@@ -467,11 +467,11 @@ Resolved decisions:
 | 2026-05-24 08:26:24 UTC | sf-ship | GPT-5 Codex | Quick-shipped the current suite-auth migration changes for WinFlowz and ReplayGlows so Vercel can build the hosted verifier and app. | shipped: code and docs were committed/pushed for hosted validation; local checks passed, but production proof remains pending behind `sf-prod`. | `/sf-prod replayglows-suite-auth-migration` |
 | 2026-05-24 08:46:00 UTC | sf-prod | GPT-5 Codex | Verified the pushed ReplayGlows production deployment for commit `ccc1695`, checked live app health, build logs, Vercel env names, OAuth handlers, and WinFlowz suite verifier health. | blocked: ReplayGlows production build is ready and serves the new Clerk bridge, but `/api/auth/youtube` returns `500` because Google OAuth env names are absent in Production. The WinFlowz verifier was initially checked with `GET` and returned 404, but the server-only `POST` JSON route exists and returns a redacted 401 without the bridge secret. | `/sf-start replayglows-suite-auth-migration prod-blockers` |
 | 2026-05-24 08:51:22 UTC | sf-start | GPT-5 Codex | Investigated production blockers after sf-prod: rechecked WinFlowz verifier with the actual server-to-server `POST` JSON method, enumerated ReplayGlows Vercel env names, searched local/project/GitHub/GCloud surfaces for reusable Google OAuth credentials, and checked Google OAuth credential availability constraints. | blocked: WinFlowz entitlement verifier is live for the expected POST contract; the remaining blocker is missing `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in ReplayGlows Production. No retrievable client secret was found locally or in deploy metadata, and Google OAuth web client secrets must be created/retrieved from Google Auth Platform by the operator before Vercel envs can be set. | `create/provide Google OAuth web client credentials, then /sf-start replayglows-suite-auth-migration set-google-oauth-envs` |
-| 2026-05-24 10:41:19 UTC | continue | GPT-5 Codex | Continued after operator added Google OAuth envs: confirmed `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` exist in ReplayGlows Production, redeployed the latest production build, checked the new deployment and live handlers. | unblocked: deployment `dpl_An5sLfzKdhHeYzrg7exwdCuKmvMV` is Ready and aliased to `https://app.replayglowz.com`; `/api/auth/youtube` now fails closed with `401 Missing suite session token` instead of Google OAuth config failure; WinFlowz entitlement verifier POST still returns redacted 401 without secret. | `/sf-auth-debug https://app.replayglowz.com ReplayGlows suite auth and YouTube OAuth` |
-| 2026-05-24 12:56:16 UTC | sf-auth-debug | GPT-5 Codex | Reproduced the production blank page with Playwright on `https://app.replayglowz.com`, `/videos`, and `/sign-in`, then inspected the deployed CSP and local Vercel config. | found: Flutter never booted because Vercel CSP blocked `https://www.gstatic.com/flutter-canvaskit/.../canvaskit.js`; the same CSP also lacked the live Clerk frontend API domain `https://clerk.replayglowz.com`. Updated `app/vercel.json` to allow CanvasKit and ReplayGlows Clerk in the relevant directives. | `/sf-ship replayglows production CSP fix, then /sf-prod` |
+| 2026-05-24 10:41:19 UTC | continue | GPT-5 Codex | Continued after operator added Google OAuth envs: confirmed `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` exist in ReplayGlows Production, redeployed the latest production build, checked the new deployment and live handlers. | unblocked: deployment `dpl_An5sLfzKdhHeYzrg7exwdCuKmvMV` is Ready and aliased to `https://app.replayglows.com`; `/api/auth/youtube` now fails closed with `401 Missing suite session token` instead of Google OAuth config failure; WinFlowz entitlement verifier POST still returns redacted 401 without secret. | `/sf-auth-debug https://app.replayglows.com ReplayGlows suite auth and YouTube OAuth` |
+| 2026-05-24 12:56:16 UTC | sf-auth-debug | GPT-5 Codex | Reproduced the production blank page with Playwright on `https://app.replayglows.com`, `/videos`, and `/sign-in`, then inspected the deployed CSP and local Vercel config. | found: Flutter never booted because Vercel CSP blocked `https://www.gstatic.com/flutter-canvaskit/.../canvaskit.js`; the same CSP also lacked the live Clerk frontend API domain `https://clerk.replayglows.com`. Updated `app/vercel.json` to allow CanvasKit and ReplayGlows Clerk in the relevant directives. | `/sf-ship replayglows production CSP fix, then /sf-prod` |
 | 2026-05-24 13:10:19 UTC | sf-prod | GPT-5 Codex | Shipped and verified deployment `dpl_FPWLFzsnbZkLc7TBzMrvgnR7nwso` for commit `902d164`; checked the custom domain CSP, script/network loading, and screenshot/browser DOM after deploy. | partial: the CanvasKit CSP blocker is gone and `main.dart.js`, CanvasKit, Clerk UI/JS, and Clerk client endpoints load successfully, but the app still renders a blank first frame. Added production console logging through `AppLogger` so the next deploy exposes Dart bootstrap/auth errors before the in-app diagnostics UI renders. | `/sf-prod after diagnostic-log deploy, then continue sf-auth-debug on the exposed console error` |
 | 2026-05-24 13:18:48 UTC | sf-auth-debug | GPT-5 Codex | Used the deployed console logs from commit `4af201a` to trace the blank first frame through `main`, Convex init, bootstrap start, Clerk bridge init, and Convex auth wiring. | fixing: no Dart exception was emitted; the app boot reached Convex auth wiring but still did not paint a scene. Patched web boot to use path URL strategy and to render `ReplayGlowsApp` immediately while auth/Convex wiring continues in the background, instead of holding first paint behind the bootstrap gate. | `/sf-ship path-url/bootstrap-first-paint fix, then /sf-prod browser proof` |
-| 2026-05-24 13:55:13 UTC | sf-prod | GPT-5 Codex | Verified deployment `dpl_G49RFsUtDrwGg6CGUhvJBcxiPkBx` for commit `652e5f1` on `https://app.replayglowz.com`; rechecked URL shape, console boot logs, and a control Flutter app in the same Playwright runtime. | partial: the deployed app now uses clean path routing and reaches `AuthSignInPage build` with `bootstrap() complete`, while CSP and Clerk/CanvasKit loading remain unblocked. Playwright screenshots still show blank, but the same runtime also screenshots a freshly generated default Flutter web app as blank, so headless visual proof is not reliable here; a real-browser user retest is required. | `operator retest app.replayglowz.com in a normal browser; if still blank, capture the visible in-page/console boot logs now emitted by AppLogger` |
+| 2026-05-24 13:55:13 UTC | sf-prod | GPT-5 Codex | Verified deployment `dpl_G49RFsUtDrwGg6CGUhvJBcxiPkBx` for commit `652e5f1` on `https://app.replayglows.com`; rechecked URL shape, console boot logs, and a control Flutter app in the same Playwright runtime. | partial: the deployed app now uses clean path routing and reaches `AuthSignInPage build` with `bootstrap() complete`, while CSP and Clerk/CanvasKit loading remain unblocked. Playwright screenshots still show blank, but the same runtime also screenshots a freshly generated default Flutter web app as blank, so headless visual proof is not reliable here; a real-browser user retest is required. | `operator retest app.replayglows.com in a normal browser; if still blank, capture the visible in-page/console boot logs now emitted by AppLogger` |
 | 2026-06-10 08:53:15 UTC | sf-build | GPT-5 Codex | Implemented a shared ReplayGlows product Convex access guard, converted default free access into an explicit server-owned product-access snapshot, applied entitlement gating across private product modules, fixed obvious owner checks for note/video/playlist ID paths, and updated architecture docs. | partial: backend typecheck and ShipGlows metadata lint pass; hosted deployment proof and full entitlement lifecycle smoke remain pending. | `/sf-verify replayglows-suite-auth-migration backend-entitlement-guard` |
 
 # Current Chantier Flow

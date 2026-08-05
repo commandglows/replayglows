@@ -33,7 +33,7 @@ evidence:
   - "User selected full rename option on 2026-05-14 after the brand/domain migration shipped."
   - "Current repo directories are `app`, `site`, and `lab`."
   - "`app/pubspec.yaml` still declares `name: app`, driving `package:app/...` imports."
-next_step: "/sf-auth-debug https://app.replayglowz.com YouTube OAuth ReplayGlows"
+next_step: "/sf-auth-debug https://app.replayglows.com YouTube OAuth ReplayGlows"
 ---
 
 # ReplayGlows Repo Directory And Package Rename
@@ -85,7 +85,7 @@ The monorepo should use `app`, `site`, and `lab` as active project directories. 
 | 2026-05-14 21:59:15 UTC | sf-start | GPT-5 Codex | Renamed active monorepo directories to `app`, `site`, and `lab`; renamed Flutter package/import namespace and active app type/bridge names. | Implemented locally. | `/sf-verify ReplayGlows repo directory and package rename` |
 | 2026-05-14 21:59:15 UTC | sf-verify | GPT-5 Codex | Ran metadata lint, Python compile, OAuth helper tests, Flutter analyze/build, Astro build, diff check, and residual path audit. | Passed locally; residual old path mentions are changelog documentation only. | `/sf-end ReplayGlows repo directory and package rename` |
 | 2026-05-14 21:59:15 UTC | sf-end | GPT-5 Codex | Updated subproject changelogs and chantier state for the structure rename. | Closed locally, ready to ship. | `/sf-ship ReplayGlows repo directory and package rename` |
-| 2026-05-14 22:07:58 UTC | sf-ship | GPT-5 Codex | Committed and pushed `309cbfc` to `origin/main`. Initial Vercel deploy failed because project Root Directory still pointed at `tubeflow_app`; updated Vercel project `app` Root Directory to `app` and redeployed. | Shipped. Redeploy `replayglows-dfpiic665` is Ready and `https://app.replayglowz.com/` returns 200 with ReplayGlows metadata. | `/sf-auth-debug https://app.replayglowz.com YouTube OAuth ReplayGlows` |
+| 2026-05-14 22:07:58 UTC | sf-ship | GPT-5 Codex | Committed and pushed `309cbfc` to `origin/main`. Initial Vercel deploy failed because project Root Directory still pointed at `tubeflow_app`; updated Vercel project `app` Root Directory to `app` and redeployed. | Shipped. Redeploy `replayglows-dfpiic665` is Ready and `https://app.replayglows.com/` returns 200 with ReplayGlows metadata. | `/sf-auth-debug https://app.replayglows.com YouTube OAuth ReplayGlows` |
 
 ## Current Chantier Flow
 
@@ -98,4 +98,4 @@ The monorepo should use `app`, `site`, and `lab` as active project directories. 
 | sf-end | closed | Changelogs and spec state updated. |
 | sf-ship | shipped | Commit `309cbfc` pushed; Vercel app Root Directory updated and production redeploy is Ready. |
 
-Next command: `/sf-auth-debug https://app.replayglowz.com YouTube OAuth ReplayGlows`
+Next command: `/sf-auth-debug https://app.replayglows.com YouTube OAuth ReplayGlows`

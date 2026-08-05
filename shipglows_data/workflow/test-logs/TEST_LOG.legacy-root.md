@@ -9,7 +9,7 @@
 - Result summary: Horizontal swiping between Feed view modes still rebounds the feed to the first video, breaking cross-mode position synchronization.
 - Bug pointer: BUG-2026-06-01-004 -> shipglows_data/workflow/shipglows_data/workflow/bugs/app/BUG-2026-06-01-004.md
 - Evidence pointer: operator diagnostics supplied in chat; private identifiers and keys were not stored.
-- Deploy note: Vercel production is now READY for `735135631e0c3ea10381a0bc26fb180d4551b377`; `https://app.replayglowz.com` returns HTTP 200 and serves Flutter boot files modified after the reported `ef45c77` build.
+- Deploy note: Vercel production is now READY for `735135631e0c3ea10381a0bc26fb180d4551b377`; `https://app.replayglows.com` returns HTTP 200 and serves Flutter boot files modified after the reported `ef45c77` build.
 - Follow-up: hard reload or restart app, confirm diagnostics show `735135631e0c3ea10381a0bc26fb180d4551b377`, then /sf-test --prod --retest BUG-2026-06-01-004
 
 ## 2026-06-10 - ReplayGlowz Feed Subscription Channel Picker
@@ -75,7 +75,7 @@
 - Source: sf-prod/sf-verify
 - Status: partial
 - Confidence: medium
-- Result summary: Production deployment `39c6062` is live on `https://app.replayglowz.com`; direct Preferences, Playlists, Notes and Videos smoke passed; Playlists imported-state hint and hidden top-rest `+` passed; visible quota stayed `13 / 1000` across passive navigation. Full closure is still blocked by remaining P2/P3/import matrix items and metrics-bound quota proof.
+- Result summary: Production deployment `39c6062` is live on `https://app.replayglows.com`; direct Preferences, Playlists, Notes and Videos smoke passed; Playlists imported-state hint and hidden top-rest `+` passed; visible quota stayed `13 / 1000` across passive navigation. Full closure is still blocked by remaining P2/P3/import matrix items and metrics-bound quota proof.
 - Bug pointer: BUG-2026-05-26-001 -> shipglows_data/workflow/bugs/app/BUG-2026-05-26-001.md; BUG-2026-05-26-002 -> shipglows_data/workflow/bugs/app/BUG-2026-05-26-002.md; BUG-2026-05-26-003 -> shipglows_data/workflow/bugs/app/BUG-2026-05-26-003.md
 - Evidence pointer: shipglows_data/workflow/audits/2026-05-26-replayglowz-prod-qa-followups.md
 - Checks: `(cd app && flutter analyze)` pass; `/home/claude/shipglows/tools/shipglows_metadata_lint.py AGENT.md shipglows_data` pass before ship; production HTTP 200 for `/` and `/playlists`.

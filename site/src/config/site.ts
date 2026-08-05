@@ -1,6 +1,6 @@
-const DEFAULT_SITE_URL = 'https://replayglowz.com'
-const DEFAULT_APP_URL = 'https://app.replayglowz.com'
-const DEFAULT_EMAIL_DOMAIN = 'replayglowz.com'
+const DEFAULT_SITE_URL = 'https://replayglows.com'
+const DEFAULT_APP_URL = 'https://app.replayglows.com'
+const DEFAULT_EMAIL_DOMAIN = 'replayglows.com'
 
 function stripTrailingSlash(url: string): string {
   return url.replace(/\/+$/, '')

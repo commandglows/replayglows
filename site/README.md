@@ -7,8 +7,8 @@ Marketing site for ReplayGlows, built with Astro.
 Copy `.env.example` and override these values when the domains change:
 
 ```bash
-PUBLIC_SITE_URL=https://replayglowz.com
-PUBLIC_APP_URL=https://app.replayglowz.com
+PUBLIC_SITE_URL=https://replayglows.com
+PUBLIC_APP_URL=https://app.replayglows.com
 PUBLIC_EMAIL_DOMAIN=winflowz.com
 ```
 

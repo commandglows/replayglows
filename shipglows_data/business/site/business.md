@@ -28,7 +28,7 @@ supersedes:
   - artifact_version: "0.1.1"
 evidence:
   - "README.md (repo positioned as ReplayGlows marketing site)"
-  - "src/config/site.ts (PUBLIC_APP_URL points to app.replayglowz.com)"
+  - "src/config/site.ts (PUBLIC_APP_URL points to app.replayglows.com)"
   - "src/pages/pricing.astro (commercial offer and upgrade framing)"
   - "shipglows_data/business/app/business.md (canonical product business contract)"
 next_review: "2026-05-26"

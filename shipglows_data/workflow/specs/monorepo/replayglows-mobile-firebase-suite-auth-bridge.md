@@ -186,7 +186,7 @@ Manual/provider proof required:
 - GitHub Actions Android debug APK build with Firebase native config and suite bridge URL.
 - Android real-device smoke: sign-in, session restore, bridge fail-closed, entitlement active, entitlement inactive, logout.
 - YouTube OAuth native smoke after product access verification, including denied start before access and callback persistence after access.
-- Web regression smoke on `https://app.replayglowz.com`: ClerkJS sign-in still works and Firebase native code is not required for web first paint.
+- Web regression smoke on `https://app.replayglows.com`: ClerkJS sign-in still works and Firebase native code is not required for web first paint.
 
 Proof order: static/typecheck -> unit/contract tests -> backend auth deploy proof -> Android CI build -> Android device smoke -> web ClerkJS regression -> YouTube OAuth smoke -> production verification.
 

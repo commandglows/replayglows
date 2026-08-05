@@ -7,7 +7,7 @@ ReplayGlows uses suite Clerk web identity plus server-verified product access on
 
 ## Auth and Data Boundaries
 
-- Identity/session owner: Clerk (suite account on `app.replayglowz.com`)
+- Identity/session owner: Clerk (suite account on `app.replayglows.com`)
 - Entitlement authority: WinFlowz suite verifier (`SUITE_ENTITLEMENT_VERIFY_URL`)
 - Product data authority: ReplayGlows product Convex (`CONVEX_URL`)
 - Canonical entitlement product id: `replayglows`
@@ -26,7 +26,7 @@ flutter run -d chrome \
   --dart-define=REPLAYGLOWS_PRODUCT_ID=replayglows \
   --dart-define=REPLAYGLOWS_LEGACY_PRODUCT_IDS=tubeflow \
   --dart-define=REPLAYGLOWS_ACCOUNT_CENTER_URL=https://winflows.com/account \
-  --dart-define=REPLAYGLOWS_APP_URL=https://app.replayglowz.com
+  --dart-define=REPLAYGLOWS_APP_URL=https://app.replayglows.com
 
 CONVEX_URL=... \
 CLERK_PUBLISHABLE_KEY=... \
@@ -35,7 +35,7 @@ CLERK_SIGN_UP_URL=/sign-up \
 REPLAYGLOWS_PRODUCT_ID=replayglows \
 REPLAYGLOWS_LEGACY_PRODUCT_IDS=tubeflow \
 REPLAYGLOWS_ACCOUNT_CENTER_URL=https://winflows.com/account \
-REPLAYGLOWS_APP_URL=https://app.replayglowz.com \
+REPLAYGLOWS_APP_URL=https://app.replayglows.com \
 bash build.sh
 ```
 

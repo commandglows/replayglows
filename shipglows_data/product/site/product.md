@@ -43,7 +43,7 @@ next_step: "/sf-docs audit shipglows_data/product/site/product.md"
 
 ## Product Summary
 
-`replayglows-site` is the public marketing and conversion layer for ReplayGlows. It describes the product promise and routes visitors to the app at `app.replayglowz.com`.
+`replayglows-site` is the public marketing and conversion layer for ReplayGlows. It describes the product promise and routes visitors to the app at `app.replayglows.com`.
 
 Canonical product truth is `shipglows_data/product/app/product.md`. This repository must stay aligned with that contract and avoid introducing a parallel product definition.
 

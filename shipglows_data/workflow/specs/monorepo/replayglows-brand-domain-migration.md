@@ -75,7 +75,7 @@ As the ReplayGlows maintainer, I want the monorepo brand, domains, deployment co
 
 ## Minimal Behavior Contract
 
-When a user, crawler, operator, or deployment reads any public app surface, marketing page, metadata file, URL config, worker label, or project guidance in this monorepo, it should present ReplayGlows as the active product and use `replayglowz.com` / `app.replayglowz.com` as the canonical public domains; legacy TubeFlow names should remain only where explicitly required for backward compatibility, source history, external package identity, or migration notes. If a migration step cannot be completed safely because it would break auth, OAuth callbacks, package imports, existing local state, or branch history, the implementation must preserve compatibility and document the remaining legacy alias. The easiest edge case to miss is renaming storage, cookie, env, package, or branch identifiers without a fallback, which would silently break existing users or Vercel preview/prod deployments.
+When a user, crawler, operator, or deployment reads any public app surface, marketing page, metadata file, URL config, worker label, or project guidance in this monorepo, it should present ReplayGlows as the active product and use `replayglows.com` / `app.replayglows.com` as the canonical public domains; legacy TubeFlow names should remain only where explicitly required for backward compatibility, source history, external package identity, or migration notes. If a migration step cannot be completed safely because it would break auth, OAuth callbacks, package imports, existing local state, or branch history, the implementation must preserve compatibility and document the remaining legacy alias. The easiest edge case to miss is renaming storage, cookie, env, package, or branch identifiers without a fallback, which would silently break existing users or Vercel preview/prod deployments.
 
 ## Success Behavior
 
@@ -83,7 +83,7 @@ When a user, crawler, operator, or deployment reads any public app surface, mark
 - Trigger: implementation of this spec updates brand, URL, SEO, i18n, docs, deployment config, and worker labels across `app`, `site`, `lab`, and root `shipglows_data`.
 - User-visible result: app UI, PWA metadata, marketing pages, legal pages, blog metadata, EN/FR copy, and diagnostics say ReplayGlows except where a legacy compatibility note is deliberate.
 - Operator-visible result: README/AGENT/CLAUDE docs, env examples, worker docs, Sentry release labels, Vercel config notes, and branch guidance align on ReplayGlows naming and domains.
-- System effect: app/site defaults point to `https://replayglowz.com` and `https://app.replayglowz.com`; OAuth origin/callback behavior stays same-domain safe; old local storage or cookie keys are migrated or retained as read fallbacks before being removed.
+- System effect: app/site defaults point to `https://replayglows.com` and `https://app.replayglows.com`; OAuth origin/callback behavior stays same-domain safe; old local storage or cookie keys are migrated or retained as read fallbacks before being removed.
 - Proof: focused `rg` checks show no accidental TubeFlow/tubeflow references outside allowlisted package/import paths and migration notes; Flutter analyze/build, Astro build, Python compile, metadata lint, and OAuth helper tests/checks pass where available.
 
 ## Error Behavior
@@ -153,8 +153,8 @@ Perform the global rename on `main` in ordered passes: establish naming/domain c
 
 - Vercel app project should use `app` as Root Directory until directory renaming is explicitly scoped.
 - Vercel site project should use `site` as Root Directory if connected; its canonical URL defaults move to ReplayGlows.
-- Google OAuth redirect URIs must include the active app domain callback: `https://app.replayglowz.com/api/auth/youtube/callback`.
-- Firebase authorized domains must include `app.replayglowz.com` before hosted auth validation.
+- Google OAuth redirect URIs must include the active app domain callback: `https://app.replayglows.com/api/auth/youtube/callback`.
+- Firebase authorized domains must include `app.replayglows.com` before hosted auth validation.
 - Convex auth/env config must remain compatible with Firebase token issuer and deployment envs.
 - SEO canonical URLs, Open Graph, JSON-LD, hreflang, RSS, legal pages, and blog metadata change publicly and should be verified by build output or source checks.
 - Existing users may have browser state under legacy keys; state migration or read fallback prevents unnecessary data loss.
@@ -176,7 +176,7 @@ Perform the global rename on `main` in ordered passes: establish naming/domain c
 - `rg TubeFlow` finds historical changelog/spec evidence that should remain.
 - `rg tubeflow` finds Dart import paths or directory names that must remain for now.
 - Google OAuth redirect URI is updated in code but not in Google Cloud console.
-- Firebase authorized domain is missing for `app.replayglowz.com`.
+- Firebase authorized domain is missing for `app.replayglows.com`.
 - A Vercel monorepo project deploys the site or worker when only app changes were expected after branch recreation.
 
 ## Implementation Tasks
@@ -207,7 +207,7 @@ Perform the global rename on `main` in ordered passes: establish naming/domain c
 
 - [x] Task 4: Introduce ReplayGlows app URL env names with fallbacks.
   - File: `app/build.sh`, `app/lib/app/build_info.dart`, `app/lib/widgets/youtube_connect.dart`, `app/.env.example`, `app/README.md`, `app/AGENT.md`, `app/CLAUDE.md`
-  - Action: Prefer `REPLAYGLOWS_APP_URL` or a clearly chosen new name while continuing to accept `TUBEFLOW_APP_URL` and `TUBEFLOW_WEB_URL` as compatibility fallbacks; update default app URL to `https://app.replayglowz.com`.
+  - Action: Prefer `REPLAYGLOWS_APP_URL` or a clearly chosen new name while continuing to accept `TUBEFLOW_APP_URL` and `TUBEFLOW_WEB_URL` as compatibility fallbacks; update default app URL to `https://app.replayglows.com`.
   - User story link: Deployment config moves to ReplayGlows without breaking existing Vercel envs.
   - Depends on: Task 3.
   - Validate with: `cd app && bash -n build.sh && flutter analyze`.
@@ -231,7 +231,7 @@ Perform the global rename on `main` in ordered passes: establish naming/domain c
 
 - [x] Task 7: Update Astro site URLs, SEO, i18n, and content.
   - File: `site/src/config/site.ts`, `site/src/layouts/Layout.astro`, `site/src/i18n/*.ts`, `site/src/components/*.astro`, `site/src/pages/**/*.astro`, `site/src/pages/blog/feed.xml.ts`, `site/src/content/blog/*.md`
-  - Action: Replace TubeFlow public copy with ReplayGlows, update default canonical/app URLs to `https://replayglowz.com` and `https://app.replayglowz.com`, update JSON-LD/Open Graph/RSS/legal/blog metadata, and rename compare-page internal keys from `tubeflow` to `replayglows` where they are not external contracts.
+  - Action: Replace TubeFlow public copy with ReplayGlows, update default canonical/app URLs to `https://replayglows.com` and `https://app.replayglows.com`, update JSON-LD/Open Graph/RSS/legal/blog metadata, and rename compare-page internal keys from `tubeflow` to `replayglows` where they are not external contracts.
   - User story link: Public SEO and acquisition surfaces match the active product.
   - Depends on: Task 1.
   - Validate with: `cd site && npm run build`.
@@ -239,7 +239,7 @@ Perform the global rename on `main` in ordered passes: establish naming/domain c
 
 - [x] Task 8: Update Astro site docs and package metadata.
   - File: `site/package.json`, `site/README.md`, `site/AGENT.md`, `site/CLAUDE.md`, `shipglows_data/business/site/**`, `shipglows_data/technical/site/**`, `shipglows_data/editorial/site/**`
-  - Action: Rename package/docs/project copy to ReplayGlows where safe, document `PUBLIC_SITE_URL=https://replayglowz.com` and `PUBLIC_APP_URL=https://app.replayglowz.com`.
+  - Action: Rename package/docs/project copy to ReplayGlows where safe, document `PUBLIC_SITE_URL=https://replayglows.com` and `PUBLIC_APP_URL=https://app.replayglows.com`.
   - User story link: Operators configure the site with the correct domains.
   - Depends on: Task 7.
   - Validate with: `cd site && npm run build`.
@@ -276,7 +276,7 @@ Perform the global rename on `main` in ordered passes: establish naming/domain c
 - [x] CA 3: Given Vercel envs still use `TUBEFLOW_APP_URL`, when the app is built, then the build continues to resolve the app origin through legacy fallback while documenting the ReplayGlows preferred env name.
 - [x] CA 4: Given a user has a feedback draft under `tubeflow_feedback_text_draft`, when feedback draft storage is accessed after migration, then the value is read or migrated instead of being silently lost.
 - [x] CA 5: Given an OAuth flow starts before or during the cookie-key migration, when Google redirects back, then state validation and Firebase token handoff still complete or fail with a recoverable user-facing error.
-- [x] CA 6: Given the Astro site build, when generated source is inspected through config and page metadata, then canonical/app URLs point to `https://replayglowz.com` and `https://app.replayglowz.com`.
+- [x] CA 6: Given the Astro site build, when generated source is inspected through config and page metadata, then canonical/app URLs point to `https://replayglows.com` and `https://app.replayglows.com`.
 - [x] CA 7: Given EN/FR marketing copy and legal pages, when searched for old brand copy, then no public-facing TubeFlow references remain except explicit historical or compatibility notes.
 - [x] CA 8: Given the transcript worker is compiled, when its API contract is checked, then the rename has not changed `/transcribe` request fields, response fields, provider semantics, or error status codes.
 - [x] CA 9: Given the residual-reference audit, when legacy hits remain, then each is recorded as intentional package/import identity, directory path, compatibility fallback, historical evidence, or out of scope.

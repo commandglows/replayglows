@@ -24,7 +24,7 @@ depends_on:
   - "shipglows_data/workflow/specs/replayglows-youtube-core-parity-priority-3.md"
 supersedes: []
 evidence:
-  - "Production browser QA on https://app.replayglowz.com with the test account on 2026-05-26."
+  - "Production browser QA on https://app.replayglows.com with the test account on 2026-05-26."
   - "Playlist URL import of PL5xqnrd8FwHaxdtMQugvbXOzbX9QGW4iI succeeded and displayed one video."
   - "Screenshots stored under test-evidence/BUG-2026-05-26-*."
 next_step: "/sf-verify replayglows-youtube-parity-stabilization-qa-closure"
@@ -42,7 +42,7 @@ This QA pass covers the three recently implemented YouTube parity specs:
 
 Production target:
 
-- App: `https://app.replayglowz.com`
+- App: `https://app.replayglows.com`
 - Build commit observed: `f61779674cd68a4bbbbc2aac4ba563083e78b14b`
 - Latest production smoke commit observed after fixes: `39c6062b2af42830211d3e4c9d8ea18a729dfa3d`
 - Latest production smoke deployment observed on 2026-05-27: `dpl_8SWzTGdT61HbmqfePKkNANJrY2Yr`
