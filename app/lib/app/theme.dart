@@ -60,10 +60,14 @@ abstract final class AppColors {
 
 /// Spacing scale shared by app surfaces and reusable widgets.
 abstract final class AppSpacing {
+  static const xxxs = 2.0;
   static const xxs = 4.0;
   static const xs = 8.0;
+  static const xs2 = 6.0;
   static const sm = 12.0;
+  static const sm2 = 14.0;
   static const md = 16.0;
+  static const md2 = 20.0;
   static const lg = 24.0;
   static const xl = 32.0;
   static const xxl = 48.0;
@@ -134,6 +138,8 @@ abstract final class AppSizes {
   static const iconSmall = 16.0;
   static const iconMedium = 24.0;
   static const iconLarge = 32.0;
+  static const navigationIcon = 28.0;
+  static const emptyStateIcon = 64.0;
 }
 
 /// Central theme configuration for ReplayGlowz.

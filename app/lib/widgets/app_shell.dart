@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/app/router.dart';
 import 'package:replayglowz_app/auth/auth_service.dart';
 import 'package:replayglowz_app/auth/auth_state.dart';
@@ -71,7 +72,7 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
-  static const _bottomNavIconSize = 28.0;
+  static const _bottomNavIconSize = AppSizes.navigationIcon;
   static const _verticalSwipeVelocityThreshold = 220.0;
   static const _verticalSwipeOffsetThreshold = 24.0;
   bool _playbackSeekControlsVisible = false;
@@ -391,8 +392,8 @@ class _AppShellState extends ConsumerState<AppShell> {
         mainAxisSize: MainAxisSize.min,
         children: [
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            reverseDuration: const Duration(milliseconds: 160),
+            duration: AppMotion.standard,
+            reverseDuration: AppMotion.fast,
             transitionBuilder: (child, animation) {
               return SizeTransition(
                 sizeFactor: animation,
@@ -405,7 +406,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                       ).animate(
                         CurvedAnimation(
                           parent: animation,
-                          curve: Curves.easeOutCubic,
+                          curve: AppMotion.curve,
                         ),
                       ),
                   child: child,

@@ -17,10 +17,10 @@ class YoutubeConnectionLoadingState extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 460),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Card(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppSpacing.md2),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -29,7 +29,7 @@ class YoutubeConnectionLoadingState extends StatelessWidget {
                     height: 28,
                     child: CircularProgressIndicator(strokeWidth: 2.5),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: AppSpacing.md2 - AppSpacing.xxs),
                   Text(
                     title,
                     style: theme.textTheme.titleMedium?.copyWith(
@@ -37,7 +37,7 @@ class YoutubeConnectionLoadingState extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     description,
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -78,11 +78,11 @@ class YoutubeConnectRequiredState extends ConsumerWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 460),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Card(
             clipBehavior: Clip.antiAlias,
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppSpacing.md2),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -99,7 +99,7 @@ class YoutubeConnectRequiredState extends ConsumerWidget {
                       color: Colors.red,
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: AppSpacing.md2 - AppSpacing.xxs),
                   Text(
                     title,
                     style: theme.textTheme.titleLarge?.copyWith(
@@ -107,7 +107,7 @@ class YoutubeConnectRequiredState extends ConsumerWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: AppSpacing.xs + 2),
                   Text(
                     description,
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -115,7 +115,7 @@ class YoutubeConnectRequiredState extends ConsumerWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: AppSpacing.md2 - AppSpacing.xxs),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
@@ -393,7 +393,7 @@ class _YoutubeConnectionSettingsCardState
                   prefix: 'YouTube action failed',
                 ),
               ],
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               Card(
                 margin: EdgeInsets.zero,
                 color: colorScheme.surfaceContainerHighest.withValues(
@@ -498,7 +498,7 @@ class _ConnectYoutubeEmptyState extends ConsumerWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 460),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -597,20 +597,23 @@ class _SimpleEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
+            Icon(icon, size: AppSizes.emptyStateIcon, color: Colors.grey),
+            const SizedBox(height: AppSpacing.md),
             Text(
               title,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               description,
               style: theme.textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
-            if (action != null) ...[const SizedBox(height: 16), action!],
+            if (action != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              action!,
+            ],
           ],
         ),
       ),

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/app/build_info.dart';
 import 'package:replayglowz_app/app/router.dart';
 import 'package:replayglowz_app/auth/auth_service.dart';
@@ -482,7 +483,12 @@ class _YoutubeOAuthFeedbackBannerState
         top: false,
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.xs,
+            AppSpacing.md,
+            AppSpacing.sm,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -497,7 +503,7 @@ class _YoutubeOAuthFeedbackBannerState
                         : Icons.check_circle_outline_rounded,
                     color: foregroundColor,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -509,7 +515,7 @@ class _YoutubeOAuthFeedbackBannerState
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.xxs),
                         Text(
                           description,
                           style: theme.textTheme.bodySmall?.copyWith(
@@ -528,7 +534,7 @@ class _YoutubeOAuthFeedbackBannerState
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.sm),
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -614,7 +620,7 @@ class YoutubeConnectBanner extends ConsumerWidget {
                 size: 22,
                 color: colorScheme.onPrimaryContainer,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
