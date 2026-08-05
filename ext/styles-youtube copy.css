@@ -1,0 +1,207 @@
+@keyframes gradient-animation {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+/* Page YouTube */
+#bookmark-button {
+  background: none !important;
+  border: none !important;
+  color: rgb(209, 207, 207) !important;
+  font-size: 15px !important;
+  font-family: Century Gothic, sans-serif;
+  cursor: pointer !important;
+  z-index: 2000;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 8px !important;
+  white-space: nowrap !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+  }
+
+#bookmark-button svg {
+  margin-right: 5px !important;
+  background-size: 200% 100% !important;
+  animation: gradient-animation 3s linear infinite !important;
+  fill: white;
+}
+
+.custom-bookmark-icon-container {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  max-width: 100% !important;
+  z-index: 2000;
+  }
+
+.custom-bookmark-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-size: 200% 100% !important;
+  background-image: linear-gradient(
+    120deg,
+    #ff0033ff,
+    #ff00c8ff,
+    #ffe500ff,
+    #00ff44ff,
+    #00c8ffff,
+    #ff0033ff
+  );
+  cursor: pointer;
+  opacity: 0.4;
+  transition: all 0.3s ease;
+  animation: gradient-animation 3s linear infinite !important;
+  }
+
+.custom-bookmark-icon:hover {
+  width: 50px;
+  height: 50px;
+  opacity: 1;
+  }
+
+.custom-bookmark-info-container {
+  position: absolute;
+  left: 50%; /* Centrez horizontalement */
+  transform: translate(-50%, -50%); /* Ajustez pour centrer parfaitement */
+  backdrop-filter: blur(5px);
+  color: rgb(17, 0, 0);
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 2px solid #ffdbe2;
+  padding: 6px;
+  min-width: 17px;
+  min-height: 17px;
+  display: block;
+  opacity: 0; /* Masqué par défaut */
+  visibility: hidden; /* Masqué par défaut */
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    background-image: linear-gradient(
+          120deg,
+          #ff0033ff,
+          #ff00c8ff,
+          #ffe500ff,
+          #00ff44ff,
+          #00c8ffff,
+          #ff0033ff
+    );
+    background-size: 200% 100%;
+    background-position: 0% 50%;
+    z-index: 9999;
+    opacity: 1;
+    animation: gradient-animation 3s linear infinite;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: white;
+    border-radius: inherit;
+    z-index: -1;
+    pointer-events: none;
+  }
+}
+
+.custom-bookmark-note {
+  font-size: 14px;
+  margin-right: 20px; 
+  padding: 5px;
+  color: black;
+  }
+
+.custom-bookmark-delete-icon {
+  position: absolute;
+  top: 50%; /* Positionnez la poubelle au même endroit que l'icône */
+  right: 3px; /* Ajustez si nécessaire */
+  transform: translateY(-50%); /* Centrez verticalement */
+  cursor: pointer;
+  font-size: 18px;
+  opacity: 0; /* Masqué par défaut */
+  visibility: hidden; /* Masqué par défaut */
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+  }
+  .custom-bookmark-icon-container:hover .custom-bookmark-delete-icon,
+  .custom-bookmark-info-container:hover .custom-bookmark-delete-icon {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+  }
+  .custom-bookmark-delete-icon:hover {
+  transform: translateY(-50%) scale(1.2);
+  }
+  .custom-bookmark-icon-container:hover .custom-bookmark-info-container,
+  .custom-bookmark-info-container:hover {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+  transform: translate(-50%, -50%);
+  }
+
+  .custom-bookmark-icon-container .custom-bookmark-info-container,
+  .custom-bookmark-icon-container .custom-bookmark-delete-icon {
+  transition-delay: 1s;
+  }
+
+.delete-bookmark {
+    z-index: 2000;  
+  }
+
+
+  
+/* Notifications */
+.msg {
+  @apply fixed top-5 right-5 p-5 rounded-lg z-[9999] font-sans text-lg;
+  transform: none !important;
+  animation: slideInOut 1s ease forwards;
+}
+
+.pp {
+  @apply fixed top-5 right-5 p-3 text-sm rounded-md z-[9999];
+  animation: slideInOut 1s ease forwards;
+}
+
+@keyframes slideInOut {
+  from {
+      opacity: 0;
+      transform: translateX(100%);
+  }
+  to {
+      opacity: 0.7;
+      transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+      opacity: 0.7;
+      transform: translateX(0);
+  }
+  to {
+      opacity: 0;
+      transform: translateX(20px);
+  }
+}
+
+.hide {
+  animation: slideOut 1s ease forwards;
+}
+
+.info {
+  @apply bg-[#c9ffd8] text-gray-900 border-2 border-[#00ff44ff];
+}
+
+.error {
+  @apply bg-[#ffabbc] text-gray-900 border-2 border-[#ff0033ff];
+}
+
+.loading {
+  @apply bg-[#fff3c9] text-gray-900 border-2 border-[#ffd000ff];
+}

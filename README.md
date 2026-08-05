@@ -7,6 +7,7 @@ Canonical monorepo for the ReplayGlowz product surfaces.
 - `app` - Flutter application
 - `backend` - product Convex backend
 - `site` - website
+- `ext` - Chrome extension source and packaging
 - `lab` - backend and tooling
 - `shipglows_data` - governance, specs, research, audits, and trackers
 

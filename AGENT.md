@@ -18,6 +18,7 @@ linked_systems:
   - "backend"
   - "site"
   - "lab"
+  - "ext"
 depends_on:
   - "shipglows_data/technical/architecture.md"
   - "shipglows_data/technical/guidelines.md"
@@ -27,6 +28,7 @@ evidence:
   - "app/AGENT.md"
   - "site/AGENT.md"
   - "lab/AGENT.md"
+  - "ext/AGENT.md"
 next_step: "/sf-docs audit"
 ---
 
@@ -34,13 +36,14 @@ next_step: "/sf-docs audit"
 
 ## Purpose
 
-This repository is the canonical ReplayGlowz monorepo for the Flutter app, product Convex backend, Astro marketing site, and transcript worker.
+This repository is the canonical ReplayGlowz monorepo for the Flutter app, product Convex backend, Astro marketing site, browser extension, and transcript worker.
 
 ## Repository Layout
 
 - `app/`: Flutter web app, Vercel API handlers for YouTube OAuth, and app-level product contracts.
 - `backend/`: ReplayGlowz product Convex backend for product data, YouTube tokens, preferences, playlists, transcripts, and product access snapshots.
 - `site/`: Astro public marketing site, blog, pricing, comparison, privacy, and terms pages.
+- `ext/`: standalone Chrome extension source, Vue/Vite migration, legacy YouTube integration, and extension packaging.
 - `lab/`: FastAPI transcript worker and operational tooling.
 - `shipglows_data/`: monorepo-level governance contracts and documentation maps.
 
@@ -50,8 +53,7 @@ This repository is the canonical ReplayGlowz monorepo for the Flutter app, produ
 - Keep product claims aligned with `app` contracts before changing public site copy.
 - Preserve Astro runtime content frontmatter in `site/src/content/**`; do not add ShipGlows metadata there unless `src/content.config.ts` is changed first.
 - Do not touch unrelated dirty files when updating docs.
-- Prefer canonical root surface names: `app/`, `backend/`, `site/`, `lab/`.
-- Prefer canonical root surface names: `app/`, `backend/`, `site/`, `lab/`.
+- Prefer canonical root surface names: `app/`, `backend/`, `site/`, `ext/`, `lab/`.
 
 ## Validation
 
@@ -61,6 +63,7 @@ Use focused checks from the changed subproject:
 (cd app && flutter analyze)
 (cd backend/packages/backend && npm run typecheck)
 (cd site && npm run build)
+(cd ext && pnpm type-check)
 (cd lab && python -m py_compile main.py server.py)
 ```
 

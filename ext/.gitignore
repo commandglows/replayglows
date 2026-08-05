@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+package-lock.json
+dist/
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+Thumbs.db

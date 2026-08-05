@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Bookmarker",
+  "version": "1.0.0",
+  "description": "Marque-pages pour les vidéos YouTube avec notes et horodatages",
+  "permissions": ["storage", "tabs", "commands", "notifications"],
+  "host_permissions": ["https://www.youtube.com/*"],
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "width": 800,
+    "height": 600
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/watch?*"],
+      "css": ["output-ytb.css"],
+      "js": ["content.js"],
+      "type": "module"
+    }
+  ],
+  "options_page": "src/options/options.html",
+  "web_accessible_resources": [
+    {
+      "resources": ["node_modules/tinykeys/dist/tinykeys.modern.js"],
+      "matches": ["*://*.youtube.com/*"]
+    }
+  ]
+}

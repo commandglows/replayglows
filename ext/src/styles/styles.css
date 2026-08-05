@@ -1,0 +1,1028 @@
+@import url('https://fonts.googleapis.com/css2?family=Century+Gothic&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.font-century {
+font-family: 'Century Gothic', sans-serif;
+}
+
+@keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+@layer components {
+/* 0. Isolation */
+  .iso {
+    transform: translateZ(0);
+    isolation: isolate;
+  }
+/* 1. Bordure animée au hover (original) */
+  .hv-grad-br-anim-sm {
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 200% 100%;
+        background-position: 0% 50%;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+        animation: gradient-animation 3s linear infinite;
+        border-radius: inherit;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    &:hover::before {
+        opacity: 0.3;
+    }
+
+    transform: translateZ(0);
+    isolation: isolate;
+  }
+  .hv-grad-br-anim-md {
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 200% 100%;
+        background-position: 0% 50%;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+        animation: gradient-animation 3s linear infinite;
+        border-radius: inherit;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    &:hover::before {
+        opacity: 0.6;
+    }
+  }
+  .hv-grad-br-anim-lg {
+    &::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background-image: linear-gradient(
+            90deg,
+            #ff0033ff,
+            #ff00c8ff,
+            #ffe500ff,
+            #00ff44ff,
+            #00c8ffff,
+            #ff0033ff
+      );
+      background-size: 200% 100%;
+      background-position: 0% 50%;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+      animation: gradient-animation 3s linear infinite;
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: white;
+      border-radius: inherit;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    &:hover::before {
+      opacity: 0.9;
+    }
+
+  }
+
+/* 2. Bordure toujours animée (sans hover) */
+  .grad-br-anim {
+    &::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background-image: linear-gradient(
+            90deg,
+            #ff0033ff,
+            #ff00c8ff,
+            #ffe500ff,
+            #00ff44ff,
+            #00c8ffff,
+            #ff0033ff
+      );
+      background-size: 200% 100%;
+      background-position: 0% 50%;
+      z-index: -1;
+      opacity: 1;
+      animation: gradient-animation 3s linear infinite;
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: white;
+      border-radius: inherit;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+  }
+
+/* 3. Bordure statique (sans animation ni hover) */
+  .grad-br-static-sm {
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 100% 100%;
+        z-index: -1;
+        opacity: 0.3;
+        border-radius: inherit;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+  }
+  .grad-br-static-md {
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 100% 100%;
+        z-index: -1;
+        opacity: 0.6;
+        border-radius: inherit;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+  }
+  .grad-br-static-lg {
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 100% 100%;
+        z-index: -1;
+        opacity: 0.9;
+        border-radius: inherit;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+  }
+  .inp-f-grad {
+    position: relative;
+
+    @apply w-full file:m-2 file:p-4 file:rounded-lg file:font-medium file:shadow-md self-center file:hover:-translate-y-0.5 file:active:translate-y-0 file:active:scale-95 file:hover:shadow-lg transition-all ml-auto;
+    
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 100% 100%;
+        z-index: -1;
+        opacity: 0.9;
+        border-radius: inherit;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    /* Styles pour le bouton de fichier */
+    &::-webkit-file-upload-button {
+        @apply bg-white text-black rounded-lg px-4 py-2 cursor-pointer; /* Styles pour le bouton */
+        border: 2px solid #00c8ff; /* Ajout d'une bordure */
+        transition: none; /* Pas de transition au survol */
+    }
+    
+  }
+
+/* Version statique avec fond en gradient flouté */
+  .grad-bg-static-sm {
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 100% 100%;
+        z-index: -1;
+        opacity: 0.3;
+        filter: blur(8px);
+        border-radius: inherit;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        opacity: 0.7;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+    }
+  }
+  .grad-bg-static-md {
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 100% 100%;
+        z-index: -1;
+        opacity: 0.6;
+        filter: blur(8px);
+        border-radius: inherit;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        opacity: 0.7;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+    }
+  }
+  .grad-bg-static-lg {
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 100% 100%;
+        z-index: -1;
+        opacity: 0.9;
+        filter: blur(8px);
+        border-radius: inherit;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        opacity: 0.7;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+    }
+  }
+
+/* Version animée avec fond en gradient flouté */
+  .grad-bg-anim-sm {
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 200% 100%;
+        z-index: -1;
+        opacity: 0.3;
+        filter: blur(8px);
+        animation: gradient-animation 3s linear infinite;
+        border-radius: inherit;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        opacity: 0.7;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    &:hover::before {
+        opacity: 0.5;
+    }
+  }
+  .grad-bg-anim-md {
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 200% 100%;
+        z-index: -1;
+        opacity: 0.6;
+        filter: blur(8px);
+        animation: gradient-animation 3s linear infinite;
+        border-radius: inherit;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        opacity: 0.7;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    &:hover::before {
+        opacity: 0.5;
+    }
+  }
+  .grad-bg-anim-lg {
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 200% 100%;
+        z-index: -1;
+        opacity: 0.9;
+        filter: blur(8px);
+        animation: gradient-animation 3s linear infinite;
+        border-radius: inherit;
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        opacity: 0.7;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    &:hover::before {
+        opacity: 0.5;
+    }
+  }
+
+/* Version Ultimate - Bordure + Background animé au hover */
+  .grad-ult-bg-anim-sm {
+    /* Background avec gradient flouté */
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 200% 100%;
+        z-index: -1;
+        opacity: 0.3;
+        filter: blur(8px);
+        border-radius: inherit;
+        pointer-events: none;
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* Background blanc par dessus */
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        opacity: 0.9;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    /* Animation au hover */
+    &:hover::before {
+        opacity: 0.3;
+        animation: gradient-animation 3s linear infinite;
+    }
+
+    &:hover::after {
+        opacity: 0.7;
+    }
+  }
+  .grad-ult-bg-anim-md {
+    /* Background avec gradient flouté */
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 200% 100%;
+        z-index: -1;
+        opacity: 0.6;
+        filter: blur(8px);
+        border-radius: inherit;
+        pointer-events: none;
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* Background blanc par dessus */
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        opacity: 0.9;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    /* Animation au hover */
+    &:hover::before {
+        opacity: 0.6;
+        animation: gradient-animation 3s linear infinite;
+    }
+
+    &:hover::after {
+        opacity: 0.7;
+    }
+  }
+  .grad-ult-bg-anim-lg {
+    /* Background avec gradient flouté */
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 200% 100%;
+        z-index: -1;
+        opacity: 0.9;
+        filter: blur(8px);
+        border-radius: inherit;
+        pointer-events: none;
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* Background blanc par dessus */
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        opacity: 0.9;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    /* Animation au hover */
+    &:hover::before {
+        opacity: 0.9;
+        animation: gradient-animation 3s linear infinite;
+    }
+
+    &:hover::after {
+        opacity: 0.7;
+    }
+  }
+
+/* Version Ultimate - Bordure + Background white mais animé au hover */
+  .grad-ult-bg-white-sm {
+    /* Background avec gradient flouté */
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 200% 100%;
+        z-index: -1;
+        opacity: 0.3;
+        filter: blur(8px);
+        border-radius: inherit;
+        pointer-events: none;
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* Background blanc par dessus */
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    /* Animation au hover */
+    &:hover::before {
+        opacity: 0.3;
+        animation: gradient-animation 3s linear infinite;
+    }
+
+    &:hover::after {
+        opacity: 0.7;
+    }
+  }
+  .grad-ult-bg-white-md {
+    /* Background avec gradient flouté */
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 200% 100%;
+        z-index: -1;
+        opacity: 0.6;
+        filter: blur(8px);
+        border-radius: inherit;
+        pointer-events: none;
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* Background blanc par dessus */
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    /* Animation au hover */
+    &:hover::before {
+        opacity: 0.6;
+        animation: gradient-animation 3s linear infinite;
+    }
+
+    &:hover::after {
+        opacity: 0.7;
+    }
+  }
+  .grad-ult-bg-white-lg {
+    /* Background avec gradient flouté */
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 200% 100%;
+        z-index: -1;
+        opacity: 0.9;
+        filter: blur(8px);
+        border-radius: inherit;
+        pointer-events: none;
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* Background blanc par dessus */
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    /* Animation au hover */
+    &:hover::before {
+        opacity: 0.9;
+        animation: gradient-animation 3s linear infinite;
+    }
+
+    &:hover::after {
+        opacity: 0.7;
+    }
+  }
+
+/* Boutons */
+  .btn {
+    @apply p-4 m-2 backdrop-blur-md bg-white/10 border border-white/10 font-medium hover:-translate-y-0.5 active:translate-y-0 active:scale-95 rounded-lg shadow-md hover:shadow-lg transition-all ml-auto;
+  }
+
+/* Conteneurs */
+  .sct {
+    @apply rounded-2xl shadow-xl p-2 space-y-4 space-x-4 backdrop-blur-sm;
+  }
+  .cont {
+    @apply bg-inherit border-gray-200 max-w-7xl sm:px-6 lg:px-8 p-6 m-4 flex gap-4;
+  }
+
+  .crd {
+    @apply hover:shadow-lg transition-shadow duration-200 shadow-md bg-white p-4 rounded-lg;
+  }
+
+/* Formulaires */
+  .frm {
+    @apply space-y-2;
+  }
+
+  /* Labels et éléments de texte */
+  .lbl {
+    @apply text-gray-700 p-3 flex items-center justify-between rounded-lg transition-all cursor-pointer hover:bg-[#d6d6d6] shadow-md hover:shadow-lg;
+  }
+  .lbl-i {
+  @apply flex items-center justify-between hover:shadow-lg cursor-pointer p-2 rounded-lg shadow-inner focus:ring-2 bg-white transition-all;
+  }
+
+/* Inputs */
+  .inp {
+    @apply hover:shadow-lg ml-4 px-3 py-2 rounded-md shadow-inner focus:ring-2 focus:ring-[#ff00c8] border-2;
+  }
+/* Inputs de fichier */
+  .inp-f {
+    @apply w-full file:m-2 file:p-4 file:rounded-lg file:font-medium file:shadow-md self-center file:hover:-translate-y-0.5 file:active:translate-y-0 file:active:scale-95 file:hover:shadow-lg transition-all;
+    
+    /* Styles pour le bouton de fichier */
+    &::-webkit-file-upload-button {
+        @apply bg-white text-black rounded-lg px-4 py-2 cursor-pointer; /* Styles pour le bouton */
+        border: none; /* Supprimez la bordure par défaut */
+        transition: background-color 0.3s ease;
+    }
+
+    &::-webkit-file-upload-button:hover {
+        @apply bg-white shadow-lg; /* Changer la couleur au survol */
+    }
+  }
+  .checkbox {
+    @apply w-6 h-6 bg-white border-2 rounded-md transition-all peer-checked:border-[#ff9eb1] peer-checked:bg-gradient-to-r peer-checked:from-[#ffe500ff] peer-checked:via-[#9effbaff] peer-checked:to-[#dbffe5] shadow-sm after:content-[''] after:absolute after:left-1 after:top-1.5 after:w-6 after:h-4 after:border-[#ff9eb1] after:border-b-4 after:border-r-4 after:transform after:rotate-45 after:opacity-0 peer-checked:after:opacity-100 p-4 hover:scale-110;
+  }
+
+/* Espacement */
+  .spc-sm {
+    @apply m-4 p-2;
+  }
+
+  .spc-md {
+    @apply m-6 p-4;
+  }
+
+  .spc-lg {
+    @apply m-8 p-6;
+  }
+
+/* Typographie */
+  .h1 {
+    @apply text-3xl font-bold text-gray-900 border-b-2 p-6 drop-shadow-sm;
+  }
+
+  .h2 {
+    @apply text-2xl font-semibold p-4 drop-shadow-sm text-gray-800;
+  }
+
+  .h3 {
+    @apply text-xl font-medium p-4 text-gray-800;
+  }
+
+  .t-grad {
+    @apply bg-clip-text text-transparent bg-[length:200%_100%] animate-gradient;
+    background-image: linear-gradient(
+          90deg,
+          #ff0033ff,
+          #ff00c8ff, 
+          #ffe500ff,
+          #00ff44ff,
+          #00c8ffff,
+          #ff0033ff
+    );
+  }
+
+  @keyframes gradient-animation {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 200% 50%; 
+    }
+  }
+
+  .animate-gradient {
+    animation: gradient-animation 3s linear infinite;
+  }
+
+  
+  .t {
+    @apply text-base font-medium text-gray-900 p-2;
+  }
+
+  .bold {
+    @apply font-bold;
+  }
+/* Bordure */
+  .b2 {
+    border: 2px solid #00c8ff;
+  }
+
+  .b3 {
+    border: 2px solid #fcacff;
+  }
+  
+  
+/* Notifications */
+  .msg {
+    @apply fixed top-5 right-5 p-5 rounded-lg z-[9999] font-sans text-lg;
+    transform: none !important;
+    animation: slideInOut 1s ease forwards;
+  }
+
+  .pp {
+    @apply fixed top-5 right-5 p-3 text-sm rounded-md z-[9999];
+    animation: slideInOut 1s ease forwards;
+  }
+
+  @keyframes slideInOut {
+    from {
+      opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 0.7;
+        transform: translateX(0);
+    }
+  }
+
+  @keyframes slideOut {
+    from {
+        opacity: 0.7;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+  }
+
+  .hide {
+    animation: slideOut 1s ease forwards;
+  }
+  
+  .info {
+    @apply bg-[#c9ffd8] text-gray-900 border-2 border-[#00ff44ff];
+  }
+
+  .error {
+    @apply bg-[#ffabbc] text-gray-900 border-2 border-[#ff0033ff];
+  }
+  
+  .loading {
+    @apply bg-[#fff3c9] text-gray-900 border-2 border-[#ffd000ff];
+  }
+}
+  
+
+/* Barre de défilement pour Webkit (Chrome, Safari, etc.) */
+  ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    90deg,
+    #ff0033cc,
+    #ff00c8cc,
+    #ffe500cc,
+    #00ff44cc,
+    #00c8ffcc,
+    #ff0033cc
+  );
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  opacity: 0.8;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+  opacity: 1;
+  }
+
+  /* Pour Firefox */
+  * {
+  scrollbar-width: thin;
+  scrollbar-color: #ff809944 transparent;
+  }

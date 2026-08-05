@@ -1,0 +1,391 @@
+@import url('https://fonts.googleapis.com/css2?family=Century+Gothic&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.font-century {
+font-family: 'Century Gothic', sans-serif;
+}
+
+@keyframes gradient-animation {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@layer components {
+
+  .bold {
+    @apply font-bold;
+  }
+/* Conteneurs */
+  .sct {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    backdrop-filter: blur(8px);
+  }
+/* Espacement */
+  .spc-sm {
+    margin: 1rem;
+    padding: 0.5rem;
+  }
+/* 0. Isolation */
+  .iso {
+    transform: translateZ(0);
+    isolation: isolate;
+  }
+/* Version Ultimate - Bordure + Background white mais animé au hover */
+.grad-ult-bg-white-sm {
+  /* Background avec gradient flouté */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+          90deg,
+          #ff0033ff,
+          #ff00c8ff,
+          #ffe500ff,
+          #00ff44ff,
+          #00c8ffff,
+          #ff0033ff
+    );
+    background-size: 200% 100%;
+    z-index: -1;
+    opacity: 0.3;
+    filter: blur(8px);
+    border-radius: inherit;
+    pointer-events: none;
+    transition: all 0.3s ease-in-out;
+  }
+
+  /* Background blanc par dessus */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: white;
+    border-radius: inherit;
+    z-index: -1;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  /* Animation au hover */
+  &:hover::before {
+    opacity: 0.3;
+    animation: gradient-animation 3s linear infinite;
+  }
+
+  &:hover::after {
+      opacity: 0.7;
+    }
+  }
+  
+  .grad-ult-bg-white-lg {
+    /* Background avec gradient flouté */
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(
+              90deg,
+              #ff0033ff,
+              #ff00c8ff,
+              #ffe500ff,
+              #00ff44ff,
+              #00c8ffff,
+              #ff0033ff
+        );
+        background-size: 200% 100%;
+        z-index: -1;
+        opacity: 0.9;
+        filter: blur(8px);
+        border-radius: inherit;
+        pointer-events: none;
+        transition: all 0.3s ease-in-out;
+    }
+
+    /* Background blanc par dessus */
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: white;
+        border-radius: inherit;
+        z-index: -1;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    /* Animation au hover */
+    &:hover::before {
+        opacity: 0.9;
+        animation: gradient-animation 3s linear infinite;
+    }
+
+    &:hover::after {
+        opacity: 0.7;
+    }
+  }
+
+
+  .grad-br-static-sm {
+  &::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background-image: linear-gradient(
+            90deg,
+            #ff0033ff,
+            #ff00c8ff,
+            #ffe500ff,
+            #00ff44ff,
+            #00c8ffff,
+            #ff0033ff
+      );
+      background-size: 100% 100%;
+      z-index: -1;
+      opacity: 0.3;
+      border-radius: inherit;
+      pointer-events: none;
+  }
+
+  &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: white;
+      border-radius: inherit;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+  }
+
+/* Bouton */
+  #bookmark-button {
+    background: none;
+    border: none;
+    color: rgb(209, 207, 207);
+    font-size: 15px;
+    font-family: Century Gothic, sans-serif;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    white-space: nowrap;
+    background-clip: text;
+  }
+  
+  #bookmark-button svg {
+    margin-right: 5px;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Icône */
+  .custom-bookmark-icon-container {
+    position: absolute;
+    transform: translateY(-25%);
+    max-width: 100%;
+    z-index: 999; 
+  }
+  .custom-bookmark-icon {
+    width: 20px;
+    background-size: 200% 100% !important;
+    height: 20px;
+    border-radius: 50%;
+    background-image: linear-gradient(
+      120deg,
+      #ff0033ff,
+      #ff00c8ff,
+      #ffe500ff,
+      #00ff44ff,
+      #00c8ffff,
+      #ff0033ff
+      );
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    animation: gradient-animation 3s linear infinite !important;
+    }
+  .custom-bookmark-icon:hover {
+    width: 26px;
+    height: 26px;
+  }
+
+/* Info Container */
+  .custom-bookmark-info-container {
+/*     top: 120%;
+    left: 0; */
+    color: rgb(17, 0, 0);
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 6px;
+    min-width: 110px;
+    min-height: 30px;
+    font-size: 15px;
+    display: block;
+/*     transform: translateY(65%); */
+    transform: translateX(-50%);
+    opacity: 1;
+/*     visibility: hidden; */
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1;
+    &::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background-image: linear-gradient(
+            120deg,
+            #ff0033ff,
+            #ff00c8ff,
+            #ffe500ff,
+            #00ff44ff,
+            #00c8ffff,
+            #ff0033ff
+      );
+      background-size: 200% 100%;
+      background-position: 0% 50%;
+      z-index: -1;
+      opacity: 1;
+      animation: gradient-animation 3s linear infinite;
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: white;
+      border-radius: inherit;
+      z-index: -1;
+      pointer-events: none;
+    }
+  }
+  .custom-bookmark-note {
+    font-size: 15px;
+    margin-right: 20px; 
+    padding: 5px;
+    color: black;
+    }
+
+  .custom-bookmark-delete-icon {
+    position: absolute;
+    top: 50%;
+    z-index: 1000;
+    right: 3px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+  }
+  .custom-bookmark-icon-container:hover .custom-bookmark-delete-icon,
+  .custom-bookmark-info-container:hover .custom-bookmark-delete-icon,
+  .custom-bookmark-icon-container:hover .custom-bookmark-info-container,
+  .custom-bookmark-info-container:hover {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 300ms;
+    z-index: 1000;
+  }
+  
+  .custom-bookmark-delete-icon:hover {
+  transform: translateY(-50%) scale(1.2);
+  z-index: 1000;
+  }
+
+/* Input */
+.bookmark-input-container {
+border-radius: 0.5rem;
+z-index: 2000;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.bookmark-input {
+  border-radius: 0.5rem;
+  border: none;
+  width: 100%;
+  font-size: 17px;
+  height: 100%;
+  padding: 5px;
+  }
+
+/* Notifications */
+  .msg {
+    @apply fixed top-5 right-5 p-5 rounded-lg z-[9999] font-sans text-lg;
+    transform: none !important;
+    animation: slideInOut 1s ease forwards;
+  }
+
+  .pp {
+    @apply fixed top-5 right-5 p-3 text-sm rounded-md z-[9999];
+    animation: slideInOut 1s ease forwards;
+  }
+
+  @keyframes slideInOut {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+  }
+
+  @keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+  }
+
+  .hide {
+    animation: slideOut 1s ease forwards;
+  }
+
+  .info {
+    @apply bg-[#c9ffd8] text-gray-900 border-2 border-[#00ff44ff];
+  }
+
+  .error {
+    @apply bg-[#ffabbc] text-gray-900 border-2 border-[#ff0033ff];
+  }
+
+  .loading {
+    @apply bg-[#fff3c9] text-gray-900 border-2 border-[#ffd000ff];
+  }
+}
+
+/* Conteneur de la barre de progression et de l'icône */
+.progress-container {
+  position: relative;
+}
+
+.text-xl {
+  font-size: 1.75rem;
+  line-height: 1.75rem;
+}
+.text-lg {
+  font-size: 1.50rem;
+  line-height: 1.50rem;
+}

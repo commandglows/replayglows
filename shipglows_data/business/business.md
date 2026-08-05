@@ -37,10 +37,11 @@ ReplayGlowz helps learning-focused YouTube users turn watch sessions into struct
 
 ## Monorepo Role
 
-This repository consolidates three active surfaces:
+This repository consolidates four active surfaces:
 
 - `app`: the authenticated Flutter application and primary product contract.
 - `site`: the public acquisition and education site.
+- `ext`: the browser extension integrated into the ReplayGlowz product surface.
 - `lab`: the transcript worker and backend experimentation surface.
 
 ## Audience
@@ -53,4 +54,4 @@ The subproject contracts describe an LTD offer plus recurring subscription. Pric
 
 ## Decision Boundary
 
-This root contract coordinates the monorepo. Product-level truth remains in `app`; public claims are routed through `site`; transcript-worker operational claims are routed through `lab`.
+This root contract coordinates the monorepo. Product-level truth remains in `app`; public claims are routed through `site`; extension behavior and packaging are routed through `ext`; transcript-worker operational claims are routed through `lab`.

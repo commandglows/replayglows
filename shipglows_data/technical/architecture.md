@@ -53,6 +53,7 @@ next_step: "/sf-docs technical audit"
 - `app`: Flutter web client with Riverpod, go_router, Clerk auth, Convex client state, Vercel static deployment, and Vercel API handlers for YouTube OAuth.
 - `backend`: Convex product backend for ReplayGlowz product data, YouTube tokens, preferences, playlists, transcripts, and product access snapshots.
 - `site`: Astro static marketing site with English/French routes, blog content collection, public pricing/comparison/trust pages, and app CTA routing through `src/config/site.ts`.
+- `ext`: standalone Chrome extension surface migrated from `chrome-tubeflowz`, currently retaining the legacy JavaScript YouTube integration alongside a partial Vue/TypeScript/Vite migration.
 - `lab`: FastAPI transcript worker for media download, normalization, provider transcription, health checks, and operational deployment.
 
 ## Integration Boundaries
@@ -62,6 +63,7 @@ next_step: "/sf-docs technical audit"
 - Private product Convex reads, writes, and actions must use the shared backend access guard before touching product data or spending YouTube quota. The guard validates the Clerk/Convex identity and an active `replayglowz` product-access snapshot; client product-access UI state is not authorization.
 - Recognized accounts that receive ReplayGlowz free access are represented by a server-owned `productAccessSnapshots` row with `reasonCode=default_free_entitlement`. Revoked snapshots block access and must not be overwritten by the default-free bootstrap.
 - Public site content must use app/product contracts as claim boundaries.
+- Extension code and packaging are isolated under `ext/`; generated extension output remains disposable and is not a governance source of truth.
 - Worker secrets, provider keys, cookies, and raw logs must not be copied into docs.
 
 ## Invariants

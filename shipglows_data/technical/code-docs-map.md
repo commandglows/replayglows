@@ -16,6 +16,7 @@ docs_impact: "yes"
 linked_systems:
   - "app"
   - "site"
+  - "ext"
   - "lab"
 depends_on:
   - "shipglows_data/technical/architecture.md"
@@ -43,6 +44,7 @@ Route changed paths to the technical docs and validation commands that must be c
 | `backend/packages/backend/convex/**` | ReplayGlowz product Convex backend | `shipglows_data/technical/architecture.md` | `(cd backend/packages/backend && npm run typecheck)` | Schema, auth provider, product access, YouTube tokens, settings, videos, playlists, notes, transcripts, or function names change. |
 | `site/src/pages/**`, `site/src/components/**`, `site/src/i18n/**` | Astro public site | `shipglows_data/technical/site/architecture.md` | `(cd site && npm run build)` | Public route, CTA, pricing, claim, i18n, layout, or component changes. |
 | `site/src/content.config.ts`, `site/src/content/**` | Astro runtime content | `shipglows_data/editorial/astro-content-schema-policy.md` | `(cd site && npm run build)` | Content schema or blog frontmatter changes. |
+| `ext/src/**`, `ext/*.js`, `ext/public/manifest.json`, `ext/vite.config.ts`, `ext/package.json` | Chrome extension | `ext/AGENT.md`, `shipglows_data/technical/architecture.md` | `(cd ext && pnpm type-check)` and `(cd ext && pnpm build:ext)` | Extension behavior, YouTube content integration, manifest permissions, extension packaging, or build entrypoints change. |
 | `lab/server.py`, `lab/main.py` | Transcript worker | `shipglows_data/technical/lab/architecture.md` | `(cd lab && python -m py_compile main.py server.py)` | API contract, auth, limits, providers, queueing, media handling, or health behavior changes. |
 | `lab/.env.example`, `lab/Dockerfile`, `lab/ecosystem.config.cjs` | Worker deployment | `lab/README.md` | `(cd lab && python -m py_compile main.py server.py)` | Runtime variables, container, PM2, or worker deployment model changes. |
 | `README.md`, `AGENT.md`, `shipglows_data/**` | Monorepo governance | `shipglows_data/technical/README.md` | `/home/claude/shipglows/tools/shipglows_metadata_lint.py AGENT.md shipglows_data` | Repository layout, governance, source-of-truth, or cross-project routing changes. |
