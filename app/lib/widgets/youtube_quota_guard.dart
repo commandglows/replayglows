@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:replayglowz_app/providers/providers.dart';
@@ -81,7 +82,7 @@ class YoutubeQuotaCostText extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(Icons.speed, size: 16, color: color),
-        const SizedBox(width: 6),
+        const SizedBox(width: AppSpacing.xxs + 2),
         Flexible(child: Text('$prefix: $quotaText', style: style)),
       ],
     );

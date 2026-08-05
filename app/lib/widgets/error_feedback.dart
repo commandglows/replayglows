@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:replayglowz_app/app/theme.dart';
 
 bool _isFrench(BuildContext context) =>
     Localizations.localeOf(context).languageCode == 'fr';
@@ -37,7 +38,7 @@ Future<void> copyErrorToClipboard(
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(_isFrench(context) ? 'Erreur copiée' : 'Error copied'),
-      duration: const Duration(seconds: 2),
+      duration: AppMotion.feedback,
     ),
   );
 }
@@ -54,30 +55,30 @@ void showErrorSnackBar(
   messenger.hideCurrentSnackBar();
   messenger.showSnackBar(
     SnackBar(
-      duration: const Duration(seconds: 8),
+      duration: AppMotion.persistentError,
       showCloseIcon: true,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(message, maxLines: 6, overflow: TextOverflow.ellipsis),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.xs),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               style: TextButton.styleFrom(
                 foregroundColor: foregroundColor,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
                 ),
-                minimumSize: const Size(0, 36),
+                minimumSize: const Size(0, AppSizes.minTouchTarget),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               onPressed: () {
                 copyErrorToClipboard(context, error, prefix: prefix);
               },
-              icon: const Icon(Icons.copy, size: 16),
+              icon: const Icon(Icons.copy, size: AppSizes.iconSmall),
               label: Text(_copyLabel(context)),
             ),
           ),

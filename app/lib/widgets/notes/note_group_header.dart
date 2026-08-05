@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 
 class NoteGroupHeader extends StatelessWidget {
   const NoteGroupHeader({
@@ -14,19 +15,19 @@ class NoteGroupHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(top: 16, bottom: 8),
+      padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.xs),
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 28,
+            width: AppSpacing.xxl,
+            height: AppSpacing.lg + AppSpacing.xxs,
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(AppRadii.sm),
             ),
-            child: const Icon(Icons.play_arrow, size: 16),
+            child: const Icon(Icons.play_arrow, size: AppSizes.iconSmall),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Text(
               title,

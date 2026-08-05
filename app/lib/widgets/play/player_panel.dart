@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -119,7 +120,7 @@ class _VideoPosterOverlay extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.md),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -144,7 +145,7 @@ class _VideoPosterOverlay extends StatelessWidget {
                               )
                             : null,
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: AppSpacing.xs + 2),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +180,7 @@ class _VideoPosterOverlay extends StatelessWidget {
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: theme.colorScheme.primary,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(AppRadii.lg + 2),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.36),

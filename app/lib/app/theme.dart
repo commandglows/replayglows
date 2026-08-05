@@ -115,6 +115,8 @@ abstract final class AppMotion {
   static const fast = Duration(milliseconds: 140);
   static const standard = Duration(milliseconds: 220);
   static const slow = Duration(milliseconds: 320);
+  static const feedback = Duration(seconds: 2);
+  static const persistentError = Duration(seconds: 8);
   static const curve = Curves.easeOutCubic;
   static const emphasizedCurve = Curves.easeOut;
 }

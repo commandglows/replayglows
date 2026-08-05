@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -125,9 +126,14 @@ class _YouTubeChannelOnboardingCardState
     final theme = Theme.of(context);
 
     return Card(
-      margin: EdgeInsets.fromLTRB(16, widget.compact ? 8 : 16, 16, 12),
+      margin: EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        widget.compact ? AppSpacing.xs : AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.sm,
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -139,7 +145,7 @@ class _YouTubeChannelOnboardingCardState
                   Icons.account_tree_outlined,
                   color: theme.colorScheme.primary,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,7 +156,7 @@ class _YouTubeChannelOnboardingCardState
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: AppSpacing.xxs + 2),
                       Text(
                         t('youtubeLibrary.description', locale: l),
                         style: theme.textTheme.bodyMedium,
@@ -160,7 +166,7 @@ class _YouTubeChannelOnboardingCardState
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: AppSpacing.sm + 2),
             Wrap(
               spacing: 10,
               runSpacing: 8,
@@ -186,7 +192,7 @@ class _YouTubeChannelOnboardingCardState
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             TextField(
               controller: _controller,
               enabled: !_importing,
@@ -200,7 +206,7 @@ class _YouTubeChannelOnboardingCardState
                 errorText: _validationError,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               t('youtubeLibrary.publicHint', locale: l),
               style: theme.textTheme.bodySmall?.copyWith(

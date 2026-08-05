@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 
 class MediaThumbnail extends StatelessWidget {
   const MediaThumbnail({
@@ -52,8 +53,8 @@ class MediaThumbnail extends StatelessWidget {
           color: colorScheme.surfaceContainerHighest,
           child: const Center(
             child: SizedBox(
-              width: 18,
-              height: 18,
+              width: AppSizes.iconSmall + 2,
+              height: AppSizes.iconSmall + 2,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
           ),

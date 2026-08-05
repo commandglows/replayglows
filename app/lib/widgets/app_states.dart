@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:replayglowz_app/app/theme.dart';
 
 class AppSectionHeader extends StatelessWidget {
   const AppSectionHeader(this.title, {super.key});
@@ -10,7 +11,12 @@ class AppSectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.xxs,
+      ),
       child: Text(
         title,
         style: theme.textTheme.titleSmall?.copyWith(
@@ -46,24 +52,31 @@ class AppEmptyState extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 64, color: mutedColor),
-              const SizedBox(height: 16),
+              Icon(
+                icon,
+                size: AppSpacing.xxl + AppSpacing.md,
+                color: mutedColor,
+              ),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 title,
                 style: theme.textTheme.titleMedium,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 description,
                 style: theme.textTheme.bodySmall,
                 textAlign: TextAlign.center,
               ),
-              if (action != null) ...[const SizedBox(height: 16), action!],
+              if (action != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                action!,
+              ],
             ],
           ),
         ),
@@ -77,7 +90,7 @@ class AppLoadingListSkeleton extends StatelessWidget {
     super.key,
     required this.itemCount,
     required this.itemBuilder,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = const EdgeInsets.all(AppSpacing.md),
     this.shrinkWrap = false,
     this.physics,
   });

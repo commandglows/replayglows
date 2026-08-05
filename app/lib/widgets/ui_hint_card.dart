@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UiHintCard extends StatefulWidget {
@@ -57,9 +58,14 @@ class _UiHintCardState extends State<UiHintCard> {
     }
 
     return Card(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        AppSpacing.xxs,
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppSpacing.sm),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -77,7 +83,7 @@ class _UiHintCardState extends State<UiHintCard> {
                   Text(widget.message),
                   if (widget.actionLabel != null && widget.onAction != null)
                     Padding(
-                      padding: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.only(top: AppSpacing.xs),
                       child: FilledButton.tonal(
                         onPressed: widget.onAction,
                         child: Text(widget.actionLabel!),

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/utils/color_utils.dart';
 import 'package:replayglowz_app/utils/date_utils.dart';
@@ -28,13 +29,14 @@ class PlaylistCard extends StatelessWidget {
         ? parseHexColor(playlist.color!)
         : Theme.of(context).colorScheme.primary;
     final theme = Theme.of(context);
-    final l = locale ??
+    final l =
+        locale ??
         (Localizations.localeOf(context).languageCode == 'fr'
             ? AppLocale.fr
             : AppLocale.en);
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -55,14 +57,14 @@ class PlaylistCard extends StatelessWidget {
                   ),
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Container(width: 4, color: color),
+                    child: Container(width: AppSpacing.xxs, color: color),
                   ),
                 ],
               ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppSpacing.sm),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -74,12 +76,12 @@ class PlaylistCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.xxs),
                     Text(
                       '${playlist.videoCount} video${playlist.videoCount == 1 ? '' : 's'}',
                       style: theme.textTheme.bodySmall,
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSpacing.xxs / 2),
                     Text(
                       playlist.cachedAt > 0
                           ? '${t('playlistsPage.updated', locale: l)} ${formatDate(playlist.cachedAt)}'

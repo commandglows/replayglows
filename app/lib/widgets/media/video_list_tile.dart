@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/utils/duration_utils.dart';
 import 'package:replayglowz_app/widgets/media/media_thumbnail.dart';
@@ -33,8 +34,8 @@ class VideoListTile extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
+      duration: AppMotion.standard,
+      curve: AppMotion.curve,
       decoration: BoxDecoration(
         color: isActive
             ? colorScheme.primary.withValues(alpha: 0.08)
@@ -42,7 +43,7 @@ class VideoListTile extends StatelessWidget {
         border: Border(
           left: BorderSide(
             color: isActive ? colorScheme.primary : Colors.transparent,
-            width: 3,
+            width: AppSpacing.xxs - 1,
           ),
         ),
       ),
@@ -51,7 +52,7 @@ class VideoListTile extends StatelessWidget {
           imageUrl: video.thumbnailUrl,
           width: leadingWidth,
           height: leadingHeight,
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
         ),
         title: Row(
           children: [
@@ -63,12 +64,12 @@ class VideoListTile extends StatelessWidget {
               ),
             ),
             if (isActive) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.xs),
               Tooltip(
                 message: 'Now playing',
                 child: Icon(
                   Icons.graphic_eq_rounded,
-                  size: 18,
+                  size: AppSizes.iconSmall,
                   color: colorScheme.primary,
                 ),
               ),

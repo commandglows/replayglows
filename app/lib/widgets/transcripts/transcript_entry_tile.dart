@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 
 class TranscriptEntryTile extends StatelessWidget {
   const TranscriptEntryTile({
@@ -21,34 +22,34 @@ class TranscriptEntryTile extends StatelessWidget {
     final theme = Theme.of(context);
     return Card(
       color: isActive ? theme.colorScheme.primaryContainer : null,
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: AppSpacing.xs),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(AppSpacing.sm),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                width: 58,
+                width: AppSpacing.xxl + AppSpacing.xs + AppSpacing.xxs / 2,
                 child: Text(
                   timestampLabel,
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.primary,
                     fontWeight: FontWeight.w700,
-                    fontSize: 12,
+                    fontSize: AppTypography.labelMedium,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (speaker != null && speaker!.trim().isNotEmpty) ...[
                       Text(speaker!.trim(), style: theme.textTheme.labelSmall),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppSpacing.xxs),
                     ],
                     Text(text),
                   ],

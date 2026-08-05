@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/models/models.dart';
 import 'package:replayglowz_app/utils/color_utils.dart';
 import 'package:replayglowz_app/utils/duration_utils.dart';
@@ -27,23 +28,23 @@ class VideoCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
-      margin: const EdgeInsets.only(bottom: 16),
+      duration: AppMotion.standard,
+      curve: AppMotion.curve,
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isActive
               ? colorScheme.primary.withValues(alpha: 0.52)
               : Colors.transparent,
-          width: 1.5,
+          width: AppSpacing.xxs / 2,
         ),
         boxShadow: isActive
             ? [
                 BoxShadow(
                   color: colorScheme.primary.withValues(alpha: 0.12),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+                  blurRadius: AppSpacing.md,
+                  offset: const Offset(0, AppSpacing.xs),
                 ),
               ]
             : null,
@@ -68,13 +69,13 @@ class VideoCard extends StatelessWidget {
                 width: double.infinity,
               ),
               Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppSpacing.sm),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (isActive) ...[
                       _NowPlayingBadge(colorScheme: colorScheme),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.xs),
                     ],
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,12 +89,12 @@ class VideoCard extends StatelessWidget {
                           ),
                         ),
                         if (trailing != null) ...[
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppSpacing.xs),
                           trailing!,
                         ],
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.xxs),
                     Row(
                       children: [
                         Expanded(
@@ -110,14 +111,16 @@ class VideoCard extends StatelessWidget {
                       ],
                     ),
                     if (video.playlistTitle != null) ...[
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppSpacing.xxs),
                       Row(
                         children: [
                           if (video.playlistColor != null)
                             Container(
-                              width: 8,
-                              height: 8,
-                              margin: const EdgeInsets.only(right: 4),
+                              width: AppSpacing.xs,
+                              height: AppSpacing.xs,
+                              margin: const EdgeInsets.only(
+                                right: AppSpacing.xxs,
+                              ),
                               decoration: BoxDecoration(
                                 color: parseHexColor(video.playlistColor!),
                                 shape: BoxShape.circle,

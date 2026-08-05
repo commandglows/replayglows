@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 
 class CommentsPlaceholderPanel extends StatelessWidget {
   const CommentsPlaceholderPanel({super.key});
@@ -9,13 +10,20 @@ class CommentsPlaceholderPanel extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.comment_outlined, size: 48, color: Colors.grey),
-          SizedBox(height: 16),
+          Icon(
+            Icons.comment_outlined,
+            size: AppSpacing.xxl,
+            color: Colors.grey,
+          ),
+          SizedBox(height: AppSpacing.md),
           Text('Comments coming soon', style: TextStyle(color: Colors.grey)),
-          SizedBox(height: 8),
+          SizedBox(height: AppSpacing.xs),
           Text(
             'In-app comments will appear here',
-            style: TextStyle(color: Colors.grey, fontSize: 12),
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: AppTypography.bodySmall,
+            ),
           ),
         ],
       ),

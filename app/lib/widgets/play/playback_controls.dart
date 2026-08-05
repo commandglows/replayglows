@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:replayglowz_app/app/theme.dart';
 
 Color? _controlOverlayColor(ColorScheme colorScheme, Set<WidgetState> states) {
   if (states.contains(WidgetState.pressed)) {
@@ -51,14 +52,19 @@ class PlaybackControlsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final textStyle = Theme.of(context).textTheme.labelSmall;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 4, 0, 6),
+      padding: const EdgeInsets.fromLTRB(
+        0,
+        AppSpacing.xxs,
+        0,
+        AppSpacing.xxs + 2,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
               SizedBox(
-                width: 42,
+                width: AppSpacing.xxl - AppSpacing.xs,
                 child: Text(
                   formatTime(currentSeconds),
                   style: textStyle,
@@ -75,7 +81,7 @@ class PlaybackControlsPanel extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                width: 42,
+                width: AppSpacing.xxl - AppSpacing.xs,
                 child: Text(
                   formatTime(maxSeconds),
                   style: textStyle,

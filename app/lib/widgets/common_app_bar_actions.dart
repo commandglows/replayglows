@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/app/router.dart';
 import 'package:replayglowz_app/providers/providers.dart';
 
@@ -15,7 +16,7 @@ List<Widget> commonAppBarActions(BuildContext context, WidgetRef ref) {
         isLabelVisible: unreadCount > 0,
         label: Text(
           unreadCount > 99 ? '99+' : '$unreadCount',
-          style: const TextStyle(fontSize: 10),
+          style: const TextStyle(fontSize: AppTypography.labelSmall),
         ),
         child: const Icon(Icons.notifications_outlined),
       ),

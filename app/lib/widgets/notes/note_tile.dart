@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:replayglowz_app/app/theme.dart';
 import 'package:replayglowz_app/widgets/app_states.dart';
 
 class NoteTile extends StatelessWidget {
@@ -23,7 +24,7 @@ class NoteTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: AppSpacing.xs),
       child: ListTile(
         leading: timestampLabel == null
             ? null
