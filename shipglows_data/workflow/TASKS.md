@@ -58,6 +58,14 @@
 
 ---
 
+## Migration Parity
+
+🟠 [replayglowz] task: Reconcile public feature claims with proven ReplayGlowz behavior, especially Vimeo/other video URLs, instant search, PDF/plain-text export, and real-time sync | status: pending | area: public-claims | source: `site/src/pages/features.astro`, `site/src/pages/compare.astro`, `shipglows_data/product/app/product.md` | scope: the app currently exposes YouTube workflows and Markdown note export; PDF/plain-text export and broad video URL support are public claims without matching end-to-end proof | outcome: either implement and prove each claim or narrow/remove the unsupported copy before the next public release | next: /sf-spec ReplayGlowz public feature claim alignment
+🟡 [replayglowz] task: Decide whether ReplayGlowz should expose notes/library search as a complete app workflow or remove the instant-search claim from public surfaces | status: todo | area: app-product | depends: public feature claim alignment | evidence: backend `notes:searchNotes` exists, but no complete Flutter search route/workflow is currently exposed | next: /sf-spec ReplayGlowz notes and library search
+🟡 [replayglowz] task: Complete and verify YouTube Core Parity P2, the advanced feature-parity chantier with the former TubeFlow app: channel subscriptions/sync, transcript provider and job/version management, note export/share/copy, and empty-account onboarding | status: todo | area: parity-qa | spec: `shipglows_data/workflow/specs/monorepo/replayglowz-youtube-core-parity-priority-2.md` | scope: Markdown export is implemented; PDF export remains explicitly out of scope until a real PDF implementation exists; the remaining question is end-to-end UI and authenticated QA proof, not only backend code presence | evidence: implementation tasks are marked complete but acceptance criteria and `sf-verify` remain pending | next: /sf-verify replayglowz-youtube-core-parity-priority-2
+
+---
+
 ## Backlog
 
 🟡 [replayglowz] task: Explore focus-time controls for video feeds so work sessions can stay bounded with reminders, playback caps, or auto-stop after a user-defined watch duration | status: todo | area: product | next: /100-sf-spec ReplayGlowz focus-time controls for feed playback

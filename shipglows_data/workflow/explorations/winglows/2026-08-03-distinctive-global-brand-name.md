@@ -1,10 +1,10 @@
 ---
 artifact: exploration_report
 metadata_schema_version: "1.0"
-artifact_version: "2.4.0"
+artifact_version: "2.6.0"
 project: "winglows"
 created: "2026-08-03"
-updated: "2026-08-03"
+updated: "2026-08-05"
 status: draft
 source_skill: 700-sg-explore
 scope: "Distinctive global brand name for productivity and technology advice in the Glows family"
@@ -319,6 +319,16 @@ At 2026-08-03 23:04 UTC, a repeated exact, singular, spaced, reversed, company, 
 
 The bootstrap decision can therefore move forward with a favourable preliminary signal. Availability remains point-in-time, and the operator should purchase through a trusted registrar directly rather than through a link supplied by a naming article. Paid professional clearance and filing remain deferred until sales can fund them.
 
+### Existing product name: ReplayGlowz versus TubeGlows
+
+`ReplayGlowz` should remain the product name. It maps directly to the documented user outcome: preserve video context, notes, playlists, retrieval, and review so useful material can be replayed and reused. It is also source-neutral enough to survive expansion beyond YouTube.
+
+`TubeGlows` should be abandoned. In this product context, its value comes primarily from making users think of YouTube. Google's current API branding guidelines forbid the YouTube name, abbreviations, variants, or derivatives in an application's overall name. This analysis does not decide that `TubeGlows` legally qualifies as a prohibited derivative, but the association is intentional and avoidable. Exact singular `TubeGlow` uses also exist in an iPhone game and lighting products, and `tubeglow.com` is registered.
+
+`ReplayGlowz` is not perfectly fanciful: `Replay` is suggestive of media behavior, and a distant `Replay Glow` eyewear model exists. However, no material exact software/app collision surfaced, the project controls `replayglowz.com`, and the compound explains the product without borrowing meaning from a platform owner's brand. Product-level verdict: `keep ReplayGlowz; retire TubeGlows`.
+
+The existing `TubeFlow` competitor does not reverse this verdict. At least three unrelated YouTube-oriented products already use `TubeFlow` or `tubeflow1`, including `tubeflow.ai`, `tubeflow.co`, and a mobile subscription-organizer app. Their existence demonstrates practical market tolerance so far, not Google authorization or clean trademark ownership. It also demonstrates the strategic weakness of `Tube`: multiple founders independently arrive at the same construction, making exclusivity and differentiation harder.
+
 ## Non-Decisions
 
 - The definitive spelling `Glows` versus `Glowz` is not yet settled for this company family.
@@ -415,3 +425,5 @@ This also refines the future budget strategy: do not commission a full internati
 | 2026-08-03 | Screen DigitalGlows | Checked exact and spaced singular/plural uses, companies, digital agencies, software/IT services, indexed trademark history, and singular/plural `.com` status | Rejected: highly descriptive, commercially crowded in the exact digital field, and both domains are registered | Keep the shortlist focused on coined compounds |
 | 2026-08-03 | Choose the revenue-first brand direction | Recorded the operator's preference for CommandGlows as the immediate product brand and OrbitGlows as a possible later umbrella | Naming exploration moves from broad generation to a staged working decision: consolidate first-product sales under CommandGlows without blocking on the future corporate architecture | Recheck and reserve commandglows.com, then scope product-facing renames separately from permanent technical identifiers |
 | 2026-08-03 | Run the final free CommandGlows check before domain reservation | Repeated exact, singular, spaced, reversed, business, software, app-store, extension, social/company-index, trademark-index, and multi-TLD RDAP checks | No material collision found; relevant domains returned no registration record at 23:04 UTC; one non-commercial automatic name suggestion was documented | Operator may reserve commandglows.com promptly while explicitly accepting residual trademark risk |
+| 2026-08-05 | Compare ReplayGlowz and TubeGlows as product names | Aligned both names with the product contract; checked exact/close uses, domains, current app/product collisions, and YouTube API branding rules | Keep ReplayGlowz; retire TubeGlows because it intentionally evokes YouTube, is less future-proof, and has exact singular commercial uses | Preserve ReplayGlowz as the product brand while keeping the company/master-brand decision separate |
+| 2026-08-05 | Test TubeFlow as a counterexample to the TubeGlows risk conclusion | Checked the competitor's current product and terms, Google branding language, and other exact TubeFlow products | TubeFlow proves current practical use, not clearance; three unrelated YouTube products already share the name, confirming weak exclusivity and collision risk | Do not imitate TubeFlow's bootstrap risk posture when ReplayGlowz already offers a cleaner owned identity |

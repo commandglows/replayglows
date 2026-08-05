@@ -105,7 +105,7 @@ const {
 
   const motionDurationMs = () => {
     const value = getComputedStyle(document.documentElement)
-      .getPropertyValue('--motion-duration-marquee')
+      .getPropertyValue('--motion-duration-testimonial-loop')
       .trim()
     const duration = Number.parseFloat(value)
 
@@ -175,8 +175,6 @@ const {
     }
 
     rail.addEventListener('scroll', normalizeScrollPosition, { passive: true })
-    rail.addEventListener('mouseenter', () => setPaused('hover', true))
-    rail.addEventListener('mouseleave', () => setPaused('hover', false))
     rail.addEventListener('focusin', () => setPaused('focus', true))
     rail.addEventListener('focusout', (event) => {
       const nextTarget = event.relatedTarget

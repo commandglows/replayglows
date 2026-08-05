@@ -125,6 +125,7 @@
   --motion-duration-shimmer: 3s;
   --motion-duration-pulse-glow: 2s;
   --motion-duration-marquee: 30s;
+  --motion-duration-testimonial-loop: 24s;
   --motion-duration-fade-up: 0.6s;
   --motion-duration-fade-up-slow: 0.8s;
   --motion-duration-text-reveal: 0.8s;
@@ -389,6 +390,10 @@
   overflow-x: auto;
   overscroll-behavior-inline: contain;
   scrollbar-width: none;
+  cursor: grab;
+}
+.testimonial-rail:active {
+  cursor: grabbing;
 }
 .testimonial-rail::-webkit-scrollbar {
   display: none;

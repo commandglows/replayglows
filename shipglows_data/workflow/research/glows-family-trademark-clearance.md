@@ -1,10 +1,10 @@
 ---
 artifact: research
 metadata_schema_version: "1.0"
-artifact_version: "1.9.0"
+artifact_version: "1.11.0"
 project: "replayglowz"
 created: "2026-08-03"
-updated: "2026-08-03"
+updated: "2026-08-05"
 status: reviewed
 source_skill: 203-sg-research
 scope: "Preliminary trademark clearance for DeskGlows, WorkGlows, Glows, and PilotGlows"
@@ -18,7 +18,7 @@ linked_systems:
   - site
 depends_on: []
 supersedes: []
-source_count: 45
+source_count: 52
 evidence:
   - "INPI trademark database guidance"
   - "EUIPO likelihood-of-confusion guidelines"
@@ -29,7 +29,7 @@ next_step: "Commission an INPI similarity search or a French/EU trademark attorn
 
 # Research: Glows family trademark clearance
 
-> Generated 2026-08-03 — 45 sources — France/EU focus with international collision screening
+> Updated 2026-08-05 — 52 sources — France/EU focus with international collision screening
 
 ## Executive Summary
 
@@ -232,6 +232,23 @@ Checked 2026-08-03 at 23:04 UTC, immediately before the operator's intended doma
 
 Preliminary verdict: `CommandGlows` passes the available free pre-reservation screen and is a rational bootstrap choice among the candidates reviewed. This is permission to proceed under an explicitly accepted residual-risk strategy, not legal clearance. The checks cannot exclude unindexed applications, pending filings, unregistered local use, private launch preparations, phonetic/conceptual conflicts, or a filing made after the timestamp.
 
+## Product-name comparison: ReplayGlowz and TubeGlows
+
+| Candidate | Exact/close evidence | Platform-policy dimension | Preliminary disposition |
+|---|---|---|---|
+| `ReplayGlowz` | No material indexed software/app use found for the exact `ReplayGlows` or `ReplayGlowz` compound. `Replay Glow` is used for children's glow-in-the-dark eyewear, a distant goods category. `replayglowz.com` is registered by the current project; singular/plural `ReplayGlow(s)` `.com` strings returned no RDAP record | Does not contain or imitate the YouTube name; describes revisiting video content and remains usable beyond one source platform | Retain. Suggestive rather than fanciful, but aligned with the actual video-learning, notes, playlists, retrieval, and review workflow |
+| `TubeGlows` | Exact singular `TubeGlow` is currently used by an iPhone game and multiple lighting products. `tubeglow.com` is registered; `tubeglows.com` and `tubeglowz.com` returned no RDAP record | In a YouTube-centered client, `Tube` predictably evokes YouTube. Google's API branding rules prohibit `YouTube`, `YT`, `You-Tube`, or a derivative in an application's overall name. Whether `TubeGlows` legally qualifies as a derivative is unresolved, but the avoidable policy/association risk is material | Reject. It is less platform-independent, has exact singular commercial uses, and gains most of its intended meaning from proximity to YouTube |
+
+`ReplayGlowz` is materially safer and strategically stronger than `TubeGlows` for the current product. This is not definitive clearance: broad `REPLAY` and `GLOW` similarity still requires official register review if the operator later files.
+
+### What the existing TubeFlow products do—and do not—prove
+
+The active `tubeflow.ai` competitor openly describes itself as an AI video-research workspace for YouTube and identifies Coffee Flow Labs in its terms. Its existence proves that a founder can currently operate a YouTube-centered service containing `Tube` in its name; it does not prove Google approval, trademark registration, clearance, or immunity from a later complaint.
+
+The name is already collision-prone. A separate `tubeflow.co` service uses the same `TubeFlow` name for YouTube Shorts creation, upload, playlist management, and API permissions under North Carolina terms. A separate mobile application is listed as `tubeflow1` for organizing YouTube subscriptions. These concurrent uses suggest weak exclusivity and user-confusion risk rather than a clean precedent to copy.
+
+Google's published branding rule expressly names `YouTube`, `YT`, `You-Tube`, and derivatives, but does not state that every compound containing the ordinary word `Tube` is automatically prohibited. Therefore `TubeFlow` may be tolerated, may fall outside Google's interpretation of “derivative,” may not yet have been reviewed, or may simply be operating under accepted residual risk. No public evidence located establishes which explanation applies.
+
 ## Confidence and limitations
 
 Confidence is medium. Official guidance and identified records/usages are reliable, but live register interfaces impose technical access restrictions, and indexed-web absence is not proof of register absence. The report does not determine ownership priority, territorial reputation, genuine use, validity, or the precise scope of every identified registration. Those questions require live register extracts and legal analysis of the final specification.
@@ -283,6 +300,13 @@ Confidence is medium. Official guidance and identified records/usages are reliab
 - [AFNIC RDAP](https://rdap.nic.fr/)
 - [Public Interest Registry RDAP](https://rdap.publicinterestregistry.org/rdap/)
 - [GrindSuccess generated laser-business name list containing CommandGlow](https://grindsuccess.com/laser-beam-business-name-ideas/)
+- [YouTube API Services — Branding Guidelines](https://developers.google.com/youtube/terms/branding-guidelines)
+- [NanoVista — Replay Glow eyewear](https://nano-vista.com/en/glasses/replay-glow/)
+- [Apple App Store — Alchemix TubeGlow](https://apps.apple.com/pl/app/alchemix-tubeglow/id6783367332)
+- [Novensa — TubeGlow lamp](https://novensa.co.uk/products/tubeglow)
+- [TubeFlow.ai — AI video research workspace](https://tubeflow.ai/)
+- [TubeFlow.co — separate YouTube automation service](https://tubeflow.co/)
+- [Google Play — separate tubeflow1 application](https://play.google.com/store/apps/details?id=com.ducafecat.tubeflow)
 
 ## Chantier potentiel
 
