@@ -1,0 +1,102 @@
+- generic [active] [ref=f5e1] [box=0,0,390,10328]:
+  - link "Aller au contenu principal" [ref=f5e2] [cursor=pointer] [box=-1,-1,1,1]:
+    - /url: "#main-content"
+  - main [ref=f5e3] [box=0,0,390,10328]:
+    - navigation [ref=f5e5] [box=16,-4,358,62]:
+      - link [ref=f5e6] [cursor=pointer] [box=33,11,32,32]:
+        - /url: /fr
+      - button "Ouvrir le menu" [ref=f5e11] [box=321,9,36,36]
+    - generic [ref=f5e14] [box=16,128,358,616]:
+      - generic [ref=f5e15] [box=58,148,274,38]: Workspace social multi-plateforme
+      - heading "Votre travail social, sans le chaos des onglets." [level=1] [ref=f5e18] [box=16,198,358,120]:
+        - generic [ref=f5e19] [box=16,198,358,40]: Votre travail social,
+        - generic [ref=f5e21] [box=16,238,358,80]: sans le chaos des onglets.
+      - paragraph [ref=f5e23] [box=16,362,358,146]: CommunityGlows vous offre un espace calme pour passer entre comptes, réseaux et tâches quotidiennes. Gardez chaque contexte séparé, restez concentré et reprenez là où vous vous êtes arrêté.
+      - generic [ref=f5e24] [box=16,548,358,112]:
+        - link "Commencer gratuitement" [ref=f5e25] [cursor=pointer] [box=54,548,282,48]:
+          - /url: https://github.com/dianedef/CommunityGlows/releases/latest
+        - link "Voir les fonctionnalités" [ref=f5e28] [cursor=pointer] [box=76,612,237,48]:
+          - /url: "#features"
+      - generic [ref=f5e29] [box=16,724,358,40]: Conçu pour les créateurs, les opérateurs et les petites équipes
+    - generic [ref=f5e33] [box=0,824,390,272]:
+      - paragraph [ref=f5e35] [box=0,888,390,40]: Compatible avec les plateformes que vous utilisez déjà
+      - generic [ref=f5e37] [box=-10,968,3584,64]:
+        - generic [ref=f5e38] [box=-10,968,1792,64]
+        - generic [ref=f5e79] [box=1782,968,1792,64]
+    - generic [ref=f5e121] [box=0,1160,390,1228]:
+      - heading "Le travail social est dispersé partout" [level=2] [ref=f5e123] [box=16,1164,358,72]
+      - generic [ref=f5e124] [box=16,1280,358,1108]:
+        - generic [ref=f5e125] [box=16,1291,358,278]
+        - generic [ref=f5e129] [box=16,1594,358,278]
+        - generic [ref=f5e133] [box=16,1888,358,252]
+        - generic [ref=f5e137] [box=16,2156,358,252]
+    - generic [ref=f5e142] [box=0,2516,390,1336]:
+      - generic [ref=f5e143] [box=16,2516,358,100]:
+        - paragraph [ref=f5e144] [box=16,2520,358,20]: Une manière plus calme de travailler
+        - heading "Un espace, quatre façons de garder le contrôle" [level=2] [ref=f5e145] [box=16,2555,358,72]
+      - generic [ref=f5e146] [box=16,2664,358,1188]:
+        - generic [ref=f5e147] [box=16,2675,358,278]
+        - generic [ref=f5e151] [box=16,2978,358,278]
+        - generic [ref=f5e155] [box=16,3272,358,278]
+        - generic [ref=f5e159] [box=16,3566,358,306]
+    - generic [ref=f5e164] [box=0,3980,390,1688]:
+      - generic [ref=f5e165] [box=16,3980,358,100]:
+        - paragraph [ref=f5e166] [box=16,3984,358,20]: Fonctionnalités
+        - heading "Les détails qui maintiennent votre élan" [level=2] [ref=f5e167] [box=16,4019,358,72]
+      - generic [ref=f5e168] [box=16,4128,358,1540]:
+        - generic [ref=f5e169] [box=16,4132,358,206]
+        - generic [ref=f5e175] [box=16,4362,358,226]
+        - generic [ref=f5e179] [box=16,4613,358,268]
+        - generic [ref=f5e186] [box=16,4897,358,198]
+        - generic [ref=f5e190] [box=16,5111,358,322]
+        - generic [ref=f5e197] [box=16,5450,358,238]
+    - generic [ref=f5e206] [box=0,5796,390,900]:
+      - generic [ref=f5e207] [box=16,5796,358,100]:
+        - paragraph [ref=f5e208] [box=16,5800,358,20]: Là où CommunityGlows trouve sa place
+        - heading "Plus proche de votre manière de travailler" [level=2] [ref=f5e209] [box=16,5835,358,72]
+      - generic [ref=f5e210] [box=16,5944,358,752]:
+        - generic [ref=f5e211] [box=16,5955,358,240]
+        - generic [ref=f5e219] [box=16,6220,358,240]
+        - generic [ref=f5e227] [box=16,6476,358,240]
+    - generic [ref=f5e236] [box=0,6824,390,1882]:
+      - generic [ref=f5e237] [box=16,6824,358,238]:
+        - heading "Tarifs simples et transparents" [level=2] [ref=f5e238] [box=16,6828,358,72]
+        - paragraph [ref=f5e239] [box=16,6923,358,72]: Démarrez gratuitement, puis passez à Pro lorsque vous avez besoin de plus de profils, de réseaux et de profondeur de workflow.
+        - generic [ref=f5e240] [box=79,7016,232,46]
+      - generic [ref=f5e243] [box=16,7110,358,1402]:
+        - generic [ref=f5e244] [box=16,7150,358,452]
+        - generic [ref=f5e271] [box=16,7626,358,482]
+        - generic [ref=f5e303] [box=16,8132,358,420]
+      - paragraph [ref=f5e329] [box=33,8569,324,120]: Pourquoi un abonnement ? CommunityGlows doit maintenir les intégrations navigateur, desktop, mobile et réseaux sociaux à mesure que les plateformes évoluent. L’abonnement finance durablement la compatibilité, la maintenance et le support.
+    - generic [ref=f5e331] [box=0,8834,390,352]:
+      - heading "Faites de la place au travail qui compte." [level=2] [ref=f5e332] [box=16,8846,358,72]
+      - paragraph [ref=f5e333] [box=16,8950,358,88]: Regroupez votre workflow social dans un espace calme et passez moins de temps à reconstruire votre contexte.
+      - generic [ref=f5e334] [box=16,9078,358,128]:
+        - link "Commencer gratuitement" [ref=f5e335] [cursor=pointer] [box=52,9078,286,56]:
+          - /url: https://github.com/dianedef/CommunityGlows/releases/latest
+        - link "Voir les fonctionnalités" [ref=f5e338] [cursor=pointer] [box=76,9150,237,56]:
+          - /url: "#features"
+    - generic [ref=f5e340] [box=0,9314,390,262]:
+      - heading "Restez informé" [level=2] [ref=f5e341] [box=16,9317,358,32]
+      - paragraph [ref=f5e342] [box=16,9373,358,48]: Recevez les mises à jour CommunityGlows, les notes de version et des idées de workflow.
+      - generic [ref=f5e343] [box=16,9462,358,102]:
+        - generic [ref=f5e344] [box=15,9461,1,1]: Adresse e-mail
+        - textbox "Adresse e-mail" [ref=f5e345] [box=16,9462,358,46]:
+          - /placeholder: Votre e-mail
+        - button "S'abonner" [ref=f5e346] [box=16,9520,358,44]
+      - status [ref=f5e347] [box=16,9580,358,16]: Pas de spam, désabonnement à tout moment.
+    - generic [ref=f5e349] [box=0,9641,390,687]:
+      - generic [ref=f5e350] [box=16,9705,358,406]:
+        - generic [ref=f5e351] [box=16,9708,358,114]
+        - generic [ref=f5e362] [box=16,9854,163,132]
+        - generic [ref=f5e371] [box=211,9854,163,132]
+        - generic [ref=f5e380] [box=16,10018,163,96]
+        - generic [ref=f5e387] [box=211,10018,163,96]
+      - generic [ref=f5e394] [box=16,10175,358,89]:
+        - paragraph [ref=f5e395] [box=43,10208,305,20]: © 2026 CommunityGlows. Tous droits réservés.
+        - generic [ref=f5e396] [box=137,10244,116,20]
+  - generic [ref=f5e401] [box=109,827,173,40]:
+    - button "Menu" [ref=f5e402] [box=109,827,42,40]
+    - button "Inspect" [ref=f5e408] [box=151,827,44,40]
+    - button "Audit" [ref=f5e412] [box=195,827,44,40]
+    - button "Settings" [ref=f5e417] [box=240,827,42,40]

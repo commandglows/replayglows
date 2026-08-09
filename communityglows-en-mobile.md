@@ -1,0 +1,102 @@
+- generic [active] [ref=f7e1] [box=0,0,390,10100]:
+  - link "Skip to content" [ref=f7e2] [cursor=pointer] [box=-1,-1,1,1]:
+    - /url: "#main-content"
+  - main [ref=f7e3] [box=0,0,390,10100]:
+    - navigation [ref=f7e5] [box=16,9,358,62]:
+      - link [ref=f7e6] [cursor=pointer] [box=33,24,32,32]:
+        - /url: /
+      - button "Open menu" [ref=f7e11] [box=321,22,36,36]
+    - generic [ref=f7e14] [box=16,128,358,556]:
+      - generic [ref=f7e15] [box=64,141,261,38]: Cross-platform social workspace
+      - heading "Your social work, without the tab chaos." [level=1] [ref=f7e18] [box=16,198,358,80]:
+        - generic [ref=f7e19] [box=16,198,358,40]: Your social work,
+        - generic [ref=f7e21] [box=16,238,358,40]: without the tab chaos.
+      - paragraph [ref=f7e23] [box=16,322,358,146]: CommunityGlows gives you one calm place to move between accounts, networks, and daily social tasks. Keep every context separate, stay focused, and pick up where you left off.
+      - generic [ref=f7e24] [box=16,508,358,112]:
+        - link "Start free" [ref=f7e25] [cursor=pointer] [box=115,508,160,48]:
+          - /url: https://github.com/dianedef/CommunityGlows/releases/latest
+        - link "Explore Features" [ref=f7e28] [cursor=pointer] [box=99,572,192,48]:
+          - /url: "#features"
+      - generic [ref=f7e29] [box=16,684,358,20]: Built for creators, operators, and small teams
+    - generic [ref=f7e33] [box=0,764,390,252]:
+      - paragraph [ref=f7e35] [box=0,828,390,20]: Works with the platforms you already use
+      - generic [ref=f7e37] [box=-15,888,3584,64]:
+        - generic [ref=f7e38] [box=-15,888,1792,64]
+        - generic [ref=f7e79] [box=1777,888,1792,64]
+    - generic [ref=f7e121] [box=0,1080,390,1264]:
+      - heading "Social Work Is Split Across Too Many Surfaces" [level=2] [ref=f7e123] [box=16,1082,358,108]
+      - generic [ref=f7e124] [box=16,1236,358,1108]:
+        - generic [ref=f7e125] [box=16,1241,358,278]
+        - generic [ref=f7e129] [box=16,1543,358,252]
+        - generic [ref=f7e133] [box=16,1818,358,278]
+        - generic [ref=f7e137] [box=16,2112,358,252]
+    - generic [ref=f7e142] [box=0,2472,390,1256]:
+      - generic [ref=f7e143] [box=16,2472,358,100]:
+        - paragraph [ref=f7e144] [box=16,2474,358,20]: The calmer way to work
+        - heading "One workspace, four ways to stay in control" [level=2] [ref=f7e145] [box=16,2505,358,72]
+      - generic [ref=f7e146] [box=16,2620,358,1108]:
+        - generic [ref=f7e147] [box=16,2625,358,252]
+        - generic [ref=f7e151] [box=16,2901,358,278]
+        - generic [ref=f7e155] [box=16,3202,358,252]
+        - generic [ref=f7e159] [box=16,3470,358,278]
+    - generic [ref=f7e164] [box=0,3856,390,1604]:
+      - generic [ref=f7e165] [box=16,3856,358,100]:
+        - paragraph [ref=f7e166] [box=16,3858,358,20]: Features
+        - heading "The details that keep the workflow moving" [level=2] [ref=f7e167] [box=16,3889,358,72]
+      - generic [ref=f7e168] [box=16,4004,358,1456]:
+        - generic [ref=f7e169] [box=16,4006,358,206]
+        - generic [ref=f7e175] [box=16,4231,358,198]
+        - generic [ref=f7e179] [box=16,4454,358,240]
+        - generic [ref=f7e186] [box=16,4717,358,198]
+        - generic [ref=f7e190] [box=16,4931,358,294]
+        - generic [ref=f7e197] [box=16,5242,358,238]
+    - generic [ref=f7e206] [box=0,5588,390,900]:
+      - generic [ref=f7e207] [box=16,5588,358,100]:
+        - paragraph [ref=f7e208] [box=16,5589,358,20]: Where it fits
+        - heading "A better fit for the way you already work" [level=2] [ref=f7e209] [box=16,5620,358,72]
+      - generic [ref=f7e210] [box=16,5736,358,752]:
+        - generic [ref=f7e211] [box=16,5740,358,240]
+        - generic [ref=f7e219] [box=16,6005,358,240]
+        - generic [ref=f7e227] [box=16,6268,358,240]
+    - generic [ref=f7e236] [box=0,6616,390,1838]:
+      - generic [ref=f7e237] [box=16,6616,358,214]:
+        - heading "Simple, Transparent Pricing" [level=2] [ref=f7e238] [box=16,6617,358,72]
+        - paragraph [ref=f7e239] [box=16,6708,358,48]: Start free, upgrade when you need more profiles, networks, and workflow depth.
+        - generic [ref=f7e240] [box=84,6784,223,46]
+      - generic [ref=f7e243] [box=16,6878,358,1402]:
+        - generic [ref=f7e244] [box=16,6918,358,452]
+        - generic [ref=f7e271] [box=16,7394,358,482]
+        - generic [ref=f7e303] [box=16,7900,358,420]
+      - paragraph [ref=f7e329] [box=33,8337,324,100]: Why subscriptions? CommunityGlows has to keep browser, desktop, mobile, and social-network integrations stable as platforms change. Subscription pricing keeps maintenance, compatibility work, and support sustainable.
+    - generic [ref=f7e331] [box=0,8582,390,352]:
+      - heading "Make room for the work that matters." [level=2] [ref=f7e332] [box=16,8588,358,72]
+      - paragraph [ref=f7e333] [box=16,8691,358,88]: Bring your social workflow into one calm workspace and spend less time rebuilding context.
+      - generic [ref=f7e334] [box=16,8826,358,128]:
+        - link "Get Started Free" [ref=f7e335] [cursor=pointer] [box=87,8826,216,56]:
+          - /url: https://github.com/dianedef/CommunityGlows/releases/latest
+        - link "Explore Features" [ref=f7e338] [cursor=pointer] [box=99,8898,192,56]:
+          - /url: "#features"
+    - generic [ref=f7e340] [box=0,9062,390,286]:
+      - heading "Stay in the Loop" [level=2] [ref=f7e341] [box=16,9063,358,32]
+      - paragraph [ref=f7e342] [box=16,9114,358,72]: Get CommunityGlows product updates, release notes, and workflow ideas delivered to your inbox.
+      - generic [ref=f7e343] [box=16,9227,358,102]:
+        - generic [ref=f7e344] [box=15,9226,1,1]: Email address
+        - textbox "Email address" [ref=f7e345] [box=16,9227,358,46]:
+          - /placeholder: Enter your email
+        - button "Subscribe" [ref=f7e346] [box=16,9285,358,44]
+      - status [ref=f7e347] [box=16,9352,358,16]: No spam, unsubscribe anytime.
+    - generic [ref=f7e349] [box=0,9413,390,687]:
+      - generic [ref=f7e350] [box=16,9477,358,406]:
+        - generic [ref=f7e351] [box=16,9478,358,114]
+        - generic [ref=f7e362] [box=16,9624,163,132]
+        - generic [ref=f7e371] [box=211,9624,163,132]
+        - generic [ref=f7e380] [box=16,9788,163,96]
+        - generic [ref=f7e387] [box=211,9788,163,96]
+      - generic [ref=f7e394] [box=16,9947,358,89]:
+        - paragraph [ref=f7e395] [box=50,9980,289,20]: © 2026 CommunityGlows. All rights reserved.
+        - generic [ref=f7e396] [box=134,10016,123,20]
+  - generic [ref=f7e401] [box=109,827,173,40]:
+    - button "Menu" [ref=f7e402] [box=109,827,42,40]
+    - button "Inspect" [ref=f7e408] [box=151,827,44,40]
+    - button "Audit" [ref=f7e412] [box=195,827,44,40]
+    - button "Settings" [ref=f7e420] [box=240,827,42,40]
