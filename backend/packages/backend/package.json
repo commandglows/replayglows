@@ -14,10 +14,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "convex": "^1.40.0",
-    "firebase-admin": "^14.0.0",
+    "convex": "^1.43.0",
+    "firebase-admin": "^14.2.0",
     "openai": "^6.42.0",
-    "svix": "^1.95.1",
+    "svix": "^1.99.1",
     "youtube-captions-scraper": "^2.0.3",
     "zod": "^4.4.3"
   },
