@@ -137,7 +137,7 @@ class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
           forceRefresh: forceRefresh,
           resolveIdToken: ({required bool forceRefresh}) async {
             try {
-              return _firebaseAuth.currentUser?.getIdToken(forceRefresh);
+              return await _firebaseAuth.currentUser?.getIdToken(forceRefresh);
             } catch (_) {
               return null;
             }

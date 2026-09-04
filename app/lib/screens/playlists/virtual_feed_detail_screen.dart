@@ -635,7 +635,6 @@ class _VirtualFeedDetailScreenState
     if (_isSavingOrder) return;
 
     if (oldIndex == newIndex) return;
-    if (newIndex > oldIndex) newIndex -= 1;
 
     final reordered = List<VirtualFeedSource>.from(current);
     final item = reordered.removeAt(oldIndex);
@@ -1952,7 +1951,7 @@ class _VirtualFeedDetailScreenState
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: sources.length,
-                    onReorder: (oldIndex, newIndex) async {
+                    onReorderItem: (oldIndex, newIndex) async {
                       if (_isSavingOrder) return;
                       await _reorderSourceList(
                         context,

@@ -136,7 +136,7 @@ class SuiteIdentityBridgeClient {
     required bool forceRefresh,
   }) async {
     try {
-      return resolveIdToken(forceRefresh: forceRefresh);
+      return await resolveIdToken(forceRefresh: forceRefresh);
     } catch (_) {
       return null;
     }

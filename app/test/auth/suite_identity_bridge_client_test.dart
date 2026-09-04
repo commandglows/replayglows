@@ -48,6 +48,30 @@ void main() {
     });
 
     test(
+      'handles an asynchronous Firebase token failure without access',
+      () async {
+        final bridge = SuiteIdentityBridgeClient(
+          httpClient: MockClient((request) async {
+            fail('The bridge must not be called without a Firebase token.');
+          }),
+        );
+        final snapshot = await bridge.resolveFromFirebaseSession(
+          session: const SuiteIdentityRuntimeSession(
+            firebaseUserId: 'firebase-1',
+            email: 'user@example.com',
+          ),
+          bridgeConfig: config,
+          resolveIdToken: ({required bool forceRefresh}) async {
+            throw StateError('Token unavailable');
+          },
+        );
+        expect(snapshot.issue, contains('missing_firebase_token'));
+        expect(snapshot.hasReplayGlowsAccess, isFalse);
+        expect(snapshot.productToken, isNull);
+      },
+    );
+
+    test(
       'parses status and entitlements from a valid bridge response',
       () async {
         final client = MockClient((Request request) async {
