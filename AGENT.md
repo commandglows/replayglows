@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.1.1"
 project: "replayglows"
 created: "2026-05-10"
-updated: "2026-05-10"
+updated: "2026-09-04"
 status: "draft"
 source_skill: sf-docs
 scope: "repository_guidance"
@@ -29,7 +29,7 @@ evidence:
   - "site/AGENT.md"
   - "lab/AGENT.md"
   - "ext/AGENT.md"
-next_step: "/sf-docs audit"
+next_step: "sg-docs audit"
 ---
 
 # AGENT
@@ -70,5 +70,13 @@ Use focused checks from the changed subproject:
 Run ShipGlows metadata validation for governance docs:
 
 ```bash
-/home/claude/shipglows/tools/shipglows_metadata_lint.py AGENT.md shipglows_data
+python3 "$SHIPGLOWS_ROOT/tools/shipglows_metadata_lint.py" AGENT.md shipglows_data
 ```
+
+## Resume and Documentation Routing
+
+- Start with `shipglows_data/README.md`, then load the smallest relevant technical or editorial map.
+- Read `shipglows_data/technical/operating-conventions.md` before runtime work or documentation validation.
+- Internal contracts are in English; user-facing responses follow the user's language.
+- Track implementation in `shipglows_data/workflow/TASKS.md` and public-content work in `shipglows_data/editorial/ROADMAP.md`. Historical evidence is not a fresh verification.
+- Keep `AGENTS.md` as the Git symlink to `AGENT.md`; Windows checkouts with `core.symlinks=false` may materialize only its target text.

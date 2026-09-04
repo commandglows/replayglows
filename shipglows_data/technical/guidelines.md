@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.1.1"
 project: "replayglows"
 created: "2026-05-10"
-updated: "2026-05-10"
+updated: "2026-09-04"
 status: "draft"
 source_skill: "sf-docs"
 scope: "guidelines"
@@ -19,7 +19,7 @@ evidence:
   - "shipglows_data/technical/lab/guidelines.md"
   - "app/pubspec.yaml"
   - "site/package.json"
-  - "lab/requirements.txt"
+  - "lab/requirements.in"
 linked_systems:
   - "Flutter"
   - "Dart"
@@ -34,7 +34,7 @@ depends_on:
   - "AGENT.md"
 supersedes: []
 next_review: "2026-06-10"
-next_step: "/sf-docs technical audit"
+next_step: "sg-docs technical audit"
 ---
 
 # Technical Guidelines
@@ -49,7 +49,7 @@ next_step: "/sf-docs technical audit"
 
 - Use build-time `--dart-define` values for Flutter web configuration.
 - Keep Clerk session handling and Convex JWT minting aligned with `app/README.md` and `shipglows_data/technical/app/architecture.md`.
-- Treat the shared Convex backend as external unless `REPLAYGLOWS_BACKEND_ROOT` points to a local checkout.
+- The product Convex backend is owned by this monorepo at `backend/packages/backend/convex`. The app checker resolves it by default; `REPLAYGLOWS_BACKEND_ROOT` is an optional alternate checkout. The suite entitlement service remains a separate integration boundary.
 
 ## Astro Site
 

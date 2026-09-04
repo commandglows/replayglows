@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "lab"
 created: "2026-04-26"
-updated: "2026-05-10"
+updated: "2026-09-04"
 status: "reviewed"
 source_skill: sf-docs
 scope: "file"
@@ -91,3 +91,7 @@ next_step: "rg -n '^(def |class |@app\\.|async def )' server.py"
 - If you change output fields, coordinate with the Convex caller first.
 - If you change binary paths or env names, update both `.env.example` and deployment docs.
 - If you change rate math or warnings, keep returned data machine-readable and backwards compatible where possible.
+
+## Monorepo Conventions
+
+This surface belongs to the ReplayGlows monorepo. Governance paths beginning with `shipglows_data/` resolve from its root, not this directory. Read the root `AGENT.md` and `shipglows_data/technical/operating-conventions.md`; preserve the surface-specific contracts above. Use the ShipGlows-managed session for local runtime work and retain hosted proof requirements.

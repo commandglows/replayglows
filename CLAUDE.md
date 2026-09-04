@@ -7,6 +7,7 @@ This file provides root-level guidance for agents working in the ReplayGlows mon
 - `app/`: Flutter web app and Vercel API handlers.
 - `backend/`: Convex backend package and product data contracts.
 - `site/`: Astro public marketing site.
+- `ext/`: browser extension source and packaging.
 - `lab/`: FastAPI transcript worker.
 - `shipglows_data/`: project governance, workflow, audit, task, and spec artifacts.
 
@@ -15,7 +16,7 @@ This file provides root-level guidance for agents working in the ReplayGlows mon
 - development_mode: vercel-preview-push
 - validation_surface: vercel-preview
 - ship_before_preview_test: yes
-- post_ship_verification: sf-prod
+- post_ship_verification: sg-release verify
 - deployment_provider: vercel
 - preview_source: Vercel MCP deployment target_url
 - production_url: unknown
@@ -36,5 +37,9 @@ Use focused checks from the changed subproject:
 Run ShipGlows metadata validation for governance docs:
 
 ```bash
-/home/claude/shipglows/tools/shipglows_metadata_lint.py AGENT.md shipglows_data
+python3 "$SHIPGLOWS_ROOT/tools/shipglows_metadata_lint.py" AGENT.md shipglows_data
 ```
+
+## Canonical Guidance
+
+Read `AGENT.md` and `shipglows_data/technical/operating-conventions.md` first. The hosted validation mode above remains the recorded project policy; a managed local session supplies development feedback, not hosted OAuth or production proof. Delivery posture is not yet declared; do not infer product maturity or alter branch/deployment policy from the presence of a URL.

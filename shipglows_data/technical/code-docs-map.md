@@ -1,10 +1,10 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.1.1"
 project: "replayglows"
 created: "2026-05-10"
-updated: "2026-05-10"
+updated: "2026-09-04"
 status: "draft"
 source_skill: sf-docs
 scope: "code-docs-map"
@@ -25,7 +25,7 @@ supersedes: []
 evidence:
   - "rg --files"
 next_review: "2026-06-10"
-next_step: "/sf-docs technical audit"
+next_step: "sg-docs technical audit"
 ---
 
 # Code Docs Map
@@ -47,7 +47,14 @@ Route changed paths to the technical docs and validation commands that must be c
 | `ext/src/**`, `ext/*.js`, `ext/public/manifest.json`, `ext/vite.config.ts`, `ext/package.json` | Chrome extension | `ext/AGENT.md`, `shipglows_data/technical/architecture.md` | `(cd ext && pnpm type-check)` and `(cd ext && pnpm build:ext)` | Extension behavior, YouTube content integration, manifest permissions, extension packaging, or build entrypoints change. |
 | `lab/server.py`, `lab/main.py` | Transcript worker | `shipglows_data/technical/lab/architecture.md` | `(cd lab && python -m py_compile main.py server.py)` | API contract, auth, limits, providers, queueing, media handling, or health behavior changes. |
 | `lab/.env.example`, `lab/Dockerfile`, `lab/ecosystem.config.cjs` | Worker deployment | `lab/README.md` | `(cd lab && python -m py_compile main.py server.py)` | Runtime variables, container, PM2, or worker deployment model changes. |
-| `README.md`, `AGENT.md`, `shipglows_data/**` | Monorepo governance | `shipglows_data/technical/README.md` | `/home/claude/shipglows/tools/shipglows_metadata_lint.py AGENT.md shipglows_data` | Repository layout, governance, source-of-truth, or cross-project routing changes. |
+| `README.md`, `AGENT.md`, `shipglows_data/**` | Monorepo governance | `shipglows_data/technical/README.md` | `python3 "$SHIPGLOWS_ROOT/tools/shipglows_metadata_lint.py" AGENT.md shipglows_data` | Repository layout, governance, source-of-truth, or cross-project routing changes. |
+
+## Governance Routing
+
+- `AGENT.md`, root/surface `CLAUDE.md`, and compatibility entrypoints route through `shipglows_data/technical/operating-conventions.md`.
+- `shipglows_data/README.md` owns corpus navigation; `shipglows_data/technical/README.md` owns technical navigation.
+- Execution and editorial tracker changes require semantic preservation review, not application builds.
+- Linux commands in the table assume Bash and a resolved `SHIPGLOWS_ROOT`; see operating conventions for PowerShell equivalents.
 
 ## Documentation Update Plan
 

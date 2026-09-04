@@ -1,3 +1,5 @@
-# Audit Log
+# Compatibility entrypoint
 
-🟠 [app] audit: android performance | date: 2026-06-12 | overall: B | issues: 0 critical / 1 high / 2 medium | scope: android
+Canonical record: `../shipglows_data/workflow/AUDIT_LOG.md`.
+
+The original snapshot is preserved at `../shipglows_data/workflow/archives/2026-09-04-app-AUDIT_LOG.md`. Do not add operational records here.

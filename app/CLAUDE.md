@@ -1,10 +1,10 @@
 ---
 artifact: agent_guidance
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.1.1"
 project: "replayglows-app"
 created: "2026-04-26"
-updated: "2026-05-24"
+updated: "2026-09-04"
 status: "reviewed"
 source_skill: "sf-init"
 scope: "agent-guidance"
@@ -82,7 +82,7 @@ flutter pub get
 flutter analyze
 bash -n build.sh
 node --test api/auth/_youtube.test.js
-REPLAYGLOWS_BACKEND_ROOT=/path/to/convex dart run tool/check_shared_backend_contract.dart
+dart run tool/check_shared_backend_contract.dart
 ```
 
 ## Risk areas
@@ -91,3 +91,7 @@ REPLAYGLOWS_BACKEND_ROOT=/path/to/convex dart run tool/check_shared_backend_cont
 - Missing or stale product access status function in product Convex backend.
 - Suite entitlement verifier availability and secret mismatch.
 - Hosted callback/cookie behavior differences across Vercel environments.
+
+## Monorepo Conventions
+
+This surface belongs to the ReplayGlows monorepo. Governance paths beginning with `shipglows_data/` resolve from its root, not this directory. Read the root `AGENT.md` and `shipglows_data/technical/operating-conventions.md`; preserve the surface-specific contracts above. Use the ShipGlows-managed session for local runtime work and retain hosted proof requirements.

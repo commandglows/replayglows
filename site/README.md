@@ -28,7 +28,7 @@ Use Node.js 24.18.0 (pinned in `.nvmrc`). All commands are run from the root of 
 | :------------------------ | :----------------------------------------------- |
 | `pnpm install --frozen-lockfile` | Installs locked dependencies              |
 | `pnpm audit --json`               | Checks dependencies for known advisories  |
-| `pnpm dev`                        | Starts local dev server at `localhost:4321` |
+| `pnpm dev`                        | Starts Astro; use ShipGlows managed URL/session for local work |
 | `pnpm build`                      | Build your production site to `./dist/`   |
 | `pnpm preview`                    | Preview your build locally, before deploying |
 | `pnpm astro ...`                  | Run CLI commands like `astro add`, `astro check` |

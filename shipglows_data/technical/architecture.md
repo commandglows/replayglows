@@ -1,10 +1,10 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.1"
+artifact_version: "0.1.2"
 project: "replayglows"
 created: "2026-05-10"
-updated: "2026-06-10"
+updated: "2026-09-04"
 status: "draft"
 source_skill: "sf-docs"
 scope: "architecture"
@@ -43,7 +43,7 @@ depends_on:
   - "shipglows_data/technical/guidelines.md"
 supersedes: []
 next_review: "2026-06-10"
-next_step: "/sf-docs technical audit"
+next_step: "sg-docs technical audit"
 ---
 
 # Architecture Context

@@ -1,10 +1,10 @@
 ---
 artifact: content_map
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.1.1"
 project: "replayglows"
 created: "2026-05-10"
-updated: "2026-05-10"
+updated: "2026-09-04"
 status: "draft"
 source_skill: sf-docs
 scope: content-map
@@ -41,7 +41,7 @@ depends_on:
   - "shipglows_data/gtm/gtm.md"
 supersedes: []
 next_review: "2026-06-10"
-next_step: "/sf-docs editorial audit"
+next_step: "sg-docs editorial audit"
 ---
 
 # Content Map
@@ -60,6 +60,10 @@ This file maps ReplayGlows content surfaces at monorepo level and routes public-
 | Blog | `site/src/content/blog/**` | Editorial education and SEO content | Astro schema, page intent, claim register | Blog content, collection schema, topic strategy, or claims change. |
 | Worker docs | `lab/README.md` and worker contracts | Transcript worker setup, deployment, API, operations | `shipglows_data/product/lab/product.md`, `shipglows_data/technical/lab/architecture.md` | Worker API, env, provider, queue, health, or deployment changes. |
 | Editorial governance | `shipglows_data/editorial/**` | Public surface map, claim register, page intent, update gate, runtime schema policy | This content map and contracts | Public surfaces, claims, routes, or content schemas change. |
+
+## Backlog Ownership
+
+`shipglows_data/editorial/ROADMAP.md` owns public-content work. Mixed product/implementation decisions remain in `shipglows_data/workflow/TASKS.md` and link to the editorial outcome. A historical claim audit is not a current verification of published pages.
 
 ## Semantic Architecture
 

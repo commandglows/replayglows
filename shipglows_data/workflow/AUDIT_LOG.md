@@ -18,3 +18,5 @@
 | 2026-05-16 | Design: monorepo | — | C | C | — | C | — | — | — | C | 0 critical / 2 high / 3 medium; public site claims exceed product evidence, app theme selector is not wired, and design tokens diverge across site/app |
 | 2026-05-25 | Feature gap: TubeFlow Expo -> ReplayGlows Flutter | C | C | — | — | — | B | — | — | C | Audit traced in `shipglows_data/workflow/audits/2026-05-25-tubeflow-expo-feature-gap.md`; main gaps are feed actions, player state, playlist video actions, channel sync UI, quota safeguards, transcript settings, and i18n parity |
 | 2026-06-12 | Design: authority baseline (app + site) | — | C | — | — | — | — | — | — | C | Baseline check captured with `--warn-only`: 510 findings in `app` and 70 findings in `site`; baseline documented in `shipglows_data/technical/design-system-authority.md` |
+
+[replayglows] audit: documentation conventions | date: 2026-09-04 | result: aligned | evidence: shipglows_data/workflow/audits/2026-09-04-documentation-conventions.md | scope: documentation only; Linux CI and dependencies preserved

@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "lab"
 created: "2026-04-26"
-updated: "2026-05-24"
+updated: "2026-09-04"
 status: "reviewed"
 source_skill: sf-docs
 scope: "repository_guidance"
@@ -24,7 +24,7 @@ evidence:
   - "README.md"
   - "server.py"
   - "main.py"
-  - "requirements.txt"
+  - "requirements.in"
   - "Dockerfile"
   - "ecosystem.config.cjs"
   - ".env.example"
@@ -46,19 +46,20 @@ This repository is not the full ReplayGlows product. Treat it as a narrow infras
 - Local server: `uvicorn`
 - Primary endpoint: `POST /transcribe`
 - Health endpoint: `GET /health`
-- Python dependencies are pinned in `requirements.txt`
+- Direct Python dependencies are declared in `requirements.in`; reproducible hash-checked installs use `requirements.lock`.
 - External binaries expected at runtime: `yt-dlp`, `ffmpeg`, `ffprobe`
 
 ## Supported providers
 
 The worker accepts these `provider` values:
 
-- `youtube_captions`
 - `faster_whisper`
 - `sensevoice`
 - `openai_mini`
 - `openai`
 - `deepgram`
+
+`youtube_captions` is accepted by the request model only to return an explicit rejection: Convex handles captions directly. Do not advertise it as a worker transcription provider.
 
 Do not document or expose additional providers unless they are implemented in `server.py`.
 
@@ -103,3 +104,7 @@ Important variables:
 - This repository does not prove ReplayGlows pricing, ICP, or customer messaging.
 - The README describes integration with ReplayGlows and Convex, but the main application repo was not inspected here.
 - Business and branding artifacts should be treated as working assumptions until confirmed by the product owner.
+
+## Monorepo Conventions
+
+This surface belongs to the ReplayGlows monorepo. Governance paths beginning with `shipglows_data/` resolve from its root, not this directory. Read the root `AGENT.md` and `shipglows_data/technical/operating-conventions.md`; preserve the surface-specific contracts above. Use the ShipGlows-managed session for local runtime work and retain hosted proof requirements.

@@ -1,10 +1,10 @@
 ---
 artifact: content_map
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: "replayglows-site"
 created: "2026-04-26"
-updated: "2026-04-27"
+updated: "2026-09-04"
 status: reviewed
 source_skill: sf-docs
 scope: content-map
@@ -52,7 +52,7 @@ depends_on:
 supersedes:
   - artifact_version: "0.1.0"
 next_review: "2026-05-27"
-next_step: "/sf-docs audit shipglows_data/editorial/site/content-map.md"
+next_step: "sg-docs audit shipglows_data/editorial/site/content-map.md"
 ---
 
 # Content Map

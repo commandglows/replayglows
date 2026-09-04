@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.3.0"
+artifact_version: "1.3.1"
 project: "replayglows-app"
 created: "2026-04-26"
-updated: "2026-06-02"
+updated: "2026-09-04"
 status: "reviewed"
 source_skill: sf-docs
 scope: "file"
@@ -112,3 +112,7 @@ by default; set `REPLAYGLOWS_BACKEND_ROOT` only for an alternate checkout:
 ```bash
 dart run tool/check_shared_backend_contract.dart
 ```
+
+## Monorepo Conventions
+
+This surface belongs to the ReplayGlows monorepo. Governance paths beginning with `shipglows_data/` resolve from its root, not this directory. Read the root `AGENT.md` and `shipglows_data/technical/operating-conventions.md`; preserve the surface-specific contracts above. Use the ShipGlows-managed session for local runtime work and retain hosted proof requirements.

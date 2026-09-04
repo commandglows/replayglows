@@ -1,10 +1,10 @@
 ---
 artifact: editorial_content_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.0"
+artifact_version: "0.1.1"
 project: "replayglows"
 created: "2026-05-10"
-updated: "2026-05-10"
+updated: "2026-09-04"
 status: "draft"
 source_skill: sf-docs
 scope: "blog-policy"
@@ -27,7 +27,7 @@ evidence:
   - "site/src/pages/blog/index.astro"
   - "site/src/pages/blog/[slug].astro"
 next_review: "2026-06-10"
-next_step: "/sf-docs editorial audit"
+next_step: "sg-docs editorial audit"
 ---
 
 # Blog And Article Surface Policy

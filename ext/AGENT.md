@@ -432,3 +432,7 @@ This is a **partially migrated** codebase:
 ---
 
 **Last Updated**: Based on codebase state as of latest git commit analysis
+
+## Monorepo Conventions
+
+Read the root `AGENT.md` and `shipglows_data/technical/operating-conventions.md`. This document owns extension-specific behavior; the root corpus owns shared governance. Use the generated unpacked extension directory and browser extension manager for runtime validation. A Vite page alone does not prove extension contexts or permissions.
