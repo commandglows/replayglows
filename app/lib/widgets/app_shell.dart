@@ -397,7 +397,7 @@ class _AppShellState extends ConsumerState<AppShell> {
             transitionBuilder: (child, animation) {
               return SizeTransition(
                 sizeFactor: animation,
-                axisAlignment: 1,
+                alignment: Alignment.bottomCenter,
                 child: SlideTransition(
                   position:
                       Tween<Offset>(

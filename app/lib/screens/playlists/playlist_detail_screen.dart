@@ -1026,9 +1026,8 @@ class _PlaylistDetailScreenState extends ConsumerState<PlaylistDetailScreen> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: _reorderList.length,
-        onReorder: (oldIndex, newIndex) {
+        onReorderItem: (oldIndex, newIndex) {
           setState(() {
-            if (newIndex > oldIndex) newIndex--;
             final item = _reorderList.removeAt(oldIndex);
             _reorderList.insert(newIndex, item);
           });

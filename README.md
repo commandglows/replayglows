@@ -44,7 +44,7 @@ The worker installs from `lab/requirements.lock` with
 If `pip-audit -r requirements.lock` cannot create its temporary environment on
 the host, install the lock into a disposable target directory and audit that
 directory with `pip-audit --path`.
-The Flutter web deploy and Android workflow pin Flutter `3.41.7`.
+The Flutter web deploy and Android workflow pin Flutter `3.47.1`.
 
 ## Working Rule
 

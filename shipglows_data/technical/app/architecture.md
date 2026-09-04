@@ -256,3 +256,9 @@ The OAuth flow is split between Flutter UI and Vercel functions:
 - Run `dart run tool/check_shared_backend_contract.dart` before changing provider/mutation paths.
 - Recheck `build.sh`, `.env.example`, `vercel.json`, and `api/auth/**` when auth or deployment variables change.
 - Revisit this document when route graph, bootstrap ordering, auth ownership, Convex access patterns, feed/source behavior, Play shell controls, browser playback behavior, or OAuth behavior changes.
+
+## Flutter SDK Compatibility (2026-09-04)
+
+The web install/build scripts and Android workflow pin Flutter 3.47.1; the app requires Dart >=3.12 for the current Riverpod dependency. Reorderable lists use `onReorderItem`, whose destination index is already adjusted after removal; do not decrement it again. The player navigation SizeTransition uses bottom-center alignment. Firebase ID-token resolution awaits failures inside the existing catch boundary, preserving the missing-token/no-access result.
+
+Proof for this migration: Flutter analysis passes and all 50 tests pass, including asynchronous token-failure handling. These checks do not claim live Google login, hosted OAuth, or a native release build.

@@ -10,8 +10,7 @@ typedef FirebaseIdTokenResolver =
     Future<String?> Function({required bool forceRefresh});
 
 class SuiteIdentityBridgeClient {
-  const SuiteIdentityBridgeClient({http.Client? httpClient})
-    : _httpClient = httpClient;
+  const SuiteIdentityBridgeClient({this._httpClient});
 
   final http.Client? _httpClient;
 
@@ -136,7 +135,7 @@ class SuiteIdentityBridgeClient {
     required bool forceRefresh,
   }) async {
     try {
-      return resolveIdToken(forceRefresh: forceRefresh);
+      return await resolveIdToken(forceRefresh: forceRefresh);
     } catch (_) {
       return null;
     }
