@@ -72,7 +72,7 @@ jobs:
           cache-key: replayglows-app-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('app/pubspec.lock') }}
 
       - name: Cache Pub and Dart tool state
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.pub-cache
@@ -115,7 +115,7 @@ jobs:
           cache-key: replayglows-app-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('app/pubspec.lock') }}
 
       - name: Cache Pub and Dart tool state
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.pub-cache
@@ -163,7 +163,7 @@ jobs:
           cache-key: replayglows-app-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('app/pubspec.lock') }}
 
       - name: Cache Pub, Dart tool state, and Flutter build outputs
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.pub-cache
@@ -178,7 +178,7 @@ jobs:
             replayglows-app-pub-${{ runner.os }}-
 
       - name: Cache Gradle build state
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
