@@ -1,7 +1,7 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.1.1"
+artifact_version: "1.1.2"
 project: "replayglows-site"
 created: "2026-04-26"
 updated: "2026-09-04"
@@ -47,7 +47,7 @@ This repository is the public marketing site for ReplayGlows. It is an Astro sit
 
 ## Stack
 
-- Astro 6
+- Astro 7
 - Tailwind CSS 4
 - TypeScript
 - Markdown blog content via `astro:content`
