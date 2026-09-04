@@ -1,10 +1,10 @@
 ---
 artifact: "architecture_context"
 metadata_schema_version: "1.0"
-artifact_version: "1.1.1"
+artifact_version: "1.1.2"
 project: "replayglows-app"
 created: "2026-04-26"
-updated: "2026-06-01"
+updated: "2026-09-04"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "architecture"
@@ -249,7 +249,7 @@ The OAuth flow is split between Flutter UI and Vercel functions:
 - `ConvexService.instance` is treated as a process-wide singleton.
 - Missing required Flutter config causes skipped wiring/fallback UI rather than runtime env recovery.
 - Background playback cannot be guaranteed for embedded YouTube videos because browsers and the YouTube iframe/site behavior can pause media when the app or tab is hidden.
-- Current README states there is no automated test coverage, aside from maintenance scripts and the Vercel OAuth helper test file.
+- Flutter automated coverage was verified on 2026-09-04: 50 tests passed; this does not establish live OAuth or native-device coverage.
 
 ## Recommended maintenance checks
 

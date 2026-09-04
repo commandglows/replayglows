@@ -92,3 +92,10 @@
 - Editorial alignment and GTM proof tasks are owned by `shipglows_data/editorial/ROADMAP.md`; mixed product/implementation decisions remain here.
 - Review and explicitly declare delivery posture before changing integration branches, protection, or deployment policy. Existing hosted validation mode remains in force.
 - Next requested work: refresh dependency inventory and advisories across app, backend, site, ext, and lab before selecting upgrade lanes. Prior dependency audit counts are historical.
+
+## Dependabot Review — 2026-09-04
+
+🟢 [replayglows] task: Integrate reviewed Dependabot updates and compatible SDK/compiler migrations | status: done | area: deps | evidence: PRs #2, #3, #4, #5, #6, #7, #8, #15, #16, #17; shipglows_data/workflow/audits/2026-09-04-dependabot-review.md
+🟡 [replayglows] task: Migrate Google Sign-In 7 and verify native Firebase login, cancellation and sign-out | status: todo | area: deps | ref: PR #10 | next: implement singleton initialization and authenticate flow, then validate on Android
+🟡 [replayglows] task: Validate record 7 migration on a native target | status: todo | area: deps | ref: PR #11 | next: refresh against Flutter 3.47.1 and test permission, recording and playback
+🟡 [replayglows] task: Validate Python 3.14 worker image and hash-locked native dependencies | status: todo | area: deps | ref: PR #13 | next: use a running Linux Docker daemon for image build and worker contract checks

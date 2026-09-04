@@ -1,7 +1,7 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.2"
+artifact_version: "0.1.3"
 project: "replayglows"
 created: "2026-05-10"
 updated: "2026-09-04"
@@ -71,3 +71,9 @@ next_step: "sg-docs technical audit"
 - `AGENTS.md`, when present, is a compatibility symlink to `AGENT.md`.
 - Astro runtime content frontmatter follows `site/src/content.config.ts`.
 - YouTube OAuth callback behavior must stay aligned across Flutter app routes and Vercel handlers.
+
+## Dependency Compatibility Review (2026-09-04)
+
+The backend uses Convex 1.44, Firebase Admin 14.3, OpenAI 7.3 and TypeScript 7.0.2. The compiler migration passed through TypeScript 6.0.3; explicit `types: ["node"]` keeps the intended Convex type environment. Node 24 remains the declared host runtime, including extension tooling; Node 26 type declarations do not change that runtime requirement. The OpenAI Responses structured-output path passed a mocked-fetch test and browser-platform bundling, without a live API call.
+
+Astro 7 preserves the site HTML compression policy explicitly. See `../workflow/audits/2026-09-04-dependabot-review.md` for merged PRs, evidence and deferred native/worker migrations. No new mandatory CI gate or protection change was applied.
