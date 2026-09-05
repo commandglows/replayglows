@@ -11,7 +11,7 @@ const jsonLd = [{ '@type': 'BlogPosting', '@context': 'https://schema.org', head
 ---
 <ExtensionLayout lang={lang} title={post.data.title} description={post.data.description} path={path} alternatePath={alternatePath} jsonLd={jsonLd}>
   <article class="max-w-3xl mx-auto px-4 py-16">
-    <header class="mb-10"><p class="text-sm text-muted-foreground mb-4">{lang === 'fr' ? 'Guide de révision · Extension ReplayGlows' : 'Review workflow · ReplayGlows extension'}</p><h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">{post.data.title}</h1><time datetime={post.data.date} class="text-sm text-muted-foreground">{new Date(post.data.date).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}</time></header>
+    <header class="mb-10"><span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">🔁</span><p class="text-sm text-muted-foreground mb-4">{lang === 'fr' ? 'Guide de révision · Extension ReplayGlows' : 'Review workflow · ReplayGlows extension'}</p><h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">{post.data.title}</h1><time datetime={post.data.date} class="text-sm text-muted-foreground">{new Date(post.data.date).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}</time></header>
     <div class="blog-content"><Content /></div>
   </article>
 </ExtensionLayout>

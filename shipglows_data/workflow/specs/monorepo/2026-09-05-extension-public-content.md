@@ -156,3 +156,7 @@ Editorial quality score is a human-style content assessment, not an automated me
   "run_signature": "aa9d5c24c2e2f7152cf620321d0c4e6f4242ba5da318d707cd34565d3477e50d"
 }
 ```
+
+## Icon Follow-up
+
+Operator requested homepage-style icons. Added decorative emoji with the same typography and spacing as Benefits.astro to extension feature cards, guide steps and article header in both locales. All icons are aria-hidden; headings retain text labels. Astro build passes (17 pages), and rendered French product cards and guide steps were visually inspected. Existing protected-preview access requirement remains.
