@@ -1,10 +1,10 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.3"
+artifact_version: "0.1.4"
 project: "replayglows"
 created: "2026-05-10"
-updated: "2026-09-04"
+updated: "2026-09-05"
 status: "draft"
 source_skill: "sf-docs"
 scope: "architecture"
@@ -74,6 +74,10 @@ next_step: "sg-docs technical audit"
 
 ## Dependency Compatibility Review (2026-09-04)
 
-The backend uses Convex 1.44, Firebase Admin 14.3, OpenAI 7.3 and TypeScript 7.0.2. The compiler migration passed through TypeScript 6.0.3; explicit `types: ["node"]` keeps the intended Convex type environment. Node 24 remains the declared host runtime, including extension tooling; Node 26 type declarations do not change that runtime requirement. The OpenAI Responses structured-output path passed a mocked-fetch test and browser-platform bundling, without a live API call.
+The backend uses Convex 1.45, Firebase Admin 14.3, OpenAI 7.10 and TypeScript 7.0.2. The compiler migration passed through TypeScript 6.0.3; explicit `types: ["node"]` keeps the intended Convex type environment. Node 24 remains the declared host runtime, including extension tooling; Node 26 type declarations do not change that runtime requirement. The OpenAI Responses structured-output path passed a mocked-fetch test and browser-platform bundling, without a live API call.
 
 Astro 7 preserves the site HTML compression policy explicitly. See `../workflow/audits/2026-09-04-dependabot-review.md` for merged PRs, evidence and deferred native/worker migrations. No new mandatory CI gate or protection change was applied.
+
+## Minor Dependency Refresh (2026-09-05)
+
+The approved refresh covers backend, site, extension and Flutter dependencies within their current major versions. Astro is locked at 7.2.9 because the site retains its seven-day minimum release age. See `../workflow/audits/2026-09-05-dependency-refresh.md` for exact scope, verification and remaining risks. The extension still has a pre-existing packaging defect (missing manifest resources) and its Node 18 Docker image conflicts with the Node >=24 tooling policy; neither was changed by this dependency refresh.

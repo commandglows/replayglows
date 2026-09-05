@@ -14,15 +14,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "convex": "^1.44.0",
+    "convex": "^1.45.0",
     "firebase-admin": "^14.3.0",
-    "openai": "^7.3.0",
-    "svix": "^1.95.1",
+    "openai": "^7.10.0",
+    "svix": "^1.99.1",
     "youtube-captions-scraper": "^2.0.3",
-    "zod": "^4.4.3"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
-    "@types/node": "^26.1.2",
+    "@types/node": "^26.4.1",
     "typescript": "7.0.2"
   }
 }

@@ -99,3 +99,9 @@
 🟡 [replayglows] task: Migrate Google Sign-In 7 and verify native Firebase login, cancellation and sign-out | status: todo | area: deps | ref: PR #10 | next: implement singleton initialization and authenticate flow, then validate on Android
 🟡 [replayglows] task: Validate record 7 migration on a native target | status: todo | area: deps | ref: PR #11 | next: refresh against Flutter 3.47.1 and test permission, recording and playback
 🟡 [replayglows] task: Validate Python 3.14 worker image and hash-locked native dependencies | status: todo | area: deps | ref: PR #13 | next: use a running Linux Docker daemon for image build and worker contract checks
+
+## Minor Dependency Refresh — 2026-09-05
+
+🟢 [replayglows] task: Refresh non-major backend, site, extension and Flutter dependencies with focused verification | status: done | area: deps | evidence: shipglows_data/workflow/audits/2026-09-05-dependency-refresh.md
+🟡 [replayglows] task: Repair existing extension packaging and align its Docker runtime | status: todo | area: extension | evidence: output-ytb.css and node_modules/tinykeys/dist/tinykeys.modern.js absent from generated package; Docker uses Node 18 versus declared >=24 | next: preserve generated CSS, resolve manifest resources, and verify the unpacked extension in Chrome
+🟡 [replayglows] task: Resolve remaining Firebase/Google Storage uuid advisory chain without an unsafe major override or downgrade | status: todo | area: deps | evidence: npm audit reports six moderate affected packages on 2026-09-05 | next: assess upstream patched releases and actual use before selecting a migration
