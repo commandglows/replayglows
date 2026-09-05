@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: replayglows
 created: "2026-09-04"
-updated: "2026-09-04"
+updated: "2026-09-05"
 status: active
 source_skill: sg-docs
 scope: governance-navigation
@@ -34,6 +34,8 @@ All paths below resolve from the monorepo root. One shared corpus governs app, b
 | Path-to-document routing | `shipglows_data/technical/code-docs-map.md` |
 | Runtime and proof conventions | `shipglows_data/technical/operating-conventions.md` |
 | Business / product / brand / GTM | Matching existing `business/`, `product/`, `branding/`, `gtm/` theme in this corpus |
+| Extension behavior and limits | `shipglows_data/product/ext/product.md` |
+| Competitors and playback opportunity matrix | `shipglows_data/business/project-competitors-and-inspirations.md` |
 | Public claims and page ownership | `shipglows_data/editorial/content-map.md`, `shipglows_data/editorial/claim-register.md` |
 | Implementation backlog / audit history | `shipglows_data/workflow/TASKS.md`, `shipglows_data/workflow/AUDIT_LOG.md` |
 | Public-content backlog | `shipglows_data/editorial/ROADMAP.md` |

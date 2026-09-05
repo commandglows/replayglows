@@ -1,7 +1,7 @@
 ---
 artifact: competitive_intelligence
 metadata_schema_version: "1.0"
-artifact_version: "1.5.0"
+artifact_version: "1.6.0"
 project: "replayglows"
 created: "2026-05-11"
 updated: "2026-09-05"
@@ -118,7 +118,7 @@ Suggested order for a later product decision, not an approved implementation pla
 3. Test both extensions together on YouTube for keyboard, focus and overlay conflicts. Complementary use is plausible, but compatibility is unverified.
 4. Treat arbitrary-site HTML5 coverage and domain rules as a separate scope decision rather than a small parity fix.
 
-Follow-up on 2026-09-05: the operator requested playback controls in the Chrome extension, including a compact card at the bottom of the popup. The cross-site coverage and exact feature boundary still need resolution before implementation. The research itself does not authorize public publication.
+Follow-up on 2026-09-05: the operator requested playback controls in the Chrome extension, including a compact card at the bottom of the popup. At this stage, coverage and feature boundaries were still open; the later all-sites decision and delivered scope below supersede that open question. The research itself does not authorize public publication.
 
 ### Local source anchors
 
@@ -165,7 +165,7 @@ The supplied screenshot shows a centered current rate (`1.00x`), horizontal slid
 
 A proposed first increment is a ReplayGlows-styled speed card, a remembered shared base speed, optional pinned-tab speed overrides, favorite rate and configurable speed shortcuts. A global change applies to supported unpinned tabs; a pinned tab uses its own context. The displayed rate and its scope should be explicit, unavailable-video states should be clear, and shortcuts should avoid text inputs and existing bookmark commands. Durable preference storage and live propagation across tabs are separate implementation requirements.
 
-Scope decision: the current manifest grants only `https://www.youtube.com/*`. General HTML5 support would change host access and supported media behavior; it is not implied by copying the card. Recommended initial boundary is YouTube, followed by an explicit cross-site decision. Filters, audio amplification and pitch shifting are separate product work, not required to deliver the requested card.
+Historical scope proposal (superseded by the approved multisite implementation below): the pre-implementation manifest granted only `https://www.youtube.com/*`. General HTML5 support would change host access and supported media behavior; it is not implied by copying the card. Recommended initial boundary is YouTube, followed by an explicit cross-site decision. Filters, audio amplification and pitch shifting are separate product work, not required to deliver the requested card.
 
 Required implementation evidence: real packaged-extension popup rendering; actual rate changes; refresh and YouTube SPA navigation; reopening the popup; no-video and disconnected content-script states; keyboard/input safety; and bookmark regression checks. Existing uncommitted bookmark changes must be preserved. No implementation or runtime validation is claimed by this research update.
 
@@ -187,7 +187,7 @@ Additional capabilities described by the demo:
 | [03:39](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=219s) | Audio effects and tab capture workflows. | Separate technical and permission assessment; do not promise the demo's fullscreen workaround on current Chrome without fresh verification. |
 | [05:04](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=304s) | Suspend controls; rules can disable selected shortcuts or assign speeds by URL. | Provide an easy suspension control and protect text entry; URL policies depend on the chosen site scope. |
 
-Updated recommendation: keep the compact popup card as the primary interface, with a shared base speed and pinned-tab exceptions, then prioritize A–B repeat integrated with timestamps and temporary speed changes. Place advanced controls in settings or a secondary panel. Audio processing and broad visual filters offer less direct value for the current note-taking workflow. These are research candidates, not an approved expanded implementation scope. The pending YouTube-versus-multisite decision remains unresolved.
+Updated recommendation: keep the compact popup card as the primary interface, with a shared base speed and pinned-tab exceptions, then prioritize A–B repeat integrated with timestamps and temporary speed changes. Place advanced controls in settings or a secondary panel. Audio processing and broad visual filters offer less direct value for the current note-taking workflow. These are research candidates, not an approved expanded implementation scope. The then-pending scope decision was subsequently resolved in favor of multisite HTML5 playback; see the delivery status below.
 
 ### Feature opportunity matrix connected to existing workflows
 
@@ -206,6 +206,23 @@ Operator input on 2026-09-05 establishes the intended shared-context interpretat
 | Portable review records | JSON/Markdown export and validated JSON import | Retain learning context when moving saved notes. | If saved loops or note-specific rates are adopted, version and validate their representation while accepting old bookmark records. Tab IDs are transient, not portable learning data. |
 
 Suggested grouping: playback foundation (card, shared speed, pinning, shortcuts); learning integration (A–B, note-linked pace, precise inspection); optional broader media tools (cross-site rules, target selection, filters and audio effects). These groups originally organized discussion without committing implementation order or expanding permissions.
+
+### Current Delivery Matrix — 2026-09-05
+
+The preceding comparison and proposal tables preserve the pre-implementation research snapshot. This matrix is the current status; the canonical behavior and limits are in `shipglows_data/product/ext/product.md`.
+
+| Research opportunity | Current delivery | Connection or remaining boundary |
+| --- | --- | --- |
+| Shared base speed and pinned exceptions | Implemented, verified | One default context; unpin rejoins current base. Pins last for the tab/session, including navigation and worker restart. |
+| Compact speed card, presets and favorite | Implemented, verified | Bottom popup card next to the existing YouTube bookmark workflow. |
+| Multisite HTML5 video/audio | Implemented, verified on bounded fixtures and public pages | HTTP/HTTPS access; not a guarantee for every player. Notes remain YouTube-specific. |
+| A–B repeat linked to timestamps | Temporary loops implemented, verified | Current positions or existing YouTube bookmark pairs; saved segments remain research. |
+| Temporary acceleration/slowdown | Held acceleration implemented, verified | Release restores context; a separate configurable held slowdown is not implemented. |
+| Unified shortcut settings and suspension | Implemented, verified | Input safety and collisions with bookmark commands checked. |
+| Note-linked review speed and frame stepping | Research only | Requires a later behavior and persistence decision. |
+| Explicit media target | Automatic targeting implemented | Manual selection remains research; pinning controls speed context, not media choice. |
+| Portable review records | Existing bookmark portability preserved | New loop/rate fields are not included in exported records. |
+| URL rules, audio and visual effects | Research only | No approved implementation batch. |
 
 ### Implementation decision following research
 

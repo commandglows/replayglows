@@ -1,7 +1,7 @@
 ---
 artifact: implementation_spec
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.1.1"
 project: replayglows
 created: "2026-09-05"
 updated: "2026-09-05"
@@ -30,7 +30,7 @@ next_step: "Reload the unpacked extension and open existing tabs again; later fe
 Universal playback controls with shared speed and pinned tab exceptions
 
 ## Status
-Implementation and verification complete for the scoped unpacked extension. Git delivery is represented by the commit containing this completed record, not by extension-store publication.
+Implementation and verification complete for the scoped unpacked extension. Git delivery: `e9b4ad3813d697aa0f4e6c28dd22019581be8dec` on `main`, pushed to origin. This is not extension-store publication.
 
 ## User Story
 As a video learner, I adjust my default pace from the ReplayGlows popup on any supported HTML5 website, isolate a tab when needed, and repeat a passage connected to my existing YouTube notes.
@@ -45,7 +45,7 @@ Actual media rates, popup state and storage agree after changes, reopening and n
 No-media, browser-restricted pages, disconnected frames and rejected rates do not claim success. Invalid inputs are rejected. Reopening or reloading reconnects supported pages. Other frames/tabs continue when one receiver is unavailable.
 
 ## Problem
-Extension currently only annotates YouTube and lacks playback controls; app capabilities do not establish extension support.
+Before this increment, the extension only annotated YouTube and lacked playback controls; app capabilities do not establish extension support.
 
 ## Solution
 Separate universal content bundle, validated MV3 playback controller, compact popup card and options for shortcuts/favorite speed. Existing YouTube content bundle stays scoped to YouTube.
@@ -120,9 +120,10 @@ None blocking this increment. Deferred research rows are explicitly Scope Out.
 | 2026-09-05 | 102-sg-start | Implemented media/worker/protocol, tokenized popup/options, manifest/package entry and focused tests. |
 | 2026-09-05 | 103-sg-verify | 22 automated tests, typecheck, lint, package, multi-origin fixtures, public YouTube/W3Schools, bookmark-to-loop and native popup scenarios pass. |
 | 2026-09-05 | 104-sg-end | Scoped implementation verified; mapped docs updated; no public site/editorial change or store publication. |
+| 2026-09-05 | sg-docs update | Added canonical extension product contract, reconciled shared product/claims/navigation and dated research versus delivered capabilities. Existing runtime evidence retained; no new runtime verification claimed. |
 
 ## Current Chantier Flow
-Implemented → verified → closure prepared → delivered through the containing scoped Git commit. No Web Store release or personal Chrome profile installation is claimed.
+Implemented → verified → closed → delivered in `e9b4ad3` on `main`. No Web Store release or personal Chrome profile installation is claimed.
 
 ## Verification Evidence
 
