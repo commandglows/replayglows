@@ -35,7 +35,7 @@ dependencies:
 
   # UI components
   cached_network_image: ^3.4.0
-  shimmer: ^3.0.0
+  shimmer: ^4.0.0
   just_audio: ^0.10.6
 
   # Storage
