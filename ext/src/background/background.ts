@@ -31,6 +31,7 @@ async function handle(request: Record<string, unknown>) {
 }
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (sender.id !== chrome.runtime.id) return false
+  if (typeof request?.action === 'string' && request.action.startsWith('rg:')) return false
   const operation = pending.then(() => handle(request))
   pending = operation.catch(() => undefined)
   operation.then(sendResponse, error => sendResponse({ error: error instanceof Error ? error.message : 'Échec de sauvegarde' }))

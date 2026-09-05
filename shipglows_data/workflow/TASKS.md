@@ -4,6 +4,10 @@
 
 ---
 
+## Extension Playback
+
+🟢 [replayglows] task: Add universal HTML5 speed controls with shared context, pinned tab exceptions, compact popup and temporary A–B loops linked to YouTube bookmarks | status: done | area: ext | ref: shipglows_data/workflow/specs/monorepo/2026-09-05-extension-universal-playback.md | evidence: 22 automated tests, typecheck, lint, build, multi-origin packaged browser scenarios, public YouTube/W3Schools and native action popup passed | next: Reload the unpacked extension and existing tabs; saved segments and advanced effects remain research candidates
+
 ## Audit: Deps
 
 🟢 [replayglows] task: Upgrade `backend/packages/backend` to the latest non-major `convex`, `openai`, and `svix` releases, rerun `npm audit`, and verify Convex backend typecheck/runtime behavior | status: done | area: deps | evidence: `npm install`, `npm audit --json`, `npm run typecheck`

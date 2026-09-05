@@ -1,7 +1,7 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.6"
+artifact_version: "0.1.7"
 project: "replayglows"
 created: "2026-05-10"
 updated: "2026-09-05"
@@ -93,5 +93,13 @@ Backend overrides are restricted to `gaxios@6.7.1 -> uuid@11.1.1` and `teeny-req
 `ext/src/content/content.ts` bundles `ext/contentscript.js` as a classic content script. `ext/src/background/background.ts` serializes validated storage operations across tabs and extension pages, with no worker-lifetime data cache. `ext/src/main.ts` mounts the functional Vue popup; options own configurable shortcuts and confirmed JSON replacement/import plus JSON/Markdown export.
 
 The canonical local schema remains a flat `bookmarks` array (`url`, `time`, `formattedTime`, `note`, optional `title`) and derived `groupedBookmarks`. `ext/src/bookmarks.ts` also reads historical options `videoId`/`timestamp` records. Imports validate before mutation; duplicate adds preserve the existing record and show an error. No backend connection, dependency migration or expanded permission grant is introduced. The content match covers the existing YouTube host permission to handle homepage-to-watch SPA navigation.
+
+## Universal Extension Playback (2026-09-05)
+
+The subsequent approved playback feature expands host access to HTTP/HTTPS for a separate `media.js` bundle. YouTube notes and injected CSS remain restricted to their existing host. `src/background/entry.ts` composes the bookmark service with `src/playback/background.ts`; the bookmark listener ignores namespaced playback messages.
+
+`playbackSettings` in local storage owns the global base speed, favorite, step, enabled state and configurable shortcuts. `playbackSession` in session storage owns tab pin overrides and registered frame IDs. All playback read/modify/write and cleanup operations serialize and read durable/session state afresh. Trusted extension-origin UI pages are identified before inspecting `sender.tab`, since options opened as tabs also have tab metadata. Content messages derive tab/frame identity from the sender and cannot mutate UI-only pin settings; inherited frames require a trusted web origin.
+
+Unpinned tabs share one speed; pinned tabs override it until unpinned, closed or the browser/extension session ends. Polling queries actual media state from registered frames and prioritizes playing media. `media.ts` handles HTML5 rate application, DOM discovery, guarded keyboard shortcuts and temporary A–B loops. Unsupported/rejected media state is surfaced rather than represented as success. No remote data service or bookmark schema migration is introduced. Stored segments, audio effects and URL rules remain separate research candidates.
 
 Canary proof is local to a dedicated profile and selected public YouTube scenarios; it does not establish exhaustive YouTube behavior or operator visual acceptance. See `../workflow/bugs/BUG-2026-09-05-001.md` for the implementation and verification boundary. Docker/package success remains distinct from these browser proofs.

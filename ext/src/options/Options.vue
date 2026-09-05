@@ -12,6 +12,8 @@
  * for communication with the background script.
  */
 import { ref, onMounted } from 'vue'
+import PlaybackOptions from '../playback/PlaybackOptions.vue'
+import { DEFAULT_KEYS } from '../playback/protocol'
 import { markdownBookmarks, normalizeBookmarks, type Bookmark } from '../bookmarks'
 
 // ==================== Type Definitions ====================
@@ -176,8 +178,21 @@ const deleteHotkey = async (action: string) => {
  * Persists the current hotkey configuration to Chrome storage.
  */
 const saveHotkeys = async () => {
-  await chrome.storage.local.set({ hotkeys: hotkeys.value })
-  showMessage('Raccourci enregistré !')
+  try {
+    const canonical = (value: string) => {
+      const parts = value.toUpperCase().split('+')
+      return [...parts.slice(0, -1).sort(), parts.at(-1)].join('+')
+    }
+    const saved = await chrome.storage.local.get('playbackSettings') as { playbackSettings?: { keys?: Record<string, string> } }
+    const playback = Object.values(saved.playbackSettings?.keys ?? DEFAULT_KEYS).filter((key): key is string => typeof key === 'string' && !!key).map(canonical)
+    const bookmarks = Object.values(hotkeys.value).filter(Boolean).map(canonical)
+    if (new Set(bookmarks).size !== bookmarks.length || bookmarks.some(key => playback.includes(key))) {
+      showMessage('Ce raccourci est déjà utilisé pour la lecture ou un autre marque-page.', 'error')
+      return
+    }
+    await chrome.storage.local.set({ hotkeys: hotkeys.value })
+    showMessage('Raccourci enregistré !')
+  } catch { showMessage('Impossible d’enregistrer le raccourci.', 'error') }
 }
 
 // ==================== Settings Management ====================
@@ -326,6 +341,7 @@ chrome.runtime.onMessage.addListener((request) => {
     <h1 class="h1">
       Options
     </h1>
+    <PlaybackOptions />
     <div class="grid grid-cols-2 gap-4">
       <!-- Colonne gauche -->
       <div class="flex flex-col">

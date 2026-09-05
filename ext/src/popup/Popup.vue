@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { type Bookmark, normalizeBookmarks } from '../bookmarks'
+import PlaybackCard from '../playback/PlaybackCard.vue'
 const bookmarks = ref<Bookmark[]>([])
 const error = ref('')
 const editing = ref<Bookmark | null>(null)
@@ -42,110 +43,107 @@ const visit = async (bookmark: Bookmark) => {
       </div>
       <div>
         <p class="sg-eyebrow">
-          Marque-pages YouTube
+          Lecture & marque-pages
         </p><h1 class="sg-title">
           ReplayGlows
         </h1>
       </div>
     </div>
-    <p
-      v-if="error"
-      role="alert"
-      class="sg-muted"
-    >
-      {{ error }}
-    </p>
-    <section
-      v-if="!bookmarks.length"
-      class="sg-empty-state"
-      aria-labelledby="empty-title"
-    >
-      <div
-        class="sg-empty-icon"
-        aria-hidden="true"
+    <div class="sg-bookmark-scroll">
+      <p
+        v-if="error"
+        role="alert"
+        class="sg-muted"
       >
-        +
-      </div>
-      <h2
-        id="empty-title"
-        class="sg-section-title"
-      >
-        Prêt à capturer vos idées
-      </h2>
-      <p class="sg-muted">
-        Ouvrez une vidéo YouTube pour ajouter un marque-page à un moment précis.
+        {{ error }}
       </p>
-    </section>
-    <section
-      v-else
-      aria-label="Vos marque-pages"
-    >
-      <h2 class="sg-section-title">
-        Vos marque-pages ({{ bookmarks.length }})
-      </h2>
-      <article
-        v-for="bookmark in bookmarks"
-        :key="`${bookmark.url}:${bookmark.time}`"
-        class="sct"
+      <section
+        v-if="!bookmarks.length"
+        class="sg-empty-state"
+        aria-labelledby="empty-title"
       >
-        <button
-          type="button"
-          class="sg-button"
-          @click="visit(bookmark)"
+        <h2
+          id="empty-title"
+          class="sg-section-title"
         >
-          {{ bookmark.title || 'Vidéo YouTube' }} · {{ bookmark.formattedTime }}
-        </button>
-        <form
-          v-if="editing === bookmark"
-          @submit.prevent="mutate('updateBookmark', { ...bookmark, note })"
+          Prêt à capturer vos idées
+        </h2>
+        <p class="sg-muted">
+          Ouvrez une vidéo YouTube pour ajouter un marque-page à un moment précis.
+        </p>
+      </section>
+      <section
+        v-else
+        aria-label="Vos marque-pages"
+      >
+        <h2 class="sg-section-title">
+          Vos marque-pages ({{ bookmarks.length }})
+        </h2>
+        <article
+          v-for="bookmark in bookmarks"
+          :key="`${bookmark.url}:${bookmark.time}`"
+          class="sct"
         >
-          <label>Note <input
-            v-model="note"
-            class="inp"
-            aria-label="Modifier la note"
-          ></label>
           <button
-            class="sg-button sg-button--primary"
-            type="submit"
-          >
-            Enregistrer
-          </button>
-          <button
-            class="sg-button"
             type="button"
-            @click="editing = null"
-          >
-            Annuler
-          </button>
-        </form>
-        <template v-else>
-          <p class="sg-muted">
-            {{ bookmark.note || 'Sans note' }}
-          </p>
-          <button
             class="sg-button"
-            type="button"
-            @click="editing = bookmark; note = bookmark.note"
+            @click="visit(bookmark)"
           >
-            Modifier
+            {{ bookmark.title || 'Vidéo YouTube' }} · {{ bookmark.formattedTime }}
           </button>
-          <button
-            class="sg-button"
-            type="button"
-            @click="mutate('deleteBookmark', bookmark)"
+          <form
+            v-if="editing === bookmark"
+            @submit.prevent="mutate('updateBookmark', { ...bookmark, note })"
           >
-            Supprimer
-          </button>
-        </template>
-      </article>
-    </section>
-    <button
-      class="sg-button sg-button--primary"
-      type="button"
-      @click="openOptions"
-    >
-      Options et import/export
-    </button>
+            <label>Note <input
+              v-model="note"
+              class="inp"
+              aria-label="Modifier la note"
+            ></label>
+            <button
+              class="sg-button sg-button--primary"
+              type="submit"
+            >
+              Enregistrer
+            </button>
+            <button
+              class="sg-button"
+              type="button"
+              @click="editing = null"
+            >
+              Annuler
+            </button>
+          </form>
+          <template v-else>
+            <p class="sg-muted">
+              {{ bookmark.note || 'Sans note' }}
+            </p>
+            <button
+              class="sg-button"
+              type="button"
+              @click="editing = bookmark; note = bookmark.note"
+            >
+              Modifier
+            </button>
+            <button
+              class="sg-button"
+              type="button"
+              @click="mutate('deleteBookmark', bookmark)"
+            >
+              Supprimer
+            </button>
+          </template>
+        </article>
+      </section>
+      <button
+        class="sg-button sg-button--primary"
+        type="button"
+        @click="openOptions"
+      >
+        Options et import/export
+      </button>
+    </div>
+    <PlaybackCard :bookmarks="bookmarks" />
     <footer class="sg-popup-footer">
       <span
         class="sg-status-dot"

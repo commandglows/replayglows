@@ -77,7 +77,8 @@ export default defineConfig({
       input: {
         popup: resolve(import.meta.dirname, 'src/popup/index.html'),
         options: resolve(import.meta.dirname, 'src/options/options.html'),
-        background: resolve(import.meta.dirname, 'src/background/background.ts'),
+        background: resolve(import.meta.dirname, 'src/background/entry.ts'),
+        media: resolve(import.meta.dirname, 'src/playback/media.ts'),
         content: resolve(import.meta.dirname, 'src/content/content.ts')
       },
       output: {
@@ -87,9 +88,10 @@ export default defineConfig({
          */
         entryFileNames: (chunkInfo) => {
           // Background script must be at root as 'background.js'
-          if (chunkInfo.facadeModuleId?.includes('background.ts')) {
+          if (chunkInfo.facadeModuleId?.includes('background/entry.ts')) {
             return 'background.js'
           }
+          if (chunkInfo.facadeModuleId?.includes('playback/media.ts')) return 'media.js'
           // Content script must be at root as 'content.js'
           if (chunkInfo.facadeModuleId?.includes('content.ts')) {
             return 'content.js'

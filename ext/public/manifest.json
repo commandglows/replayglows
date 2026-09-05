@@ -2,9 +2,9 @@
   "manifest_version": 3,
   "name": "ReplayGlows",
   "version": "1.0.0",
-  "description": "Marque-pages pour les vidéos YouTube avec notes et horodatages",
+  "description": "Vitesse de lecture sur les sites web, boucles A–B et marque-pages YouTube avec notes.",
   "permissions": ["storage", "tabs", "commands", "notifications"],
-  "host_permissions": ["https://www.youtube.com/*"],
+  "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_popup": "src/popup/index.html",
     "width": 800,
@@ -15,6 +15,14 @@
     "type": "module"
   },
   "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["media.js"],
+      "all_frames": true,
+      "match_about_blank": true,
+      "match_origin_as_fallback": true,
+      "run_at": "document_idle"
+    },
     {
       "matches": ["https://www.youtube.com/*"],
       "css": ["output-ytb.css"],

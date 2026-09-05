@@ -5,7 +5,7 @@ This document provides essential information for AI agents working with the Repl
 ## Project Overview
 
 **Project Type**: Chrome Extension (Manifest V3)  
-**Purpose**: YouTube video bookmarking with notes and timestamps  
+**Purpose**: Universal HTML5 playback controls and YouTube bookmarking with notes and timestamps
 **Tech Stack**: Vue 3, TypeScript, Vite, TailwindCSS  
 **Language**: Primarily French codebase with English configuration files
 
@@ -70,7 +70,7 @@ ext/
 │   ├── content/
 │   │   └── content.ts       # Content script entry point (TypeScript)
 │   ├── popup/
-│   │   ├── index.html       # Extension popup UI (800x600)
+│   │   ├── index.html       # Extension popup UI (CSS preferred size 432x600)
 │   │   └── Popup.vue        # Popup Vue component
 │   ├── options/
 │   │   ├── options.html     # Options page
@@ -116,7 +116,7 @@ ext/
    - Communicates with service worker
 
 3. **Popup** (`src/popup/Popup.vue`)
-   - 800x600px extension popup UI
+   - CSS-sized popup (preferred 432x600px, constrained by Chrome's available viewport)
    - Lists saved bookmarks across videos with timestamp links, editing and deletion
    - Provides bookmark management interface
 
@@ -216,9 +216,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 ### Manifest.json
 
 **Permissions**: storage, tabs, commands, notifications  
-**Host Permissions**: https://www.youtube.com/*  
-**Action**: 800x600px popup at `src/popup/index.html`  
-**Content Script**: Injected on YouTube watch pages with `output-ytb.css`  
+**Host Permissions**: HTTP and HTTPS sites for HTML5 playback (operator-approved 2026-09-05); bookmark injection remains YouTube-only.
+**Action**: Popup at `src/popup/index.html`; CSS owns the preferred 432x600px size and native viewport adaptation.
+**Content Scripts**: `media.js` on HTTP/HTTPS pages and permitted frames; `content.js` plus `output-ytb.css` only on YouTube.
 **Options**: Available at `src/options/options.html`
 
 ---
@@ -456,3 +456,17 @@ Canonical records retain `url`, `time` (including zero), `formattedTime`, `note`
 Content matching now includes the already-permitted `https://www.youtube.com/*` host so navigation from the homepage activates on watch pages. There is no new dependency or permission grant. Every package must retain classic self-contained content.js, with no top-level ESM import.
 
 Focused tests: `node --test scripts/bookmarks.test.mjs` (five behavior tests), `pnpm type-check`, `pnpm exec eslint src`, and `pnpm build:ext`. Local Chrome Canary 155 checks on a public YouTube video demonstrated zero-second note creation, shortcuts, literal-text note editing, timestamp seeking and reload persistence. Further scenario evidence belongs to `shipglows_data/workflow/bugs/BUG-2026-09-05-001.md` and the dated Canary audit. These are scoped local runtime proofs, not exhaustive YouTube coverage or operator acceptance of the rendered UI.
+
+## Universal Playback Controls (2026-09-05)
+
+`src/background/entry.ts` starts the existing bookmark worker and the separate playback service. `src/playback/protocol.ts` owns settings and types; `background.ts` owns serialized local settings and session pin/frame state. `media.ts` is a separate classic content bundle with type-only imports. Do not introduce a shared runtime import into either content bundle.
+
+The default rate is global across unpinned tabs. Pinning creates a tab-specific rate; unpinning adopts the latest global rate. Rates are 0.25–4x, with popup presets 0.5/1/1.5/2x and a favorite rate. Local settings persist across browser restarts; session pins survive page navigation and MV3 worker restarts but clear on tab close or browser/extension restart. Pinning here is not Chrome's native tab pin.
+
+The popup places a compact playback card below the scrollable bookmark list. Settings configure favorite rate, shortcut step and commands; conflicts with bookmark shortcuts are rejected in both settings flows. Commands ignore editable fields. Holding boost temporarily accelerates up to 4x; release, blur, suspension and navigation restore the context rate.
+
+A–B repetition is temporary. Users can mark current positions or select two existing bookmarks for the current YouTube video. Invalid/reversed bounds are rejected and moving outside the segment cancels repetition. Saved notes/exports keep their existing schema; saved segments and note-specific rates are not implemented.
+
+Playback runs on accessible HTTP/HTTPS HTML5 video/audio, including permitted frames and discovered open shadow roots. Pages protected by Chrome, local file URLs, closed shadow roots and proprietary/non-HTML5 players are not guaranteed. The content script reports rate rejection instead of continually fighting the host player. It does not load remote code, capture audio, transmit browsing history or add telemetry. Reload existing tabs after installing/updating the unpacked extension.
+
+Validation: `node --test scripts/bookmarks.test.mjs scripts/playback-state.test.mjs scripts/playback-media.test.mjs`, typecheck, lint and build. `scripts/playback-browser.mjs` loads the actual package in an isolated profile; set `PLAYWRIGHT_MODULE` and `PLAYWRIGHT_CHROMIUM` to installed runtime paths. Optional `PLAYBACK_PUBLIC_PROOF=1` exercises public sites. Distinguish routed fixture pages, real public sites, extension pages in tabs and actual native toolbar popup proof. The spec `shipglows_data/workflow/specs/monorepo/2026-09-05-extension-universal-playback.md` owns current results and limitations.
