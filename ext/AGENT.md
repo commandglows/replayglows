@@ -444,3 +444,5 @@ Read the root `AGENT.md` and `shipglows_data/technical/operating-conventions.md`
 Node 24 and pnpm 11.24.0 own extension tooling. The Dockerfile installs the frozen pnpm lock and runs the build watcher; it does not serve a website. Its image build still requires a running Linux Docker daemon. Dependabot covers both npm and Docker in `/ext`.
 
 The package was loaded into an isolated Chromium profile: service worker, popup and options rendered, the content script injected on a mocked YouTube page, and the packaged Tinykeys export loaded. This is packaging proof, not validation of the unfinished legacy bookmark migration or real YouTube interactions.
+
+Docker follow-up (2026-09-05): Linux/amd64 image construction, container typecheck/build:ext, all six manifest resources and a CSS-triggered watch rebuild passed on Docker 29.7.2 with Node 24.20.0 and pnpm 11.24.0. See shipglows_data/workflow/audits/2026-09-05-extension-docker-validation.md. This does not establish real YouTube behavior or host bind-mount notifications.
