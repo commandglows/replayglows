@@ -1,5 +1,5 @@
 /**
- * YouTubeBookmarker - Main content script for the YouTube Bookmarker extension.
+ * YouTubeBookmarker - Main content script for the ReplayGlows extension.
  * 
  * This object manages all bookmark-related functionality within YouTube video pages:
  * - Adding/removing bookmark icons on the video progress bar

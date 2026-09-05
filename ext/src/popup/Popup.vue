@@ -42,9 +42,9 @@ const visit = async (bookmark: Bookmark) => {
       </div>
       <div>
         <p class="sg-eyebrow">
-          ReplayGlows
+          Marque-pages YouTube
         </p><h1 class="sg-title">
-          YouTube Bookmarker
+          ReplayGlows
         </h1>
       </div>
     </div>

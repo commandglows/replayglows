@@ -1,5 +1,5 @@
 /**
- * Background Script for YouTube Bookmarker Extension
+ * Background Script for ReplayGlows Extension
  * 
  * This service worker handles:
  * - Extension lifecycle events (installation, updates)

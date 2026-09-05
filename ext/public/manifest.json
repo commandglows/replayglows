@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "YouTube Bookmarker",
+  "name": "ReplayGlows",
   "version": "1.0.0",
   "description": "Marque-pages pour les vidéos YouTube avec notes et horodatages",
   "permissions": ["storage", "tabs", "commands", "notifications"],

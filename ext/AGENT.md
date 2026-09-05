@@ -1,6 +1,6 @@
-# AGENTS.md - YouTube Bookmarker Chrome Extension
+# AGENTS.md - ReplayGlows Chrome Extension
 
-This document provides essential information for AI agents working with the YouTube Bookmarker Chrome extension codebase.
+This document provides essential information for AI agents working with the ReplayGlows Chrome extension codebase.
 
 ## Project Overview
 

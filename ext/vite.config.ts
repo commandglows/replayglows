@@ -1,5 +1,5 @@
 /**
- * Vite Configuration for YouTube Bookmarker Chrome Extension
+ * Vite Configuration for ReplayGlows Chrome Extension
  * 
  * This configuration handles the build process for a Chrome extension
  * with multiple entry points:
