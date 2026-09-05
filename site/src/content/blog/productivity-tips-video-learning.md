@@ -16,7 +16,7 @@ Most video platforms let you adjust playback speed. This simple feature can dram
 - Slow down to 0.75x for complex material
 - Return to normal speed for key sections
 
-ReplayGlows preserves your preferred playback speed, so you don't have to adjust it every time.
+For playback on supported browser pages, the [ReplayGlows extension](/extension) offers a shared base speed and pinned-tab exceptions. Its [practical guide](/extension/guide) explains the controls and current installation availability.
 
 ## 2. Schedule Dedicated Learning Time
 

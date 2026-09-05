@@ -1,0 +1,17 @@
+---
+import { render, type CollectionEntry } from 'astro:content'
+import ExtensionLayout from '../layouts/ExtensionLayout.astro'
+import { siteUrl } from '../config/site'
+const { post } = Astro.props as { post: CollectionEntry<'blog'> }
+const lang = post.data.locale
+const path = `${lang === 'fr' ? '/fr' : ''}/blog/${post.id}`
+const alternatePath = `${lang === 'fr' ? '' : '/fr'}/blog/${post.data.alternateSlug}`
+const { Content } = await render(post)
+const jsonLd = [{ '@type': 'BlogPosting', '@context': 'https://schema.org', headline: post.data.title, description: post.data.description, datePublished: post.data.date, inLanguage: lang, url: siteUrl(path), author: { '@type': 'Organization', name: 'ReplayGlows' } }]
+---
+<ExtensionLayout lang={lang} title={post.data.title} description={post.data.description} path={path} alternatePath={alternatePath} jsonLd={jsonLd}>
+  <article class="max-w-3xl mx-auto px-4 py-16">
+    <header class="mb-10"><span class="text-4xl sm:text-5xl block mb-4" aria-hidden="true">🔁</span><p class="text-sm text-muted-foreground mb-4">{lang === 'fr' ? 'Guide de révision · Extension ReplayGlows' : 'Review workflow · ReplayGlows extension'}</p><h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">{post.data.title}</h1><time datetime={post.data.date} class="text-sm text-muted-foreground">{new Date(post.data.date).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}</time></header>
+    <div class="blog-content"><Content /></div>
+  </article>
+</ExtensionLayout>

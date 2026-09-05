@@ -6,6 +6,8 @@
 
 ## Extension Playback
 
+🟢 [replayglows] task: Guide discovery inside the Chrome extension with confirmed milestones, local resume/skip, effective shortcuts and recovery help | status: done | area: ext | ref: shipglows_data/workflow/specs/monorepo/2026-09-05-extension-onboarding.md | evidence: Discovery and playback tests, typecheck/build, packaged failure/recovery scenarios and native popup at 432x510 passed on 2026-09-05 | next: Reload unpacked extension to review; no Web Store publication implied
+
 🟢 [replayglows] task: Reconcile extension product contract, competitor delivery matrix, claims and code-to-doc navigation | status: done | area: docs | ref: shipglows_data/product/ext/product.md | evidence: Scoped metadata, topology and reference checks on 2026-09-05 | next: Update on the next approved playback increment; no public release inferred.
 
 🟢 [replayglows] task: Add universal HTML5 speed controls with shared context, pinned tab exceptions, compact popup and temporary A–B loops linked to YouTube bookmarks | status: done | area: ext | ref: shipglows_data/workflow/specs/monorepo/2026-09-05-extension-universal-playback.md | evidence: 22 automated tests, typecheck, lint, build, multi-origin packaged browser scenarios, public YouTube/W3Schools and native action popup passed | next: Reload the unpacked extension and existing tabs; saved segments and advanced effects remain research candidates

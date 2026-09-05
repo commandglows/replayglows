@@ -457,6 +457,12 @@ Content matching now includes the already-permitted `https://www.youtube.com/*` 
 
 Focused tests: `node --test scripts/bookmarks.test.mjs` (five behavior tests), `pnpm type-check`, `pnpm exec eslint src`, and `pnpm build:ext`. Local Chrome Canary 155 checks on a public YouTube video demonstrated zero-second note creation, shortcuts, literal-text note editing, timestamp seeking and reload persistence. Further scenario evidence belongs to `shipglows_data/workflow/bugs/BUG-2026-09-05-001.md` and the dated Canary audit. These are scoped local runtime proofs, not exhaustive YouTube coverage or operator acceptance of the rendered UI.
 
+## Progressive Discovery (2026-09-05)
+
+`src/discovery/DiscoveryGuide.vue` is the French in-extension help shared by popup/options; `state.ts` owns strict boolean milestone reads, independent local keys and bounded async operations. Popup connects confirmed playback snapshots, persisted notes and successful bookmark tab creation. Keep skipped topics distinct from success, use effective runtime shortcut settings, restore keyboard focus when a guide action disappears, and keep the header help entry reachable. No telemetry or note-schema changes belong to this guide.
+
+Guide-visible layout gives the scroll pane a dedicated tokenized height and lets the popup scroll to playback; the header stays visible. Check the actual native popup because Chrome can constrain its height below the preferred CSS size. Validation adds `scripts/discovery.test.mjs`, `scripts/discovery-browser.mjs` and `scripts/discovery-native.mjs`; browser scripts use `PLAYWRIGHT_MODULE`/`PLAYWRIGHT_CHROMIUM` with a full Chromium binary and isolated profiles. The onboarding spec owns current proof. Preserve any unrelated edits in legacy `contentscript.js`.
+
 ## Universal Playback Controls (2026-09-05)
 
 `src/background/entry.ts` starts the existing bookmark worker and the separate playback service. `src/playback/protocol.ts` owns settings and types; `background.ts` owns serialized local settings and session pin/frame state. `media.ts` is a separate classic content bundle with type-only imports. Do not introduce a shared runtime import into either content bundle.

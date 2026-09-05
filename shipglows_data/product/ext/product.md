@@ -1,7 +1,7 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: replayglows
 created: "2026-09-05"
 updated: "2026-09-05"
@@ -59,6 +59,14 @@ HTTP/HTTPS host access enables the wider playback scope and changes the permissi
 Playback settings and session contexts are extension-local; this increment adds no remote service, telemetry or app/backend synchronization. Notes remain YouTube-specific. Reload the unpacked extension and refresh existing tabs to activate its new content bundle.
 
 Implementation was delivered in commit `e9b4ad3813d697aa0f4e6c28dd22019581be8dec` on `main`. Verification on 2026-09-05 covered 22 automated tests, typecheck/lint/build, packaged Chromium fixtures, public YouTube/W3Schools playback and the real action-popup target. This is unpacked-extension proof, not Web Store publication or installation in the user's personal browser profile. Detailed evidence and limitations remain in the owning implementation spec.
+
+## In-Extension Discovery
+
+The French popup offers optional progressive guidance through its permanent `Découvrir / Aide` entry; options also contain the practical guide. First guidance is visible by default. Hiding help, selecting a topic and postponing an exercise persist locally under independent `discovery.v1.*` keys. Postponed is not completed; completed milestones describe past success, not the current media state.
+
+Five milestones cover a changed speed confirmed by a fresh accepted-media snapshot, an observed pinned context, an observed valid A–B loop, an existing persisted nonempty note, and successful opening of a saved bookmark URL. The last milestone confirms tab creation, not observed playback/seek. Existing notes qualify without forcing a new note. The speed exercise uses the popup controls; reading instructions alone never qualifies. Playback and bookmark schemas, permissions, and exports remain unchanged. Playback shortcut help reads effective validated settings, while disabled bookmark shortcuts are shown as disabled.
+
+Favorite/boost/shortcut, unsupported-player/recovery and local-data/export/import guidance is consultable without mandatory exercises. JSON import still replaces all bookmarks after confirmation; progression is not exported. The guide creates no network or analytics events. Package and native-popup evidence is tracked in `shipglows_data/workflow/specs/monorepo/2026-09-05-extension-onboarding.md`; this does not imply Web Store publication.
 
 ## Research Candidates
 

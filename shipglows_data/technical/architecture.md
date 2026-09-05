@@ -1,7 +1,7 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.7"
+artifact_version: "0.1.8"
 project: "replayglows"
 created: "2026-05-10"
 updated: "2026-09-05"
@@ -101,5 +101,7 @@ The subsequent approved playback feature expands host access to HTTP/HTTPS for a
 `playbackSettings` in local storage owns the global base speed, favorite, step, enabled state and configurable shortcuts. `playbackSession` in session storage owns tab pin overrides and registered frame IDs. All playback read/modify/write and cleanup operations serialize and read durable/session state afresh. Trusted extension-origin UI pages are identified before inspecting `sender.tab`, since options opened as tabs also have tab metadata. Content messages derive tab/frame identity from the sender and cannot mutate UI-only pin settings; inherited frames require a trusted web origin.
 
 Unpinned tabs share one speed; pinned tabs override it until unpinned, closed or the browser/extension session ends. Polling queries actual media state from registered frames and prioritizes playing media. `media.ts` handles HTML5 rate application, DOM discovery, guarded keyboard shortcuts and temporary A–B loops. Unsupported/rejected media state is surfaced rather than represented as success. No remote data service or bookmark schema migration is introduced. Stored segments, audio effects and URL rules remain separate research candidates.
+
+The discovery guide is shared between popup and options. Independent local `discovery.v1.*` keys store confirmed milestones, postponed topics and help visibility, without changing bookmark records or exports. Popup integration confirms a requested speed against a fresh media snapshot, observes pin/loop state, recognizes stored notes and distinguishes a bookmark tab opening from proven playback. The guide reads validated playback settings through the existing message contract; it introduces no worker endpoint, content script or permission. See the extension onboarding spec for UI state, failure and native-popup proof.
 
 Canary proof is local to a dedicated profile and selected public YouTube scenarios; it does not establish exhaustive YouTube behavior or operator visual acceptance. See `../workflow/bugs/BUG-2026-09-05-001.md` for the implementation and verification boundary. Docker/package success remains distinct from these browser proofs.
