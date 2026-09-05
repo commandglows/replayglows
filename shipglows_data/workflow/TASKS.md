@@ -12,7 +12,7 @@
 🟢 [replayglows] task: Patch `lab` Starlette advisory GHSA-86qp-5c8j-p5mr by updating the FastAPI/Starlette lock lane and validating worker auth/routing behavior | status: done | area: deps
 🟢 [replayglows] task: Patch `site` transitive `devalue` advisory GHSA-77vg-94rm-hx3p through the Astro/Vite dependency lane and rebuild the marketing site | status: done | area: deps
 🟢 [replayglows] task: Patch `lab` transitive `idna` advisory CVE-2026-45409 while preserving hash-checked `requirements.lock` installs | status: done | area: deps
-🟡 [replayglows] task: Review remaining direct major dependency lanes for `record` and transcript-worker ML/tooling packages | status: todo | area: deps | next: sg-engineering deps ReplayGlows dependency major upgrade lanes
+🟡 [replayglows] task: Review remaining direct major dependency lane for `record`; transcript-worker ML/tooling refresh is verified | status: todo | area: deps | evidence: `audits/2026-09-05-lab-worker-dependencies.md` | next: sg-engineering deps ReplayGlows record major upgrade lane
 🟢 [replayglows] task: Migrate `app` from `youtube_player_flutter` 9.x to 10.x and adapt player API usage | status: done | area: deps
 🟢 [replayglows] task: Remove beta auth packages `clerk_flutter` / `clerk_auth` and replace the disabled path with stable Firebase Auth | status: done | area: deps
 🟢 [replayglows] task: Remove unused Flutter codegen packages: `riverpod_annotation`, `build_runner`, and `riverpod_generator` | status: done | area: deps
@@ -98,7 +98,8 @@
 🟢 [replayglows] task: Integrate reviewed Dependabot updates and compatible SDK/compiler migrations | status: done | area: deps | evidence: PRs #2, #3, #4, #5, #6, #7, #8, #15, #16, #17; shipglows_data/workflow/audits/2026-09-04-dependabot-review.md
 🟡 [replayglows] task: Migrate Google Sign-In 7 and verify native Firebase login, cancellation and sign-out | status: todo | area: deps | ref: PR #10 | next: implement singleton initialization and authenticate flow, then validate on Android
 🟡 [replayglows] task: Validate record 7 migration on a native target | status: todo | area: deps | ref: PR #11 | next: refresh against Flutter 3.47.1 and test permission, recording and playback
-🟡 [replayglows] task: Validate Python 3.14 worker image and hash-locked native dependencies | status: todo | area: deps | ref: PR #13 | next: use a running Linux Docker daemon for image build and worker contract checks
+🟢 [replayglows] task: Refresh the Python 3.12 worker hash lock and verify CPU native dependencies, auth and simulated transcription while retaining the OpenAI SDK | status: done | area: deps | evidence: `audits/2026-09-05-lab-worker-dependencies.md`, `lab/test_worker.py`
+🟡 [replayglows] task: Migrate the worker to Python 3.14 when its native dependency graph supports it | status: pending | area: deps | ref: PR #13 | evidence: `audits/2026-09-05-lab-worker-dependencies.md` | next: resolve FunASR's NumPy<2 constraint and cp314 native wheels before rebuilding; keep Python 3.12 for now
 
 ## Minor Dependency Refresh — 2026-09-05
 

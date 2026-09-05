@@ -1,3 +1,4 @@
+# FunASR requires NumPy 1.x: validate the native lock before changing Python.
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1

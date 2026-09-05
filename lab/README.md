@@ -103,6 +103,32 @@ Dependency source and lock policy:
 - install from `requirements.lock` with `--require-hashes`
 - `requirements.txt` is only a compatibility include for older commands
 
+The maintained worker runtime is Python 3.12 on Linux. FunASR 1.4.14 requires
+NumPy below 2; do not upgrade the Docker Python version independently of the
+native dependency graph. The lock includes compatible PyTorch 2.14.0 /
+torchaudio 2.11.0 CPU wheels from the official PyTorch CPU index. TorchAudio
+2.11's stable ABI supports PyTorch 2.11 and newer. GPU deployments require a separate
+compatible lock and are not validated by this CPU configuration.
+
+OpenAI Python 3.8.0 is retained for future integrations. Current OpenAI and
+Deepgram transcription adapters continue to use `requests`.
+
+Regenerate on Linux/Python 3.12 using pip-tools 7.6.1, then build and verify:
+
+```bash
+pip-compile --upgrade --generate-hashes --allow-unsafe --strip-extras --output-file requirements.lock requirements.in
+docker build -t replayglows-lab:check .
+docker run --rm --network none replayglows-lab:check python -m pip check
+docker run --rm --network none -v "$PWD/test_worker.py:/app/test_worker.py:ro" \
+  replayglows-lab:check python -m unittest -v test_worker
+```
+
+The tests import both local engines, exercise the retained SDK with a mock HTTP
+transport, and use real FFmpeg normalization with synthetic audio. YouTube
+downloads and model inference are simulated; no keys, cookies, paid APIs or
+model downloads are needed. A passing `/health` reports package presence, not
+successful model loading or real transcription quality.
+
 Audit after dependency updates:
 
 ```bash

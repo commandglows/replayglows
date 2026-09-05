@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Refreshed the Python 3.12 dependency lock, retaining OpenAI SDK 3.8.0 while the production adapter continues using requests.
+- Added compatible CPU PyTorch 2.14.0 and TorchAudio 2.11.0 dependencies for FunASR; kept NumPy 1.x and deferred Python 3.14.
+- Raised the setuptools security floor to 83.0.0 and locked 84.0.0.
+
+### Added
+- Offline worker contract tests with real audio normalization, native imports and simulated provider responses.
+- Docker context exclusions for local environments, cookies and test files.
+
 ## [2026-05-14]
 
 ### Changed
