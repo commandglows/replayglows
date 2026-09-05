@@ -14,8 +14,8 @@ dependencies:
 
   # Authentication
   # Clerk is integrated through a web-only ClerkJS bridge.
-  firebase_core: ^3.10.1
-  firebase_auth: ^5.7.0
+  firebase_core: ^4.14.0
+  firebase_auth: ^6.6.1
   google_sign_in: ^6.3.0
 
   # Convex backend
@@ -48,7 +48,7 @@ dependencies:
   record: ^6.2.1
   url_launcher: ^6.3.0
   sentry_flutter: ^9.29.0
-  firebase_messaging: ^15.2.10
+  firebase_messaging: ^16.6.0
   flutter_local_notifications: ^22.3.0
 
 dev_dependencies:
