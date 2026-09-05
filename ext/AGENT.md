@@ -117,7 +117,7 @@ ext/
 
 3. **Popup** (`src/popup/Popup.vue`)
    - 800x600px extension popup UI
-   - Lists bookmarks for current video
+   - Lists saved bookmarks across videos with timestamp links, editing and deletion
    - Provides bookmark management interface
 
 4. **Options Page** (`src/options/Options.vue`)
@@ -129,7 +129,7 @@ ext/
 
 - **Storage**: Chrome Storage API (local)
 - **Messages**: chrome.runtime.onMessage for component communication
-- **State**: Vue 3 reactive state + in-memory caching in background script
+- **State**: Vue 3 reactive state; background reads persisted records for every queued operation
 
 ---
 
@@ -246,11 +246,11 @@ pnpm verify:package
 
 ### 3. Legacy JavaScript Files
 
-- `background.js` and `contentscript.js` are legacy implementations
-- The codebase is mid-migration to TypeScript/Vue
-- Legacy files are heavily commented (French comments)
-- Current TypeScript files are minimal wrappers
-- Main functionality still resides in JavaScript files
+- `contentscript.js` remains the maintained YouTube integration and is bundled by `src/content/content.ts`.
+- `background.js` is historical and is not executed by the package.
+- `src/background/background.ts` owns serialized, validated storage operations; `src/bookmarks.ts` owns shared normalization.
+- `src/main.ts` mounts `src/popup/Popup.vue`; options and popup are active Vue surfaces.
+- The remaining migration concerns the legacy content implementation and its styles, not disconnected runtime entry points.
 
 ### 4. Language Split
 
@@ -372,9 +372,9 @@ This is a **partially migrated** codebase:
 - Modern development tooling (ESLint, Prettier, TailwindCSS)
 
 ⚠️ **In Progress**:
-- Background script (TypeScript wrapper exists, main logic still in JS)
-- Content script (TypeScript wrapper exists, main logic still in JS)
-- Full component migration to Vue 3
+- Content script remains JavaScript, actively bundled through its TypeScript entry point.
+- Legacy YouTube-injected styles remain outside the Vue token migration.
+- Background storage and Vue popup/options functionality are connected; broader feature redesign is not part of this repair.
 
 📝 **Legacy Implementation**:
 - Main bookmark logic is in `background.js` and `contentscript.js`
@@ -396,7 +396,7 @@ This is a **partially migrated** codebase:
 ## Notes for Future Contributors
 
 1. **Respect the migration**: Continue moving toward TypeScript/Vue while maintaining backward compatibility
-2. **Preserve functionality**: The legacy JavaScript implementation is stable and feature-complete
+2. **Preserve functionality**: Retain existing behavior and storage compatibility; legacy code is not assumed defect-free or exhaustively validated
 3. **Add types gradually**: When modifying JS files, consider creating TypeScript interfaces
 4. **Test thoroughly**: Bookmark functionality is complex; verify all scenarios work after changes
 5. **Document in English**: Configuration and new code should use English for broader accessibility
@@ -446,3 +446,13 @@ Node 24 and pnpm 11.24.0 own extension tooling. The Dockerfile installs the froz
 The package was loaded into an isolated Chromium profile: service worker, popup and options rendered, the content script injected on a mocked YouTube page, and the packaged Tinykeys export loaded. This is packaging proof, not validation of the unfinished legacy bookmark migration or real YouTube interactions.
 
 Docker follow-up (2026-09-05): Linux/amd64 image construction, container typecheck/build:ext, all six manifest resources and a CSS-triggered watch rebuild passed on Docker 29.7.2 with Node 24.20.0 and pnpm 11.24.0. See shipglows_data/workflow/audits/2026-09-05-extension-docker-validation.md. This does not establish real YouTube behavior or host bind-mount notifications.
+
+## Bookmark Runtime and Canary Validation (2026-09-05)
+
+The content bundle activates the existing JavaScript YouTube integration. A TypeScript MV3 worker serializes bookmark read/modify/write requests, validates URL/time/note boundaries and persists both flat records and derived groups; no worker-lifetime cache owns data. The Vue popup lists all saved bookmarks and supports timestamp navigation, note editing and deletion. Options control shortcuts, display preferences and JSON/Markdown export. JSON replacement validates the complete file before mutation and asks for confirmation.
+
+Canonical records retain `url`, `time` (including zero), `formattedTime`, `note` and optional `title`. Historical options records using `videoId`/`timestamp` normalize on reads/import without a destructive migration. Content, popup and worker share this compatibility boundary through worker reads or the domain helper. Duplicate timestamps report an error rather than silently discarding a new note. A delayed save never closes a newer editor after navigation.
+
+Content matching now includes the already-permitted `https://www.youtube.com/*` host so navigation from the homepage activates on watch pages. There is no new dependency or permission grant. Every package must retain classic self-contained content.js, with no top-level ESM import.
+
+Focused tests: `node --test scripts/bookmarks.test.mjs` (five behavior tests), `pnpm type-check`, `pnpm exec eslint src`, and `pnpm build:ext`. Local Chrome Canary 155 checks on a public YouTube video demonstrated zero-second note creation, shortcuts, literal-text note editing, timestamp seeking and reload persistence. Further scenario evidence belongs to `shipglows_data/workflow/bugs/BUG-2026-09-05-001.md` and the dated Canary audit. These are scoped local runtime proofs, not exhaustive YouTube coverage or operator acceptance of the rendered UI.

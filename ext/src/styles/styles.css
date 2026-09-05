@@ -1218,3 +1218,32 @@ body {
   from { opacity: 0; transform: translateY(-0.5rem); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Options controls keep labels above fields and use the shared dark surface. */
+.sg-options-shell .hotkey-input {
+  flex-direction: column;
+  align-items: stretch;
+}
+.sg-hotkey-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--rg-space-1);
+  min-width: 0;
+}
+.sg-options-shell .sg-hotkey-controls .inp {
+  flex: 1;
+  min-width: 0;
+}
+.sg-hotkey-controls .sg-button { flex-shrink: 0; }
+.sg-option-actions { flex-wrap: wrap; }
+.sg-option-checkbox {
+  accent-color: var(--rg-color-primary);
+  width: var(--rg-space-4);
+  height: var(--rg-space-4);
+  flex-shrink: 0;
+}
+.sg-options-shell .inp:focus-visible,
+.sg-option-checkbox:focus-visible {
+  outline: solid var(--rg-color-primary-hover);
+  outline-offset: var(--rg-space-1);
+}

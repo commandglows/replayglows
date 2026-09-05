@@ -107,3 +107,7 @@
 🟢 [replayglows] task: Resolve remaining Firebase/Google Storage uuid advisory chain without an unsafe major override or downgrade | status: done | area: deps | evidence: two consumer-scoped uuid 11.1.1 overrides, three compatibility tests pass, npm audit reports zero vulnerabilities | next: remove overrides when patched upstream ranges become available
 
 🟢 [replayglows] task: Verify the extension Node 24 Docker image on Linux | status: done | area: extension | proof: Linux image build, container typecheck/build:ext, six manifest resources and CSS watch rebuild passed | evidence: shipglows_data/workflow/audits/2026-09-05-extension-docker-validation.md
+
+## Extension Canary Functionality — 2026-09-05
+
+🟠 [replayglows] task: Restore and verify extension bookmark workflows in Chrome Canary | status: fixed-pending-verify | area: extension | bug: BUG-2026-09-05-001 | proof: real YouTube CRUD, shortcuts, import/export, SPA and browser restart; five behavioral tests | evidence: shipglows_data/workflow/audits/2026-09-05-extension-canary-functionality.md | next: operator visual acceptance in dedicated Canary profile before final closure

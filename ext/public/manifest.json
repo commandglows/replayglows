@@ -16,10 +16,9 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/watch?*"],
+      "matches": ["https://www.youtube.com/*"],
       "css": ["output-ytb.css"],
-      "js": ["content.js"],
-      "type": "module"
+      "js": ["content.js"]
     }
   ],
   "options_page": "src/options/options.html",
