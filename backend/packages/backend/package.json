@@ -18,7 +18,7 @@
     "convex": "^1.45.0",
     "firebase-admin": "^14.3.0",
     "openai": "^7.10.0",
-    "svix": "^1.99.1",
+    "svix": "^2.2.0",
     "youtube-captions-scraper": "^2.0.3",
     "zod": "^4.5.4"
   },
