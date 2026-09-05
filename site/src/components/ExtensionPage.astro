@@ -1,0 +1,40 @@
+---
+import ExtensionLayout from '../layouts/ExtensionLayout.astro'
+import { extensionCopy } from '../content/extension'
+const { lang = 'en', guide = false } = Astro.props as { lang?: 'en' | 'fr'; guide?: boolean }
+const t = extensionCopy[lang]
+const base = lang === 'fr' ? '/fr/extension' : '/extension'
+const path = base + (guide ? '/guide' : '')
+const alternatePath = (lang === 'fr' ? '/extension' : '/fr/extension') + (guide ? '/guide' : '')
+const keys = ['Alt + Shift + S / D', 'Alt + Shift + R', 'Alt + Shift + F', 'Alt + Shift + Z / X', 'Alt + Shift + G', 'Alt + Shift + A / B', 'Alt + Shift + C', 'Alt + Shift + V']
+---
+<ExtensionLayout lang={lang} title={guide ? t.guideTitle : t.title} description={guide ? t.guideDescription : t.description} path={path} alternatePath={alternatePath}>
+  <section class="max-w-6xl mx-auto px-4 py-16 sm:py-24">
+    <p class="text-sm font-semibold text-muted-foreground mb-4">{t.label}</p>
+    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-4xl">{guide ? t.guideTitle : t.title}</h1>
+    <p class="text-lg text-muted-foreground max-w-3xl mt-6">{guide ? t.guideIntro : t.intro}</p>
+    <p class="text-sm text-muted-foreground max-w-3xl mt-6 border-l border-border pl-4">{t.availability}</p>
+    <div class="flex flex-wrap gap-4 mt-8">
+      <a href={guide ? base : base + '/guide'} class="marketing-cta-solid rounded-full px-6 py-3 text-sm font-medium">{guide ? t.back : t.guide}</a>
+      <a href={t.articlePath} class="rounded-full border border-border px-6 py-3 text-sm font-medium hover:bg-card">{t.article}</a>
+    </div>
+  </section>
+  {guide ? <div class="max-w-3xl mx-auto px-4 pb-16">
+    {t.sections.map(([title, body]) => <section class="mb-10"><h2 class="text-2xl font-semibold mb-4">{title}</h2><p class="text-muted-foreground leading-relaxed">{body}</p></section>)}
+    <section aria-labelledby="shortcuts-title"><h2 id="shortcuts-title" class="text-2xl font-semibold mb-6">{t.shortcutsTitle}</h2>
+      <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr class="border-b border-border"><th scope="col" class="py-3 pr-4">{t.action}</th><th scope="col" class="py-3">{t.keys}</th></tr></thead><tbody>{t.shortcuts.map((action, i) => <tr class="border-b border-border"><th scope="row" class="py-4 pr-4 font-medium">{action}</th><td class="py-4"><kbd>{keys[i]}</kbd></td></tr>)}</tbody></table></div>
+    </section>
+  </div> : <>
+    <figure class="max-w-3xl mx-auto px-4 pb-16">
+      <div class="rounded-2xl border border-border bg-card p-6 sm:p-8">
+        <div class="flex items-center justify-between gap-4 text-sm text-muted-foreground"><span>ReplayGlows</span><span>{t.global}</span></div>
+        <p class="text-5xl font-semibold my-8 text-center">1.50×</p>
+        <div class="grid grid-cols-4 gap-2 text-center" aria-hidden="true">{['0.5', '1', '1.5', '2'].map(rate => <span class:list={['rounded-lg px-3 py-2 border border-border', rate === '1.5' ? 'marketing-cta-solid' : 'bg-background']}>{rate}×</span>)}</div>
+        <div class="mt-6 pt-4 border-t border-border flex justify-between text-sm text-muted-foreground"><span>{t.pinned}: 0.75×</span><span>A → B</span></div>
+      </div><figcaption class="text-sm text-muted-foreground mt-3">{t.preview}</figcaption>
+    </figure>
+    <section class="max-w-6xl mx-auto px-4 pb-16 grid md:grid-cols-2 gap-6" aria-label={lang === 'fr' ? 'Fonctionnalités' : 'Features'}>{t.cards.map(([title, body]) => <div class="marketing-card bg-card border border-border"><h2 class="text-2xl font-semibold mb-4">{title}</h2><p class="text-muted-foreground leading-relaxed">{body}</p></div>)}</section>
+    <section class="max-w-3xl mx-auto px-4 pb-16"><h2 class="text-2xl font-semibold mb-4">{t.boundaryTitle}</h2><p class="text-muted-foreground leading-relaxed">{t.boundary}</p><h2 class="text-2xl font-semibold mt-10 mb-4">{t.compatibilityTitle}</h2><p class="text-muted-foreground leading-relaxed">{t.compatibility}</p></section>
+  </>}
+  <section class="border-t border-border bg-card"><div class="max-w-3xl mx-auto px-4 py-16"><h2 class="text-2xl font-semibold mb-4">{t.next}</h2><p class="text-muted-foreground mb-6">{t.nextText}</p><a class="underline underline-offset-4" href={t.articlePath}>{t.article} →</a></div></section>
+</ExtensionLayout>

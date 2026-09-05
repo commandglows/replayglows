@@ -1,10 +1,10 @@
 ---
 artifact: documentation
 metadata_schema_version: "1.0"
-artifact_version: "1.1.2"
+artifact_version: "1.2.0"
 project: "replayglows-site"
 created: "2026-04-26"
-updated: "2026-09-04"
+updated: "2026-09-05"
 status: "reviewed"
 source_skill: "sf-docs"
 scope: "file"
@@ -94,3 +94,12 @@ This repository is the public marketing site for ReplayGlows. It is an Astro sit
 ## Monorepo Conventions
 
 This surface belongs to the ReplayGlows monorepo. Governance paths beginning with `shipglows_data/` resolve from its root, not this directory. Read the root `AGENT.md` and `shipglows_data/technical/operating-conventions.md`; preserve the surface-specific contracts above. Use the ShipGlows-managed session for local runtime work and retain hosted proof requirements.
+
+## Extension Content
+
+- `/extension` and `/fr/extension` explain the standalone extension; `/guide` peers own usage and recovery.
+- `src/content/extension.ts` owns paired copy; `ExtensionPage.astro` and `ExtensionLayout.astro` reuse canonical site styles.
+- The extension review article uses paired Markdown with locale/articleKey/alternateSlug. Its shell uses extension-guide CTAs, not app signup or free-price schema. Existing English articles retain their routes and templates.
+- Source truth: `shipglows_data/product/ext/product.md`. No public Store URL has been verified. Keep installation status explicit; do not guess an install URL or claim app sync, saved loops or universal player compatibility.
+- Run `scripts/verify-extension-content.mjs` with `SITE_PROOF_URL` from managed registry or verified deployment, `PLAYWRIGHT_MODULE`, `PLAYWRIGHT_CHROMIUM`, and optional `SITE_PROOF_DIR`. It checks six routes at desktop/mobile widths, locale alternates, links and discovery.
+- GitHub deployments currently show main pushes deploy production. Use a task branch for preview review; a preview push is not production approval.

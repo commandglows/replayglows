@@ -1,10 +1,10 @@
 ---
 artifact: content_map
 metadata_schema_version: "1.0"
-artifact_version: "0.1.1"
+artifact_version: "0.2.0"
 project: "replayglows"
 created: "2026-05-10"
-updated: "2026-09-04"
+updated: "2026-09-05"
 status: "draft"
 source_skill: sf-docs
 scope: content-map
@@ -83,3 +83,7 @@ This file maps ReplayGlows content surfaces at monorepo level and routes public-
 | Transcript worker changes | Worker README, worker contracts, app docs if backend integration behavior changes. |
 | Public claim changes | Claim register, page intent map, target page, business/product/brand/GTM contracts. |
 | Blog/article changes | Astro content schema policy, blog route, claim register if claims are sensitive. |
+
+## Extension Content Cluster
+
+The approved extension cluster has EN/FR product pages at `/extension` and `/fr/extension`, guides at the matching `/guide` paths, and a paired review-workflow article. Product truth is `shipglows_data/product/ext/product.md`. Public copy distinguishes multisite playback from YouTube-only notes, local storage from app sync, and temporary loops from saved records. No verified public install URL is available; CTA leads to the guide.

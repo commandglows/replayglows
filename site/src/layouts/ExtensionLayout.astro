@@ -1,0 +1,26 @@
+---
+import Layout from './Layout.astro'
+import { extensionCopy } from '../content/extension'
+interface Props { lang: 'en' | 'fr'; title: string; description: string; path: string; alternatePath: string; jsonLd?: Record<string, unknown>[] }
+const { lang, title, description, path, alternatePath, jsonLd = [] } = Astro.props
+const t = extensionCopy[lang]
+const base = lang === 'fr' ? '/fr/extension' : '/extension'
+---
+<Layout title={`${title} — ReplayGlows`} description={description} path={path} lang={lang} alternatePath={alternatePath} jsonLd={jsonLd} productSchema={false}>
+  <header class="border-b border-border bg-background">
+    <nav aria-label={lang === 'fr' ? 'Navigation principale' : 'Main navigation'} class="max-w-6xl mx-auto px-4 py-6 flex flex-wrap items-center justify-between gap-4">
+      <a href={base} class="font-semibold text-foreground">ReplayGlows <span class="text-muted-foreground">/ Extension</span></a>
+      <div class="flex flex-wrap gap-4 text-sm">
+        <a href={base + '/guide'} class="hover:underline">{t.guide}</a>
+        <a href={t.articlePath} class="hover:underline">{lang === 'fr' ? 'Réviser un passage' : 'Review a passage'}</a>
+        <a href={alternatePath} lang={lang === 'fr' ? 'en' : 'fr'} class="hover:underline">{t.language}</a>
+      </div>
+    </nav>
+  </header>
+  <main id="main-content" class="min-h-screen bg-background text-foreground"><slot /></main>
+  <footer class="border-t border-border px-4 py-8">
+    <nav aria-label={lang === 'fr' ? 'Pied de page' : 'Footer'} class="max-w-6xl mx-auto flex flex-wrap gap-6 text-sm text-muted-foreground">
+      <a href={lang === 'fr' ? '/fr' : '/'}>{t.home}</a><a href={base}>{t.label}</a><a href={base + '/guide'}>{t.guide}</a><a href={alternatePath}>{t.language}</a>
+    </nav>
+  </footer>
+</Layout>
