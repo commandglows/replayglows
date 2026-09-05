@@ -96,8 +96,8 @@
 ## Dependabot Review — 2026-09-04
 
 🟢 [replayglows] task: Integrate reviewed Dependabot updates and compatible SDK/compiler migrations | status: done | area: deps | evidence: PRs #2, #3, #4, #5, #6, #7, #8, #15, #16, #17; shipglows_data/workflow/audits/2026-09-04-dependabot-review.md
-🟡 [replayglows] task: Migrate Google Sign-In 7 and verify native Firebase login, cancellation and sign-out | status: todo | area: deps | ref: PR #10 | next: implement singleton initialization and authenticate flow, then validate on Android
-🟡 [replayglows] task: Validate record 7 migration on a native target | status: todo | area: deps | ref: PR #11 | next: refresh against Flutter 3.47.1 and test permission, recording and playback
+🟠 [replayglows] task: Migrate Google Sign-In 7 and verify native Firebase login, cancellation and sign-out | status: fixed-pending-verify | area: deps | ref: PR #10 | evidence: singleton initialization and authenticate flow compile; Flutter analysis and 50 tests pass | blocker: Android native build reaches Convex Rust binding but needs Perl to compile vendored OpenSSL | next: provision Perl, then test login, cancellation and sign-out on Android
+🟠 [replayglows] task: Validate record 7 migration on a native target | status: fixed-pending-verify | area: deps | ref: PR #11 | evidence: Flutter analysis and 50 tests pass with record 7.1.1 | blocker: Android native build reaches Convex Rust binding but needs Perl to compile vendored OpenSSL | next: provision Perl, then test permission, recording and playback
 🟡 [replayglows] task: Validate Python 3.14 worker image and hash-locked native dependencies | status: todo | area: deps | ref: PR #13 | next: use a running Linux Docker daemon for image build and worker contract checks
 
 ## Minor Dependency Refresh — 2026-09-05

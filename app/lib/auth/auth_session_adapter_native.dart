@@ -35,26 +35,28 @@ class _SuiteIdentitySession {
 class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
   NativeFirebaseAuthSessionAdapter({
     firebase_auth.FirebaseAuth? firebaseAuth,
-    GoogleSignIn? googleSignIn,
     SuiteIdentityBridgeClient? suiteIdentityBridgeClient,
     SuiteIdentityBridgeRuntimeConfig? bridgeConfig,
   }) : _firebaseAuthOverride = firebaseAuth,
-       _googleSignIn =
-           googleSignIn ??
-           GoogleSignIn(
-             serverClientId: firebaseWebClientId.isEmpty
-                 ? null
-                 : firebaseWebClientId,
-           ),
        _suiteIdentityBridgeClient =
            suiteIdentityBridgeClient ?? const SuiteIdentityBridgeClient(),
        _bridgeConfig =
            bridgeConfig ?? suiteIdentityBridgeRuntimeConfigFromBuildInfo();
 
   final firebase_auth.FirebaseAuth? _firebaseAuthOverride;
-  final GoogleSignIn _googleSignIn;
   final SuiteIdentityBridgeClient _suiteIdentityBridgeClient;
   final SuiteIdentityBridgeRuntimeConfig _bridgeConfig;
+
+  // google_sign_in 7 exposes one process-wide instance that must be
+  // initialised exactly once before authentication or sign-out.
+  static final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  static Future<void>? _googleSignInInitialisation;
+
+  static Future<void> _initialiseGoogleSignIn() {
+    return _googleSignInInitialisation ??= _googleSignIn.initialize(
+      serverClientId: firebaseWebClientId.isEmpty ? null : firebaseWebClientId,
+    );
+  }
 
   AuthUser? _currentUser;
   bool _initialised = false;
@@ -96,6 +98,8 @@ class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
       _initialised = true;
       return;
     }
+
+    await _initialiseGoogleSignIn();
 
     _authSubscription = _firebaseAuth.authStateChanges().listen((user) {
       _updateFromFirebaseUser(user);
@@ -189,19 +193,17 @@ class NativeFirebaseAuthSessionAdapter implements AuthSessionAdapter {
       throw UnsupportedError('Google sign-in is handled by Clerk on web.');
     }
 
-    final account = await _googleSignIn.signIn();
-    if (account == null) {
-      return;
-    }
+    await _initialiseGoogleSignIn();
+    final account = await _googleSignIn.authenticate();
 
-    final auth = await account.authentication;
-    if (auth.idToken == null || auth.idToken!.isEmpty) {
+    final auth = account.authentication;
+    final idToken = auth.idToken;
+    if (idToken == null || idToken.isEmpty) {
       throw StateError('Google sign-in did not return an id token.');
     }
 
     final credential = firebase_auth.GoogleAuthProvider.credential(
-      idToken: auth.idToken,
-      accessToken: auth.accessToken,
+      idToken: idToken,
     );
     await _firebaseAuth.signInWithCredential(credential);
     await refreshSession();

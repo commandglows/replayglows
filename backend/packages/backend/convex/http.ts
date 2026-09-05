@@ -34,11 +34,12 @@ http.route({
     let evt: ClerkWebhookEvent;
 
     try {
-      evt = wh.verify(body, {
+      wh.verify(body, {
         "svix-id": svixId,
         "svix-timestamp": svixTimestamp,
         "svix-signature": svixSignature,
-      }) as ClerkWebhookEvent;
+      });
+      evt = JSON.parse(body) as ClerkWebhookEvent;
     } catch (err) {
       console.error("Webhook verification failed:", err);
       return new Response("Invalid signature", { status: 400 });
@@ -123,11 +124,12 @@ http.route({
     let evt: PolarWebhookEvent;
 
     try {
-      evt = wh.verify(body, {
+      wh.verify(body, {
         "webhook-id": webhookId,
         "webhook-timestamp": webhookTimestamp,
         "webhook-signature": webhookSignature,
-      }) as PolarWebhookEvent;
+      });
+      evt = JSON.parse(body) as PolarWebhookEvent;
     } catch (err) {
       console.error("Polar webhook verification failed:", err);
       return new Response("Invalid signature", { status: 400 });
