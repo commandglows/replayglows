@@ -1,7 +1,7 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.4"
+artifact_version: "0.1.5"
 project: "replayglows"
 created: "2026-05-10"
 updated: "2026-09-05"
@@ -80,4 +80,10 @@ Astro 7 preserves the site HTML compression policy explicitly. See `../workflow/
 
 ## Minor Dependency Refresh (2026-09-05)
 
-The approved refresh covers backend, site, extension and Flutter dependencies within their current major versions. Astro is locked at 7.2.9 because the site retains its seven-day minimum release age. See `../workflow/audits/2026-09-05-dependency-refresh.md` for exact scope, verification and remaining risks. The extension still has a pre-existing packaging defect (missing manifest resources) and its Node 18 Docker image conflicts with the Node >=24 tooling policy; neither was changed by this dependency refresh.
+The approved refresh covers backend, site, extension and Flutter dependencies within their current major versions. Astro is locked at 7.2.9 because the site retains its seven-day minimum release age. See `../workflow/audits/2026-09-05-dependency-refresh.md` for exact scope, verification and remaining risks. The extension packaging and Docker runtime issues found during this refresh were repaired in the subsequent extension/backend maintenance described below.
+
+## Extension Packaging and Backend Security (2026-09-05)
+
+Vite owns all extension manifest assets, and builds verify that every declared resource exists. Docker uses Node 24 and the pinned pnpm lock; Dependabot covers extension npm and Docker dependencies. Isolated Chromium checks cover package loading and mocked content-script injection.
+
+Backend overrides are restricted to `gaxios@6.7.1 -> uuid@11.1.1` and `teeny-request@9.0.0 -> uuid@11.1.1`. These Storage clients use CommonJS `uuid.v4()` for multipart boundaries. `npm run test:dependency-compat` checks actual consumer resolution, buffer-bound rejection, local multipart uploads and Firebase messaging initialization. Remove the overrides once upstream dependencies adopt patched uuid versions; do not broaden them globally. Audit reports zero vulnerabilities for the backend at this check. See `../workflow/audits/2026-09-05-extension-backend-repair.md` for proof and limits.

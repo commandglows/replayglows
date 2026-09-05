@@ -11,12 +11,49 @@
  * Uses rollup options to customize output file names and structure
  * to match Chrome extension requirements.
  */
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import { dirname } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
+
+const require = createRequire(import.meta.url)
+const tailwindCli = resolve(dirname(require.resolve('@tailwindcss/cli/package.json')), 'dist/index.mjs')
+
+// Emit manifest resources through Vite so clean builds and watch rebuilds retain them.
+const extensionAssets = (): Plugin => ({
+  name: 'extension-manifest-assets',
+  buildStart() {
+    this.addWatchFile(resolve(import.meta.dirname, 'src/styles/styles.css'))
+    this.addWatchFile(resolve(import.meta.dirname, 'src/styles/styles-youtube.css'))
+  },
+  generateBundle() {
+    for (const [input, fileName] of [
+      ['src/styles/styles.css', 'output.css'],
+      ['src/styles/styles-youtube.css', 'output-ytb.css'],
+    ]) {
+      const source = execFileSync(process.execPath, [tailwindCli, '-i', input], {
+        cwd: import.meta.dirname,
+        encoding: 'utf8',
+        maxBuffer: 10 * 1024 * 1024,
+        stdio: ['ignore', 'pipe', 'inherit'],
+      })
+      this.emitFile({ type: 'asset', fileName, source })
+    }
+    // Preserve the existing public URL while sourcing Tinykeys' current ESM export.
+    this.emitFile({
+      type: 'asset',
+      fileName: 'node_modules/tinykeys/dist/tinykeys.modern.js',
+      source: readFileSync(fileURLToPath(import.meta.resolve('tinykeys')), 'utf8'),
+    })
+  },
+})
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), extensionAssets()],
   
   // Path alias for cleaner imports
   resolve: {

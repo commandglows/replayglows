@@ -235,12 +235,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 **Correct build order**:
 ```bash
-pnpm build:css && pnpm build:css-ytb && pnpm build
-# OR use the combined command:
 pnpm build:ext
+# Equivalent full build and manifest-resource verification:
+pnpm build
+# Recheck an existing package:
+pnpm verify:package
 ```
 
-**Why**: The Vite build references `output.css` and `output-ytb.css` in the manifest. These must exist before the extension can load properly.
+**Why**: Vite emits `output.css`, `output-ytb.css`, and the Tinykeys ESM compatibility asset into its bundle, after cleaning the destination. The same asset plugin runs in watch mode. Do not generate CSS before a separate Vite clean build. The final verifier rejects missing resources declared by the manifest.
 
 ### 3. Legacy JavaScript Files
 
@@ -436,3 +438,9 @@ This is a **partially migrated** codebase:
 ## Monorepo Conventions
 
 Read the root `AGENT.md` and `shipglows_data/technical/operating-conventions.md`. This document owns extension-specific behavior; the root corpus owns shared governance. Use the generated unpacked extension directory and browser extension manager for runtime validation. A Vite page alone does not prove extension contexts or permissions.
+
+## Packaging and Dependency Maintenance (2026-09-05)
+
+Node 24 and pnpm 11.24.0 own extension tooling. The Dockerfile installs the frozen pnpm lock and runs the build watcher; it does not serve a website. Its image build still requires a running Linux Docker daemon. Dependabot covers both npm and Docker in `/ext`.
+
+The package was loaded into an isolated Chromium profile: service worker, popup and options rendered, the content script injected on a mocked YouTube page, and the packaged Tinykeys export loaded. This is packaging proof, not validation of the unfinished legacy bookmark migration or real YouTube interactions.
