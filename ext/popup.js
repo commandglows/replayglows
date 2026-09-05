@@ -1,5 +1,5 @@
 /**
- * Popup Script for YouTube Bookmarker Extension
+ * Popup Script for ReplayGlows Extension
  * 
  * Handles the popup UI that appears when clicking the extension icon.
  * Displays all bookmarks grouped by video with thumbnails and timestamps.

@@ -1342,3 +1342,81 @@ video {
   --tw-text-opacity: 1;
   color: rgb(75 85 99 / var(--tw-text-opacity));
 }
+/* Scoped YouTube adaptation: its document rem is smaller than extension pages. */
+.bookmarks-list,
+.custom-bookmark-icon-container {
+  --rg-bookmark-font-size: medium;
+  --rg-bookmark-line-height: 1.4;
+  --rg-bookmark-gap: 0.5em;
+  --rg-bookmark-marker-size: 20px;
+  --rg-bookmark-note-width: 24ch;
+  --rg-bookmark-tooltip-offset: 100%;
+  --rg-bookmark-tooltip-delay: 0s;
+}
+.custom-bookmark-icon-container {
+  width: var(--rg-bookmark-marker-size);
+  height: var(--rg-bookmark-marker-size);
+}
+.custom-bookmark-icon,
+.custom-bookmark-icon:hover {
+  width: var(--rg-bookmark-marker-size);
+  height: var(--rg-bookmark-marker-size);
+}
+.custom-bookmark-info-container {
+  position: absolute;
+  bottom: var(--rg-bookmark-tooltip-offset);
+  left: 0;
+  transform: none;
+  width: max-content;
+  max-width: var(--rg-bookmark-note-width);
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  font-size: var(--rg-bookmark-font-size);
+  line-height: var(--rg-bookmark-line-height);
+  overflow-wrap: anywhere;
+}
+.custom-bookmark-info-container > div {
+  gap: var(--rg-bookmark-gap);
+}
+.custom-bookmark-icon-container:hover .custom-bookmark-info-container,
+.custom-bookmark-icon-container:focus-within .custom-bookmark-info-container {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: var(--rg-bookmark-tooltip-delay);
+}
+.custom-bookmark-info-container .custom-bookmark-delete-icon {
+  position: static;
+  transform: none;
+  opacity: 1;
+  flex-shrink: 0;
+}
+.bookmarks-list {
+  font-size: var(--rg-bookmark-font-size);
+  line-height: var(--rg-bookmark-line-height);
+}
+.bookmarks-list h3 { font-weight: bold; margin-bottom: var(--rg-bookmark-gap); }
+.bookmarks-list .bookmark-item {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: var(--rg-bookmark-gap);
+  padding-block: var(--rg-bookmark-gap);
+}
+.bookmarks-list .bookmark-item > span {
+  flex-basis: 100%;
+  overflow-wrap: anywhere;
+}
+.bookmarks-list button,
+.bookmarks-list input { font: inherit; }
+.bookmarks-list button:focus-visible,
+.custom-bookmark-icon:focus-visible { outline: auto; }
+
+.custom-bookmark-info-container .bookmark-tooltip-time {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.custom-bookmark-info-container .bookmark-tooltip-note {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

@@ -1,7 +1,7 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.5"
+artifact_version: "0.1.6"
 project: "replayglows"
 created: "2026-05-10"
 updated: "2026-09-05"
@@ -53,7 +53,7 @@ next_step: "sg-docs technical audit"
 - `app`: Flutter web client with Riverpod, go_router, Clerk auth, Convex client state, Vercel static deployment, and Vercel API handlers for YouTube OAuth.
 - `backend`: Convex product backend for ReplayGlows product data, YouTube tokens, preferences, playlists, transcripts, and product access snapshots.
 - `site`: Astro static marketing site with English/French routes, blog content collection, public pricing/comparison/trust pages, and app CTA routing through `src/config/site.ts`.
-- `ext`: standalone Chrome extension surface migrated from `chrome-tubeflowz`, currently retaining the legacy JavaScript YouTube integration alongside a partial Vue/TypeScript/Vite migration.
+- `ext`: standalone Chrome extension retaining the bundled JavaScript YouTube integration, a TypeScript MV3 worker that serializes local bookmark storage, and connected Vue popup/options surfaces. Vite produces the unpacked package.
 - `lab`: FastAPI transcript worker for media download, normalization, provider transcription, health checks, and operational deployment.
 
 ## Integration Boundaries
@@ -87,3 +87,11 @@ The approved refresh covers backend, site, extension and Flutter dependencies wi
 Vite owns all extension manifest assets, and builds verify that every declared resource exists. Docker uses Node 24 and the pinned pnpm lock; Dependabot covers extension npm and Docker dependencies. Isolated Chromium checks cover package loading and mocked content-script injection.
 
 Backend overrides are restricted to `gaxios@6.7.1 -> uuid@11.1.1` and `teeny-request@9.0.0 -> uuid@11.1.1`. These Storage clients use CommonJS `uuid.v4()` for multipart boundaries. `npm run test:dependency-compat` checks actual consumer resolution, buffer-bound rejection, local multipart uploads and Firebase messaging initialization. Remove the overrides once upstream dependencies adopt patched uuid versions; do not broaden them globally. Audit reports zero vulnerabilities for the backend at this check. See `../workflow/audits/2026-09-05-extension-backend-repair.md` for proof and limits.
+
+## Extension Bookmark Runtime (2026-09-05)
+
+`ext/src/content/content.ts` bundles `ext/contentscript.js` as a classic content script. `ext/src/background/background.ts` serializes validated storage operations across tabs and extension pages, with no worker-lifetime data cache. `ext/src/main.ts` mounts the functional Vue popup; options own configurable shortcuts and confirmed JSON replacement/import plus JSON/Markdown export.
+
+The canonical local schema remains a flat `bookmarks` array (`url`, `time`, `formattedTime`, `note`, optional `title`) and derived `groupedBookmarks`. `ext/src/bookmarks.ts` also reads historical options `videoId`/`timestamp` records. Imports validate before mutation; duplicate adds preserve the existing record and show an error. No backend connection, dependency migration or expanded permission grant is introduced. The content match covers the existing YouTube host permission to handle homepage-to-watch SPA navigation.
+
+Canary proof is local to a dedicated profile and selected public YouTube scenarios; it does not establish exhaustive YouTube behavior or operator visual acceptance. See `../workflow/bugs/BUG-2026-09-05-001.md` for the implementation and verification boundary. Docker/package success remains distinct from these browser proofs.

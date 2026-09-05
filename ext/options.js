@@ -1,5 +1,5 @@
 /**
- * Options Page Script for YouTube Bookmarker Extension
+ * Options Page Script for ReplayGlows Extension
  * 
  * Handles user preferences and settings including:
  * - Custom keyboard shortcuts configuration

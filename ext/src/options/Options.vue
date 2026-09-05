@@ -12,19 +12,13 @@
  * for communication with the background script.
  */
 import { ref, onMounted } from 'vue'
+import { markdownBookmarks, normalizeBookmarks, type Bookmark } from '../bookmarks'
 
 // ==================== Type Definitions ====================
 
 /**
  * Represents a saved bookmark entry.
  */
-interface Bookmark {
-  timestamp: number;  // Video position in seconds
-  note: string;       // User's note for this bookmark
-  videoId: string;    // YouTube video ID
-  title: string;      // Video title
-}
-
 interface StoredSettings {
   hotkeys?: Record<string, string>
   hideNotesByDefault?: boolean
@@ -46,7 +40,15 @@ const defaultHotkeys = {
 } as const
 
 // Reactive state for current hotkey configuration
-const hotkeys = ref<Record<string, string>>(defaultHotkeys)
+const hotkeys = ref<Record<string, string>>({ ...defaultHotkeys })
+const importInput = ref<HTMLInputElement | null>(null)
+const actionLabels: Record<string, string> = {
+  'add-bookmark': 'Ajouter un marque-page',
+  'delete-bookmark': 'Supprimer le marque-page actuel',
+  'quick-bookmark': 'Ajouter sans note',
+  'prev-bookmark': 'Marque-page précédent',
+  'next-bookmark': 'Marque-page suivant',
+}
 
 // Reactive state for display preferences
 const settings = ref({
@@ -118,7 +120,10 @@ const showMessage = (text: string, type: 'info' | 'error' | 'loading' = 'info') 
  * @param action - The action ID this hotkey is being set for
  */
 const handleHotkeyInput = (event: KeyboardEvent, action: string) => {
+  if (event.key === 'Tab') return
+  if (event.key === 'Escape') { (event.target as HTMLInputElement).blur(); return }
   event.preventDefault()
+  if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) return
   const keys = []
   
   // Collect active modifier keys
@@ -128,7 +133,7 @@ const handleHotkeyInput = (event: KeyboardEvent, action: string) => {
   
   // Add the main key (excluding modifier-only presses)
   if (!['Control', 'Alt', 'Shift'].includes(event.key)) {
-    keys.push(event.key.toUpperCase())
+    keys.push(event.code.startsWith('Digit') ? event.code.slice(5) : event.key.toUpperCase())
   }
   
   const hotkeyString = keys.join('+')
@@ -207,10 +212,8 @@ const exportMarkdown = async () => {
     }
     
     // Convert each bookmark to a Markdown list item with clickable timestamp link
-    const markdown = bookmarks.map(b => (
-      `- [${b.title}](https://youtube.com/watch?v=${b.videoId}&t=${b.timestamp}s) - ${b.note}`
-    )).join('\n')
-    
+    const markdown = markdownBookmarks(normalizeBookmarks(bookmarks))
+
     await navigator.clipboard.writeText(markdown)
     showMessage("Markdown copié !", "info")
   } catch {
@@ -267,24 +270,25 @@ const importJSON = async (event: Event) => {
   try {
     showMessage("Importation en cours...", "loading")
     const text = await file.text()
-    const bookmarks: Bookmark[] = JSON.parse(text)
-    
-    // Validate that imported data has correct structure
-    // Each bookmark must have: timestamp (number), note (string), videoId (string), title (string)
-    if (!Array.isArray(bookmarks) || !bookmarks.every(b => 
-      typeof b.timestamp === 'number' && 
-      typeof b.note === 'string' && 
-      typeof b.videoId === 'string' &&
-      typeof b.title === 'string'
-    )) {
-      throw new Error('Format de fichier invalide')
+    let bookmarks: Bookmark[]
+    try {
+      bookmarks = normalizeBookmarks(JSON.parse(text))
+    } catch {
+      showMessage('Fichier JSON invalide : vérifiez les marque-pages importés.', 'error')
+      return
     }
-    
-    await chrome.storage.local.set({ bookmarks })
+    if (!window.confirm(`Remplacer tous les marque-pages actuels par les ${bookmarks.length} marque-pages du fichier ? Exportez d’abord une sauvegarde si nécessaire.`)) {
+      showMessage('Importation annulée.', 'info')
+      return
+    }
+    const response = await chrome.runtime.sendMessage({ action: 'importBookmarks', bookmarks })
+    if (response.error) throw new Error(response.error)
     showMessage('Importation terminée !', 'info')
   } catch (error) {
-    console.error('Invalid JSON file', error)
+    console.error('Échec de lecture ou de sauvegarde de l’import', error)
     showMessage('Erreur lors de l\'importation du fichier', 'error')
+  } finally {
+    (event.target as HTMLInputElement).value = ''
   }
 }
 
@@ -308,56 +312,75 @@ chrome.runtime.onMessage.addListener((request) => {
 </script>
 
 <template>
-  <!-- Message de feedback -->
-  <div v-if="message" 
-       :class="['sg-toast', `sg-toast--${message.type}`]"
-       :key="message.text">
-    {{ message.text }}
-  </div>
+  <main class="spc-lg sg-options-shell">
+    <!-- Message de feedback -->
+    <div
+      v-if="message"
+      :key="message.text"
+      role="status"
+      :class="['sg-toast', `sg-toast--${message.type}`]"
+    >
+      {{ message.text }}
+    </div>
 
-  <div class="spc-lg sg-options-shell">
-    <h1 class="h1">Options</h1>
+    <h1 class="h1">
+      Options
+    </h1>
     <div class="grid grid-cols-2 gap-4">
       <!-- Colonne gauche -->
       <div class="flex flex-col">
         <section class="sct">
-          <h2 class="h2">Raccourcis clavier</h2>
+          <h2 class="h2">
+            Raccourcis clavier
+          </h2>
           <form @submit.prevent="saveSettings">
             <div class="cont flex-col">
-              <label v-for="(key, action) in hotkeys" 
-                     :key="action"
-                     class="lbl iso grad-br-static-sm hotkey-input">
-                <span class="t">{{ action.replace('-', ' ').charAt(0).toUpperCase() + action.slice(1).replace('-', ' ') }} :</span>
-                <div class="flex flex-row items-center">
-                  <input type="text" 
-                         v-model="hotkeys[action]"
-                         :placeholder="key"
-                         class="inp b3"
-                         @keydown="(e) => handleHotkeyInput(e, action)"/>
-                  <div class="btn self-start t iso grad-bg-anim-sm"
-                       @click="deleteHotkey(action)">X</div>
+              <label
+                v-for="(key, action) in hotkeys"
+                :key="action"
+                class="lbl hotkey-input"
+              >
+                <span class="t">{{ actionLabels[action] || action }} :</span>
+                <div class="sg-hotkey-controls">
+                  <input
+                    v-model="hotkeys[action]"
+                    type="text"
+                    :placeholder="key"
+                    class="inp"
+                    @keydown="(e) => handleHotkeyInput(e, action)"
+                  >
+                  <button
+                    type="button"
+                    class="sg-button sg-button--secondary"
+                    :aria-label="`Effacer le raccourci : ${actionLabels[action] || action}`"
+                    @click="deleteHotkey(action)"
+                  >Effacer</button>
                 </div>
               </label>
             </div>
 
             <!-- Checkboxes stylisées -->
             <div class="cont flex-col">
-              <label class="lbl iso grad-br-static-sm">
+              <label class="lbl">
                 <span class="t">Masquer les notes par défaut :</span>
                 <div class="relative">
-                  <input type="checkbox" 
-                         v-model="settings.hideNotesByDefault"
-                         class="peer sr-only" />
-                  <div class="checkbox"></div>
+                  <input
+                    v-model="settings.hideNotesByDefault"
+                    type="checkbox"
+                    class="sg-option-checkbox"
+                    @change="saveSettings"
+                  >
                 </div>
               </label>
-              <label class="lbl iso grad-br-static-sm">
+              <label class="lbl">
                 <span class="t">Afficher les boutons de sauvegarde et d'annulation:</span>
                 <div class="relative">
-                  <input type="checkbox" 
-                         v-model="settings.showBookmarkButtons"
-                         class="peer sr-only" />
-                  <div class="checkbox"></div>
+                  <input
+                    v-model="settings.showBookmarkButtons"
+                    type="checkbox"
+                    class="sg-option-checkbox"
+                    @change="saveSettings"
+                  >
                 </div>
               </label>
             </div>
@@ -369,83 +392,49 @@ chrome.runtime.onMessage.addListener((request) => {
       <div class="flex flex-col gap-4">
         <!-- Section Export -->
         <section class="sct">
-          <h2 class="h2">Exporter les marque-pages</h2>
-          <div class="cont flex-row">
-            <button class="btn t iso grad-br-static-sm" 
-                    @click="exportMarkdown">Copier en Markdown</button>
-            <button class="btn t iso grad-br-static-sm mr-auto" 
-                    @click="exportJSON">Exporter en JSON</button>
+          <h2 class="h2">
+            Exporter les marque-pages
+          </h2>
+          <div class="cont sg-option-actions">
+            <button
+              class="sg-button sg-button--secondary"
+              @click="exportMarkdown"
+            >
+              Copier en Markdown
+            </button>
+            <button
+              class="sg-button sg-button--secondary"
+              @click="exportJSON"
+            >
+              Exporter en JSON
+            </button>
           </div>
         </section>
 
         <!-- Section Import -->
         <section class="sct">
-          <h2 class="h2">Importer les marque-pages</h2>
-          <div class="cont flex-row justify-center">
-            <input class="inp-f t self-center iso file:grad-br-static-sm" 
-                   type="file" 
-                   accept=".json"
-                   @change="importJSON" />
-            <button class="btn t iso grad-br-static-sm">Importer en JSON</button>
+          <h2 class="h2">
+            Importer les marque-pages
+          </h2>
+          <div class="cont sg-option-actions">
+            <input
+              ref="importInput"
+              hidden
+              type="file"
+              aria-label="Fichier de marque-pages JSON"
+              accept=".json"
+              @change="importJSON"
+            >
+            <button
+              type="button"
+              class="sg-button sg-button--secondary"
+              @click="importInput?.click()"
+            >
+              Choisir un fichier JSON
+            </button>
           </div>
         </section>
       </div>
     </div>
-  </div>
+  </main>
 </template>
-
-<style scoped>
-.animate-fade-out {
-  animation: fadeOut 2s forwards;
-}
-
-@keyframes fadeOut {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-.msg {
-  position: fixed;
-  top: 1.25rem;
-  right: 1.25rem;
-  z-index: 9999;
-  border-radius: 0.5rem;
-  padding: 1.25rem;
-  font-size: 1.50rem;
-  line-height: 1.50rem;
-  transform: none !important;
-  animation: slideInOut 1s ease forwards;
-}
-
-.info {
-  border-width: 2px;
-  border-color: #00ff44ff;
-  background-color: rgb(201 255 216);
-  color: rgb(17 24 39);
-}
-
-.error {
-  border-width: 2px;
-  border-color: #ff0033ff;
-  background-color: rgb(255 171 188);
-  color: rgb(17 24 39);
-}
-
-.loading {
-  border-width: 2px;
-  border-color: #ffd000ff;
-  background-color: rgb(255 243 201);
-  color: rgb(17 24 39);
-}
-
-@keyframes slideInOut {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-</style>

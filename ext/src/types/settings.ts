@@ -1,5 +1,5 @@
 /**
- * Settings Type Definitions for YouTube Bookmarker Extension
+ * Settings Type Definitions for ReplayGlows Extension
  * 
  * Defines the structure for user preferences and provides
  * default values for all configurable options.

@@ -1,5 +1,5 @@
 /**
- * YouTubeBookmarker - Main content script for the YouTube Bookmarker extension.
+ * YouTubeBookmarker - Main content script for the ReplayGlows extension.
  * 
  * This object manages all bookmark-related functionality within YouTube video pages:
  * - Adding/removing bookmark icons on the video progress bar
@@ -50,9 +50,8 @@ const YouTubeBookmarker = {
    * This prevents duplicate bookmarks for the same video with different timestamps in URL.
    */
   get currentUrl() {
-    console.log("currentUrl : ", window.location.href);
-    console.log("currentUrl : ", window.location.href.split('&')[0]);
-    return window.location.href.split('&')[0];
+    const id = new URL(window.location.href).searchParams.get('v');
+    return id ? `https://www.youtube.com/watch?v=${id}` : '';
   },
 
   /**
@@ -73,27 +72,39 @@ const YouTubeBookmarker = {
    * Called on initial page load and on YouTube's SPA navigation events.
    */
   async init() {
-      try {
-        console.log("Initialisation du script");
-         await this.addBookmarkButton();
-        await this.resetState();
-        await this.setupHotkeys();
-        await this.updateUIElements();
-        this.setupEventListeners();
-      } catch (error) {
-        console.error("Erreur lors de l'initialisation:", error);
-      }
+    const generation = this.generation = (this.generation || 0) + 1;
+    this.events?.abort();
+    this.hotkeyEvents?.abort();
+    this.events = new AbortController();
+    this.state.bookmarkInputContainer?.remove();
+    document.querySelectorAll('.bookmarks-list, .custom-bookmark-icon-container').forEach(el => el.remove());
+    if (window.location.pathname !== '/watch') return;
+    // A navigation can supersede player readiness; never initialize a stale page.
+    for (let attempt = 0; attempt < 100; attempt++) {
+      if (generation !== this.generation) return;
+      if (document.querySelector('video') && document.querySelector('.ytp-time-display') && document.querySelector('.ytp-progress-bar')) break;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    if (generation !== this.generation || !document.querySelector('video')) return;
+    try {
+      await this.resetState();
+      await this.addBookmarkButton();
+      await this.setupHotkeys();
+      await this.updateUIElements();
+      this.setupEventListeners();
+    } catch (error) { this.afficherMessage(error.message, 'error'); }
   },
-  
+
   /**
    * Resets and refreshes the internal state from Chrome storage.
    * Filters bookmarks to show only those relevant to the current video URL.
    * Also re-queries DOM elements in case of dynamic page changes.
    */
   async resetState() {
-    const result = await chrome.storage.local.get('bookmarks');
+    const result = await chrome.runtime.sendMessage({ action: 'getBookmarks' });
+    if (result.error) throw new Error(result.error);
     const storedBookmarks = result.bookmarks || [];
-    const bookmarksForThisUrl = await storedBookmarks.filter(bookmark => bookmark.url === this.currentUrl);
+    const bookmarksForThisUrl = storedBookmarks.filter(bookmark => bookmark.url === this.currentUrl).sort((a, b) => a.time - b.time);
     this.state = {
       currentUrl: this.currentUrl,
       wasPlayingBeforeBookmark: this.state.player && !this.state.player.paused,
@@ -111,7 +122,7 @@ const YouTubeBookmarker = {
       bookmarkInputElement: null,
       isInitialized: true,
     };
-    console.log("Mise à jour de l'état");
+
   },
 
   /**
@@ -137,9 +148,9 @@ const YouTubeBookmarker = {
    * The 'yt-navigate-finish' event handles YouTube's SPA navigation between videos.
    */
   setupEventListeners() { 
-    document.addEventListener('yt-navigate-finish', () => this.onNavigate());
-    this.state.bookmarkButton?.addEventListener('click', (e) => this.handleAddBookmark(e, this.state.bookmarkButton));
-    this.state.progressBar?.addEventListener('click', (e) => this.handleAddBookmark(e, this.state.progressBar));
+
+    this.state.bookmarkButton?.addEventListener('click', (e) => { e.stopPropagation(); this.addBookmark(); }, { signal: this.events.signal });
+    this.state.currentVideo?.addEventListener('durationchange', () => this.loadBookmarks(), { signal: this.events.signal });
   },
 
   /**
@@ -168,63 +179,27 @@ const YouTubeBookmarker = {
    * Supports modifier keys (Ctrl, Alt, Shift) combined with any key.
    */
   async setupHotkeys() {
-    // Vérifiez si des raccourcis sont déjà enregistrés
     const { hotkeys } = await chrome.storage.local.get('hotkeys');
-    const hotkeysToUse = hotkeys || {
-      'add-bookmark': 'ALT+B',
-      'delete-bookmark': 'ALT+D',
-      'quick-bookmark': 'ALT+Q',
-      'prev-bookmark': 'ALT+1',
-      'next-bookmark': 'ALT+2',
-    };
-
-    // Listen for keydown events and match against configured hotkeys
-    document.addEventListener('keydown', (e) => {
-      // Build the pressed hotkey string (e.g., "Ctrl+Alt+B")
-      const pressedHotkey = [
-          e.ctrlKey ? 'Ctrl' : '',
-          e.altKey ? 'Alt' : '',
-          e.shiftKey ? 'Shift' : '',
-          e.key.toUpperCase()
-      ].filter(Boolean).join('+');
-
-      // Check each configured hotkey for a match
-      Object.entries(hotkeysToUse).forEach(([action, hotkey]) => {
-        if (pressedHotkey === hotkey) {
-          console.log(`Raccourci pressé : ${pressedHotkey}`);
-          switch (action) {
-            case 'add-bookmark':
-              this.addBookmark(e);
-              console.log("Ajout d'un marque-page");
-              break;
-            case 'prev-bookmark':
-              console.log("Navigation vers le marque-page précédent");
-              this.navigateBookmarks('prev');
-              break;
-            case 'next-bookmark':
-              this.navigateBookmarks('next');
-              console.log("Navigation vers le marque-page suivant");
-              break;
-            case 'delete-bookmark':
-              console.log("Suppression du marque-page actuel");
-              this.deleteCurrentBookmark();
-              break;
-            case 'toggle-notes':
-              console.log("Changement de la visibilité des notes");
-              this.toggleNotesVisibility();
-              break;
-            case 'quick-bookmark':
-              // Quick bookmark saves immediately without showing note input
-              console.log("Ajout rapide d'un marque-page");
-              this.saveBookmark();
-              break;
-            default:
-              console.log("Aucune action correspondante trouvée");
-            }
-          }
-        });
-    });
+    const hotkeysToUse = hotkeys || { 'add-bookmark': 'ALT+B', 'delete-bookmark': 'ALT+D', 'quick-bookmark': 'ALT+Q', 'prev-bookmark': 'ALT+1', 'next-bookmark': 'ALT+2' };
+    this.hotkeyEvents?.abort();
+    this.hotkeyEvents = new AbortController();
+    document.addEventListener('keydown', e => {
+      if (e.repeat || e.isComposing || e.metaKey || e.target.closest('input, textarea, [contenteditable="true"]') || window.location.pathname !== '/watch') return;
+      const pressed = [e.ctrlKey ? 'CTRL' : '', e.altKey ? 'ALT' : '', e.shiftKey ? 'SHIFT' : '', e.code.startsWith('Digit') ? e.code.slice(5) : e.key.toUpperCase()].filter(Boolean).join('+');
+      const action = Object.keys(hotkeysToUse).find(key => hotkeysToUse[key].toUpperCase() === pressed);
+      if (!action) return;
+      e.preventDefault(); e.stopPropagation();
+      if (action === 'add-bookmark') this.addBookmark();
+      if (action === 'quick-bookmark') this.saveBookmark('');
+      if (action === 'prev-bookmark') this.navigateBookmarks('prev');
+      if (action === 'next-bookmark') this.navigateBookmarks('next');
+      if (action === 'delete-bookmark') {
+        const bookmark = this.state.bookmarksForThisUrl.find(b => Math.abs(b.time - this.currentVideoTime) < 1);
+        if (bookmark) this.deleteBookmark(bookmark);
+      }
+    }, { signal: this.hotkeyEvents.signal });
   },
+
 
   toggleNotesVisibility() {
   },
@@ -235,7 +210,7 @@ const YouTubeBookmarker = {
    * to ensure bookmarks and UI elements are properly updated.
    */
   onNavigate() {
-    console.log("Événement yt-navigate-finish déclenché dans onNavigate");
+
     if (window.location.pathname === '/watch') {
       const currentUrl = this.currentUrl;
       this.init();
@@ -248,20 +223,22 @@ const YouTubeBookmarker = {
    * Waits for the player to be ready before adding the button.
    */
   async addBookmarkButton() {
-    this.waitForYouTubePlayer().then(() => {
+    return this.waitForYouTubePlayer().then(() => {
       if (!this.state.player) {
         console.error("Le lecteur YouTube est introuvable.");
         return;
       }
       // Prevent duplicate buttons on re-initialization
-      if (this.state.bookmarkButton) {
-        console.log("Le bouton de marque-page existe déjà.");
+      if (this.state.bookmarkButton?.isConnected) {
+
         return;
       }
 
       // Create the bookmark button with SVG icon
       const button = document.createElement('button');
       button.id = this.CONSTANTS.BOOKMARK_BUTTON_ID;
+      button.type = 'button';
+      button.setAttribute('aria-label', 'Ajouter un marque-page');
 
       const svgIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svgIcon.setAttribute("viewBox", "0 0 24 24");
@@ -288,7 +265,6 @@ const YouTubeBookmarker = {
         this.state.timeDisplay.parentNode.insertBefore(button, this.state.timeDisplay.nextSibling);
         this.state.bookmarkButton = button;
 
-        console.log("Bouton de marque-page ajouté avec succès.");
       } else {
         console.info("timeDisplay est introuvable, le bouton ne peut pas être ajouté.");
         }
@@ -307,7 +283,10 @@ const YouTubeBookmarker = {
    */
   async handleAddBookmark(event, target) {
     // Remember if video was playing to resume playback after adding bookmark
-    this.state.wasPlayingBeforeBookmark = this.state.player && !this.state.player.paused;
+    if (!this.state.currentVideo || !this.state.progressBar) return;
+    this.state.wasPlayingBeforeBookmark = !this.state.currentVideo.paused;
+    this.state.bookmarkTime = Math.round(this.currentVideoTime);
+    this.state.currentVideo.pause();
 
     // Track clicks for multi-click detection
     const currentTime = Date.now();
@@ -354,14 +333,18 @@ const YouTubeBookmarker = {
    * Manages video pause/resume state during input.
    */
   async addBookmark() {
-    this.state.wasPlayingBeforeBookmark = this.state.player && !this.state.player.paused;
+    if (this.state.bookmarkInputContainer) { this.state.bookmarkInputElement?.focus(); return; }
+    if (!this.state.currentVideo || !this.state.progressBar) return;
+    this.state.wasPlayingBeforeBookmark = !this.state.currentVideo.paused;
+    this.state.bookmarkTime = Math.round(this.currentVideoTime);
+    this.state.currentVideo.pause();
     if (!this.state.bookmarkInputContainer) {
       const progressBar = this.state.progressBar;
       const rect = progressBar.getBoundingClientRect();
       const inputContainer = document.createElement('div');
       this.state.bookmarkContainerVisible = true;
       inputContainer.className = this.CONSTANTS.BOOKMARK_INPUT_CONTAINER_CLASS;
-      inputContainer.className = "iso grad-ult-bg-white-lg tbflwz";
+      inputContainer.classList.add("iso", "grad-ult-bg-white-lg", "tbflwz");
       
       // Calculate horizontal position based on current video time
       const positionRatio = this.currentVideoTime / this.state.currentVideo.duration;
@@ -388,6 +371,7 @@ const YouTubeBookmarker = {
       noteInput.type = 'text';
       noteInput.className = 'bookmark-input';
       noteInput.placeholder = 'Ajouter une note pour ce marque-page';
+      noteInput.setAttribute('aria-label', 'Note du marque-page');
       noteInput.style.border = 'none';
       noteInput.style.outline = 'none';
       inputContainer.appendChild(noteInput);
@@ -395,7 +379,7 @@ const YouTubeBookmarker = {
 
       // Check user preference for showing add/cancel buttons
       const { showBookmarkButtons } = await new Promise(resolve =>
-        chrome.storage.local.get({ showBookmarkButtons: false }, resolve)
+        chrome.storage.local.get({ showBookmarkButtons: true }, resolve)
       );
 
       if (showBookmarkButtons) {
@@ -410,7 +394,6 @@ const YouTubeBookmarker = {
 
         addButton.onclick = () => {
           this.saveBookmark(noteInput.value);
-          this.closeBookmarkInput();
         };
         cancelButton.onclick = () => this.closeBookmarkInput();
       }
@@ -439,7 +422,7 @@ const YouTubeBookmarker = {
         document.removeEventListener('click', handleOutsideClick);
       };
 
-      document.addEventListener('click', handleOutsideClick);
+      document.addEventListener('click', handleOutsideClick, { signal: this.events.signal });
 
       // Prevent clicks inside container from bubbling up
       inputContainer.addEventListener('click', (e) => {
@@ -451,13 +434,12 @@ const YouTubeBookmarker = {
       noteInput.addEventListener('keydown', e => {
         e.stopPropagation(); // Prevent YouTube's keyboard shortcuts
         if (e.key === 'Escape') {
-          console.log("Échap pressé, fermeture du conteneur d'input");
+
           this.closeBookmarkInput();
         }
         if (e.key === 'Enter') {
-          console.log("Entrée pressée, ajout du marque-page");
+
           this.saveBookmark(noteInput.value);
-          this.closeBookmarkInput();
         }
       });
     }
@@ -491,41 +473,35 @@ const YouTubeBookmarker = {
    * 
    * @param {string} note - Optional note text to attach to the bookmark
    */
-  async saveBookmark(note) {
-    // Use stored bookmark time if available, otherwise use current video time
-    let time = null
-    if (this.state.bookmarkTime) {
-      time = this.state.bookmarkTime;
-    } else {
-      time = Math.round(this.currentVideoTime);
-    }
-    const formattedTime = this.formatTime(time);
-
-    // Create bookmark object with all required properties
-    const newBookmark = {
-      time: time,
-      formattedTime: formattedTime,
-      url: this.currentUrl,
-      // Capitalize first letter of note for consistency
-      note: note ? note.charAt(0).toUpperCase() + note.slice(1) : note || ' '
+  async saveBookmark(note = '') {
+    if (!this.state.currentVideo) return;
+    const editor = this.state.bookmarkInputContainer;
+    const generation = this.generation;
+    const video = this.state.currentVideo;
+    const bookmark = {
+      time: this.state.bookmarkTime ?? Math.round(this.currentVideoTime),
+      url: this.currentUrl, note,
+      title: document.querySelector('ytd-watch-metadata h1')?.textContent?.trim() || document.title.replace(/ - YouTube$/, '')
     };
-
     try {
-      // Check for duplicate before saving (same URL and timestamp)
-      if (!this.state.bookmarks.some(b => 
-        b.url === newBookmark.url && 
-        b.time === time
-      )) {
-        this.state.bookmarks.push(newBookmark);
-        this.state.bookmarksForThisUrl.push(newBookmark);
-        await chrome.storage.local.set({ bookmarks: this.state.bookmarks });
-        this.afficherMessage("Ajouté !", 'info');
+      const response = await chrome.runtime.sendMessage({ action: 'addBookmark', bookmark });
+      if (response.error) throw new Error(response.error);
+      // A delayed save belongs to its original editor, never a replacement after navigation.
+      if (generation === this.generation && editor === this.state.bookmarkInputContainer && video === this.state.currentVideo) {
         await this.closeBookmarkInput();
-        await this.updateUIElements();
       }
-    } catch (error) {
-      console.error("Erreur lors de l'ajout du marque-page:", error);
-    }
+      await this.refreshBookmarks();
+      this.afficherMessage('Marque-page enregistré !');
+    } catch (error) { this.afficherMessage(error.message, 'error'); }
+  },
+
+  async refreshBookmarks() {
+    const response = await chrome.runtime.sendMessage({ action: 'getBookmarks' });
+    if (response.error) { this.afficherMessage(response.error, 'error'); return; }
+    const bookmarks = response.bookmarks || [];
+    this.state.bookmarks = bookmarks;
+    this.state.bookmarksForThisUrl = bookmarks.filter(b => b.url === this.currentUrl).sort((a, b) => a.time - b.time);
+    if (window.location.pathname === '/watch') await this.updateUIElements();
   },
 
   /**
@@ -554,7 +530,10 @@ const YouTubeBookmarker = {
       this.state.bookmarkContainerVisible = false;
     }
     // Resume playback if video was playing before bookmark action
-    this.state.wasPlayingBeforeBookmark ? this.state.currentVideo.play() : this.state.currentVideo.pause();
+    this.state.bookmarkTime = null;
+    if (this.state.wasPlayingBeforeBookmark) this.state.currentVideo?.play().catch(() => {});
+    this.state.wasPlayingBeforeBookmark = false;
+    this.state.bookmarkButton?.focus();
     return;
   },
 
@@ -602,7 +581,9 @@ const YouTubeBookmarker = {
     iconContainer.style.left = `${(bookmark.time / this.state.currentVideo.duration) * 100}%`;
     iconContainer.style.zIndex = '9999'; 
 
-    const icon = document.createElement('div');
+    const icon = document.createElement('button');
+    icon.type = 'button';
+    icon.setAttribute('aria-label', `Lire le marque-page à ${this.formatTime(bookmark.time)}`);
     icon.className = this.CONSTANTS.BOOKMARK_ICON_CLASS;
 
     // Info container shows on hover with bookmark details
@@ -623,7 +604,9 @@ const YouTubeBookmarker = {
     this.state.progressBar.appendChild(iconContainer);
 
     // Delete icon for removing this bookmark
-    const deleteIcon = document.createElement('span');
+    const deleteIcon = document.createElement('button');
+    deleteIcon.type = 'button';
+    deleteIcon.setAttribute('aria-label', 'Supprimer ce marque-page');
     deleteIcon.className = this.CONSTANTS.BOOKMARK_DELETE_ICON_CLASS;
     deleteIcon.innerHTML = '🗑️';
     infoContainer.appendChild(deleteIcon);
@@ -641,32 +624,45 @@ const YouTubeBookmarker = {
 
     // Add formatted timestamp link
     const timeSpan = document.createElement('span');
-    timeSpan.className = 't cursor-pointer';
+    timeSpan.className = 't cursor-pointer bookmark-tooltip-time';
     timeSpan.textContent = `🕓 ${formattedTime}`;
     newContent.appendChild(timeSpan);
 
     // Add note text if present
     if (bookmark.note && bookmark.note.trim() !== '') {
       const noteText = document.createElement('span');
-      noteText.className = 't';
+      noteText.className = 't bookmark-tooltip-note';
       noteText.textContent = bookmark.note;
       newContent.appendChild(noteText);
     }
 
     newContent.appendChild(deleteIcon);
     infoContainer.appendChild(newContent);
+    const positionTooltip = () => {
+      const marker = iconContainer.getBoundingClientRect();
+      const player = this.state.player.getBoundingClientRect();
+      const width = infoContainer.getBoundingClientRect().width;
+      const left = Math.max(player.left, Math.min(marker.left - width / 2, player.right - width));
+      infoContainer.style.left = `${left - marker.left}px`;
+    };
+    iconContainer.addEventListener('mouseenter', positionTooltip);
+    iconContainer.addEventListener('focusin', positionTooltip);
 
     // Drag-and-drop functionality for repositioning bookmarks
     let isDragging = false;
+    let moved = false;
     let dragStartX, dragStartLeft, dragStartTime;
 
     /**
      * Initiates drag operation when user starts dragging the icon.
      */
     const startDragging = (e) => {
+      if (e.button !== 0 || infoContainer.contains(e.target)) return;
+      e.stopPropagation();
       isDragging = true;
+      moved = false;
       dragStartX = e.clientX;
-      dragStartLeft = parseFloat(iconContainer.style.left);
+      dragStartLeft = iconContainer.offsetLeft;
       dragStartTime = bookmark.time;
       iconContainer.classList.add('dragging');
       document.addEventListener('mousemove', dragBookmark);
@@ -680,6 +676,7 @@ const YouTubeBookmarker = {
     const dragBookmark = (e) => {
       if (!isDragging) return;
       const deltaX = e.clientX - dragStartX;
+      if (Math.abs(deltaX) > 3) moved = true;
       const newLeft = dragStartLeft + deltaX;
       const progressBarRect = this.state.progressBar.getBoundingClientRect();
       const minLeft = 0;
@@ -698,16 +695,18 @@ const YouTubeBookmarker = {
       document.removeEventListener('mousemove', dragBookmark);
       document.removeEventListener('mouseup', stopDragging);
 
+      if (!moved) return;
       const progressBarRect = this.state.progressBar.getBoundingClientRect();
       const newLeft = parseFloat(iconContainer.style.left);
       const newTime = (newLeft / progressBarRect.width) * this.state.currentVideo.duration;
 
       // Only update if moved more than 5 seconds to prevent accidental changes
       if (Math.abs(newTime - dragStartTime) > 5) {
-        bookmark.time = newTime;
+        const updated = { ...bookmark, time: Math.round(newTime), formattedTime: this.formatTime(newTime) };
         try {
-          await chrome.runtime.sendMessage({ action: 'updateBookmark', bookmark });
-          this.loadBookmarks();
+          const response = await chrome.runtime.sendMessage({ action: 'updateBookmark', bookmark: updated, originalTime: dragStartTime });
+          if (response.error) throw new Error(response.error);
+          await this.refreshBookmarks();
         } catch (error) {
           console.error("Erreur lors de la mise à jour du marque-page:", error);
           // Revert to original position on error
@@ -720,9 +719,14 @@ const YouTubeBookmarker = {
     };
 
     iconContainer.addEventListener('mousedown', startDragging);
+    iconContainer.addEventListener('click', e => {
+      e.stopPropagation();
+      if (!moved && !infoContainer.contains(e.target)) this.state.currentVideo.currentTime = bookmark.time;
+    });
 
     deleteIcon.addEventListener('click', (e) => {
-      console.log("Clic sur l'icône de suppression détecté");
+
+      e.stopPropagation();
       this.deleteBookmark(bookmark);
     });
   },
@@ -733,115 +737,46 @@ const YouTubeBookmarker = {
    * Includes timestamp links, notes, and delete functionality for each bookmark.
    */
   async updateBookmarksList() {
-    const parentContainer = this.state.parentContainer;
-    if (parentContainer) { 
-      // Clear existing bookmark list to rebuild it
-      const elements = document.querySelectorAll('.bookmarks-list');
-      elements.forEach(el => el.remove());
-      this.state.bookmarksList = document.createElement('div');
-      this.state.bookmarksList.style.marginBottom = '10px';
-      this.state.bookmarksList.className = 'bookmarks-list flex-1 overflow-y-auto';
-      await parentContainer.insertBefore(this.state.bookmarksList, parentContainer.firstChild);
-      
-      // Show empty state if no bookmarks for this video
-      if (!this.state.bookmarksForThisUrl || this.state.bookmarksForThisUrl.length < 1) {
-        const emptyMessage = document.createElement("div");
-        emptyMessage.className = "sct spc-md iso empty-msg grad-br-static-sm";
-        emptyMessage.innerHTML = `
-        <h3 class="text-xl font-century text-zinc-600 bold">Aucun bookmark pour cette vidéo</h3>
-        `;
-        this.state.bookmarksList?.appendChild(emptyMessage);
-      } else {
-        // Build the collapsible bookmark list UI
-        const videoElement = document.createElement("div");
-        videoElement.className = "video-item space-y-4 cursor-pointer sct spc-md iso grad-ult-bg-white-sm";
-        videoElement.innerHTML = `
-          <div class="flex flex-row justify-between">
-            <h3 class="text-xl font-century text-zinc-600 bold">Bookmarks pour cette vidéo :</h3>
-            <button class="hover:animate-spin text-lg delete-video" data-url="${this.currentUrl}">🗑️</button>
-          </div>
-          <div class="space-y-4 bookmarks-container hidden transform transition-all duration-300 ease-in-out origin-top scale-y-0 opacity-0">
-          ${this.state.bookmarksForThisUrl.map(bookmark => `
-            <div class="flex items-center justify-between bookmark-item text-lg bg-slate-400/10 rounded-md">
-              <div class="flex items-center gap-3">
-                <a href="#" class="text-zinc-800 cursor-pointer text-g timestamp" data-url="${this.currentUrl}&t=${bookmark.time}" data-time="${bookmark.time}">🕓 ${bookmark.formattedTime}</a>
-                <span class="text-lg text-zinc-800">${bookmark.note}</span>
-              </div>
-              <button class="delete-bookmark hover:animate-ping" data-url="${bookmark.url}" data-timestamp="${bookmark.time}">
-                🗑️
-              </button>
-              </div>
-            `).join('')}
-          </div>
-          </div>
-          </div>
-          `;
-
-        this.state.bookmarksList?.appendChild(videoElement);
-
-        // Attach delete handlers to each bookmark's delete button
-        const deleteBookmarkButtons = videoElement.querySelectorAll('.delete-bookmark');
-        deleteBookmarkButtons.forEach(button => {
-          button.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            
-            const url = this.currentUrl;
-            const timestamp = event.target.getAttribute('data-timestamp');
-            console.log("appel de deleteBookmark avec : ", { url, timestamp });
-
-            if (url && timestamp) {
-              this.deleteBookmark({ url, time: Number(timestamp) });
-            } else {
-              console.error("Valeurs invalides pour la suppression du marque-page :", { url, timestamp });
-            }
-          });
-        });
-        
-        // Toggle expand/collapse on click, but not on interactive children
-        videoElement.addEventListener('click', (event) => {
-          // Vérifiez si le clic n'a pas été effectué sur les éléments enfants spécifiques
-          const isClickOnChildElement = event.target.closest('.timestamp') || 
-            event.target.closest('.text') || 
-            event.target.closest('.delete-bookmark');
-
-          if (!isClickOnChildElement) {
-            // Récupérer le conteneur des marque-pages
-            const bookmarksContainer = videoElement.querySelector('.bookmarks-container');
-
-            // Animate expand/collapse with CSS transitions
-            if (bookmarksContainer.classList.contains('hidden')) {
-              // Affichage du conteneur
-              bookmarksContainer.classList.remove('hidden');
-              setTimeout(() => {
-                    bookmarksContainer.classList.remove('scale-y-0', 'opacity-0');
-                    bookmarksContainer.classList.add('scale-y-100', 'opacity-100');
-                  }, 0);
-            } else {
-              // Masquage du conteneur
-              bookmarksContainer.classList.remove('scale-y-100', 'opacity-100');
-              bookmarksContainer.classList.add('scale-y-0', 'opacity-0');
-              
-              // Attendre la fin de la transition avant de cacher
-              bookmarksContainer.addEventListener('transitionend', () => {
-                    bookmarksContainer.classList.add('hidden');
-                  }, { once: true });
-                }
-            } else if (event.target.classList.contains('timestamp')) {
-              // Timestamp click: jump to that position in the video
-              const time = event.target.getAttribute('data-time');
-              if (this.state.currentVideo) {
-                this.state.currentVideo.currentTime = parseFloat(time);
-              }
-            }
-          });
-            
-        const deleteVideoButton = videoElement.querySelector('.delete-video');
-        if (deleteVideoButton) {
-          deleteVideoButton.addEventListener('click', (event) => this.deleteVideo(event));
-        } 
-      }
+    const generation = this.listGeneration = (this.listGeneration || 0) + 1;
+    const parent = this.state.parentContainer || document.querySelector('#secondary-inner, #below');
+    if (!parent) return;
+    document.querySelectorAll('.bookmarks-list').forEach(el => el.remove());
+    const list = document.createElement('section');
+    list.className = 'bookmarks-list sct spc-md';
+    list.setAttribute('aria-label', 'Marque-pages de cette vidéo');
+    const title = document.createElement('h3');
+    title.textContent = this.state.bookmarksForThisUrl.length ? 'Marque-pages pour cette vidéo' : 'Aucun marque-page pour cette vidéo';
+    list.append(title);
+    const { hideNotesByDefault = false } = await chrome.storage.local.get('hideNotesByDefault');
+    if (generation !== this.listGeneration) return;
+    for (const bookmark of [...this.state.bookmarksForThisUrl].sort((a, b) => a.time - b.time)) {
+      const row = document.createElement('div'); row.className = 'bookmark-item flex items-center justify-between';
+      const seek = document.createElement('button'); seek.className = 'timestamp'; seek.type = 'button';
+      seek.textContent = this.formatTime(bookmark.time); seek.dataset.time = bookmark.time;
+      seek.setAttribute('aria-label', `Lire à ${this.formatTime(bookmark.time)}`);
+      seek.onclick = () => { this.state.currentVideo.currentTime = bookmark.time; };
+      const note = document.createElement('span'); note.textContent = bookmark.note; note.hidden = hideNotesByDefault;
+      const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'edit-bookmark'; edit.textContent = 'Modifier';
+      edit.onclick = () => {
+        const input = document.createElement('input'); input.value = bookmark.note; input.setAttribute('aria-label', 'Modifier la note');
+        const save = document.createElement('button'); save.type = 'button'; save.textContent = 'Enregistrer';
+        const cancel = document.createElement('button'); cancel.type = 'button'; cancel.textContent = 'Annuler'; cancel.onclick = () => this.updateBookmarksList();
+        save.onclick = async () => {
+          save.disabled = true;
+          try {
+            const response = await chrome.runtime.sendMessage({ action: 'updateBookmark', bookmark: { ...bookmark, note: input.value } });
+            if (response.error) throw new Error(response.error);
+            await this.refreshBookmarks();
+          } catch (error) { this.afficherMessage(error.message, 'error'); save.disabled = false; }
+        };
+        input.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') save.click(); if (e.key === 'Escape') cancel.click(); };
+        row.replaceChildren(input, save, cancel); input.focus();
+      };
+      const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'delete-bookmark'; remove.textContent = 'Supprimer'; remove.onclick = () => this.deleteBookmark(bookmark);
+      row.append(seek, note, edit, remove); list.append(row);
     }
+    document.querySelectorAll('.bookmarks-list').forEach(el => el.remove());
+    parent.prepend(list); this.state.bookmarksList = list;
   },
 
   /**
@@ -851,25 +786,11 @@ const YouTubeBookmarker = {
    * @param {Object} bookmark - The bookmark to delete (must have url and time)
    */
   async deleteBookmark(bookmark) {
-    console.log("Tentative de suppression du marque-page:", bookmark);
     try {
-      // Remove from current video's bookmark list
-      this.state.bookmarksForThisUrl = this.state.bookmarksForThisUrl.filter(b => b.time !== bookmark.time);
-      console.log("Marque-page supprimé de la liste pour cette URL:", this.state.bookmarksForThisUrl);
-      
-      // Remove from global bookmark list
-      this.state.bookmarks = this.state.bookmarks.filter(b => b.time !== bookmark.time);
-      console.log("Marque-page supprimé de la liste globale:", this.state.bookmarks);
-      
-      // Persist to Chrome storage
-      chrome.storage.local.set({ bookmarks: this.state.bookmarks });
-      console.log("Marque-page supprimé avec succès dans le stockage local.");
-    } catch (error) {
-      console.error("Erreur de communication avec l'extension:", error);
-      this.afficherMessage(`Erreur de communication avec l'extension : ${error}`, 'error');
-    }
-    await this.updateUIElements();
-    console.log("Éléments de l'interface utilisateur mis à jour après la suppression du marque-page.");
+      const response = await chrome.runtime.sendMessage({ action: 'deleteBookmark', bookmark });
+      if (response.error) throw new Error(response.error);
+      await this.refreshBookmarks();
+    } catch (error) { this.afficherMessage(error.message, 'error'); }
   },
 
   /**
@@ -880,22 +801,10 @@ const YouTubeBookmarker = {
    * @param {string} direction - 'prev' or 'next'
    */
   async navigateBookmarks(direction) {
-    const currentTime = Math.round(this.currentVideoTime);
-    
-    if (direction === 'prev') {
-      // Find the latest bookmark that's at least 3 seconds before current time
-      // The 3s buffer prevents getting stuck on the current bookmark
-      const prevBookmark = this.state.bookmarks
-        .filter(b => b.timeInSeconds < currentTime - 3)
-        .pop();
-      if (prevBookmark) this.currentVideoTime = prevBookmark.timeInSeconds;
-    } else if (direction === 'next') {
-      // Find the earliest bookmark after current time
-      const nextBookmark = this.state.bookmarks
-        .filter(b => b.timeInSeconds > currentTime)
-        .shift();
-      if (nextBookmark) this.currentVideoTime = nextBookmark.timeInSeconds;
-    }
+    const bookmarks = [...this.state.bookmarksForThisUrl].sort((a, b) => a.time - b.time);
+    const current = this.currentVideoTime;
+    const target = direction === 'prev' ? bookmarks.filter(b => b.time < current - 1).pop() : bookmarks.find(b => b.time > current + 1);
+    if (target && this.state.currentVideo) this.state.currentVideo.currentTime = target.time;
   },
 
   /**
@@ -907,8 +816,7 @@ const YouTubeBookmarker = {
   async deleteVideo(event) {
     this.state.bookmarksForThisUrl = [];
     const url = event.currentTarget.dataset.url;
-    console.log("Tentative de suppression de la vidéo:", url);
-    
+
     try {
       // Send delete request to background script for atomic storage update
       const response = await new Promise((resolve, reject) => {
@@ -943,13 +851,13 @@ const YouTubeBookmarker = {
    */
   async modifOptions() {
     chrome.storage.local.get('showBookmarkButtons', ({ showBookmarkButtons }) => {
-      console.log("showBookmarkButtons : ", showBookmarkButtons);
+
     });
     chrome.storage.local.get('hideNotesByDefault', ({ hideNotesByDefault }) => {
       infoContainer.style.display = show || !hideNotesByDefault ? 'block' : 'none';
     });
     chrome.storage.local.get('floatingNotesPosition', ({ floatingNotesPosition }) => {
-      console.log("floatingNotesPosition : ", floatingNotesPosition);
+
       // Adjust info container position based on user preference
       switch (floatingNotesPosition) {
         case 'bas':
@@ -964,56 +872,11 @@ const YouTubeBookmarker = {
 
 }
 
-// Initialize the bookmarker when the script loads
-YouTubeBookmarker.init()
-
-/**
- * Connection listener for maintaining communication with the extension.
- * Handles reconnection if the background script connection is lost,
- * which can happen during extension updates or reloads.
- */
-chrome.runtime.onConnect.addListener(function(port) {
-if (port.name === "contentScript") {
-  port.onDisconnect.addListener(function() {
-    console.error("Connexion perdue avec l'extension. Tentative de reconnexion...");
-    setTimeout(initializeExtension, 1000);
-  });
-}
+// Register document-lifetime listeners once, including navigation from the homepage.
+document.addEventListener('yt-navigate-finish', () => YouTubeBookmarker.init());
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local') return;
+  if (changes.bookmarks || changes.hideNotesByDefault) YouTubeBookmarker.refreshBookmarks();
+  if (changes.hotkeys) YouTubeBookmarker.setupHotkeys();
 });
-
-// Safety check for Chrome runtime API availability
-if (!chrome.runtime) {
-console.error("L'API chrome.runtime n'est pas disponible. Vérifiez la compatibilité du navigateur.");
-}
-/* 
-async checkelement() {
-  if (document.querySelector('video')) {
-    console.log("video trouvé");
-    const video = document.querySelector('video');
-    console.log(video); // Vérifiez l'élément
-    video.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation(); 
-    }, true); 
-  }
-}
-window.addEventListener('popstate', () => {
-console.log("Événement popstate détecté");
-if (YouTubeBookmarker.currentUrl.includes('youtube.com/watch')) {
-  YouTubeBookmarker.resetState().then(() => {
-    YouTubeBookmarker.updateState();
-    YouTubeBookmarker.loadBookmarks();
-if (YouTubeBookmarker.currentUrl.includes('youtube.com/watch')) {
 YouTubeBookmarker.init();
- async onPopState() {
-    if (window.location.pathname === '/watch') {
-      await this.resetState();
-      this.loadBookmarks();
-    }
-  },
- */
-
-
-
-

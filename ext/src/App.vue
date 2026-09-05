@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const message = ref('YouTube Bookmarker Extension')
+const message = ref('ReplayGlows Extension')
 </script>
 
 <template>
