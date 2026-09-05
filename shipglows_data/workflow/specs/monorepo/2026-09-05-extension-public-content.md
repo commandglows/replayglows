@@ -9,7 +9,7 @@ created_at: "2026-09-05"
 updated_at: "2026-09-05"
 source_model: inherited
 status: active
-chantier_status: implementing
+chantier_status: pending-hosted-access
 source_skill: sg-content
 scope: extension-public-content
 owner: Diane
@@ -21,7 +21,7 @@ linked_systems: [site]
 depends_on: ["shipglows_data/product/ext/product.md"]
 supersedes: []
 evidence: ["Operator approved the proposed extension page, practical guide and article on 2026-09-05."]
-next_step: "Create and verify the six EN/FR content routes and scoped delivery."
+next_step: "Authenticate to the protected Vercel preview, verify hosted pages, then resolve public publication."
 ---
 
 # Extension Public Content
@@ -73,3 +73,86 @@ Approved → implementing → verification → scoped delivery.
 - Fresh docs: public installation URL search found no official ReplayGlows listing; no install CTA added. External competitor claims are not published. Other content is grounded in current local product implementation, not third-party platform promises.
 - Documentation classification: updated editorial maps/schema policy/roadmap and site guidance. Existing unrelated public marketing claims remain separately tracked. No release announcement or pricing/legal change.
 - GitHub deployment evidence confirms main auto-publishes production; delivery uses codex/extension-public-content for hosted preview before final public decision.
+
+## Delivery and Remaining Proof
+
+Content commit `b8e5c7ec1f0503bbf4b664dadaea5a3af81d645d` pushed to `codex/extension-public-content`. GitHub deployment 6284035169 reports successful Preview deployment at https://replayglowssite-jx9ruli0n-diane-ds-projects.vercel.app. Main production was not changed.
+
+Final local browser pass after content corrections: all six routes at 1440 and 390 widths pass. Desktop product and mobile product screenshot layouts inspected. Build passes after final content edits. Metadata passes on six governed files; changed-file design scan found no findings but did not cover newly staged files, so it is not a complete design audit.
+
+Hosted browser proof is pending authentication: isolated Chromium, Codex browser and Chrome all reach the Vercel login page. No protection was disabled or credential extracted. This is an access blocker, not a locale defect in the site; the verifier now diagnoses cross-origin authentication redirects before content assertions. Retain task branch for review; no production readiness claim until hosted access is resolved.
+
+| Date | Stage | Result |
+| --- | --- | --- |
+| 2026-09-05 | sg-content draft/apply | Six EN/FR pages, source-faithful copy, locale routing and navigation implemented. |
+| 2026-09-05 | sg-content verify | Local build and 12 responsive route checks pass; independent content corrections incorporated. |
+| 2026-09-05 | sg-content preview | Preview deployment succeeded; hosted page observation requires Vercel login. |
+
+## Editorial Evaluation
+
+Editorial quality score is a human-style content assessment, not an automated measurement or deployment verdict.
+
+```json
+{
+  "schema_version": "1.0",
+  "run_id": "extension-content-2026-09-05",
+  "project_id": "replayglows",
+  "surface": "other",
+  "evaluator": {
+    "skill": "007-sg-content",
+    "role": "verifier",
+    "initiated_by": "operator"
+  },
+  "input_refs": {
+    "content_ref": "site/src/content/extension.ts and paired extension-passage-review articles",
+    "source_refs": [
+      "shipglows_data/product/ext/product.md",
+      "ext/src/playback/PlaybackCard.vue",
+      "ext/src/options/Options.vue"
+    ]
+  },
+  "applied_rules_revision": {
+    "business": "business/business.md 0.1.0",
+    "editorial": "editorial/content-map.md 0.2.0",
+    "claim_register": "editorial/claim-register.md 0.2.0"
+  },
+  "scores": {
+    "overall": 91,
+    "clarity": 92,
+    "structure": 92,
+    "source_faithfulness": 95,
+    "compliance": 94,
+    "brand_voice": 90,
+    "call_to_action": 78
+  },
+  "weights": {
+    "clarity": 0.2,
+    "structure": 0.15,
+    "source_faithfulness": 0.2,
+    "compliance": 0.2,
+    "brand_voice": 0.15,
+    "call_to_action": 0.1
+  },
+  "status": "publishable with caveats",
+  "blocked_reasons": [],
+  "evidence": [
+    {
+      "criterion": "source_faithfulness",
+      "source": "local extension code and independent read-only review",
+      "state": "pass"
+    },
+    {
+      "criterion": "call_to_action",
+      "source": "no verified public installation URL; guide CTA is explicit",
+      "state": "warning"
+    }
+  ],
+  "recommendations": [
+    "Verify authenticated hosted rendering before production publication.",
+    "Add installation CTA only once an official URL is verified."
+  ],
+  "confidence": 0.9,
+  "expires_at_utc": null,
+  "run_signature": "aa9d5c24c2e2f7152cf620321d0c4e6f4242ba5da318d707cd34565d3477e50d"
+}
+```

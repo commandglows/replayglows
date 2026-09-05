@@ -19,6 +19,7 @@ try {
     page.on('pageerror', error => errors.push(error.message))
     for (const pair of pairs) for (const [i, route] of pair.entries()) {
       const response = await page.goto(base + route, { waitUntil: 'networkidle' })
+      assert.equal(new URL(page.url()).origin, new URL(base).origin, 'Hosted access redirected away from the site; authenticate in the approved browser before verification')
       assert.equal(response.status(), 200, route)
       assert.equal(await page.locator('main h1').count(), 1, route)
       assert.equal(await page.locator('html').getAttribute('lang'), i ? 'fr' : 'en')
