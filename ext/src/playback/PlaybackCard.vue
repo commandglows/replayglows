@@ -2,8 +2,25 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { Bookmark } from '../bookmarks'
 import { RATE_MIN, RATE_MAX, type PlaybackView } from './protocol'
+import { confirmsSpeed, recordAchievement, withTimeout, type Milestone } from '../discovery/state'
 
 const props = defineProps<{ bookmarks: Bookmark[] }>()
+const emit = defineEmits<{ view: [value: PlaybackView] }>()
+const controls = ref<HTMLElement>()
+const review = ref<HTMLDetailsElement>()
+const notice = ref('')
+async function complete(id: Milestone) {
+  try { await recordAchievement(id) }
+  catch { notice.value = 'Action réussie, mais progression du guide non enregistrée. Pour la vitesse, essayez une autre valeur ; les autres étapes seront revérifiées automatiquement.' }
+}
+function focusControls(loop: boolean) {
+  if (loop && review.value) review.value.open = true
+  const target = loop ? review.value?.querySelector('summary') : controls.value?.querySelector<HTMLInputElement>('input')
+  target?.focus()
+  target?.scrollIntoView({ block: 'nearest' })
+}
+const closeReview = () => { if (review.value) review.value.open = false }
+defineExpose({ focusControls, closeReview })
 const view = ref<PlaybackView | null>(null)
 const tabId = ref<number>()
 const tabUrl = ref('')
@@ -16,6 +33,7 @@ const a = ref('')
 const b = ref('')
 let timer: ReturnType<typeof setInterval> | undefined
 let fetching = false
+let fetchDone: Promise<void> = Promise.resolve()
 let disposed = false
 const media = computed(() => view.value?.media)
 const active = computed(() => Boolean(media.value?.available && view.value?.settings.enabled))
@@ -26,27 +44,44 @@ const currentBookmarks = computed(() => props.bookmarks.filter(item => {
   } catch { return false }
 }))
 const formatTime = (time: number) => `${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`
-async function refresh() {
-  if (fetching || pending.value || tabId.value === undefined || disposed) return
+async function refresh(afterCommand = false) {
+  if (fetching) { await fetchDone; if (!afterCommand) return }
+  if (pending.value || tabId.value === undefined || disposed) return
   fetching = true
+  let finish!: () => void
+  fetchDone = new Promise(resolve => { finish = resolve })
   try {
-    const tab = await chrome.tabs.get(tabId.value)
+    const tab = await withTimeout(chrome.tabs.get(tabId.value))
     if ((tab.url ?? '') !== tabUrl.value) { tabUrl.value = tab.url ?? ''; a.value = ''; b.value = '' }
-    const result = await chrome.runtime.sendMessage({ action: 'rg:get', tabId: tabId.value })
+    const result = await withTimeout(chrome.runtime.sendMessage({ action: 'rg:get', tabId: tabId.value }))
     if (result.error) throw new Error(result.error)
-    if (!disposed && !pending.value) view.value = result
+    if (!disposed && !pending.value) {
+      view.value = result
+      emit('view', result)
+      error.value = ''
+      if (result.pinned && result.media?.available) await complete('pin')
+      if (result.media?.available && !result.media.error && result.media.loop?.b != null) await complete('loop')
+    }
   } catch { if (!disposed) error.value = 'Connexion interrompue. Rechargez la page puis rouvrez ce panneau.' }
-  finally { fetching = false; loading.value = false }
+  finally { fetching = false; loading.value = false; finish() }
 }
 async function act(action: string, values: Record<string, unknown> = {}) {
   if (pending.value || tabId.value === undefined) return
   pending.value = true
   error.value = ''
+  let succeeded = false
   try {
-    const result = await chrome.runtime.sendMessage({ action, tabId: tabId.value, ...values })
+    const result = await withTimeout(chrome.runtime.sendMessage({ action, tabId: tabId.value, ...values }))
     if (result.error) throw new Error(result.error)
+    succeeded = true
   } catch (cause) { error.value = cause instanceof Error ? cause.message : 'La commande a échoué.' }
-  finally { pending.value = false; await refresh() }
+  finally {
+    const commandError = error.value
+    pending.value = false
+    await refresh(true)
+    if (commandError) error.value = commandError
+  }
+  return succeeded
 }
 let queuedRate: number | null = null
 const changingRate = ref(false)
@@ -59,7 +94,13 @@ async function changeRate(rate: number) {
     while (queuedRate !== null) {
       const next = queuedRate
       queuedRate = null
-      await act('rg:rate', { rate: next })
+      const before = media.value?.rate
+      const urlBefore = tabUrl.value
+      const succeeded = await act('rg:rate', { rate: next })
+      if (succeeded && !error.value && tabUrl.value === urlBefore && confirmsSpeed(before, next, media.value)) {
+        notice.value = `Vitesse appliquée : ${next}×.`
+        await complete('speed')
+      }
     }
   } finally { changingRate.value = false; previewRate.value = null }
 }
@@ -79,6 +120,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
 
 <template>
   <section
+    ref="controls"
     class="sg-speed-card"
     aria-labelledby="speed-title"
     :aria-busy="pending || loading"
@@ -101,6 +143,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
         class="sg-button sg-button--secondary"
         type="button"
         :aria-pressed="view.pinned"
+        :title="view.pinned ? 'Reprendre la vitesse commune actuelle' : 'Exclure cet onglet de la vitesse commune pour choisir sa propre vitesse'"
         :disabled="pending || !media?.available"
         @click="act('rg:pin', { pinned: !view.pinned })"
       >
@@ -115,6 +158,10 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
         Réglages
       </button>
     </div>
+    <progress
+      v-if="pending || loading"
+      aria-label="Vérification du lecteur"
+    />
     <template v-if="view">
       <p class="sg-speed-value">
         <output aria-label="Vitesse actuelle">{{ (media?.available ? media.rate : view.rate).toFixed(2) }}×</output>
@@ -155,6 +202,13 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
         </button>
       </div>
       <p
+        v-if="notice"
+        class="sg-muted"
+        role="status"
+      >
+        {{ notice }}
+      </p>
+      <p
         v-if="!media?.available"
         class="sg-muted"
         role="status"
@@ -168,7 +222,19 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
       >
         {{ error || media?.error }}
       </p>
-      <details class="sg-review-controls">
+      <button
+        v-if="!media?.available || error || media?.error"
+        class="sg-button"
+        type="button"
+        :disabled="pending || loading"
+        @click="refresh()"
+      >
+        Vérifier à nouveau
+      </button>
+      <details
+        ref="review"
+        class="sg-review-controls"
+      >
         <summary>{{ !view.settings.enabled ? 'Commandes suspendues · options' : media?.loop?.b != null ? 'Boucle A–B active · options' : 'Répéter un passage · boucle A–B' }}</summary>
         <p
           v-if="media?.available"

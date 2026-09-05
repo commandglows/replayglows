@@ -13,6 +13,7 @@
  */
 import { ref, onMounted } from 'vue'
 import PlaybackOptions from '../playback/PlaybackOptions.vue'
+import DiscoveryGuide from '../discovery/DiscoveryGuide.vue'
 import { DEFAULT_KEYS } from '../playback/protocol'
 import { markdownBookmarks, normalizeBookmarks, type Bookmark } from '../bookmarks'
 
@@ -342,6 +343,10 @@ chrome.runtime.onMessage.addListener((request) => {
       Options
     </h1>
     <PlaybackOptions />
+    <details class="sg-options-guide sg-help-topic">
+      <summary>Découvrir ReplayGlows · aide pratique</summary>
+      <DiscoveryGuide standalone />
+    </details>
     <div class="grid grid-cols-2 gap-4">
       <!-- Colonne gauche -->
       <div class="flex flex-col">
