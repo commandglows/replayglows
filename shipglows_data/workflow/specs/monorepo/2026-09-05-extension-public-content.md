@@ -160,3 +160,7 @@ Editorial quality score is a human-style content assessment, not an automated me
 ## Icon Follow-up
 
 Operator requested homepage-style icons. Added decorative emoji with the same typography and spacing as Benefits.astro to extension feature cards, guide steps and article header in both locales. All icons are aria-hidden; headings retain text labels. Astro build passes (17 pages), and rendered French product cards and guide steps were visually inspected. Existing protected-preview access requirement remains.
+
+## Homepage Discovery Follow-up
+
+Operator requested a short homepage introduction and contextual links. Shared ExtensionTeaser.astro now appears after ProductProof on both home locales and on /features, with links to overview, guide and paired review article. Added narrow contextual references in the existing English speed and note-taking articles; their audience and substantive article scope are unchanged. The teaser uses homepage icons, distinguishes local extension notes from app sync and retains installation availability wording. Astro build passes; generated HTML checks confirm the three destinations on both homes and /features and article links. Rendered French desktop and 390px mobile teaser inspected without clipping. This remains on the review branch; protected hosted verification is still pending.

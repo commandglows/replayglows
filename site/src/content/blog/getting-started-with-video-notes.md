@@ -39,3 +39,7 @@ When reviewing your notes, click any timestamp to jump directly to that point in
 ## Get Started Today
 
 Ready to transform how you learn from videos? Sign up for ReplayGlows and start taking smarter notes today.
+
+## Try a passage review in your browser
+
+If you take notes directly on YouTube with the extension, two bookmarks can define a temporary A–B loop. Follow the [step-by-step passage review](/blog/review-a-video-passage) to revisit a difficult explanation at its own pace, or [explore the extension](/extension) for its scope and current installation availability.

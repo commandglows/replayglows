@@ -87,3 +87,5 @@ This file maps ReplayGlows content surfaces at monorepo level and routes public-
 ## Extension Content Cluster
 
 The approved extension cluster has EN/FR product pages at `/extension` and `/fr/extension`, guides at the matching `/guide` paths, and a paired review-workflow article. Product truth is `shipglows_data/product/ext/product.md`. Public copy distinguishes multisite playback from YouTube-only notes, local storage from app sync, and temporary loops from saved records. No verified public install URL is available; CTA leads to the guide.
+
+Discovery: the shared extension teaser appears on both home locales after the product workflow illustration and on `/features`. It links to the matching overview, guide and review article. Existing English note-taking and playback-speed articles also link contextually to the extension cluster.
