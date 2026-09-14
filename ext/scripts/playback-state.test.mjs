@@ -4,7 +4,10 @@ import { stripTypeScriptTypes } from 'node:module'
 import test from 'node:test'
 
 const protocol = new URL('../src/playback/protocol.ts', import.meta.url).href
-const source = (await readFile(new URL('../src/playback/background.ts', import.meta.url), 'utf8')).replace("'./protocol'", JSON.stringify(protocol))
+const runtimeI18n = new URL('../src/runtime-i18n.ts', import.meta.url).href
+const source = (await readFile(new URL('../src/playback/background.ts', import.meta.url), 'utf8'))
+  .replace("'./protocol'", JSON.stringify(protocol))
+  .replace("'../runtime-i18n'", JSON.stringify(runtimeI18n))
 const { registerPlaybackBackground } = await import(`data:text/javascript;base64,${Buffer.from(stripTypeScriptTypes(source)).toString('base64')}`)
 const ui = { id: 'test-id', url: 'chrome-extension://test-id/popup.html' }
 const page = (tab = 1, frame = 0) => ({ id: 'test-id', url: 'https://example.com/', tab: { id: tab }, frameId: frame })

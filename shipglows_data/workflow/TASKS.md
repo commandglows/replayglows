@@ -122,3 +122,4 @@
 ## Extension Canary Functionality — 2026-09-05
 
 🟠 [replayglows] task: Restore and verify extension bookmark workflows in Chrome Canary | status: fixed-pending-verify | area: extension | bug: BUG-2026-09-05-001 | proof: real YouTube CRUD, shortcuts, import/export, SPA and browser restart; five behavioral tests | evidence: shipglows_data/workflow/audits/2026-09-05-extension-canary-functionality.md | next: operator visual acceptance in dedicated Canary profile before final closure
+🟢 [replayglows] task: Localize the complete extension UI in French and English with an Automatic/Français/English persisted selector | status: implemented | area: ext | ref: shipglows_data/workflow/specs/monorepo/2026-09-05-extension-bilingual-ui.md | proof: isolated packaged Chromium verified live English popup/options and the native French action popup | next: Reload the unpacked extension in the operator browser and verify both injected locales on a real YouTube video

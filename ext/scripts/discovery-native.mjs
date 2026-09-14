@@ -26,6 +26,7 @@ try {
   await media.goto('https://example.com/discovery-native')
   await media.waitForFunction(() => document.querySelector('video').duration === 30)
   const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker')
+  await worker.evaluate(() => chrome.storage.local.set({ language: 'fr' }))
   await worker.evaluate(() => chrome.action.openPopup())
   const session = await context.newCDPSession(media)
   let target

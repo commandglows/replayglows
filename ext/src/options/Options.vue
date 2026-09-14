@@ -11,11 +11,14 @@
  * Uses Chrome storage API for persistence and Chrome messaging
  * for communication with the background script.
  */
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import PlaybackOptions from '../playback/PlaybackOptions.vue'
 import DiscoveryGuide from '../discovery/DiscoveryGuide.vue'
 import { DEFAULT_KEYS } from '../playback/protocol'
 import { markdownBookmarks, normalizeBookmarks, type Bookmark } from '../bookmarks'
+import { useI18n, type LanguagePreference } from '../i18n'
+const { t, language, locale, setLanguage } = useI18n()
+const lt = (fr: string, en: string) => locale.value === 'fr' ? fr : en
 
 // ==================== Type Definitions ====================
 
@@ -45,13 +48,12 @@ const defaultHotkeys = {
 // Reactive state for current hotkey configuration
 const hotkeys = ref<Record<string, string>>({ ...defaultHotkeys })
 const importInput = ref<HTMLInputElement | null>(null)
-const actionLabels: Record<string, string> = {
-  'add-bookmark': 'Ajouter un marque-page',
-  'delete-bookmark': 'Supprimer le marque-page actuel',
-  'quick-bookmark': 'Ajouter sans note',
-  'prev-bookmark': 'Marque-page précédent',
-  'next-bookmark': 'Marque-page suivant',
-}
+const actionLabels = computed<Record<string, string>>(() => locale.value === 'fr' ? {
+  'add-bookmark': 'Ajouter un marque-page', 'delete-bookmark': 'Supprimer le marque-page actuel', 'quick-bookmark': 'Ajouter sans note', 'prev-bookmark': 'Marque-page précédent', 'next-bookmark': 'Marque-page suivant',
+} : {
+  'add-bookmark': 'Add a bookmark', 'delete-bookmark': 'Delete the current bookmark', 'quick-bookmark': 'Add without a note', 'prev-bookmark': 'Previous bookmark', 'next-bookmark': 'Next bookmark',
+})
+const changeLanguage = async (event: Event) => { await setLanguage((event.target as HTMLSelectElement).value as LanguagePreference); showMessage(t('languageSaved')) }
 
 // Reactive state for display preferences
 const settings = ref({
@@ -172,7 +174,7 @@ const deleteHotkey = async (action: string) => {
   hotkeys.value[action] = ''
   updateDeleteButtonVisibility(action, false)
   await saveHotkeys()
-  showMessage('Raccourci supprimé !')
+  showMessage(lt('Raccourci supprimé !', 'Shortcut deleted!'))
 }
 
 /**
@@ -188,12 +190,12 @@ const saveHotkeys = async () => {
     const playback = Object.values(saved.playbackSettings?.keys ?? DEFAULT_KEYS).filter((key): key is string => typeof key === 'string' && !!key).map(canonical)
     const bookmarks = Object.values(hotkeys.value).filter(Boolean).map(canonical)
     if (new Set(bookmarks).size !== bookmarks.length || bookmarks.some(key => playback.includes(key))) {
-      showMessage('Ce raccourci est déjà utilisé pour la lecture ou un autre marque-page.', 'error')
+      showMessage(lt('Ce raccourci est déjà utilisé pour la lecture ou un autre marque-page.', 'This shortcut is already used for playback or another bookmark.'), 'error')
       return
     }
     await chrome.storage.local.set({ hotkeys: hotkeys.value })
-    showMessage('Raccourci enregistré !')
-  } catch { showMessage('Impossible d’enregistrer le raccourci.', 'error') }
+    showMessage(lt('Raccourci enregistré !', 'Shortcut saved!'))
+  } catch { showMessage(lt('Impossible d’enregistrer le raccourci.', 'Unable to save the shortcut.'), 'error') }
 }
 
 // ==================== Settings Management ====================
@@ -206,7 +208,7 @@ const saveSettings = async () => {
     hideNotesByDefault: settings.value.hideNotesByDefault,
     showBookmarkButtons: settings.value.showBookmarkButtons
   })
-  showMessage('Options enregistrées !')
+  showMessage(lt('Options enregistrées !', 'Settings saved!'))
 }
 
 // ==================== Export/Import Functionality ====================
@@ -223,7 +225,7 @@ const exportMarkdown = async () => {
     const bookmarks: Bookmark[] = result.bookmarks || []
     
     if (bookmarks.length === 0) {
-      showMessage("Aucun marque-page à exporter", "error")
+      showMessage(lt('Aucun marque-page à exporter', 'No bookmarks to export'), 'error')
       return
     }
     
@@ -231,7 +233,7 @@ const exportMarkdown = async () => {
     const markdown = markdownBookmarks(normalizeBookmarks(bookmarks))
 
     await navigator.clipboard.writeText(markdown)
-    showMessage("Markdown copié !", "info")
+    showMessage(lt('Markdown copié !', 'Markdown copied!'), 'info')
   } catch {
     showMessage("Impossible de copier dans le presse-papiers.", "error")
   }
@@ -247,7 +249,7 @@ const exportJSON = async () => {
     const bookmarks: Bookmark[] = result.bookmarks || []
     
     if (bookmarks.length === 0) {
-      showMessage("Aucun marque-page à exporter", "error")
+      showMessage(lt('Aucun marque-page à exporter', 'No bookmarks to export'), 'error')
       return
     }
     
@@ -263,7 +265,7 @@ const exportJSON = async () => {
     
     // Clean up object URL to prevent memory leak
     URL.revokeObjectURL(url)
-    showMessage("Fichier JSON exporté !", "info")
+    showMessage(lt('Fichier JSON exporté !', 'JSON file exported!'), 'info')
   } catch {
     showMessage("Erreur lors de l'export JSON", "error")
   }
@@ -279,7 +281,7 @@ const exportJSON = async () => {
 const importJSON = async (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0]
   if (!file) {
-    showMessage('Veuillez sélectionner un fichier à importer.', 'error')
+    showMessage(lt('Veuillez sélectionner un fichier à importer.', 'Choose a file to import.'), 'error')
     return
   }
 
@@ -290,16 +292,16 @@ const importJSON = async (event: Event) => {
     try {
       bookmarks = normalizeBookmarks(JSON.parse(text))
     } catch {
-      showMessage('Fichier JSON invalide : vérifiez les marque-pages importés.', 'error')
+      showMessage(lt('Fichier JSON invalide : vérifiez les marque-pages importés.', 'Invalid JSON file: check the imported bookmarks.'), 'error')
       return
     }
-    if (!window.confirm(`Remplacer tous les marque-pages actuels par les ${bookmarks.length} marque-pages du fichier ? Exportez d’abord une sauvegarde si nécessaire.`)) {
-      showMessage('Importation annulée.', 'info')
+    if (!window.confirm(lt(`Remplacer tous les marque-pages actuels par les ${bookmarks.length} marque-pages du fichier ? Exportez d’abord une sauvegarde si nécessaire.`, `Replace all current bookmarks with the ${bookmarks.length} bookmarks in this file? Export a backup first if needed.`))) {
+      showMessage(lt('Importation annulée.', 'Import cancelled.'), 'info')
       return
     }
     const response = await chrome.runtime.sendMessage({ action: 'importBookmarks', bookmarks })
     if (response.error) throw new Error(response.error)
-    showMessage('Importation terminée !', 'info')
+    showMessage(lt('Importation terminée !', 'Import complete!'), 'info')
   } catch (error) {
     console.error('Échec de lecture ou de sauvegarde de l’import', error)
     showMessage('Erreur lors de l\'importation du fichier', 'error')
@@ -339,12 +341,19 @@ chrome.runtime.onMessage.addListener((request) => {
       {{ message.text }}
     </div>
 
-    <h1 class="h1">
-      Options
-    </h1>
+    <h1 class="h1">{{ t('options') }}</h1>
+    <section class="sct">
+      <label class="lbl"><span class="t">{{ t('language') }}</span>
+        <select class="inp" :value="language" @change="changeLanguage">
+          <option value="auto">{{ t('languageAuto') }}</option>
+          <option value="fr">{{ t('languageFrench') }}</option>
+          <option value="en">{{ t('languageEnglish') }}</option>
+        </select>
+      </label>
+    </section>
     <PlaybackOptions />
     <details class="sg-options-guide sg-help-topic">
-      <summary>Découvrir ReplayGlows · aide pratique</summary>
+      <summary>{{ locale === 'fr' ? 'Découvrir ReplayGlows · aide pratique' : 'Discover ReplayGlows · practical help' }}</summary>
       <DiscoveryGuide standalone />
     </details>
     <div class="grid grid-cols-2 gap-4">
@@ -352,7 +361,7 @@ chrome.runtime.onMessage.addListener((request) => {
       <div class="flex flex-col">
         <section class="sct">
           <h2 class="h2">
-            Raccourcis clavier
+            {{ t('keyboardShortcuts') }}
           </h2>
           <form @submit.prevent="saveSettings">
             <div class="cont flex-col">
@@ -373,9 +382,9 @@ chrome.runtime.onMessage.addListener((request) => {
                   <button
                     type="button"
                     class="sg-button sg-button--secondary"
-                    :aria-label="`Effacer le raccourci : ${actionLabels[action] || action}`"
+                    :aria-label="t('clearShortcut', { action: actionLabels[action] || action })"
                     @click="deleteHotkey(action)"
-                  >Effacer</button>
+                  >{{ t('clear') }}</button>
                 </div>
               </label>
             </div>
@@ -383,7 +392,7 @@ chrome.runtime.onMessage.addListener((request) => {
             <!-- Checkboxes stylisées -->
             <div class="cont flex-col">
               <label class="lbl">
-                <span class="t">Masquer les notes par défaut :</span>
+                <span class="t">{{ t('hideNotes') }}</span>
                 <div class="relative">
                   <input
                     v-model="settings.hideNotesByDefault"
@@ -394,7 +403,7 @@ chrome.runtime.onMessage.addListener((request) => {
                 </div>
               </label>
               <label class="lbl">
-                <span class="t">Afficher les boutons de sauvegarde et d'annulation:</span>
+                <span class="t">{{ t('showButtons') }}</span>
                 <div class="relative">
                   <input
                     v-model="settings.showBookmarkButtons"
@@ -414,20 +423,20 @@ chrome.runtime.onMessage.addListener((request) => {
         <!-- Section Export -->
         <section class="sct">
           <h2 class="h2">
-            Exporter les marque-pages
+            {{ t('exportBookmarks') }}
           </h2>
           <div class="cont sg-option-actions">
             <button
               class="sg-button sg-button--secondary"
               @click="exportMarkdown"
             >
-              Copier en Markdown
+              {{ t('copyMarkdown') }}
             </button>
             <button
               class="sg-button sg-button--secondary"
               @click="exportJSON"
             >
-              Exporter en JSON
+              {{ t('exportJson') }}
             </button>
           </div>
         </section>
@@ -435,14 +444,14 @@ chrome.runtime.onMessage.addListener((request) => {
         <!-- Section Import -->
         <section class="sct">
           <h2 class="h2">
-            Importer les marque-pages
+            {{ t('importBookmarks') }}
           </h2>
           <div class="cont sg-option-actions">
             <input
               ref="importInput"
               hidden
               type="file"
-              aria-label="Fichier de marque-pages JSON"
+              :aria-label="t('jsonFile')"
               accept=".json"
               @change="importJSON"
             >
@@ -451,7 +460,7 @@ chrome.runtime.onMessage.addListener((request) => {
               class="sg-button sg-button--secondary"
               @click="importInput?.click()"
             >
-              Choisir un fichier JSON
+              {{ t('chooseJson') }}
             </button>
           </div>
         </section>

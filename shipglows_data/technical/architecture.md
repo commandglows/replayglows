@@ -105,3 +105,6 @@ Unpinned tabs share one speed; pinned tabs override it until unpinned, closed or
 The discovery guide is shared between popup and options. Independent local `discovery.v1.*` keys store confirmed milestones, postponed topics and help visibility, without changing bookmark records or exports. Popup integration confirms a requested speed against a fresh media snapshot, observes pin/loop state, recognizes stored notes and distinguishes a bookmark tab opening from proven playback. The guide reads validated playback settings through the existing message contract; it introduces no worker endpoint, content script or permission. See the extension onboarding spec for UI state, failure and native-popup proof.
 
 Canary proof is local to a dedicated profile and selected public YouTube scenarios; it does not establish exhaustive YouTube behavior or operator visual acceptance. See `../workflow/bugs/BUG-2026-09-05-001.md` for the implementation and verification boundary. Docker/package success remains distinct from these browser proofs.
+## Extension localization (2026-09-05)
+
+`ext/src/i18n.ts` owns typed French/English Vue copy and the persisted `auto`/`fr`/`en` preference. The classic YouTube content script mirrors its injected-control vocabulary, while Chrome `_locales` owns localized package metadata.

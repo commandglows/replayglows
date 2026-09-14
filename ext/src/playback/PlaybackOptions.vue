@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { DEFAULT_SETTINGS, DEFAULT_KEYS, RATE_MIN, RATE_MAX, type PlaybackAction, type PlaybackSettings } from './protocol'
+import { useI18n } from '../i18n'
+const { t } = useI18n()
 const settings = ref<PlaybackSettings>(structuredClone(DEFAULT_SETTINGS))
 const message = ref('')
 const failed = ref(false)
 const busy = ref(false)
-const labels: Record<PlaybackAction, string> = {
-  slower: 'Ralentir', faster: 'Accélérer', reset: 'Revenir à 1×', favorite: 'Vitesse favorite',
-  rewind: 'Reculer de 10 secondes', forward: 'Avancer de 10 secondes', boost: 'Accélérer pendant l’appui',
-  markA: 'Marquer le début A', markB: 'Marquer la fin B', clearLoop: 'Effacer la boucle', suspend: 'Suspendre / réactiver les commandes',
+const labels: Record<PlaybackAction, () => string> = {
+  slower: () => t('slower'), faster: () => t('faster'), reset: () => t('reset'), favorite: () => t('favoriteRate'), rewind: () => t('rewind'), forward: () => t('forward'), boost: () => t('boost'), markA: () => t('markStart'), markB: () => t('markEnd'), clearLoop: () => t('clearLoop'), suspend: () => t('suspend'),
 }
 onMounted(async () => {
   try {
     const result = await chrome.runtime.sendMessage({ action: 'rg:context' })
     if (result.error) throw new Error(result.error)
     settings.value = structuredClone(result.settings)
-  } catch { failed.value = true; message.value = 'Impossible de charger les réglages. Rouvrez les options.' }
+  } catch { failed.value = true; message.value = t('settingsLoadError') }
 })
 function recordKey(event: KeyboardEvent, action: PlaybackAction) {
   if (event.key === 'Tab') return
@@ -30,11 +30,11 @@ async function save() {
     const keys = Object.values(settings.value.keys).filter(Boolean)
     const bookmarks = await chrome.storage.local.get('hotkeys')
     const existing = Object.values(bookmarks.hotkeys ?? { a: 'ALT+B', b: 'ALT+D', c: 'ALT+Q', d: 'ALT+1', e: 'ALT+2' })
-    if (new Set(keys).size !== keys.length || keys.some(key => existing.includes(key))) throw new Error('Deux actions utilisent le même raccourci. Choisissez des touches distinctes.')
+    if (new Set(keys).size !== keys.length || keys.some(key => existing.includes(key))) throw new Error(t('duplicateShortcut'))
     const result = await chrome.runtime.sendMessage({ action: 'rg:settings', settings: { favorite: settings.value.favorite, step: settings.value.step, keys: settings.value.keys } })
     if (result.error) throw new Error(result.error)
-    message.value = 'Réglages de lecture enregistrés.'
-  } catch (cause) { failed.value = true; message.value = cause instanceof Error ? cause.message : 'Échec de sauvegarde.' }
+    message.value = t('playbackSaved')
+  } catch (cause) { failed.value = true; message.value = cause instanceof Error ? cause.message : t('saveError') }
   finally { busy.value = false }
 }
 </script>
@@ -48,19 +48,19 @@ async function save() {
       id="playback-options-title"
       class="h2"
     >
-      Lecture sur tous les sites
+      {{ t('playbackEverywhere') }}
     </h2>
     <p class="sg-muted">
-      Une vitesse commune pour vos vidéos et audios. Épinglez un onglet depuis le popup pour lui donner sa propre vitesse. Le pin reste actif jusqu’à la fermeture de l’onglet ou au redémarrage du navigateur.
+      {{ t('playbackIntro') }}
     </p>
     <p class="sg-muted">
-      L’accès aux sites permet de contrôler leurs médias HTML5. Vos réglages et marque-pages restent dans ce navigateur. Les pages protégées par Chrome ne sont pas accessibles.
+      {{ t('accessIntro') }}
     </p>
     <form
       class="sg-playback-form"
       @submit.prevent="save"
     >
-      <label>Vitesse favorite <input
+      <label>{{ t('favoriteSpeed') }} <input
         v-model.number="settings.favorite"
         class="sg-playback-input"
         type="number"
@@ -69,7 +69,7 @@ async function save() {
         step="0.05"
         required
       ></label>
-      <label>Pas des raccourcis <input
+      <label>{{ t('shortcutStep') }} <input
         v-model.number="settings.step"
         class="sg-playback-input"
         type="number"
@@ -79,16 +79,16 @@ async function save() {
         required
       ></label>
       <p class="sg-muted">
-        Cliquez dans un champ et appuyez sur votre combinaison. Retour arrière efface le raccourci. Les commandes sont ignorées pendant la saisie de texte.
+        {{ t('recordShortcut') }}
       </p>
       <label
         v-for="(label, action) in labels"
         :key="action"
-      >{{ label }}<input
+      >{{ label() }}<input
         class="sg-playback-input"
         :value="settings.keys[action]"
         readonly
-        placeholder="Désactivé"
+        :placeholder="t('disabled')"
         @keydown="recordKey($event, action)"
       ></label>
       <div class="sg-speed-presets">
@@ -97,14 +97,14 @@ async function save() {
           type="submit"
           :disabled="busy"
         >
-          Enregistrer la lecture
+          {{ t('savePlayback') }}
         </button>
         <button
           class="sg-button sg-button--secondary"
           type="button"
           @click="settings.keys = { ...DEFAULT_KEYS }"
         >
-          Raccourcis par défaut
+          {{ t('defaultShortcuts') }}
         </button>
       </div>
       <p

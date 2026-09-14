@@ -75,3 +75,6 @@ Saved segments, note-specific review speeds, frame stepping, URL rules, manual m
 ## Maintenance
 
 Update this contract when user-visible playback, context lifetime, permissions, supported media or learning-record behavior changes. Route implementation through `shipglows_data/technical/code-docs-map.md`; reconcile public claims through `shipglows_data/editorial/claim-register.md`.
+## French and English interface (2026-09-05)
+
+Popup, options, discovery help, playback controls and YouTube-injected commands are available in French and English. A persisted Automatic/Français/English selector follows French browser locales in Automatic mode and otherwise falls back to English.

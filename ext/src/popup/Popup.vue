@@ -5,6 +5,8 @@ import PlaybackCard from '../playback/PlaybackCard.vue'
 import DiscoveryGuide from '../discovery/DiscoveryGuide.vue'
 import { recordAchievement, type Milestone } from '../discovery/state'
 import type { PlaybackView } from '../playback/protocol'
+import { useI18n } from '../i18n'
+const { t } = useI18n()
 const guide = ref<InstanceType<typeof DiscoveryGuide>>()
 const playback = ref<InstanceType<typeof PlaybackCard>>()
 const playbackView = ref<PlaybackView | null>(null)
@@ -26,9 +28,9 @@ const load = async () => {
     const result = await chrome.storage.local.get('bookmarks')
     bookmarks.value = normalizeBookmarks(result.bookmarks ?? []).sort((a, b) => a.url.localeCompare(b.url) || a.time - b.time)
     if (bookmarks.value.some(item => item.note?.trim())) {
-      try { await recordAchievement('note') } catch { error.value = 'Vos notes sont chargées, mais la progression du guide n’a pas pu être enregistrée.' }
+      try { await recordAchievement('note') } catch { error.value = t('notesProgressError') }
     }
-  } catch { error.value = 'Impossible de charger les marque-pages.' }
+  } catch { error.value = t('loadBookmarksError') }
 }
 const onStorage = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
   if (area === 'local' && changes.bookmarks) void load()
@@ -42,13 +44,13 @@ const mutate = async (action: string, bookmark: Bookmark) => {
     if (response.error) throw new Error(response.error)
     editing.value = null
     await load()
-  } catch (e) { error.value = e instanceof Error ? e.message : 'Échec de sauvegarde.' }
+  } catch (e) { error.value = e instanceof Error ? e.message : t('saveError') }
 }
 const visit = async (bookmark: Bookmark) => {
   try {
     await chrome.tabs.create({ url: `${bookmark.url}&t=${bookmark.time}s` })
-    try { await recordAchievement('opened') } catch { error.value = 'Vidéo ouverte, mais progression du guide non enregistrée.' }
-  } catch { error.value = 'Impossible d’ouvrir la vidéo. Réessayez depuis ce marque-page.' }
+    try { await recordAchievement('opened') } catch { error.value = t('openedProgressError') }
+  } catch { error.value = t('openVideoError') }
 }
 </script>
 
@@ -63,7 +65,7 @@ const visit = async (bookmark: Bookmark) => {
       </div>
       <div>
         <p class="sg-eyebrow">
-          Lecture & marque-pages
+          {{ t('playbackBookmarks') }}
         </p><h1 class="sg-title">
           ReplayGlows
         </h1>
@@ -74,7 +76,7 @@ const visit = async (bookmark: Bookmark) => {
         type="button"
         @click="playback?.closeReview(); guide?.show()"
       >
-        Découvrir / Aide
+        {{ t('discoverHelp') }}
       </button>
     </div>
     <div class="sg-bookmark-scroll">
@@ -87,7 +89,7 @@ const visit = async (bookmark: Bookmark) => {
       <div
         ref="bookmarkSection"
         tabindex="-1"
-        aria-label="Marque-pages YouTube"
+        :aria-label="t('youtubeBookmarks')"
       >
         <p
           v-if="error"
@@ -105,18 +107,18 @@ const visit = async (bookmark: Bookmark) => {
             id="empty-title"
             class="sg-section-title"
           >
-            Prêt à capturer vos idées
+            {{ t('readyTitle') }}
           </h2>
           <p class="sg-muted">
-            Ouvrez une vidéo YouTube pour ajouter un marque-page à un moment précis.
+            {{ t('readyBody') }}
           </p>
         </section>
         <section
           v-else
-          aria-label="Vos marque-pages"
+          :aria-label="t('yourBookmarks')"
         >
           <h2 class="sg-section-title">
-            Vos marque-pages ({{ bookmarks.length }})
+            {{ t('yourBookmarks') }} ({{ bookmarks.length }})
           </h2>
           <article
             v-for="bookmark in bookmarks"
@@ -128,48 +130,48 @@ const visit = async (bookmark: Bookmark) => {
               class="sg-button"
               @click="visit(bookmark)"
             >
-              {{ bookmark.title || 'Vidéo YouTube' }} · {{ bookmark.formattedTime }}
+              {{ bookmark.title || t('youtubeVideo') }} · {{ bookmark.formattedTime }}
             </button>
             <form
               v-if="editing === bookmark"
               @submit.prevent="mutate('updateBookmark', { ...bookmark, note })"
             >
-              <label>Note <input
+              <label>{{ t('note') }} <input
                 v-model="note"
                 class="inp"
-                aria-label="Modifier la note"
+                :aria-label="t('editNote')"
               ></label>
               <button
                 class="sg-button sg-button--primary"
                 type="submit"
               >
-                Enregistrer
+                {{ t('save') }}
               </button>
               <button
                 class="sg-button"
                 type="button"
                 @click="editing = null"
               >
-                Annuler
+                {{ t('cancel') }}
               </button>
             </form>
             <template v-else>
               <p class="sg-muted">
-                {{ bookmark.note || 'Sans note' }}
+                {{ bookmark.note || t('noNote') }}
               </p>
               <button
                 class="sg-button"
                 type="button"
                 @click="editing = bookmark; note = bookmark.note"
               >
-                Modifier
+                {{ t('edit') }}
               </button>
               <button
                 class="sg-button"
                 type="button"
                 @click="mutate('deleteBookmark', bookmark)"
               >
-                Supprimer
+                {{ t('delete') }}
               </button>
             </template>
           </article>
@@ -180,7 +182,7 @@ const visit = async (bookmark: Bookmark) => {
         type="button"
         @click="openOptions"
       >
-        Options et import/export
+        {{ t('optionsImportExport') }}
       </button>
     </div>
     <PlaybackCard
@@ -192,7 +194,7 @@ const visit = async (bookmark: Bookmark) => {
       <span
         class="sg-status-dot"
         aria-hidden="true"
-      /><span>Vos marque-pages restent dans votre navigateur.</span>
+      /><span>{{ t('localFooter') }}</span>
     </footer>
   </main>
 </template>

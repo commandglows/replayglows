@@ -1,4 +1,5 @@
 import { canonicalUrl, groupBookmarks, normalizeBookmark, normalizeBookmarks, type Bookmark } from '../bookmarks'
+import { localizeRuntimeError } from '../runtime-i18n'
 // Serialize read/modify/write across tabs; do not cache MV3 worker state.
 let pending: Promise<unknown> = Promise.resolve()
 async function handle(request: Record<string, unknown>) {
@@ -34,6 +35,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (typeof request?.action === 'string' && request.action.startsWith('rg:')) return false
   const operation = pending.then(() => handle(request))
   pending = operation.catch(() => undefined)
-  operation.then(sendResponse, error => sendResponse({ error: error instanceof Error ? error.message : 'Échec de sauvegarde' }))
+  operation.then(sendResponse, async error => sendResponse({ error: await localizeRuntimeError(error instanceof Error ? error.message : 'Échec de sauvegarde') }))
   return true
 })

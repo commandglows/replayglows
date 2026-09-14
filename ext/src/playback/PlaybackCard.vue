@@ -3,6 +3,8 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import type { Bookmark } from '../bookmarks'
 import { RATE_MIN, RATE_MAX, type PlaybackView } from './protocol'
 import { confirmsSpeed, recordAchievement, withTimeout, type Milestone } from '../discovery/state'
+import { useI18n } from '../i18n'
+const { t } = useI18n()
 
 const props = defineProps<{ bookmarks: Bookmark[] }>()
 const emit = defineEmits<{ view: [value: PlaybackView] }>()
@@ -11,7 +13,7 @@ const review = ref<HTMLDetailsElement>()
 const notice = ref('')
 async function complete(id: Milestone) {
   try { await recordAchievement(id) }
-  catch { notice.value = 'Action réussie, mais progression du guide non enregistrée. Pour la vitesse, essayez une autre valeur ; les autres étapes seront revérifiées automatiquement.' }
+  catch { notice.value = t('guideProgressError') }
 }
 function focusControls(loop: boolean) {
   if (loop && review.value) review.value.open = true
@@ -62,7 +64,7 @@ async function refresh(afterCommand = false) {
       if (result.pinned && result.media?.available) await complete('pin')
       if (result.media?.available && !result.media.error && result.media.loop?.b != null) await complete('loop')
     }
-  } catch { if (!disposed) error.value = 'Connexion interrompue. Rechargez la page puis rouvrez ce panneau.' }
+  } catch { if (!disposed) error.value = t('connectionInterrupted') }
   finally { fetching = false; loading.value = false; finish() }
 }
 async function act(action: string, values: Record<string, unknown> = {}) {
@@ -74,7 +76,7 @@ async function act(action: string, values: Record<string, unknown> = {}) {
     const result = await withTimeout(chrome.runtime.sendMessage({ action, tabId: tabId.value, ...values }))
     if (result.error) throw new Error(result.error)
     succeeded = true
-  } catch (cause) { error.value = cause instanceof Error ? cause.message : 'La commande a échoué.' }
+  } catch (cause) { error.value = cause instanceof Error ? cause.message : t('commandFailed') }
   finally {
     const commandError = error.value
     pending.value = false
@@ -98,7 +100,7 @@ async function changeRate(rate: number) {
       const urlBefore = tabUrl.value
       const succeeded = await act('rg:rate', { rate: next })
       if (succeeded && !error.value && tabUrl.value === urlBefore && confirmsSpeed(before, next, media.value)) {
-        notice.value = `Vitesse appliquée : ${next}×.`
+        notice.value = t('speedApplied', { rate: next })
         await complete('speed')
       }
     }
@@ -113,7 +115,7 @@ onMounted(async () => {
     if (tabId.value === undefined) throw new Error()
     await refresh()
     if (!disposed) timer = setInterval(() => void refresh(), 800)
-  } catch { error.value = 'Onglet indisponible.'; loading.value = false }
+  } catch { error.value = t('tabUnavailable'); loading.value = false }
 })
 onUnmounted(() => { disposed = true; clearInterval(timer) })
 </script>
@@ -131,45 +133,45 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
           id="speed-title"
           class="sg-section-title"
         >
-          Vitesse de lecture
+          {{ t('playbackTitle') }}
         </h2>
         <span
           v-if="view"
           class="sg-scope-label"
-        >{{ view.pinned ? 'Épinglé · cet onglet' : 'Global · onglets non épinglés' }}</span>
+        >{{ view.pinned ? t('pinnedScope') : t('globalScope') }}</span>
       </div>
       <button
         v-if="view"
         class="sg-button sg-button--secondary"
         type="button"
         :aria-pressed="view.pinned"
-        :title="view.pinned ? 'Reprendre la vitesse commune actuelle' : 'Exclure cet onglet de la vitesse commune pour choisir sa propre vitesse'"
+        :title="view.pinned ? t('unpin') : t('pin')"
         :disabled="pending || !media?.available"
         @click="act('rg:pin', { pinned: !view.pinned })"
       >
-        {{ view.pinned ? 'Désépingler' : 'Épingler' }}
+        {{ view.pinned ? t('unpin') : t('pin') }}
       </button>
       <button
         class="sg-button sg-button--secondary"
         type="button"
-        aria-label="Réglages de lecture"
+        :aria-label="t('playbackSettings')"
         @click="openOptions"
       >
-        Réglages
+        {{ t('settings') }}
       </button>
     </div>
     <progress
       v-if="pending || loading"
-      aria-label="Vérification du lecteur"
+      :aria-label="t('checkPlayer')"
     />
     <template v-if="view">
       <p class="sg-speed-value">
-        <output aria-label="Vitesse actuelle">{{ (media?.available ? media.rate : view.rate).toFixed(2) }}×</output>
+        <output :aria-label="t('currentSpeed')">{{ (media?.available ? media.rate : view.rate).toFixed(2) }}×</output>
       </p>
       <input
         class="sg-speed-slider"
         type="range"
-        aria-label="Vitesse de lecture"
+        :aria-label="t('playbackTitle')"
         :min="RATE_MIN"
         :max="RATE_MAX"
         step="0.05"
@@ -179,7 +181,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
       >
       <div
         class="sg-speed-presets"
-        aria-label="Vitesses prédéfinies"
+        :aria-label="t('presets')"
       >
         <button
           v-for="rate in [0.5, 1, 1.5, 2]"
@@ -198,7 +200,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
           :disabled="!active || pending"
           @click="changeRate(view.settings.favorite)"
         >
-          Favori
+          {{ t('favorite') }}
         </button>
       </div>
       <p
@@ -213,7 +215,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
         class="sg-muted"
         role="status"
       >
-        Aucun média accessible. Lancez une vidéo ou un audio sur un site web. Après installation, rechargez la page. Certaines pages protégées par Chrome sont exclues.
+        {{ t('noMedia') }}
       </p>
       <p
         v-if="error || media?.error"
@@ -229,19 +231,19 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
         :disabled="pending || loading"
         @click="refresh()"
       >
-        Vérifier à nouveau
+        {{ t('retry') }}
       </button>
       <details
         ref="review"
         class="sg-review-controls"
       >
-        <summary>{{ !view.settings.enabled ? 'Commandes suspendues · options' : media?.loop?.b != null ? 'Boucle A–B active · options' : 'Répéter un passage · boucle A–B' }}</summary>
+        <summary>{{ !view.settings.enabled ? t('suspendedOptions') : media?.loop?.b != null ? t('loopActiveOptions') : t('repeatSection') }}</summary>
         <p
           v-if="media?.available"
           class="sg-media-title sg-muted"
           :title="media.title"
         >
-          {{ media.kind === 'audio' ? 'Audio' : 'Vidéo' }} · {{ media.title || 'Média de cet onglet' }}
+          {{ media.kind === 'audio' ? t('audio') : t('video') }} · {{ media.title || t('tabMedia') }}
         </p>
         <div class="sg-speed-presets">
           <button
@@ -250,7 +252,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
             :disabled="!active || pending"
             @click="command('markA')"
           >
-            Début A
+            {{ t('markA') }}
           </button>
           <button
             class="sg-button sg-button--secondary"
@@ -258,7 +260,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
             :disabled="!active || pending || !media?.loop"
             @click="command('markB')"
           >
-            Fin B
+            {{ t('markB') }}
           </button>
           <button
             class="sg-button sg-button--secondary"
@@ -266,50 +268,50 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
             :disabled="!media?.loop || pending"
             @click="command('clearLoop')"
           >
-            Effacer
+            {{ t('clear') }}
           </button>
         </div>
         <p
           class="sg-muted"
           role="status"
         >
-          {{ media?.loop ? `A ${formatTime(media.loop.a)} → ${media.loop.b === null ? 'Choisissez la fin B' : `B ${formatTime(media.loop.b)} · répétition active`}` : 'Marquez le début, avancez à la fin puis marquez B.' }}
+          {{ media?.loop ? `A ${formatTime(media.loop.a)} → ${media.loop.b === null ? t('chooseEnd') : `B ${formatTime(media.loop.b)} · ${t('repeatActive')}`}` : t('markInstructions') }}
         </p>
         <form
           v-if="currentBookmarks.length >= 2"
           class="sg-loop-bookmarks"
           @submit.prevent="command('loopRange', { a: Number(a), b: Number(b) })"
         >
-          <label>Début <select
+          <label>{{ t('start') }} <select
             v-model="a"
             required
             class="sg-playback-input"
           ><option
             value=""
             disabled
-          >Marque-page A</option><option
+          >{{ t('bookmarkA') }}</option><option
             v-for="item in currentBookmarks"
             :key="item.time"
             :value="String(item.time)"
-          >{{ item.formattedTime }} · {{ item.note || 'Sans note' }}</option></select></label>
-          <label>Fin <select
+          >{{ item.formattedTime }} · {{ item.note || t('noNote') }}</option></select></label>
+          <label>{{ t('end') }} <select
             v-model="b"
             required
             class="sg-playback-input"
           ><option
             value=""
             disabled
-          >Marque-page B</option><option
+          >{{ t('bookmarkB') }}</option><option
             v-for="item in currentBookmarks"
             :key="item.time"
             :value="String(item.time)"
-          >{{ item.formattedTime }} · {{ item.note || 'Sans note' }}</option></select></label>
+          >{{ item.formattedTime }} · {{ item.note || t('noNote') }}</option></select></label>
           <button
             class="sg-button sg-button--primary"
             type="submit"
             :disabled="!active || pending || a === '' || b === '' || Number(b) <= Number(a)"
           >
-            Répéter entre ces marque-pages
+            {{ t('repeatBookmarks') }}
           </button>
         </form>
         <button
@@ -318,7 +320,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
           :disabled="pending"
           @click="act('rg:settings', { settings: { enabled: !view.settings.enabled } })"
         >
-          {{ view.settings.enabled ? 'Suspendre les commandes sur tous les sites' : 'Commandes suspendues · réactiver' }}
+          {{ view.settings.enabled ? t('suspendAll') : t('reactivate') }}
         </button>
       </details>
     </template>
@@ -327,7 +329,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
       class="sg-muted"
       role="status"
     >
-      {{ error || 'Recherche du média…' }}
+      {{ error || t('findingMedia') }}
     </p>
   </section>
 </template>

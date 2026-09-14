@@ -257,7 +257,7 @@ pnpm verify:package
 - **Configuration files**: English
 - **Source code comments**: French (legacy JS), minimal English (new TS/Vue)
 - **Variable/function names**: Mix of French and English
-- **UI text**: French
+- **UI text**: French and English through `src/i18n.ts`; local preference is `auto`, `fr`, or `en`. The classic YouTube script keeps a compatible self-contained dictionary.
 
 ### 5. YouTube SPA Handling
 
@@ -356,7 +356,7 @@ When working on this codebase:
 1. Check if functionality exists in legacy JS files first
 2. Prefer modifying TypeScript/Vue files when possible
 3. Maintain compatibility with existing storage format
-4. Preserve French UI text unless specifically changing it
+4. Preserve French/English translation parity and avoid new user-visible literals outside the localization layer.
 5. Add TypeScript interfaces for new data structures
 
 ---

@@ -1,7 +1,7 @@
 ---
 artifact: competitive_intelligence
 metadata_schema_version: "1.0"
-artifact_version: "1.6.0"
+artifact_version: "1.7.0"
 project: "replayglows"
 created: "2026-05-11"
 updated: "2026-09-05"
@@ -14,6 +14,7 @@ risk_level: medium
 security_impact: none
 docs_impact: yes
 evidence:
+  - "Ambient light for YouTube official store, repository and privacy policy reviewed on 2026-09-05 against the current extension product contract."
   - "Initial competitor and inspiration triage captured in legacy root concurrent.md."
   - "ReplayGlows product context targets video learning workflows, notes, playlists, transcripts, and summaries."
   - "TubeFlow public site reviewed on 2026-07-05: https://tubeflow.ai/."
@@ -45,8 +46,9 @@ source_policy: "Track public sources only; do not copy private positioning, paid
 # Concurrents et inspirations — ReplayGlows
 
 TODO
-
+https://github.com/EfficientStreet/youtube-subscriptions-ingest
 https://appsumo.com/products/bookster/
+https://github.com/THU-MAIC/OpenMAIC
 
 ## Lecture projet
 
@@ -227,3 +229,99 @@ The preceding comparison and proposal tables preserve the pre-implementation res
 ### Implementation decision following research
 
 The operator subsequently approved development and explicitly chose all sites. The owning spec is `shipglows_data/workflow/specs/monorepo/2026-09-05-extension-universal-playback.md`. Its first increment covers HTTP/HTTPS HTML5 playback, shared speed with session-scoped pinned tabs, popup card, favorite/configurable commands, temporary boost, suspension and temporary A–B repetition using current positions or existing YouTube bookmark pairs. Research rows above remain dated pre-implementation comparisons. Persisted segments, note-specific speed, frame stepping, URL rules, manual media selection and audio/visual effects are not part of this first implementation; do not present the full opportunity matrix as delivered functionality. Current proof belongs to the spec.
+
+## Ambient light for YouTube — competitive review, 2026-09-05
+
+| Reference | Category | Status | Scope |
+| --- | --- | --- | --- |
+| [Ambient light for YouTube](https://chromewebstore.google.com/detail/ambient-light-for-youtube/paponcgjfojgemddooebbgniglhkajkj) | Indirect competitor / viewing-experience inspiration | reviewed | User-supplied YouTube visual-enhancement specialist. |
+
+Owner: Diane. Outcome: qualify this reference for ReplayGlows and identify useful opportunities. This is a bounded competitive review, not a market-size study or an approved implementation plan.
+
+### Evidence and limits
+
+Sources inspected on 2026-09-05:
+
+- [Chrome Web Store](https://chromewebstore.google.com/detail/ambient-light-for-youtube/paponcgjfojgemddooebbgniglhkajkj): 10,000 users, 4.8/5 from 182 ratings, Featured; version 2.38.17, updated November 15, 2025. Counts are a dated distribution/review snapshot, not active usage, retention or willingness to pay. No paid tier was established by this review.
+- [Official repository](https://github.com/WesselKroos/youtube-ambilight): public source, MIT license; README recommends a GPU scoring at least 1000 in PassMark G3D Mark and warns of possible stuttering below that. This is publisher guidance, not a measured requirement on our hardware. Repository state can differ from the store release.
+- [Publisher privacy policy](https://github.com/WesselKroos/youtube-ambilight/blob/develop/PRIVACY-POLICY.md): optional crash reports to Sentry, retained for 30 days; may contain the watched URL/video ID and technical state. The store's no-data-collection declaration must not be paraphrased as zero network traffic. No independent privacy audit was performed.
+- ReplayGlows comparison uses `shipglows_data/product/ext/product.md`, including its delivered multisite playback scope and explicit exclusion of advanced effects. Source search in `ext/src` did not establish an ambient-light controller; decorative CSS blur is not equivalent. Historical runtime proof was not rerun.
+
+### Capability and workflow comparison
+
+The competitor column summarizes publisher claims from the store, not hands-on verification.
+
+| Dimension | Ambient light for YouTube | ReplayGlows assessment |
+| --- | --- | --- |
+| Visual immersion | Adjustable ambient glow, direction, blur and transitions. | Outside the current extension contract; an optional inspiration, not a parity defect. |
+| Fit and readability | Black/colored-bar removal, screen filling, zoom, brightness/contrast/saturation filters. | Potential aid for inspecting demonstrations; cropping could hide instructional details and needs task-based testing. |
+| Page distractions | Theater-mode element hiding and page opacity controls. | Candidate focus workflow around saved learning moments; keep notes and controls accessible. |
+| Performance controls | Frame-rate/resolution limits, WebGL, static-video energy saving and diagnostics. | Useful design lesson if effects are considered: establish resource budgets and an easy disable path before adding visual complexity. |
+| Settings | Import/export and activation by viewing mode, including PiP. | Existing portable bookmark records serve a different purpose; do not conflate note export with complete settings portability. |
+| Coverage | YouTube viewing experience. | ReplayGlows controls accessible HTML5 video/audio across HTTP/HTTPS sites; annotations remain YouTube-specific. |
+| Learning continuity | Notes, playlists and learning-record exports not established by inspected sources. | ReplayGlows combines timestamped notes, portable bookmarks and temporary A–B review. Those are the stronger learning-workflow differentiators. |
+
+### Interpretation and recommended priority
+
+**Classification: indirect competitor, useful visual-experience benchmark.** It competes for the user's choice of YouTube enhancement, while addressing a different primary job from retaining and revisiting learning material. Complementary installation is plausible; coexistence has not been tested.
+
+1. **First candidate: a focused viewing mode connected to note review.** Evaluate reducing surrounding distractions while preserving the video, annotations, captions and playback controls. This has a clearer connection to learning than decorative glow; the benefit remains a hypothesis.
+2. **Second candidate: optional fit/readability controls.** Test whether zoom or contrast helps real tutorial tasks. Preserve a reversible default and verify that cropping does not remove subtitles or useful content.
+3. **Lower priority: ambient glow.** Consider only if users value immersion enough to justify GPU cost, accessibility controls and additional settings. No evidence here establishes improved concentration or learning outcomes.
+
+Next decision: whether to investigate focused viewing; no feature development is authorized by this entry. A later experiment should compare completing a note-and-revisit task with and without the mode, and check dropped frames, CPU/GPU load, captions, theater/fullscreen/PiP transitions and coexistence with this extension. Do not claim better comfort, performance or compatibility before that evidence exists.
+
+Documentation impact: this internal registry only. Public copy, product promises and release notes are unchanged; research candidates are not delivered features.
+
+## Screenshot YouTube — competitive review, 2026-09-07
+
+| Reference | Category | Status | Scope |
+| --- | --- | --- | --- |
+| [Screenshot YouTube](https://chromewebstore.google.com/detail/screenshot-youtube/gjoijpfmdhbjkkgnmahganhoinjjpohk) | Competitor: YouTube frame capture | candidate | User-supplied specialist reference for saving visual learning moments. |
+
+Owner: Diane. Outcome: add the supplied competitor, check existing ReplayGlows coverage and explain an implementation path. The recommendations below are research, not an approved feature implementation or a public delivery claim.
+
+### Evidence and limits
+
+- [Chrome Web Store listing](https://chromewebstore.google.com/detail/screenshot-youtube/gjoijpfmdhbjkkgnmahganhoinjjpohk), inspected 2026-09-07: 500,000 users, 4.4/5 from 487 ratings; Featured; version 3.0.0, updated December 27, 2024; offered by Zdeněk Gromnica / FutureMillennium. These are a dated listing snapshot, not measured active usage or willingness to pay.
+- The publisher advertises a player button that saves the current video image to a file, copies it to the clipboard, or both; optional keyboard shortcuts and playback-rate buttons. The store describes Manifest V3 migration and removal of the history permission. No paid tier was established. No tracking/data collection is a publisher declaration, not an independent audit.
+- [Official repository README](https://github.com/FutureMillennium/Screenshot-YouTube): public source; describes the project as finished and functional with no updates planned. This does not prove current YouTube compatibility. No source code was copied and no reusable license was established in this review.
+- Local evidence is the current working tree, including pre-existing changes in the extension and this register. Searches covered `ext/src`, `ext/contentscript.js`, legacy extension scripts, `app/lib` and the product backend. The competitor was not installed; no rendered, authenticated or native feature test was run.
+
+### Does ReplayGlows already have it?
+
+| Capability | Current local evidence | Assessment |
+| --- | --- | --- |
+| Save the current video frame as an image | No product capture pipeline found (`drawImage`, `toBlob`, `captureVisibleTab`, Flutter image capture); screenshot matches in browser scripts are test artifacts. | Missing from inspected product code. |
+| Copy the video image to the clipboard | Extension options copy Markdown using `writeText`; Flutter copies text. | Text export exists; image clipboard export was not found. |
+| Timestamped learning context | `ext/src/bookmarks.ts` stores URL, time, formatted time, note and optional title. | Existing foundation for associating a frame with a learning moment. |
+| Retain images in bookmarks | The bookmark schema has no attachment field; `normalizeBookmark` reconstructs only known fields and Markdown export contains text/link data. | Adding an image field alone would not preserve it through import/export. |
+| Playback speed and configurable shortcuts | Current extension product contract and `ext/src/playback/` implement speed, shortcuts and A–B review. | Existing overlap; no need to rebuild speed controls for this competitor. |
+| Capture from the Flutter web player | `app/lib/widgets/play/web_youtube_embed_web.dart` embeds an `HTMLIFrameElement` on `youtube-nocookie.com`. | Parent-page code cannot directly read the embedded video's pixels across origins. A separate integration is needed. |
+
+Interpretation: this is a specialist substitute for a single YouTube utility, not evidence of a full learning-workspace competitor. A useful ReplayGlows opportunity is preserving a diagram, slide or code example alongside a timestamp and note. Its learning benefit and demand remain hypotheses.
+
+### Recommended implementation path — proposed, not started
+
+**First increment: local capture on YouTube watch pages in the extension.** Keep Shorts, embedded players in other sites, arbitrary-site capture and app synchronization outside the first increment until separately scoped.
+
+1. Add an isolated capture helper under `ext/src/` and connect it to `ext/contentscript.js`, which already discovers the YouTube player and reinitializes on `yt-navigate-finish`. Wire it through the actual `ext/vite.config.ts` entrypoints. Add one accessible player button, localized FR/EN feedback and a configurable shortcut using existing input-focus and collision rules. Reinitialization must not duplicate buttons/listeners; refresh the media reference after player replacement.
+2. On a user gesture, resolve the main content video, reject ads/no-frame states, check `readyState` and nonzero `videoWidth`/`videoHeight`, snapshot URL/time/title and immediately draw the decoded frame into a canvas at its intrinsic dimensions. Encode PNG with `toBlob`. This captures the decoded resolution, not a guaranteed maximum source quality. Page controls and DOM subtitle overlays are not part of the video pixels; burned-in captions are.
+3. Offer download, copy, or both. Download a Blob through an object URL with a sanitized title/video ID/time filename and release the URL after use. For image copy, use `navigator.clipboard.write` with `ClipboardItem`; preserve user activation and report download/copy outcomes separately. On clipboard refusal, expose a retry/download action rather than reporting success. Prototype the real packaged-extension permission path first: the current manifest has neither `clipboardWrite` nor `downloads`; do not add either automatically when a user-gesture path suffices.
+4. Handle encoding failure, a canvas blocked by cross-origin media, navigation during encoding and protected/unreadable video without exporting a misleading result. Do not change the video's source or CORS mode during playback. Avoid automatic full-tab capture as a fallback: it changes the captured content and would require a separately reviewed behavior.
+5. Keep images ephemeral in this first increment; no backend, authentication change or bookmark-schema migration is needed. Preserve existing speed, loop and note interactions, the current playing/paused state, and existing concurrent work.
+
+**Second increment: attach a capture to a note.** Introduce stable bookmark/attachment identity and local binary storage (for example IndexedDB owned by the extension, not the YouTube origin). Define size limits, deletion/orphan cleanup, quota failures and a versioned export format containing images plus a manifest. Extend validation/import and preserve old text-only records; a plain JSON/Markdown export currently cannot carry this complete relationship. Association must use the captured video/time, including when navigation occurs before saving.
+
+**App integration is a separate step.** The web player's cross-origin iframe blocks a direct Flutter-to-video canvas implementation. Evaluate a deliberately scoped extension bridge or user-selected capture/import; validate native-player capture separately. Any extension-to-app image transfer needs explicit account association, authenticated upload/access/deletion and a synchronization contract, since the current extension remains local and unsynchronized. Do not imply that Convex storage alone supplies this workflow.
+
+### Proof required before calling it delivered
+
+- Focused unit tests: filename sanitization, invalid/no-frame states, output modes, partial failures and shortcut collisions.
+- Packaged Chrome extension on real YouTube: paused and playing video, seeking, fullscreen/theater, SPA navigation and media replacement; verify exported image dimensions/content and paste an actual image into a receiving app.
+- Recovery checks: clipboard denied, encoding/CORS failure, ad/no video, repeated clicks and navigation during encoding; no blank-success claim or duplicate injected controls.
+- Regression: existing bookmarks, imports/exports, speed and A–B loops; FR/EN labels and keyboard access. Run the extension's typecheck/build and relevant existing tests.
+
+Technical references checked 2026-09-07: [MDN drawImage](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage), [MDN Clipboard.write](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/write), [MDN canvas and cross-origin media](https://developer.mozilla.org/en-US/docs/Web/HTML/How_to/CORS_enabled_image), [MDN same-origin policy](https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy). These support the proposed browser primitives and limitations, not proof that the feature already works in ReplayGlows.
+
+Documentation impact: this internal register only; existing entries and metadata are preserved. Next action: scope and approve the first capture increment if selected for implementation. Public copy and release notes are unaffected; no feature code, permission, backend or synchronization change was made by this review.

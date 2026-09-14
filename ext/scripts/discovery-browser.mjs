@@ -24,6 +24,7 @@ try {
   const id = new URL(worker.url()).host
   const options = await context.newPage()
   await options.goto(`chrome-extension://${id}/src/options/options.html`)
+  await options.evaluate(() => chrome.storage.local.set({ language: 'fr' }))
   const stored = name => options.evaluate(async name => (await chrome.storage.local.get(name))[name], `discovery.v1.${name}`)
   const send = request => options.evaluate(request => chrome.runtime.sendMessage(request), request)
   await context.route('https://example.com/discovery', route => route.fulfill({ contentType:'text/html',body:html }))
@@ -31,13 +32,13 @@ try {
   const media = await context.newPage(); await media.goto('https://example.com/discovery')
   await media.waitForFunction(() => document.querySelector('video').duration === 30)
   let popup
-  async function open(target=media) {
+  async function open(target=media, helpLabel='Découvrir / Aide') {
     if (popup && !popup.isClosed()) await popup.close()
     popup = await context.newPage(); await target.bringToFront()
     await popup.goto(`chrome-extension://${id}/src/popup/index.html`)
     await popup.setViewportSize({width:432,height:600})
     popup.on('pageerror', e => errors.push(e.message))
-    await popup.getByRole('button',{name:'Découvrir / Aide',exact:true}).waitFor()
+    await popup.getByRole('button',{name:helpLabel,exact:true}).waitFor()
     return popup
   }
   await open()
@@ -118,13 +119,21 @@ try {
   await options.evaluate(() => chrome.storage.local.set({playbackSettings:{rate:9,keys:{faster:'BAD'}},hotkeys:{}}))
   await open()
   await popup.locator('#discovery-topic').selectOption('note')
-  await popup.getByText('Désactivé dans les réglages',{exact:true}).waitFor()
+  await popup.getByText('Désactivé',{exact:true}).waitFor()
   await popup.getByText('⚡ Favori, boost et raccourcis',{exact:true}).click()
   await popup.getByText('ALT+SHIFT+D',{exact:true}).waitFor()
   await send({action:'rg:settings',settings:{enabled:false}})
   await popup.locator('#discovery-topic').selectOption('speed')
   await popup.getByText('Les commandes sont suspendues.',{exact:false}).waitFor()
   console.log('PASS failed navigation/storage recovery, malformed effective shortcuts, suspension guidance')
+
+  await options.evaluate(() => chrome.storage.local.set({ language: 'en' }))
+  await options.getByRole('heading', { name: 'Settings', exact: true }).waitFor()
+  await open(empty, 'Discover / Help')
+  await popup.getByRole('button', { name: 'Discover / Help', exact: true }).waitFor()
+  await popup.getByText('No accessible media.', { exact: false }).waitFor()
+  assert.equal(await options.locator('select').first().inputValue(), 'en')
+  console.log('PASS live English switch updates options and popup')
 
   // Native action-popup proof is owned by discovery-native.mjs (Chrome exposes it as a CDP target).
   assert.deepEqual(errors,[])

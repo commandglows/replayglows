@@ -30,7 +30,15 @@ async function worker(storage) {
     } },
   }
   const source = ts.transpileModule(readFileSync(new URL('../src/background/background.ts', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText
-  vm.runInNewContext(source, { chrome, exports: {}, require: () => domain, Promise, Error })
+  vm.runInNewContext(source, {
+    chrome,
+    exports: {},
+    require: specifier => specifier.includes('runtime-i18n')
+      ? { localizeRuntimeError: async message => message }
+      : domain,
+    Promise,
+    Error,
+  })
   return request => new Promise(resolve => listener(request, { id: 'test-extension' }, resolve))
 }
 test('concurrent tabs, update/delete identity, worker restart, invalid import preserve data', async () => {

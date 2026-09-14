@@ -1,4 +1,5 @@
 import { DEFAULT_KEYS, DEFAULT_SETTINGS, RATE_MAX, RATE_MIN, type MediaSnapshot, type PlaybackContext, type PlaybackSettings, type PlaybackView } from './protocol'
+import { localizeRuntimeError } from '../runtime-i18n'
 
 type Request = Record<string, unknown>
 type Session = { pins: Record<string, number>; frames: Record<string, number[]> }
@@ -187,7 +188,7 @@ export function registerPlaybackBackground() {
   }
   chrome.runtime.onMessage.addListener((request: unknown, sender, sendResponse) => {
     if (!object(request) || typeof request.action !== 'string' || !ACTIONS.has(request.action)) return false
-    enqueue(() => handle(request, sender)).then(sendResponse, error => sendResponse({ error: error instanceof Error ? error.message : 'Échec du contrôle de lecture.' }))
+    enqueue(() => handle(request, sender)).then(async result => sendResponse(result?.error ? { ...result, error: await localizeRuntimeError(result.error) } : result), async error => sendResponse({ error: await localizeRuntimeError(error instanceof Error ? error.message : 'Échec du contrôle de lecture.') }))
     return true
   })
   chrome.tabs.onRemoved.addListener(tabId => {
