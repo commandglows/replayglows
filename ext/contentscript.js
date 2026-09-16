@@ -11,8 +11,8 @@
  * to provide a seamless bookmarking experience directly on the video player.
  */
 const YOUTUBE_MESSAGES = {
-  fr: { add: 'Ajouter un marque-page', notePlaceholder: 'Ajouter une note pour ce marque-page', noteLabel: 'Note du marque-page', saved: 'Marque-page enregistré !', missingPlayer: 'Impossible ! La barre de progression ou la vidéo actuelle sont manquantes.', playAt: 'Lire le marque-page à {time}', deleteOne: 'Supprimer ce marque-page', listLabel: 'Marque-pages de cette vidéo', listTitle: 'Marque-pages pour cette vidéo', listEmpty: 'Aucun marque-page pour cette vidéo', deleteVideo: 'Supprimer les marque-pages de cette vidéo', seekAt: 'Lire à {time}', edit: 'Modifier', editNote: 'Modifier la note', save: 'Enregistrer', cancel: 'Annuler', delete: 'Supprimer', videoDeleted: 'Marque-pages de cette vidéo supprimés' },
-  en: { add: 'Add a bookmark', notePlaceholder: 'Add a note for this bookmark', noteLabel: 'Bookmark note', saved: 'Bookmark saved!', missingPlayer: 'The progress bar or current video is unavailable.', playAt: 'Play bookmark at {time}', deleteOne: 'Delete this bookmark', listLabel: 'Bookmarks for this video', listTitle: 'Bookmarks for this video', listEmpty: 'No bookmarks for this video', deleteVideo: 'Delete bookmarks for this video', seekAt: 'Play at {time}', edit: 'Edit', editNote: 'Edit note', save: 'Save', cancel: 'Cancel', delete: 'Delete', videoDeleted: 'Bookmarks for this video deleted' }
+  fr: { add: 'Ajouter un marque-page', notePlaceholder: 'Ajouter une note pour ce marque-page', noteLabel: 'Note du marque-page', saved: 'Marque-page enregistré !', missingPlayer: 'Impossible ! La barre de progression ou la vidéo actuelle sont manquantes.', playAt: 'Lire le marque-page à {time}', deleteOne: 'Supprimer ce marque-page', listLabel: 'Marque-pages de cette vidéo', listTitle: 'Marque-pages pour cette vidéo', listEmpty: 'Aucun marque-page pour cette vidéo', deleteVideo: 'Supprimer les marque-pages de cette vidéo', seekAt: 'Lire à {time}', edit: 'Modifier', editNote: 'Modifier la note', save: 'Enregistrer', cancel: 'Annuler', delete: 'Supprimer', videoDeleted: 'Marque-pages de cette vidéo supprimés', openLocal: 'Ouvrir dans l’app locale', openCloud: 'Ouvrir dans le cloud', showController: 'Afficher le contrôleur', showSpeed: 'Montrer la barre de vitesse', hideSpeed: 'Masquer la barre de vitesse', speed: 'Vitesse de lecture', favoriteSpeed: 'Vitesse favorite', speedError: 'Impossible de modifier la vitesse. Réessayez.', speedSuspended: 'Contrôle de vitesse suspendu' },
+  en: { add: 'Add a bookmark', notePlaceholder: 'Add a note for this bookmark', noteLabel: 'Bookmark note', saved: 'Bookmark saved!', missingPlayer: 'The progress bar or current video is unavailable.', playAt: 'Play bookmark at {time}', deleteOne: 'Delete this bookmark', listLabel: 'Bookmarks for this video', listTitle: 'Bookmarks for this video', listEmpty: 'No bookmarks for this video', deleteVideo: 'Delete bookmarks for this video', seekAt: 'Play at {time}', edit: 'Edit', editNote: 'Edit note', save: 'Save', cancel: 'Cancel', delete: 'Delete', videoDeleted: 'Bookmarks for this video deleted', openLocal: 'Open in the local app', openCloud: 'Open in the cloud', showController: 'Show controller', showSpeed: 'Show speed bar', hideSpeed: 'Hide speed bar', speed: 'Playback speed', favoriteSpeed: 'Favorite speed', speedError: 'Unable to change speed. Try again.', speedSuspended: 'Speed control suspended' }
 };
 
 const YouTubeBookmarker = {
@@ -74,7 +74,8 @@ const YouTubeBookmarker = {
     BOOKMARK_ICON_CLASS: 'custom-bookmark-icon',
     BOOKMARK_ICON_CONTAINER_CLASS: 'custom-bookmark-icon-container',
     BOOKMARK_DELETE_ICON_CLASS: 'custom-bookmark-delete-icon',
-    BOOKMARK_INPUT_CONTAINER_CLASS: 'bookmark-input-container'
+    BOOKMARK_INPUT_CONTAINER_CLASS: 'bookmark-input-container',
+    RG_MENU_CLASS: 'rg-yt-menu'
   },
   
   /**
@@ -86,13 +87,14 @@ const YouTubeBookmarker = {
     const generation = this.generation = (this.generation || 0) + 1;
     clearTimeout(this.clickGesture?.timer);
     this.clickGesture = null;
+    this.speedBarCleanup?.();
     this.events?.abort();
     this.hotkeyEvents?.abort();
     this.events = new AbortController();
     const { language = 'auto' } = await chrome.storage.local.get('language');
     this.locale = language === 'fr' || (language === 'auto' && navigator.languages.some(item => item.toLowerCase().startsWith('fr'))) ? 'fr' : 'en';
     this.state.bookmarkInputContainer?.remove();
-    document.querySelectorAll('.bookmarks-list, .custom-bookmark-icon-container').forEach(el => el.remove());
+    document.querySelectorAll('.bookmarks-list, .custom-bookmark-icon-container, .rg-yt-menu').forEach(el => el.remove());
     if (window.location.pathname !== '/watch') return;
     // A navigation can supersede player readiness; never initialize a stale page.
     for (let attempt = 0; attempt < 100; attempt++) {
@@ -104,6 +106,8 @@ const YouTubeBookmarker = {
     try {
       await this.resetState();
       await this.addBookmarkButton();
+      this.setupSpeedBar();
+      this.setupOverflowMenu();
       await this.setupHotkeys();
       await this.updateUIElements();
       this.setupEventListeners();
@@ -287,6 +291,288 @@ const YouTubeBookmarker = {
         console.info("timeDisplay est introuvable, le bouton ne peut pas être ajouté.");
         }
     });
+  },
+
+  /**
+   * Adds a dropdown to the bookmark button. Opening downward, it closes when
+   * the hover stops (button and dropdown) and offers cross-app actions.
+   */
+  setupOverflowMenu() {
+    const button = this.state.bookmarkButton;
+    if (!button) return;
+    const menu = document.createElement('div');
+    menu.className = this.CONSTANTS.RG_MENU_CLASS;
+    menu.setAttribute('role', 'menu');
+    menu.setAttribute('aria-label', 'ReplayGlows');
+    const items = [
+      { key: 'openLocal', run: () => this.openInApp('watch') },
+      { key: 'openCloud', run: () => this.openInApp('play') },
+      { key: 'showController', run: () => {} },
+      { key: 'showSpeed', run: () => this.toggleSpeedBar() },
+    ];
+    for (const item of items) {
+      const entry = document.createElement('button');
+      entry.type = 'button';
+      entry.className = 'rg-yt-menu__item';
+      entry.setAttribute('role', 'menuitem');
+      entry.textContent = this.t(item.key);
+      if (item.key === 'showSpeed') {
+        this.speedMenuEntry = entry;
+        entry.setAttribute('role', 'menuitemcheckbox');
+        entry.setAttribute('aria-controls', 'rg-yt-speedbar');
+        entry.setAttribute('aria-checked', String(!!this.speedBarVisible));
+        entry.textContent = this.t(this.speedBarVisible ? 'hideSpeed' : 'showSpeed');
+      }
+      entry.addEventListener('click', (e) => {
+        e.stopPropagation();
+        close();
+        item.run();
+      }, { signal: this.events.signal });
+      menu.appendChild(entry);
+    }
+    document.body.appendChild(menu);
+    let open = false;
+    let leaveTimer = null;
+    const openMenu = () => {
+      if (open) return;
+      open = true;
+      const rect = button.getBoundingClientRect();
+      menu.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - 240))}px`;
+      menu.style.top = `${rect.bottom + 8}px`;
+      menu.classList.add('rg-yt-menu--open');
+    };
+    const close = () => {
+      clearTimeout(leaveTimer);
+      open = false;
+      menu.classList.remove('rg-yt-menu--open');
+    };
+    const enter = () => {
+      clearTimeout(leaveTimer);
+      openMenu();
+    };
+    const leave = () => {
+      clearTimeout(leaveTimer);
+      leaveTimer = setTimeout(close, 140);
+    };
+    button.addEventListener('mouseenter', enter, { signal: this.events.signal });
+    button.addEventListener('mouseleave', leave, { signal: this.events.signal });
+    menu.addEventListener('mouseenter', enter, { signal: this.events.signal });
+    menu.addEventListener('mouseleave', leave, { signal: this.events.signal });
+    this.state.overlayMenu = menu;
+  },
+
+  toggleSpeedBar() {
+    this.speedBarVisible = !this.speedBarVisible;
+    if (this.speedBarVisible && !this.speedBar?.isConnected) {
+      this.speedBarCleanup?.();
+      this.state.player = document.querySelector('.html5-video-player');
+      this.state.currentVideo = this.state.player?.querySelector('video');
+      this.setupSpeedBar();
+    }
+    if (this.speedBar) this.speedBar.hidden = !this.speedBarVisible;
+    this.speedMenuEntry?.setAttribute('aria-checked', String(this.speedBarVisible));
+    if (this.speedMenuEntry) this.speedMenuEntry.textContent = this.t(this.speedBarVisible ? 'hideSpeed' : 'showSpeed');
+    this.updateSpeedBarLayout?.();
+    if (this.speedBarVisible) this.refreshSpeedContext?.();
+  },
+
+  setupSpeedBar() {
+    const controls = this.state.player?.querySelector('.ytp-chrome-controls');
+    const left = controls?.querySelector('.ytp-left-controls');
+    const right = controls?.querySelector('.ytp-right-controls');
+    const video = this.state.currentVideo;
+    if (!controls || !left || !right || !video) return;
+    const barEvents = new AbortController();
+    const signal = barEvents.signal;
+    this.events.signal.addEventListener('abort', () => barEvents.abort(), { once: true, signal });
+    const bar = document.createElement('div');
+    bar.id = 'rg-yt-speedbar';
+    bar.className = 'rg-yt-speedbar';
+    bar.hidden = !this.speedBarVisible;
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', this.t('speed'));
+    const output = document.createElement('output');
+    output.className = 'rg-yt-speedbar__value';
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = '0.25'; slider.max = '4'; slider.step = '0.05';
+    slider.className = 'rg-yt-speedbar__slider';
+    slider.setAttribute('aria-label', this.t('speed'));
+    const presets = document.createElement('div');
+    presets.className = 'rg-yt-speedbar__presets';
+    const error = document.createElement('span');
+    error.className = 'rg-yt-speedbar__error';
+    error.setAttribute('role', 'status');
+    error.hidden = true;
+    let context = null;
+    let pendingRate = null;
+    let sending = false;
+    let pinning = false;
+    let refreshInFlight = false;
+    const format = value => `${Number(value.toFixed(2))}×`;
+    const renderRate = () => {
+      if (signal.aborted) return;
+      const rate = video.playbackRate;
+      output.textContent = format(rate);
+      if (pendingRate === null && !sending) slider.value = String(rate);
+      slider.setAttribute('aria-valuetext', format(Number(slider.value)));
+      for (const button of presets.children) button.setAttribute('aria-pressed', String(Number(button.dataset.rate) === rate));
+    };
+    const request = async message => {
+      let timeout;
+      try {
+        const response = await Promise.race([
+          chrome.runtime.sendMessage(message),
+          new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error(this.t('speedError'))), 5000); }),
+        ]);
+        if (!response || response.error) throw new Error(response?.error || this.t('speedError'));
+        return response;
+      } finally { clearTimeout(timeout); }
+    };
+    const showError = message => {
+      if (signal.aborted) return;
+      error.textContent = message;
+      error.title = message;
+      error.hidden = false;
+    };
+    const applyContext = value => {
+      if (signal.aborted || !value?.settings) return;
+      context = value;
+      const disabled = !value.settings.enabled || pinning;
+      slider.disabled = disabled;
+      for (const button of presets.children) button.disabled = disabled;
+      favorite.disabled = disabled;
+      favorite.dataset.rate = String(value.settings.favorite);
+      favorite.title = `${this.t('favoriteSpeed')} (${format(value.settings.favorite)})`;
+      favorite.setAttribute('aria-label', favorite.title);
+      pin.disabled = sending || pinning;
+      pin.setAttribute('aria-pressed', String(value.pinned));
+      pin.title = this.locale === 'fr'
+        ? (value.pinned ? 'Désépingler : reprendre la vitesse globale' : 'Épingler la vitesse à cet onglet')
+        : (value.pinned ? 'Unpin: use global speed' : 'Pin speed to this tab');
+      pin.setAttribute('aria-label', pin.title);
+      if (!value.settings.enabled) showError(this.t('speedSuspended'));
+      else { error.hidden = true; error.textContent = ''; }
+      renderRate();
+    };
+    // Coalesce fast slider input: one request in flight and only the latest next value.
+    const changeRate = async value => {
+      pendingRate = value;
+      slider.value = String(value);
+      slider.setAttribute('aria-valuetext', format(value));
+      if (sending) return;
+      sending = true;
+      pin.disabled = true;
+      try {
+        while (pendingRate !== null && !signal.aborted) {
+          const rate = pendingRate;
+          pendingRate = null;
+          applyContext(await request({ action: 'rg:rate', rate }));
+        }
+      } catch (failure) {
+        pendingRate = null;
+        showError(failure.message || this.t('speedError'));
+      } finally { sending = false; pin.disabled = pinning; renderRate(); }
+    };
+    for (const rate of [0.5, 1, 1.5, 2]) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.textContent = format(rate);
+      button.dataset.rate = String(rate);
+      button.addEventListener('click', () => changeRate(rate), { signal });
+      presets.appendChild(button);
+    }
+    const favorite = document.createElement('button');
+    favorite.type = 'button'; favorite.className = 'rg-yt-speedbar__favorite';
+    favorite.textContent = '★'; favorite.title = this.t('favoriteSpeed');
+    favorite.addEventListener('click', () => { if (context) changeRate(context.settings.favorite); }, { signal });
+    const pin = document.createElement('button');
+    pin.type = 'button'; pin.className = 'rg-yt-speedbar__pin';
+    pin.disabled = true;
+    pin.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8l-1 7 3 3v2h-5v6l-1 2-1-2v-6H6v-2l3-3-1-7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>';
+    pin.addEventListener('click', async () => {
+      if (!context || sending || pinning) return;
+      pinning = true;
+      applyContext(context);
+      let failureMessage = '';
+      try { applyContext(await request({ action: 'rg:pin', pinned: !context.pinned })); }
+      catch (failure) { failureMessage = failure.message || this.t('speedError'); }
+      finally {
+        pinning = false;
+        applyContext(context);
+        if (failureMessage) showError(failureMessage);
+      }
+    }, { signal });
+    slider.addEventListener('input', () => changeRate(Number(slider.value)), { signal });
+    video.addEventListener('ratechange', renderRate, { signal });
+    for (const type of ['click', 'dblclick', 'pointerdown', 'keydown', 'keyup']) {
+      bar.addEventListener(type, event => event.stopPropagation(), { signal });
+    }
+    bar.append(output, slider, presets, favorite, pin, error);
+    controls.appendChild(bar);
+    this.speedBar = bar;
+    const layout = () => {
+      if (signal.aborted) return;
+      const outer = controls.getBoundingClientRect();
+      // YouTube's flex:1 left group includes the empty space. Measure its
+      // visible controls instead of treating the whole group as occupied.
+      const occupiedRight = Math.max(outer.left, ...Array.from(left.children)
+        .map(element => element.getBoundingClientRect())
+        .filter(rect => rect.width > 0 && rect.height > 0)
+        .map(rect => rect.right));
+      const end = right.getBoundingClientRect();
+      const scale = outer.width / controls.offsetWidth || 1;
+      const available = Math.max(0, (end.left - occupiedRight) / scale - 16);
+      bar.style.left = `${(occupiedRight - outer.left) / scale + 8}px`;
+      bar.style.width = `${available}px`;
+      bar.classList.toggle('rg-yt-speedbar--compact', available < 380);
+      bar.classList.toggle('rg-yt-speedbar--tiny', available < 190);
+      bar.hidden = !this.speedBarVisible || available < 125;
+    };
+    const observer = new ResizeObserver(layout);
+    const observeControls = () => {
+      for (const element of [controls, left, right, ...left.children, ...right.children]) observer.observe(element);
+      layout();
+    };
+    const mutations = new MutationObserver(observeControls);
+    mutations.observe(left, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+    mutations.observe(right, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+    observeControls();
+    this.updateSpeedBarLayout = layout;
+    const refresh = async () => {
+      if (refreshInFlight || signal.aborted) return;
+      refreshInFlight = true;
+      try { applyContext(await request({ action: 'rg:context' })); }
+      catch (failure) { showError(failure.message || this.t('speedError')); }
+      finally { refreshInFlight = false; }
+    };
+    this.refreshSpeedContext = refresh;
+    const receive = (message, sender) => {
+      if (sender.id === chrome.runtime.id && message?.action === 'rg:apply') applyContext(message.context);
+    };
+    chrome.runtime.onMessage.addListener(receive);
+    this.speedBarCleanup = () => {
+      barEvents.abort();
+      observer.disconnect();
+      mutations.disconnect();
+      chrome.runtime.onMessage.removeListener(receive);
+      bar.remove();
+      this.speedBar = null;
+      this.updateSpeedBarLayout = null;
+      this.refreshSpeedContext = null;
+    };
+    renderRate(); layout(); refresh();
+  },
+
+  /**
+   * Opens the current video inside the ReplayGlows app page, either in the
+   * local player or in the connected (cloud) play screen.
+   */
+  openInApp(routeName) {
+    const id = new URL(window.location.href).searchParams.get('v');
+    if (!id) return;
+    const time = Math.max(0, Math.round(this.currentVideoTime));
+    const url = chrome.runtime.getURL(`src/app/index.html#/${routeName}?v=${encodeURIComponent(id)}&t=${time}`);
+    chrome.tabs.create({ url });
   },
 
   /**
@@ -647,7 +933,7 @@ const YouTubeBookmarker = {
       const marker = iconContainer.getBoundingClientRect();
       const player = this.state.player.getBoundingClientRect();
       const width = infoContainer.getBoundingClientRect().width;
-      const left = Math.max(player.left, Math.min(marker.left - width / 2, player.right - width));
+      const left = Math.max(player.left, Math.min(marker.left + marker.width / 2 - width / 2, player.right - width));
       infoContainer.style.left = `${left - marker.left}px`;
     };
     iconContainer.addEventListener('mouseenter', positionTooltip);
@@ -667,7 +953,8 @@ const YouTubeBookmarker = {
       isDragging = true;
       moved = false;
       dragStartX = e.clientX;
-      dragStartLeft = iconContainer.offsetLeft;
+      const markerRect = iconContainer.getBoundingClientRect();
+      dragStartLeft = markerRect.left + markerRect.width / 2 - this.state.progressBar.getBoundingClientRect().left;
       dragStartTime = bookmark.time;
       iconContainer.classList.add('dragging');
       document.addEventListener('mousemove', dragBookmark);
@@ -685,9 +972,9 @@ const YouTubeBookmarker = {
       const newLeft = dragStartLeft + deltaX;
       const progressBarRect = this.state.progressBar.getBoundingClientRect();
       const minLeft = 0;
-      const maxLeft = progressBarRect.width - iconContainer.offsetWidth;
+      const maxLeft = progressBarRect.width;
       const clampedLeft = Math.max(minLeft, Math.min(newLeft, maxLeft));
-      iconContainer.style.left = `${clampedLeft}px`;
+      iconContainer.style.left = `${(clampedLeft / progressBarRect.width) * 100}%`;
     };
     
     /**
@@ -701,9 +988,8 @@ const YouTubeBookmarker = {
       document.removeEventListener('mouseup', stopDragging);
 
       if (!moved) return;
-      const progressBarRect = this.state.progressBar.getBoundingClientRect();
-      const newLeft = parseFloat(iconContainer.style.left);
-      const newTime = (newLeft / progressBarRect.width) * this.state.currentVideo.duration;
+      const newRatio = parseFloat(iconContainer.style.left) / 100;
+      const newTime = newRatio * this.state.currentVideo.duration;
 
       // Only update if moved more than 5 seconds to prevent accidental changes
       if (Math.abs(newTime - dragStartTime) > 5) {
@@ -715,11 +1001,11 @@ const YouTubeBookmarker = {
         } catch (error) {
           console.error("Erreur lors de la mise à jour du marque-page:", error);
           // Revert to original position on error
-          iconContainer.style.left = `${(dragStartTime / this.state.currentVideo.duration) * progressBarRect.width}px`;
+          iconContainer.style.left = `${(dragStartTime / this.state.currentVideo.duration) * 100}%`;
         }
       } else {
         // Snap back to original position if moved less than 5 seconds
-        iconContainer.style.left = `${(dragStartTime / this.state.currentVideo.duration) * progressBarRect.width}px`;
+        iconContainer.style.left = `${(dragStartTime / this.state.currentVideo.duration) * 100}%`;
       }
     };
 

@@ -23,6 +23,7 @@ const error = ref('')
 const editing = ref<Bookmark | null>(null)
 const note = ref('')
 const openOptions = () => chrome.runtime.openOptionsPage()
+const openApp = () => void chrome.tabs.create({ url: chrome.runtime.getURL('src/app/index.html') })
 const load = async () => {
   try {
     const result = await chrome.storage.local.get('bookmarks')
@@ -177,6 +178,13 @@ const visit = async (bookmark: Bookmark) => {
           </article>
         </section>
       </div>
+      <button
+        class="sg-button sg-button--primary"
+        type="button"
+        @click="openApp"
+      >
+        {{ t('openApp') }}
+      </button>
       <button
         class="sg-button sg-button--primary"
         type="button"

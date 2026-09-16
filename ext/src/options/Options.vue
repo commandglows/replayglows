@@ -341,10 +341,16 @@ chrome.runtime.onMessage.addListener((request) => {
       {{ message.text }}
     </div>
 
-    <h1 class="h1">{{ t('options') }}</h1>
+    <h1 class="h1">
+      {{ t('options') }}
+    </h1>
     <section class="sct">
       <label class="lbl"><span class="t">{{ t('language') }}</span>
-        <select class="inp" :value="language" @change="changeLanguage">
+        <select
+          class="inp"
+          :value="language"
+          @change="changeLanguage"
+        >
           <option value="auto">{{ t('languageAuto') }}</option>
           <option value="fr">{{ t('languageFrench') }}</option>
           <option value="en">{{ t('languageEnglish') }}</option>

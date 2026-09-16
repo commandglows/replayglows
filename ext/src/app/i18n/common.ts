@@ -1,0 +1,36 @@
+export const messages = {
+  fr: {
+    'common.loading': 'Chargement…',
+    'common.error': 'Une erreur est survenue.',
+    'common.retry': 'Réessayer',
+    'common.save': 'Enregistrer',
+    'common.cancel': 'Annuler',
+    'common.delete': 'Supprimer',
+    'common.edit': 'Modifier',
+    'common.search': 'Rechercher',
+    'common.signOut': 'Se déconnecter',
+    'common.signIn': 'Se connecter',
+    'common.notConnected': 'Non connecté',
+    'common.processing': 'Traitement…',
+    'common.yes': 'Oui',
+    'common.no': 'Non',
+  } as const,
+  en: {
+    'common.loading': 'Loading…',
+    'common.error': 'Something went wrong.',
+    'common.retry': 'Try again',
+    'common.save': 'Save',
+    'common.cancel': 'Cancel',
+    'common.delete': 'Delete',
+    'common.edit': 'Edit',
+    'common.search': 'Search',
+    'common.signOut': 'Sign out',
+    'common.signIn': 'Sign in',
+    'common.notConnected': 'Not connected',
+    'common.processing': 'Processing…',
+    'common.yes': 'Yes',
+    'common.no': 'No',
+  } as const,
+} as const
+
+export type CommonKey = keyof (typeof messages)['fr']

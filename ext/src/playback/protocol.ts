@@ -41,6 +41,7 @@ export interface PlaybackView extends PlaybackContext {
 // rg:settings {settings: partial}, rg:command {tabId, command, a?, b?}.
 // Content/worker: rg:register (sender frame), rg:context, rg:rate, rg:settings,
 // rg:command routed to the sender frame when sender.tab exists.
+// rg:pin is also allowed from the injected top-level YouTube toolbar, for its sender tab only.
 // Worker/content: rg:apply {context}, rg:snapshot, rg:control {command,a?,b?}.
 // Commands: rewind, forward, markA, markB, clearLoop, loopRange, togglePlay.
 // Responses use {error:string} on failure; rg:register/context return PlaybackContext,

@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Century+Gothic&display=swap');
 
-@tailwind base;
+/* Sensibilité : ne pas réintroduire `@tailwind base` (preflight) ni d'utilitaires
+   génériques. La sortie canonique src/styles/styles-youtube.css est scopée et
+   injectée sur toute la page YouTube ; un reset global y déforme le lecteur. */
 @tailwind components;
 @tailwind utilities;
 

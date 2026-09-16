@@ -74,6 +74,24 @@ test('sender identity, UI authority, invalid inputs and queue recovery', async (
   assert.equal((await f.request('rg:settings', { settings: { enabled: false } }, page())).enabled, false)
 })
 
+test('YouTube toolbar pins only its sender tab and retains session state across worker restart', async () => {
+  const f = fixture()
+  const toolbar = { ...page(1), url: 'https://www.youtube.com/watch?v=test' }
+  await f.request('rg:rate', { tabId: 2, rate: 1.5 })
+  assert.equal((await f.request('rg:pin', { tabId: 2, pinned: true }, toolbar)).pinned, true)
+  assert.equal(f.session.playbackSession.pins[2], undefined)
+  await f.request('rg:rate', { rate: 2 }, toolbar)
+  assert.equal((await f.request('rg:context', { tabId: 2 })).rate, 1.5)
+  f.restart()
+  assert.equal((await f.request('rg:context', {}, toolbar)).rate, 2)
+  assert.ok((await f.request('rg:pin', { pinned: false }, { ...toolbar, frameId: 1 })).error)
+  assert.ok((await f.request('rg:pin', { pinned: false }, { ...toolbar, url: 'https://www.youtube.com.evil.test/' })).error)
+  assert.ok((await f.request('rg:pin', { pinned: 'yes' }, toolbar)).error)
+  const unpinned = await f.request('rg:pin', { pinned: false }, toolbar)
+  assert.equal(unpinned.pinned, false)
+  assert.equal(unpinned.rate, 1.5)
+})
+
 test('concurrent deltas preserve every update and failed receivers do not abort persistence', async () => {
   const f = fixture()
   await f.request('rg:register', {}, page(1))

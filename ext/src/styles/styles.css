@@ -37,8 +37,9 @@
   --rg-focus-width: 2px;
   --rg-focus-offset: 3px;
   --rg-disabled-opacity: 0.5;
-  --rg-discovery-height: 18rem;
+--rg-discovery-height: 18rem;
   --rg-layer-header: 1;
+  --rg-side-nav-width: 72px;
 }
 
 .font-century {

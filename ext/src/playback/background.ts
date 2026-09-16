@@ -122,7 +122,9 @@ export function registerPlaybackBackground() {
     if (sender.id !== chrome.runtime.id || (!content && !ui)
       || (content && !/^https?:\/\//.test(contentUrl) && !inheritedOrigin)) throw new Error('Émetteur non autorisé.')
     const action = request.action
-    if ((action === 'rg:pin' || action === 'rg:get') && content) throw new Error('Action réservée à l’interface.')
+    // The injected YouTube toolbar may pin only its own top-level tab.
+    const youtubeToolbar = content && sender.frameId === 0 && contentUrl.startsWith('https://www.youtube.com/')
+    if (content && (action === 'rg:get' || (action === 'rg:pin' && !youtubeToolbar))) throw new Error('Action réservée à l’interface.')
     if (action === 'rg:register' && !content) throw new Error('Enregistrement réservé aux pages.')
     const tabId = content ? sender.tab?.id : request.tabId
     const globalContext = !content && action === 'rg:context' && tabId === undefined
