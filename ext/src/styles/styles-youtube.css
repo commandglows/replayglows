@@ -691,3 +691,18 @@ injecté sur TOUTE la page YouTube. Il ne doit JAMAIS contenir de reset global
   white-space: normal;
   overflow-wrap: anywhere;
 }
+
+
+/* The centered thumb is the virtual pointer while Alt scrubbing is active. */
+.html5-video-player.rg-speedbar-scrubbing,
+.html5-video-player.rg-speedbar-scrubbing * { cursor: none !important; }
+/* YouTube may enter autohide while Alt is held without mouse movement. */
+.html5-video-player.rg-speedbar-scrubbing .ytp-chrome-bottom {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+.rg-yt-speedbar[data-scrubbing] .rg-yt-speedbar__slider {
+  accent-color: #ffc82c;
+  background: linear-gradient(to right, transparent 45%, #ffc82c55 45%, #ffc82c55 55%, transparent 55%);
+}
+.rg-yt-speedbar[data-scrubbing] .rg-yt-speedbar__value { color: #ffc82c; }

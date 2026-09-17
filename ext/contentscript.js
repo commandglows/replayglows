@@ -91,7 +91,10 @@ const YouTubeBookmarker = {
     this.events?.abort();
     this.hotkeyEvents?.abort();
     this.events = new AbortController();
-    const { language = 'auto' } = await chrome.storage.local.get('language');
+    const visibilityRevision = this.speedBarVisibilityRevision || 0;
+    const { language = 'auto', speedBarVisible = false } = await chrome.storage.local.get(['language', 'speedBarVisible']);
+    if (generation !== this.generation) return;
+    if (visibilityRevision === (this.speedBarVisibilityRevision || 0)) this.speedBarVisible = speedBarVisible === true;
     this.locale = language === 'fr' || (language === 'auto' && navigator.languages.some(item => item.toLowerCase().startsWith('fr'))) ? 'fr' : 'en';
     this.state.bookmarkInputContainer?.remove();
     document.querySelectorAll('.bookmarks-list, .custom-bookmark-icon-container, .rg-yt-menu').forEach(el => el.remove());
@@ -361,9 +364,16 @@ const YouTubeBookmarker = {
     this.state.overlayMenu = menu;
   },
 
-  toggleSpeedBar() {
-    this.speedBarVisible = !this.speedBarVisible;
-    if (this.speedBarVisible && !this.speedBar?.isConnected) {
+  async toggleSpeedBar() {
+    try {
+      await chrome.storage.local.set({ speedBarVisible: !this.speedBarVisible });
+    } catch (error) { this.afficherMessage(error.message, 'error'); }
+  },
+
+  applySpeedBarVisibility(visible) {
+    this.speedBarVisibilityRevision = (this.speedBarVisibilityRevision || 0) + 1;
+    this.speedBarVisible = visible === true;
+    if (this.speedBarVisible && this.speedBar && !this.speedBar.isConnected) {
       this.speedBarCleanup?.();
       this.state.player = document.querySelector('.html5-video-player');
       this.state.currentVideo = this.state.player?.querySelector('video');
@@ -404,6 +414,43 @@ const YouTubeBookmarker = {
     error.className = 'rg-yt-speedbar__error';
     error.setAttribute('role', 'status');
     error.hidden = true;
+    let scrub = null;
+    let pointerX = 0;
+    const player = controls.closest('.html5-video-player');
+    const videoIdentity = () => `${location.pathname}:${new URL(location.href).searchParams.get('v') || ''}`;
+    const sameVideo = gesture => video.isConnected && video.currentSrc === gesture.source
+      && videoIdentity() === gesture.identity;
+    const commitScrub = gesture => {
+      if (!sameVideo(gesture) || gesture.target === gesture.committed) return;
+      try {
+        video.currentTime = gesture.target;
+        gesture.committed = gesture.target;
+      } catch { showError(this.t('speedError')); }
+    };
+    const stopScrub = () => {
+      if (!scrub) return;
+      const previous = scrub;
+      scrub = null;
+      cancelAnimationFrame(previous.frame);
+      commitScrub(previous);
+      player?.classList.remove('rg-speedbar-scrubbing');
+      bar.removeAttribute('data-scrubbing');
+      slider.min = '0.25'; slider.max = '4'; slider.step = '0.05';
+      slider.setAttribute('aria-label', this.t('speed'));
+      video.muted = previous.muted;
+      // Do not start a new video after a SPA/source replacement.
+      if (!previous.paused && sameVideo(previous)) {
+        void video.play().catch(() => showError(this.t('speedError')));
+      }
+      renderRate();
+      this.updateSpeedBarLayout?.();
+    };
+    let pointerAttached = false;
+    const detachPointer = () => {
+      stopScrub();
+      pointerAttached = false;
+      bar.removeAttribute('data-pointer-attached');
+    };
     let context = null;
     let pendingRate = null;
     let sending = false;
@@ -411,9 +458,10 @@ const YouTubeBookmarker = {
     let refreshInFlight = false;
     const format = value => `${Number(value.toFixed(2))}×`;
     const renderRate = () => {
-      if (signal.aborted) return;
+      if (signal.aborted || scrub) return;
       const rate = video.playbackRate;
       output.textContent = format(rate);
+      output.removeAttribute('title');
       if (pendingRate === null && !sending) slider.value = String(rate);
       slider.setAttribute('aria-valuetext', format(Number(slider.value)));
       for (const button of presets.children) button.setAttribute('aria-pressed', String(Number(button.dataset.rate) === rate));
@@ -438,8 +486,10 @@ const YouTubeBookmarker = {
     const applyContext = value => {
       if (signal.aborted || !value?.settings) return;
       context = value;
+      if (!value.settings.altSeekOnSpeedBar) stopScrub();
       const disabled = !value.settings.enabled || pinning;
       slider.disabled = disabled;
+      if (disabled || !value.settings.attachPointerToSpeedBar) detachPointer();
       for (const button of presets.children) button.disabled = disabled;
       favorite.disabled = disabled;
       favorite.dataset.rate = String(value.settings.favorite);
@@ -458,7 +508,7 @@ const YouTubeBookmarker = {
     // Coalesce fast slider input: one request in flight and only the latest next value.
     const changeRate = async value => {
       pendingRate = value;
-      slider.value = String(value);
+      if (!scrub) slider.value = String(value);
       slider.setAttribute('aria-valuetext', format(value));
       if (sending) return;
       sending = true;
@@ -502,7 +552,112 @@ const YouTubeBookmarker = {
         if (failureMessage) showError(failureMessage);
       }
     }, { signal });
-    slider.addEventListener('input', () => changeRate(Number(slider.value)), { signal });
+    const startScrub = () => {
+      if (scrub || !pointerAttached || !context?.settings.altSeekOnSpeedBar || slider.disabled
+        || bar.hidden || !slider.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })
+        || !Number.isFinite(video.duration) || video.duration <= 0) return false;
+      const rect = slider.getBoundingClientRect();
+      const gesture = { originX: pointerX, rect, half: Math.max(1, (rect.width - 16) / 2),
+        offset: 0, paused: video.paused, muted: video.muted,
+        source: video.currentSrc, identity: videoIdentity(), last: performance.now(), frame: 0,
+        target: video.currentTime, committed: video.currentTime, lastSeek: 0 };
+      scrub = gesture;
+      video.pause();
+      video.muted = true;
+      slider.min = '-100'; slider.max = '100'; slider.step = '1'; slider.value = '0';
+      slider.setAttribute('aria-label', this.locale === 'fr' ? 'Reculer ou avancer dans la vidéo' : 'Seek backward or forward');
+      slider.setAttribute('aria-valuetext', this.locale === 'fr' ? 'Position neutre' : 'Neutral position');
+      output.textContent = '↔ 0';
+      bar.dataset.scrubbing = 'true';
+      player?.classList.add('rg-speedbar-scrubbing');
+      // Clear repetition before seeking, so A–B does not fight reverse movement.
+      void request({ action: 'rg:command', command: 'clearLoop' }).catch(failure => {
+        if (scrub === gesture) showError(failure.message || this.t('speedError'));
+      });
+      const tick = now => {
+        if (scrub !== gesture) return;
+        if (signal.aborted || !sameVideo(gesture) || !bar.isConnected
+          || document.hidden || bar.hidden || !slider.checkVisibility({ checkVisibilityCSS: true })) {
+          detachPointer(); return;
+        }
+        const elapsed = Math.min((now - scrub.last) / 1000, 0.1);
+        scrub.last = now;
+        // Fine control near the center; traverse even a long video in six seconds at the edge.
+        const magnitude = Math.max(0, (Math.abs(scrub.offset) - 0.1) / 0.9);
+        const maximum = Math.max(30, video.duration / 6);
+        const velocity = Math.sign(scrub.offset) * (2 * magnitude + (maximum - 2) * magnitude ** 3);
+        scrub.target = Math.max(0, Math.min(video.duration, scrub.target + velocity * elapsed));
+        // Accumulate every frame independently of decoder latency; bound seek requests to 10 Hz.
+        if (now - scrub.lastSeek >= 100) {
+          commitScrub(scrub);
+          scrub.lastSeek = now;
+        }
+        const speed = Math.abs(velocity);
+        const compactSpeed = speed >= 1000 ? `${(speed / 1000).toFixed(1)}k`
+          : speed >= 100 ? speed.toFixed(0) : speed.toFixed(1);
+        const velocityLabel = `${velocity.toFixed(1)} ${this.locale === 'fr' ? 'secondes par seconde' : 'seconds per second'}`;
+        output.textContent = velocity === 0 ? '↔ 0' : `${velocity < 0 ? '←' : '→'} ${compactSpeed}`;
+        output.title = velocityLabel;
+        slider.setAttribute('aria-valuetext', velocityLabel);
+        scrub.frame = requestAnimationFrame(tick);
+      };
+      scrub.frame = requestAnimationFrame(tick);
+      return true;
+    };
+    document.addEventListener('pointerdown', () => { if (scrub) detachPointer(); }, { signal, capture: true });
+    document.addEventListener('keydown', event => {
+      if (scrub && event.key !== 'Alt') { detachPointer(); return; }
+      if (event.defaultPrevented || event.key !== 'Alt' || event.repeat || event.ctrlKey || event.shiftKey || event.metaKey
+        || event.target?.closest('textarea, select, [contenteditable="true"], input:not([type="range"])')) return;
+      if (startScrub()) { event.preventDefault(); event.stopPropagation(); }
+    }, { signal, capture: true });
+    document.addEventListener('keyup', event => {
+      if (event.key === 'Alt' && scrub) {
+        event.preventDefault(); event.stopPropagation(); detachPointer();
+      }
+    }, { signal, capture: true });
+    slider.addEventListener('input', () => { if (!scrub) void changeRate(Number(slider.value)); }, { signal });
+    // Acquire only over the slider; retain attachment within a forgiving margin.
+    // Never lock the OS pointer or intercept neighboring buttons.
+    document.addEventListener('pointermove', event => {
+      if (event.pointerType !== 'mouse' || event.buttons || !context?.settings.attachPointerToSpeedBar
+        || slider.disabled || bar.hidden || !bar.isConnected || document.hidden) {
+        detachPointer();
+        return;
+      }
+      pointerX = event.clientX;
+      const rect = slider.getBoundingClientRect();
+      if (scrub) {
+        const offset = (event.clientX - scrub.originX) / scrub.half;
+        if (!event.altKey
+          || event.clientY < scrub.rect.top - 32 || event.clientY > scrub.rect.bottom + 32) {
+          detachPointer(); return;
+        }
+        scrub.offset = Math.max(-1, Math.min(1, offset));
+        if (Math.abs(scrub.offset) <= 0.1) commitScrub(scrub);
+        slider.value = String(Math.round(scrub.offset * 100));
+        return;
+      }
+      const visible = slider.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
+      const target = document.elementFromPoint(event.clientX, event.clientY);
+      const margin = pointerAttached ? 32 : 0;
+      if (!visible || rect.width <= 0 || target?.closest('button, a, [role="menu"]')
+        || event.clientX < rect.left - margin || event.clientX > rect.right + margin
+        || event.clientY < rect.top - margin || event.clientY > rect.bottom + margin
+        || (!pointerAttached && target !== slider)) {
+        detachPointer();
+        return;
+      }
+      pointerAttached = true;
+      bar.dataset.pointerAttached = 'true';
+      const inset = Math.min(8, rect.width / 2);
+      const fraction = Math.max(0, Math.min(1, (event.clientX - rect.left - inset) / Math.max(1, rect.width - 2 * inset)));
+      const rate = Number((0.25 + Math.round(fraction * 75) * 0.05).toFixed(2));
+      if (Number(slider.value) !== rate) void changeRate(rate);
+    }, { signal, passive: true });
+    window.addEventListener('blur', detachPointer, { signal });
+    document.addEventListener('visibilitychange', detachPointer, { signal });
+    document.addEventListener('pointerout', event => { if (!event.relatedTarget) detachPointer(); }, { signal });
     video.addEventListener('ratechange', renderRate, { signal });
     for (const type of ['click', 'dblclick', 'pointerdown', 'keydown', 'keyup']) {
       bar.addEventListener(type, event => event.stopPropagation(), { signal });
@@ -512,6 +667,8 @@ const YouTubeBookmarker = {
     this.speedBar = bar;
     const layout = () => {
       if (signal.aborted) return;
+      // Time-display width changes during seeking must not move or hide the gesture surface.
+      if (scrub) return;
       const outer = controls.getBoundingClientRect();
       // YouTube's flex:1 left group includes the empty space. Measure its
       // visible controls instead of treating the whole group as occupied.
@@ -527,6 +684,7 @@ const YouTubeBookmarker = {
       bar.classList.toggle('rg-yt-speedbar--compact', available < 380);
       bar.classList.toggle('rg-yt-speedbar--tiny', available < 190);
       bar.hidden = !this.speedBarVisible || available < 125;
+      if (bar.hidden) detachPointer();
     };
     const observer = new ResizeObserver(layout);
     const observeControls = () => {
@@ -551,6 +709,7 @@ const YouTubeBookmarker = {
     };
     chrome.runtime.onMessage.addListener(receive);
     this.speedBarCleanup = () => {
+      detachPointer();
       barEvents.abort();
       observer.disconnect();
       mutations.disconnect();
@@ -1173,6 +1332,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
   if (changes.bookmarks || changes.hideNotesByDefault) YouTubeBookmarker.refreshBookmarks();
   if (changes.hotkeys) YouTubeBookmarker.setupHotkeys();
+  if (changes.speedBarVisible) YouTubeBookmarker.applySpeedBarVisibility(changes.speedBarVisible.newValue);
   if (changes.language) YouTubeBookmarker.init();
 });
 YouTubeBookmarker.init();

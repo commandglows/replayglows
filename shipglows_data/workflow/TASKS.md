@@ -139,3 +139,37 @@
 - [replayglows] Add rightmost pin toggle to inline YouTube speed bar | date: 2026-09-17 | status: implemented; real YouTube visual acceptance pending | area: ext | scope: shared existing session pin, accessible pressed state and bilingual labels, preserved compact layout; top-level YouTube content may pin sender tab only | proof: 23 state/media/bookmark tests, build:ext, packaged browser test confirms pin/unpin, global isolation, external pin sync and SPA persistence; sender spoofed tab ignored, nested frames and lookalike origins rejected | lifecycle: existing session pin clears on tab close/browser or extension restart
 - [replayglows] Fix speedbar toggle remaining invisible | date: 2026-09-17 | status: implemented; operator visual acceptance pending | cause: live YouTube left-controls uses flex:1, so group bounding box consumed the apparent empty gap and available width was zero | change: measure visible child control edges, observe child size/style changes, remount detached toolbar on show with dedicated listener cleanup | proof: current live YouTube DOM inspected; packaged fixture updated to actual flex layout and detached-bar regression passes; build:ext passed | limitation: full public interaction attempt interrupted by YouTube consent overlay in isolated profile
 - [replayglows] Fix visible but noninteractive YouTube speed bar | date: 2026-09-17 | status: implemented; operator real-YouTube acceptance pending | cause: native modern controls at z-index 59 cover toolbar at 2 | change: toolbar z-index 60; regression fixture includes native stacking and pointer targeting for every visible control, including compact layout and slider click | proof: regression fails before fix for all seven controls; build:ext and packaged browser scenario pass after fix, including speed, favorite, pin and popup sync | limitation: controlled fixture; personal browser extension and YouTube tab still need reload
+
+
+## Extension speed bar pointer attachment (2026-09-17)
+
+- Implemented the opt-in “Attach pointer to the speed bar” setting in playback options (French/English), persisted locally and disabled by default.
+- Hovering the visible YouTube slider acquires pointer tracking without clicking; a 32px retention margin tolerates small excursions. Leaving the margin freezes the last rate; re-entering the slider synchronizes to the new position. Rates remain 0.25–4x in 0.05 steps. Neighboring buttons, blur, hidden bars and suspended controls release attachment.
+- Evidence: TypeScript/Vue checks, ESLint, package build/resource verification, 19 playback state/media tests, and packaged isolated Chromium speed-bar scenarios passed. The browser scenario covers settings persistence, hover entry, tolerance, freeze, re-entry, range limits, blur and disabling, alongside existing speed/pin/SPA behavior.
+- Limit: browser proof uses a routed YouTube fixture, not the personal Chrome profile or a live YouTube player. Reload `ext/dist` and existing YouTube tabs to use the rebuilt extension; no Web Store publication.
+
+
+## Extension Alt scrubbing (2026-09-17)
+
+- Added opt-in “Hold Alt to scrub through the video” playback setting (FR/EN), disabled by default; requires pointer attachment.
+- Holding Alt while attached pauses and mutes the current finite-duration video, centers a virtual thumb and hides the system pointer. Relative horizontal displacement selects backward/forward seeking with a 10% neutral zone and quadratic acceleration up to 30 video seconds per second. Seeking stays between zero and duration; existing A–B repetition is cleared.
+- Release, pointer escape, blur, suspension, option disable, hidden controls and teardown stop the animation and restore mute and prior playing/paused state. Volume and playback-rate settings are not changed by scrubbing. Navigation/source replacement does not resume a different video. Another key or mouse press exits the mode before other controls act.
+- Proof: typecheck, ESLint (only two pre-existing declaration warnings), production extension package verification, 20 playback tests and isolated packaged Chromium fixture tests passed. Browser coverage includes setting persistence, neutral/reverse/forward, release, paused/playing/muted restoration, blur, bounds, pointer escape, suspension and opt-out.
+- Delivery: rebuilt ext/dist locally; reload extension and YouTube tab. Live YouTube/personal Chrome acceptance remains separate from routed fixture proof. No remote publication.
+
+
+## Global speed bar visibility (2026-09-17)
+
+- Show/hide now persists in local extension storage and propagates to all existing YouTube tabs. New tabs, reloads and SPA navigation reuse the saved preference. Initial reads cannot overwrite a newer storage event.
+- Proof: extension build and package verification passed; isolated Chromium with routed YouTube fixtures passed cross-tab show/hide, new-tab visibility, reload and SPA persistence, plus existing pointer and Alt-scrubbing scenarios. Personal Chrome/live YouTube proof remains separate.
+
+
+## Alt scrubbing latency and unexpected detachment repair (2026-09-17)
+
+- User reported spontaneous exit while Alt remained held and near-real-time seeking even at maximum displacement.
+- Reproduced with the packaged extension in isolated Chromium: a simulated two-hour video and 250ms decoder seek latency rewound only 1.8 seconds in 1.5 seconds. Setting the host controls to opacity zero/hidden ended the active gesture.
+- Repair: accumulate an independent target on every animation frame and commit at 10Hz, flushing the target on release. The speed curve preserves a neutral zone and fine center control while reaching max(30, duration/6) video seconds per second at either extreme. Horizontal overshoot clamps instead of detaching; geometry remains stable during a gesture.
+- Keep the active player's controls visible during scrubbing; same-video query updates and delayed loop-clear errors do not silently cancel Alt. Source/video replacement, release, vertical escape, suspension and blur retain cleanup.
+- Initial retest passed all packaged browser scenarios, including 1740 seconds travelled in 1.5 seconds, both bounds of a simulated two-hour video, sustained auto-hide, horizontal overshoot and state restoration. Long-video/decoder proof uses a controlled media model inside the extension isolated world; it is not live YouTube decoding evidence. Personal Chrome acceptance remains pending.
+
+- Final retest after compact rate-label and neutral-flush refinements: typecheck, package build, 20 playback tests and complete packaged browser scenario passed; lint has only the two pre-existing declaration warnings. Sustained gesture additionally survives a loop-clear response timeout and a same-video timestamp query update. Final measured maximum rewind: 1728 video seconds in 1.5 seconds; beginning and end reached within the bounded tests. No commit or remote publication.

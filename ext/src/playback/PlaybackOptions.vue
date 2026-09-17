@@ -31,7 +31,7 @@ async function save() {
     const bookmarks = await chrome.storage.local.get('hotkeys')
     const existing = Object.values(bookmarks.hotkeys ?? { a: 'ALT+B', b: 'ALT+D', c: 'ALT+Q', d: 'ALT+1', e: 'ALT+2' })
     if (new Set(keys).size !== keys.length || keys.some(key => existing.includes(key))) throw new Error(t('duplicateShortcut'))
-    const result = await chrome.runtime.sendMessage({ action: 'rg:settings', settings: { favorite: settings.value.favorite, step: settings.value.step, keys: settings.value.keys } })
+    const result = await chrome.runtime.sendMessage({ action: 'rg:settings', settings: { altSeekOnSpeedBar: settings.value.altSeekOnSpeedBar, attachPointerToSpeedBar: settings.value.attachPointerToSpeedBar, favorite: settings.value.favorite, step: settings.value.step, keys: settings.value.keys } })
     if (result.error) throw new Error(result.error)
     message.value = t('playbackSaved')
   } catch (cause) { failed.value = true; message.value = cause instanceof Error ? cause.message : t('saveError') }
@@ -60,6 +60,34 @@ async function save() {
       class="sg-playback-form"
       @submit.prevent="save"
     >
+      <label>
+        <input
+          v-model="settings.attachPointerToSpeedBar"
+          type="checkbox"
+          aria-describedby="speedbar-pointer-help"
+        >
+        {{ t('attachPointerToSpeedBar') }}
+      </label>
+      <p
+        id="speedbar-pointer-help"
+        class="sg-muted"
+      >
+        {{ t('attachPointerToSpeedBarHelp') }}
+      </p>
+      <label>
+        <input
+          v-model="settings.altSeekOnSpeedBar"
+          type="checkbox"
+          aria-describedby="speedbar-alt-help"
+        >
+        {{ t('altSeekOnSpeedBar') }}
+      </label>
+      <p
+        id="speedbar-alt-help"
+        class="sg-muted"
+      >
+        {{ t('altSeekOnSpeedBarHelp') }}
+      </p>
       <label>{{ t('favoriteSpeed') }} <input
         v-model.number="settings.favorite"
         class="sg-playback-input"

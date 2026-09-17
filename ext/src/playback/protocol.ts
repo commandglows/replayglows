@@ -11,11 +11,13 @@ export interface PlaybackSettings {
   rate: number
   favorite: number
   step: number
+  altSeekOnSpeedBar: boolean
+  attachPointerToSpeedBar: boolean
   enabled: boolean
   keys: Record<PlaybackAction, string>
 }
 export const DEFAULT_SETTINGS: PlaybackSettings = {
-  rate: 1, favorite: 1.5, step: 0.1, enabled: true, keys: { ...DEFAULT_KEYS },
+  rate: 1, favorite: 1.5, step: 0.1, enabled: true, attachPointerToSpeedBar: false, altSeekOnSpeedBar: false, keys: { ...DEFAULT_KEYS },
 }
 export interface PlaybackContext {
   settings: PlaybackSettings

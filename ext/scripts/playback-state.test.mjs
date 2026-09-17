@@ -193,3 +193,25 @@ test('failed-frame cleanup cannot erase a registration queued during polling', a
   await register
   assert.deepEqual(f.session.playbackSession.frames[1], [4])
 })
+
+
+test('pointer attachment defaults off, validates strictly and survives worker restart', async () => {
+  const f = fixture()
+  assert.equal((await f.request('rg:context')).settings.attachPointerToSpeedBar, false)
+  assert.ok((await f.request('rg:settings', { settings: { attachPointerToSpeedBar: 'yes' } })).error)
+  assert.ok((await f.request('rg:settings', { settings: { attachPointerToSpeedBar: true } }, page())).error)
+  await f.request('rg:settings', { settings: { attachPointerToSpeedBar: true } })
+  f.restart()
+  assert.equal((await f.request('rg:context')).settings.attachPointerToSpeedBar, true)
+})
+
+
+test('Alt scrub setting defaults off, is UI-only, validates and persists', async () => {
+  const f = fixture()
+  assert.equal((await f.request('rg:context')).settings.altSeekOnSpeedBar, false)
+  assert.ok((await f.request('rg:settings', { settings: { altSeekOnSpeedBar: 1 } })).error)
+  assert.ok((await f.request('rg:settings', { settings: { altSeekOnSpeedBar: true } }, page())).error)
+  await f.request('rg:settings', { settings: { altSeekOnSpeedBar: true } })
+  f.restart()
+  assert.equal((await f.request('rg:context')).settings.altSeekOnSpeedBar, true)
+})
