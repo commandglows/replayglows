@@ -87,6 +87,7 @@ const YouTubeBookmarker = {
     const generation = this.generation = (this.generation || 0) + 1;
     clearTimeout(this.clickGesture?.timer);
     this.clickGesture = null;
+    this.videoSplitsCleanup?.();
     this.speedBarCleanup?.();
     this.events?.abort();
     this.hotkeyEvents?.abort();
@@ -110,6 +111,7 @@ const YouTubeBookmarker = {
       await this.resetState();
       await this.addBookmarkButton();
       this.setupSpeedBar();
+      this.setupVideoSplits();
       this.setupOverflowMenu();
       await this.setupHotkeys();
       await this.updateUIElements();
@@ -386,6 +388,167 @@ const YouTubeBookmarker = {
     if (this.speedBarVisible) this.refreshSpeedContext?.();
   },
 
+  setupVideoSplits() {
+    const video = this.state.currentVideo;
+    const player = this.state.player;
+    if (!video || !player) return;
+    const events = new AbortController();
+    const signal = events.signal;
+    let settings = null;
+    let active = -1;
+    let accumulated = 0;
+    let brightness = 1;
+    let revision = 0;
+    const originalFilter = video.style.getPropertyValue('filter');
+    const originalPriority = video.style.getPropertyPriority('filter');
+    const baseFilter = getComputedStyle(video).filter;
+    let ownFilter = null;
+    const overlay = document.createElement('div');
+    overlay.className = 'rg-video-splits';
+    overlay.hidden = true;
+    overlay.setAttribute('aria-hidden', 'true');
+    let interactionTimer;
+    let idleTimer;
+    let fadeTimer;
+    let frame;
+    const bands = Array.from({ length: 4 }, () => {
+      const band = document.createElement('div');
+      for (const name of ['above', 'fill', 'threshold']) {
+        const layer = document.createElement('div');
+        layer.className = `rg-video-split-${name}`;
+        band.append(layer);
+      }
+      overlay.append(band);
+      return band;
+    });
+    player.append(overlay);
+    const rest = () => {
+      clearTimeout(interactionTimer);
+      overlay.removeAttribute('data-interacting');
+      video.classList.remove('rg-video-splits-interacting');
+    };
+    const reset = () => {
+      rest(); clearTimeout(idleTimer); clearTimeout(fadeTimer); cancelAnimationFrame(frame);
+      active = -1; accumulated = 0; overlay.hidden = true;
+      overlay.classList.remove('rg-video-splits-fading');
+    };
+    const wake = () => {
+      clearTimeout(idleTimer); clearTimeout(fadeTimer);
+      overlay.hidden = false;
+      overlay.classList.remove('rg-video-splits-fading');
+      idleTimer = setTimeout(() => {
+        rest(); accumulated = 0;
+        overlay.classList.add('rg-video-splits-fading');
+        fadeTimer = setTimeout(() => { overlay.hidden = true; cancelAnimationFrame(frame); }, 200);
+      }, 1500);
+    };
+    const restoreBrightness = () => {
+      if (ownFilter !== null && video.style.filter === ownFilter) {
+        if (originalFilter) video.style.setProperty('filter', originalFilter, originalPriority);
+        else video.style.removeProperty('filter');
+      }
+      ownFilter = null; brightness = 1;
+    };
+    const render = () => {
+      const values = [
+        video.muted ? 0 : video.volume,
+        (brightness - 0.25) / 1.75,
+        (video.playbackRate - 0.25) / 3.75,
+        Number.isFinite(video.duration) && video.duration > 0 ? video.currentTime / video.duration : 0,
+      ];
+      bands.forEach((band, index) => {
+        band.classList.toggle('rg-video-split-active', index === active);
+        band.style.setProperty('--level', `${Math.max(0, Math.min(1, values[index])) * 100}%`);
+      });
+    };
+    const animate = () => {
+      render();
+      if (!signal.aborted && !overlay.hidden) frame = requestAnimationFrame(animate);
+    };
+    const zone = event => {
+      if (!settings?.enabled || !settings.videoHoverSplits || !video.isConnected
+        || document.hidden || !video.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return -1;
+      // The actual video only: controls, menus, ads and clickable overlays keep their behavior.
+      if (event.target !== video || player.classList.contains('ad-showing')) return -1;
+      const rect = video.getBoundingClientRect();
+      if (!rect.width || !rect.height || event.clientX < rect.left || event.clientX >= rect.right
+        || event.clientY < rect.top || event.clientY >= rect.bottom) return -1;
+      const parent = player.getBoundingClientRect();
+      const scaleX = parent.width / player.offsetWidth || 1;
+      const scaleY = parent.height / player.offsetHeight || 1;
+      Object.assign(overlay.style, { left: `${(rect.left - parent.left) / scaleX}px`, top: `${(rect.top - parent.top) / scaleY}px`, width: `${rect.width / scaleX}px`, height: `${rect.height / scaleY}px` });
+      return Math.min(3, Math.floor((event.clientX - rect.left) / rect.width * 4));
+    };
+    const select = event => {
+      const next = zone(event);
+      if (next < 0) { reset(); return false; }
+      if (active !== next) { accumulated = 0; rest(); }
+      active = next;
+      const wasHidden = overlay.hidden;
+      wake(); render();
+      if (wasHidden) { cancelAnimationFrame(frame); frame = requestAnimationFrame(animate); }
+      return true;
+    };
+    document.addEventListener('pointermove', event => {
+      if (event.pointerType !== 'mouse' || event.buttons) reset();
+      else select(event);
+    }, { signal, passive: true });
+    player.addEventListener('pointerleave', reset, { signal });
+    video.addEventListener('pointerleave', reset, { signal });
+    window.addEventListener('blur', reset, { signal });
+    document.addEventListener('visibilitychange', reset, { signal });
+    window.addEventListener('resize', reset, { signal });
+    video.addEventListener('emptied', () => { reset(); restoreBrightness(); }, { signal });
+    player.addEventListener('wheel', event => {
+      if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || !event.deltaY || !select(event)) return;
+      event.preventDefault(); event.stopImmediatePropagation();
+      clearTimeout(interactionTimer);
+      overlay.dataset.interacting = 'true';
+      video.classList.add('rg-video-splits-interacting');
+      interactionTimer = setTimeout(rest, 500);
+      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 100 : 1);
+      if (Math.sign(accumulated) !== Math.sign(delta)) accumulated = 0;
+      accumulated += delta;
+      const steps = Math.trunc(accumulated / 40);
+      if (!steps) return;
+      accumulated -= steps * 40;
+      const direction = -Math.sign(steps);
+      const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+      if (active === 0) {
+        video.volume = clamp((video.muted ? 0 : video.volume) + direction * 0.05, 0, 1);
+        video.muted = video.volume === 0;
+      } else if (active === 1) {
+        brightness = clamp(Math.round((brightness + direction * 0.05) * 100) / 100, 0.25, 2);
+        video.style.setProperty('filter', `${baseFilter === 'none' ? '' : baseFilter} brightness(${brightness})`, 'important');
+        ownFilter = video.style.filter;
+      } else if (active === 2) {
+        void chrome.runtime.sendMessage({ action: 'rg:rate', delta: direction * settings.step }).then(result => {
+          if (!signal.aborted && result?.error) this.afficherMessage(result.error, 'error');
+        }).catch(() => { if (!signal.aborted) this.afficherMessage(this.t('speedError'), 'error'); });
+      } else if (Number.isFinite(video.duration) && video.duration > 0) {
+        video.currentTime = clamp(video.currentTime + direction * 5, 0, video.duration);
+      }
+      render();
+    }, { signal, passive: false, capture: true });
+    for (const event of ['volumechange', 'ratechange', 'timeupdate']) video.addEventListener(event, render, { signal });
+    const apply = context => {
+      settings = context?.settings;
+      if (!settings?.enabled || !settings.videoHoverSplits) { reset(); restoreBrightness(); }
+    };
+    const receive = (message, sender) => {
+      if (sender.id === chrome.runtime.id && message?.action === 'rg:apply') { revision++; apply(message.context); }
+    };
+    chrome.runtime.onMessage.addListener(receive);
+    const initialRevision = revision;
+    void chrome.runtime.sendMessage({ action: 'rg:context' }).then(context => {
+      if (!signal.aborted && revision === initialRevision) apply(context);
+    }).catch(() => {});
+    this.videoSplitsCleanup = () => {
+      events.abort(); reset(); restoreBrightness(); overlay.remove();
+      chrome.runtime.onMessage.removeListener(receive);
+    };
+  },
+
   setupSpeedBar() {
     const controls = this.state.player?.querySelector('.ytp-chrome-controls');
     const left = controls?.querySelector('.ytp-left-controls');
@@ -450,6 +613,7 @@ const YouTubeBookmarker = {
       stopScrub();
       pointerAttached = false;
       bar.removeAttribute('data-pointer-attached');
+      player?.classList.remove('rg-speedbar-pointer-attached');
     };
     let context = null;
     let pendingRate = null;
@@ -650,6 +814,7 @@ const YouTubeBookmarker = {
       }
       pointerAttached = true;
       bar.dataset.pointerAttached = 'true';
+      player?.classList.add('rg-speedbar-pointer-attached');
       const inset = Math.min(8, rect.width / 2);
       const fraction = Math.max(0, Math.min(1, (event.clientX - rect.left - inset) / Math.max(1, rect.width - 2 * inset)));
       const rate = Number((0.25 + Math.round(fraction * 75) * 0.05).toFixed(2));

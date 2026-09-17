@@ -15,6 +15,8 @@ export function resolveLocale(value: unknown, languages: readonly string[] = bro
 
 export const messages = {
   fr: {
+    videoHoverSplits: 'Contrôler la vidéo avec quatre zones au survol',
+    videoHoverSplitsHelp: 'De gauche à droite : volume (5 %), luminosité vidéo (5 %, de 25 à 200 %), vitesse (incrément choisi), position (5 secondes). Molette vers le haut pour augmenter ou avancer, vers le bas pour diminuer ou reculer. Enregistrez pour appliquer.',
     altSeekOnSpeedBar: 'Maintenir Alt pour parcourir la vidéo',
     altSeekOnSpeedBarHelp: 'Avec le pointeur attaché à la barre de vitesse, maintenez Alt : le curseur se centre et le son se coupe. Déplacez la souris à gauche pour reculer, à droite pour avancer ; plus vous vous écartez, plus le déplacement est rapide. Relâchez Alt pour reprendre. Nécessite l’option d’attachement du pointeur.',
     attachPointerToSpeedBar: 'Attacher le pointeur à la barre de vitesse',
@@ -27,6 +29,8 @@ export const messages = {
     slower: 'Ralentir', faster: 'Accélérer', reset: 'Revenir à 1×', favoriteRate: 'Vitesse favorite', rewind: 'Reculer de 10 secondes', forward: 'Avancer de 10 secondes', boost: 'Accélérer pendant l’appui', markStart: 'Marquer le début A', markEnd: 'Marquer la fin B', clearLoop: 'Effacer la boucle', suspend: 'Suspendre / réactiver les commandes',
   },
   en: {
+    videoHoverSplits: 'Control video with four hover zones',
+    videoHoverSplitsHelp: 'Left to right: volume (5%), video brightness (5%, from 25 to 200%), speed (selected step), position (5 seconds). Scroll up to increase or advance, down to decrease or rewind. Save to apply.',
     altSeekOnSpeedBar: 'Hold Alt to scrub through the video',
     altSeekOnSpeedBarHelp: 'With the pointer attached to the speed bar, hold Alt: the thumb centers and audio is muted. Move left to rewind or right to advance; move farther for faster seeking. Release Alt to resume. Requires pointer attachment to be enabled.',
     attachPointerToSpeedBar: 'Attach pointer to the speed bar',

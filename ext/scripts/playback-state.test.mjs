@@ -215,3 +215,14 @@ test('Alt scrub setting defaults off, is UI-only, validates and persists', async
   f.restart()
   assert.equal((await f.request('rg:context')).settings.altSeekOnSpeedBar, true)
 })
+
+
+test('hover splits are opt-in, strictly validated and persisted', async () => {
+  const f = fixture()
+  assert.equal((await f.request('rg:context')).settings.videoHoverSplits, false)
+  assert.ok((await f.request('rg:settings', { settings: { videoHoverSplits: 'true' } })).error)
+  assert.ok((await f.request('rg:settings', { settings: { videoHoverSplits: true } }, page())).error)
+  await f.request('rg:settings', { settings: { videoHoverSplits: true } })
+  f.restart()
+  assert.equal((await f.request('rg:context')).settings.videoHoverSplits, true)
+})

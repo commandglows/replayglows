@@ -693,10 +693,13 @@ injecté sur TOUTE la page YouTube. Il ne doit JAMAIS contenir de reset global
 }
 
 
-/* The centered thumb is the virtual pointer while Alt scrubbing is active. */
+/* The range thumb replaces the pointer while attached, including Alt scrubbing. */
+.html5-video-player.rg-speedbar-pointer-attached,
+.html5-video-player.rg-speedbar-pointer-attached *,
 .html5-video-player.rg-speedbar-scrubbing,
 .html5-video-player.rg-speedbar-scrubbing * { cursor: none !important; }
 /* YouTube may enter autohide while Alt is held without mouse movement. */
+.html5-video-player.rg-speedbar-pointer-attached .ytp-chrome-bottom,
 .html5-video-player.rg-speedbar-scrubbing .ytp-chrome-bottom {
   opacity: 1 !important;
   visibility: visible !important;
@@ -706,3 +709,18 @@ injecté sur TOUTE la page YouTube. Il ne doit JAMAIS contenir de reset global
   background: linear-gradient(to right, transparent 45%, #ffc82c55 45%, #ffc82c55 55%, transparent 55%);
 }
 .rg-yt-speedbar[data-scrubbing] .rg-yt-speedbar__value { color: #ffc82c; }
+
+/* Levels never intercept the native video surface. */
+.rg-video-splits { position: absolute; display: flex; pointer-events: none; z-index: 20; opacity: 1; transition: opacity 200ms linear; }
+.rg-video-splits[hidden] { display: none; }
+.rg-video-splits.rg-video-splits-fading { opacity: 0; }
+.rg-video-splits > div { --split-color: 76 160 255; --level: 0%; width: 25%; position: relative; overflow: hidden; }
+.rg-video-splits > div:nth-child(2) { --split-color: 255 210 80; }
+.rg-video-splits > div:nth-child(3) { --split-color: 170 110 255; }
+.rg-video-splits > div:nth-child(4) { --split-color: 70 220 170; }
+.rg-video-split-above { position: absolute; inset: 0 0 var(--level); background: rgb(var(--split-color) / 6%); }
+.rg-video-split-fill { position: absolute; bottom: 0; width: 100%; height: var(--level); background: rgb(var(--split-color) / 20%); transition: height 80ms linear; }
+.rg-video-split-threshold { position: absolute; width: 100%; height: 2px; bottom: clamp(0px, var(--level), calc(100% - 2px)); background: rgb(var(--split-color)); }
+.rg-video-splits[data-interacting] > div:not(.rg-video-split-active) { visibility: hidden; }
+video.rg-video-splits-interacting { cursor: none !important; }
+@media (prefers-reduced-motion: reduce) { .rg-video-split-fill { transition: none; } }

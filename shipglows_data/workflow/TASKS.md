@@ -173,3 +173,28 @@
 - Initial retest passed all packaged browser scenarios, including 1740 seconds travelled in 1.5 seconds, both bounds of a simulated two-hour video, sustained auto-hide, horizontal overshoot and state restoration. Long-video/decoder proof uses a controlled media model inside the extension isolated world; it is not live YouTube decoding evidence. Personal Chrome acceptance remains pending.
 
 - Final retest after compact rate-label and neutral-flush refinements: typecheck, package build, 20 playback tests and complete packaged browser scenario passed; lint has only the two pre-existing declaration warnings. Sustained gesture additionally survives a loop-clear response timeout and a same-video timestamp query update. Final measured maximum rewind: 1728 video seconds in 1.5 seconds; beginning and end reached within the bounded tests. No commit or remote publication.
+
+
+## Four video hover controls (2026-09-17)
+
+- Added opt-in, persisted French/English playback option for four equal vertical YouTube video zones: volume (5%), video-only brightness (5%, 25–200%), shared/pinned playback speed (configured step, 0.25–4x), and position (5 seconds). Wheel up increases/advances; down decreases/rewinds.
+- All bands have a 6% color tint, current-value labels and active-zone outline. Non-interactive overlays preserve native video clicks. Controls/menus and modified wheel gestures retain native behavior. Leaving resets partial wheel accumulation; blur, navigation and disabling clean up. Brightness preserves the original filter and restores it when disabled or disposed.
+- Proof: packaged Chromium routed YouTube scenario passed options persistence, all four controls, direction, seek bound, exit cancellation, toolbar exclusion and filter restoration; existing pointer, global visibility and Alt scrub scenarios passed. 21 playback state/media tests passed. Extension build/package verification passed. Personal Chrome/live YouTube remains a separate verification surface.
+
+
+## Split level charts and cursor state (2026-09-17)
+
+- Replaced text badges with full-width bottom-anchored level fills (20%), upper tint (6%) and immediate 2px color thresholds. Fill height eases over 80ms; visible levels track actual media values each animation frame, without rounding to control steps. Speed maps 0.25–4x to 0–100%; brightness maps 25–200% to 0–100%; position maps currentTime/duration.
+- First wheel event hides the cursor and other zones. After 500ms without wheel, the cursor returns. After 1500ms without pointer/wheel activity, all levels fade over 200ms. Exiting, disabling, blur and cleanup immediately restore the cursor and clear timers/animation frames.
+- Proof: extension build/package verification and packaged Chromium suite passed, including real-value fractional height, 2px threshold, hidden neighboring zones, first sub-step wheel cursor hiding, idle fade, cursor restoration and exit cleanup. Screenshot inspected on routed YouTube fixture; personal Chrome/live YouTube remains unverified.
+
+## Extension options autosave — 2026-09-17
+
+- Done: playback options save automatically on changes, including shortcut capture/reset; removed the save button, serialized writes, retained validation and disabled editing until settings load.
+- Proof: extension type-check, focused ESLint, build/package verification and packaged Chromium playback scenarios passed, including automatic save and persistence after options reload. Personal browser extension reload remains required.
+
+
+## Attached speed pointer visibility (2026-09-17)
+
+- The player hides the system pointer during ordinary speed-bar attachment, using the red range thumb as the visual pointer. Existing detachment/blur/suspension/teardown cleanup restores the cursor. Attached controls stay visible, including during host auto-hide.
+- The generated extension package passes build/resource verification; the browser scenario checks computed cursor visibility on attachment, escape and blur.

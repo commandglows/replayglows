@@ -18,7 +18,7 @@ function rate(value: unknown): number {
   return Math.round(value * 100) / 100
 }
 function validateSettings(value: unknown): Partial<PlaybackSettings> {
-  if (!object(value) || Object.keys(value).some(key => !['rate', 'favorite', 'step', 'enabled', 'attachPointerToSpeedBar', 'altSeekOnSpeedBar', 'keys'].includes(key))) throw new Error('Réglages invalides.')
+  if (!object(value) || Object.keys(value).some(key => !['rate', 'favorite', 'step', 'enabled', 'attachPointerToSpeedBar', 'videoHoverSplits', 'altSeekOnSpeedBar', 'keys'].includes(key))) throw new Error('Réglages invalides.')
   const out: Partial<PlaybackSettings> = {}
   if ('rate' in value) out.rate = rate(value.rate)
   if ('favorite' in value) out.favorite = rate(value.favorite)
@@ -33,6 +33,10 @@ function validateSettings(value: unknown): Partial<PlaybackSettings> {
   if ('altSeekOnSpeedBar' in value) {
     if (typeof value.altSeekOnSpeedBar !== 'boolean') throw new Error('Réglages invalides.')
     out.altSeekOnSpeedBar = value.altSeekOnSpeedBar
+  }
+  if ('videoHoverSplits' in value) {
+    if (typeof value.videoHoverSplits !== 'boolean') throw new Error('Réglages invalides.')
+    out.videoHoverSplits = value.videoHoverSplits
   }
   if ('step' in value) {
     if (typeof value.step !== 'number' || !Number.isFinite(value.step) || value.step < 0.05 || value.step > 1) throw new Error('Incrément invalide (0,05–1).')
