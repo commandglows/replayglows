@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import EraserIcon from '../components/EraserIcon.vue'
 /**
  * Options.vue - Vue component for the extension's options/settings page.
  * 
@@ -331,7 +332,6 @@ chrome.runtime.onMessage.addListener((request) => {
 
 <template>
   <main class="spc-lg sg-options-shell">
-    <!-- Message de feedback -->
     <div
       v-if="message"
       :key="message.text"
@@ -340,137 +340,180 @@ chrome.runtime.onMessage.addListener((request) => {
     >
       {{ message.text }}
     </div>
-
-    <h1 class="h1">
-      {{ t('options') }}
-    </h1>
-    <section class="sct">
-      <label class="lbl"><span class="t">{{ t('language') }}</span>
-        <select
-          class="inp"
-          :value="language"
-          @change="changeLanguage"
+    <header class="sg-options-header">
+      <h1 class="h1">
+        {{ t('options') }}
+      </h1>
+      <p class="sg-muted">
+        {{ lt('Vos modifications sont enregistrées automatiquement.', 'Your changes are saved automatically.') }}
+      </p>
+    </header>
+    <PlaybackOptions>
+      <template #appearance>
+        <section class="sct">
+          <h3 class="h2">
+            {{ lt('Affichage', 'Display') }}
+          </h3>
+          <!-- Checkboxes stylisées -->
+          <div class="cont flex-col">
+            <label class="lbl">
+              <span class="t">{{ t('hideNotes') }}</span>
+              <div class="relative">
+                <input
+                  v-model="settings.hideNotesByDefault"
+                  type="checkbox"
+                  class="sg-option-checkbox"
+                  @change="saveSettings"
+                >
+              </div>
+            </label>
+            <label class="lbl">
+              <span class="t">{{ t('showButtons') }}</span>
+              <div class="relative">
+                <input
+                  v-model="settings.showBookmarkButtons"
+                  type="checkbox"
+                  class="sg-option-checkbox"
+                  @change="saveSettings"
+                >
+              </div>
+            </label>
+          </div>
+        </section>
+        <section class="sct">
+          <h3 class="h2">
+            {{ lt('Langue', 'Language') }}
+          </h3>
+          <label class="lbl"><span class="t">{{ t('language') }}</span>
+            <select
+              class="inp"
+              :value="language"
+              @change="changeLanguage"
+            >
+              <option value="auto">{{ t('languageAuto') }}</option>
+              <option value="fr">{{ t('languageFrench') }}</option>
+              <option value="en">{{ t('languageEnglish') }}</option>
+            </select>
+          </label>
+        </section>
+      </template>
+      <section class="sct sg-bookmark-shortcuts">
+        <div class="cont flex-col">
+          <label
+            v-for="(key, action) in hotkeys"
+            :key="action"
+            class="lbl hotkey-input"
+          >
+            <span class="t">{{ actionLabels[action] || action }} :</span>
+            <div class="sg-hotkey-controls">
+              <input
+                v-model="hotkeys[action]"
+                type="text"
+                :placeholder="key"
+                class="inp"
+                @keydown="(e) => handleHotkeyInput(e, action)"
+              >
+              <button
+                type="button"
+                class="sg-button sg-button--secondary sg-hotkey-clear"
+                :aria-label="t('clearShortcut', { action: actionLabels[action] || action })"
+                :title="t('clearShortcut', { action: actionLabels[action] || action })"
+                @click="deleteHotkey(action)"
+              ><EraserIcon /></button>
+            </div>
+          </label>
+        </div>
+        <button
+          class="sg-button sg-button--secondary"
+          type="button"
+          @click="hotkeys = { ...defaultHotkeys }; saveHotkeys()"
         >
-          <option value="auto">{{ t('languageAuto') }}</option>
-          <option value="fr">{{ t('languageFrench') }}</option>
-          <option value="en">{{ t('languageEnglish') }}</option>
-        </select>
-      </label>
-    </section>
-    <PlaybackOptions />
-    <details class="sg-options-guide sg-help-topic">
-      <summary>{{ locale === 'fr' ? 'Découvrir ReplayGlows · aide pratique' : 'Discover ReplayGlows · practical help' }}</summary>
+          {{ t('defaultShortcuts') }}
+        </button>
+      </section>
+      <!-- Section Export -->
+      <section class="sct">
+        <h3 class="h2">
+          {{ t('exportBookmarks') }}
+        </h3>
+        <div class="cont sg-option-actions">
+          <button
+            class="sg-button sg-button--secondary"
+            @click="exportMarkdown"
+          >
+            {{ t('copyMarkdown') }}
+          </button>
+          <button
+            class="sg-button sg-button--secondary"
+            @click="exportJSON"
+          >
+            {{ t('exportJson') }}
+          </button>
+        </div>
+      </section>
+
+      <!-- Section Import -->
+      <section class="sct">
+        <h3 class="h2">
+          {{ t('importBookmarks') }}
+        </h3>
+        <div class="cont sg-option-actions">
+          <input
+            ref="importInput"
+            hidden
+            type="file"
+            :aria-label="t('jsonFile')"
+            accept=".json"
+            @change="importJSON"
+          >
+          <button
+            type="button"
+            class="sg-button sg-button--secondary"
+            @click="importInput?.click()"
+          >
+            {{ t('chooseJson') }}
+          </button>
+        </div>
+      </section>
+    </PlaybackOptions>
+    <details class="sg-options-guide sg-help-topic sct">
+      <summary>{{ lt('Comprendre les réglages · aide pratique', 'Understand your settings · practical help') }}</summary>
+      <div class="sg-options-help-copy">
+        <h3 class="h2">
+          {{ t('playbackEverywhere') }}
+        </h3>
+        <p class="sg-muted">
+          {{ t('playbackIntro') }}
+        </p>
+        <p class="sg-muted">
+          {{ t('accessIntro') }}
+        </p>
+        <h3 class="h2">
+          {{ t('videoHoverSplits') }}
+        </h3>
+        <p class="sg-muted">
+          {{ t('videoHoverSplitsHelp') }}
+        </p>
+        <h3 class="h2">
+          {{ t('attachPointerToSpeedBar') }}
+        </h3>
+        <p class="sg-muted">
+          {{ t('attachPointerToSpeedBarHelp') }}
+        </p>
+        <h3 class="h2">
+          {{ t('altSeekOnSpeedBar') }}
+        </h3>
+        <p class="sg-muted">
+          {{ t('altSeekOnSpeedBarHelp') }}
+        </p>
+        <h3 class="h2">
+          {{ t('keyboardShortcuts') }}
+        </h3>
+        <p class="sg-muted">
+          {{ t('recordShortcut') }}
+        </p>
+      </div>
       <DiscoveryGuide standalone />
     </details>
-    <div class="grid grid-cols-2 gap-4">
-      <!-- Colonne gauche -->
-      <div class="flex flex-col">
-        <section class="sct">
-          <h2 class="h2">
-            {{ t('keyboardShortcuts') }}
-          </h2>
-          <form @submit.prevent="saveSettings">
-            <div class="cont flex-col">
-              <label
-                v-for="(key, action) in hotkeys"
-                :key="action"
-                class="lbl hotkey-input"
-              >
-                <span class="t">{{ actionLabels[action] || action }} :</span>
-                <div class="sg-hotkey-controls">
-                  <input
-                    v-model="hotkeys[action]"
-                    type="text"
-                    :placeholder="key"
-                    class="inp"
-                    @keydown="(e) => handleHotkeyInput(e, action)"
-                  >
-                  <button
-                    type="button"
-                    class="sg-button sg-button--secondary"
-                    :aria-label="t('clearShortcut', { action: actionLabels[action] || action })"
-                    @click="deleteHotkey(action)"
-                  >{{ t('clear') }}</button>
-                </div>
-              </label>
-            </div>
-
-            <!-- Checkboxes stylisées -->
-            <div class="cont flex-col">
-              <label class="lbl">
-                <span class="t">{{ t('hideNotes') }}</span>
-                <div class="relative">
-                  <input
-                    v-model="settings.hideNotesByDefault"
-                    type="checkbox"
-                    class="sg-option-checkbox"
-                    @change="saveSettings"
-                  >
-                </div>
-              </label>
-              <label class="lbl">
-                <span class="t">{{ t('showButtons') }}</span>
-                <div class="relative">
-                  <input
-                    v-model="settings.showBookmarkButtons"
-                    type="checkbox"
-                    class="sg-option-checkbox"
-                    @change="saveSettings"
-                  >
-                </div>
-              </label>
-            </div>
-          </form>
-        </section>
-      </div>
-
-      <!-- Colonne droite -->
-      <div class="flex flex-col gap-4">
-        <!-- Section Export -->
-        <section class="sct">
-          <h2 class="h2">
-            {{ t('exportBookmarks') }}
-          </h2>
-          <div class="cont sg-option-actions">
-            <button
-              class="sg-button sg-button--secondary"
-              @click="exportMarkdown"
-            >
-              {{ t('copyMarkdown') }}
-            </button>
-            <button
-              class="sg-button sg-button--secondary"
-              @click="exportJSON"
-            >
-              {{ t('exportJson') }}
-            </button>
-          </div>
-        </section>
-
-        <!-- Section Import -->
-        <section class="sct">
-          <h2 class="h2">
-            {{ t('importBookmarks') }}
-          </h2>
-          <div class="cont sg-option-actions">
-            <input
-              ref="importInput"
-              hidden
-              type="file"
-              :aria-label="t('jsonFile')"
-              accept=".json"
-              @change="importJSON"
-            >
-            <button
-              type="button"
-              class="sg-button sg-button--secondary"
-              @click="importInput?.click()"
-            >
-              {{ t('chooseJson') }}
-            </button>
-          </div>
-        </section>
-      </div>
-    </div>
   </main>
 </template>

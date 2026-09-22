@@ -27,6 +27,10 @@
   --rg-motion-fast: 160ms;
   --rg-motion-base: 240ms;
   --rg-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --rg-options-number-width: 6rem;
+  --rg-hotkey-label-width: 9rem;
+  --rg-hotkey-controls-width: 11rem;
+  --rg-icon-size: 1.125rem;
   --rg-popup-width: 27rem;
   --rg-popup-height: 37.5rem;
   --rg-border-width: 1px;
@@ -1113,6 +1117,7 @@ body:has(> #app > .sg-popup) {
 .sg-options-guide { margin-bottom: var(--rg-space-4); }
 .sg-discovery [disabled] { opacity: var(--rg-disabled-opacity); }
 .sg-popup { overflow-y: auto; max-width: 100%; }
+.sg-popup .sg-inline-note { display: block; width: 100%; min-width: 0; margin: var(--rg-space-1) 0; box-sizing: border-box; }
 .sg-brand-row, .sg-popup-footer { flex-shrink: 0; }
 .sg-bookmark-scroll { min-height: var(--rg-control-height); }
 .sg-bookmark-scroll .sg-empty-state { flex: none; min-height: 0; padding: var(--rg-space-3); }
@@ -1267,8 +1272,26 @@ body:has(> #app > .sg-popup) {
   padding: var(--rg-space-5);
   background: radial-gradient(circle at top right, color-mix(in oklab, var(--rg-color-primary) 12%, transparent), transparent 34%), var(--rg-color-background);
 }
-.sg-options-shell > .h1 { padding: 0; border: 0; color: var(--rg-color-foreground); }
-.sg-options-shell > .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--rg-space-3); }
+.sg-options-header > .h1 { padding: 0; border: 0; color: var(--rg-color-foreground); }
+.sg-options-header { display: flex; flex-direction: column; gap: var(--rg-space-1); margin-bottom: var(--rg-space-4); }
+.sg-options-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--rg-space-3); align-items: start; }
+.sg-options-column { display: flex; flex-direction: column; gap: var(--rg-space-3); min-width: 0; }
+.sg-options-column > .h2 { margin: 0; }
+.sg-options-shell .sg-playback-fields { display: flex; flex-direction: column; gap: var(--rg-space-2); border: 0; padding: 0; margin: 0; min-width: 0; }
+.sg-options-shortcut-group, .sg-options-help-copy, .sg-options-label-copy { display: flex; flex-direction: column; gap: var(--rg-space-1); min-width: 0; }
+.sg-options-shortcut-group + .sg-options-shortcut-group { margin-top: var(--rg-space-2); }
+.sg-options-shell .sg-options-number { width: var(--rg-options-number-width); flex-shrink: 0; }
+.sg-options-shell .sg-options-toggle { align-items: center; }
+.sg-options-shell .sg-options-guide { display: block; margin-top: var(--rg-space-4); }
+.sg-options-help-copy { margin-block: var(--rg-space-3); }
+/* Options layout breakpoints live in the canonical stylesheet. */
+@media (max-width: 75rem) { .sg-options-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 46.001rem) and (max-width: 75rem) {
+  .sg-options-grid { grid-template-rows: auto 1fr; }
+  .sg-options-column:nth-child(1) { grid-area: 1 / 1; }
+  .sg-options-column:nth-child(2) { grid-area: 1 / 2 / span 2; }
+  .sg-options-column:nth-child(3) { grid-area: 2 / 1; }
+}
 .sg-options-shell .sct { display: flex; min-width: 0; flex-direction: column; gap: var(--rg-space-2); padding: var(--rg-space-4); border: 1px solid var(--rg-color-border); border-radius: var(--rg-radius-md); background: color-mix(in oklab, var(--rg-color-surface) 88%, transparent); box-shadow: var(--rg-shadow-card); }
 .sg-options-shell .h2 { padding: 0; color: var(--rg-color-foreground); font-family: var(--rg-font-display); font-size: 1.0625rem; letter-spacing: -0.02em; }
 .sg-options-shell .cont { max-width: none; margin: 0; padding: 0; gap: var(--rg-space-1); }
@@ -1287,7 +1310,7 @@ body:has(> #app > .sg-popup) {
 
 @media (max-width: 46rem) {
   .sg-options-shell { padding: var(--rg-space-3); }
-  .sg-options-shell > .grid { grid-template-columns: 1fr; }
+  .sg-options-grid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1299,15 +1322,19 @@ body:has(> #app > .sg-popup) {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Options controls keep labels above fields and use the shared dark surface. */
+/* Shortcut rows wrap naturally when label and controls no longer fit. */
 .sg-options-shell .hotkey-input {
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
 }
+.sg-options-shell .hotkey-input > .t { flex: 1 1 var(--rg-hotkey-label-width); }
+.sg-options-shell .hotkey-input > .sg-hotkey-controls { flex: 1 1 var(--rg-hotkey-controls-width); }
 .sg-hotkey-controls {
   display: flex;
+  isolation: isolate;
   align-items: center;
-  gap: var(--rg-space-1);
+  gap: var(--rg-space-2);
   min-width: 0;
 }
 .sg-options-shell .sg-hotkey-controls .inp {
@@ -1315,6 +1342,12 @@ body:has(> #app > .sg-popup) {
   min-width: 0;
 }
 .sg-hotkey-controls .sg-button { flex-shrink: 0; }
+.sg-hotkey-controls > :focus-visible {
+  position: relative;
+  z-index: 1;
+}
+.sg-hotkey-controls .sg-hotkey-clear { width: var(--rg-control-height); min-height: var(--rg-control-height); padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.sg-hotkey-clear svg { width: var(--rg-icon-size); height: var(--rg-icon-size); }
 .sg-option-actions { flex-wrap: wrap; }
 .sg-option-checkbox {
   accent-color: var(--rg-color-primary);
@@ -1326,4 +1359,25 @@ body:has(> #app > .sg-popup) {
 .sg-option-checkbox:focus-visible {
   outline: solid var(--rg-color-primary-hover);
   outline-offset: var(--rg-space-1);
+}
+
+/* Shared click affordance across popup, options and the full extension page. */
+:is(button, a[href], summary, select, [role="button"], [role="tab"],
+    [role="menuitem"], [role="menuitemcheckbox"], [role="switch"],
+    input[type="button"], input[type="submit"], input[type="reset"],
+    input[type="checkbox"], input[type="radio"], input[type="range"], input[type="file"])
+    :is(svg, path) {
+  cursor: inherit;
+}
+:is(button, a[href], summary, select, [role="button"], [role="tab"],
+    [role="menuitem"], [role="menuitemcheckbox"], [role="switch"],
+    input[type="button"], input[type="submit"], input[type="reset"],
+    input[type="checkbox"], input[type="radio"], input[type="range"], input[type="file"],
+    .sg-hotkey-controls input):not(:disabled):not([aria-disabled="true"]),
+label:has(:is(input[type="checkbox"], input[type="radio"], input[type="file"], select):enabled) {
+  cursor: pointer;
+}
+:is(button, select, input, [role="button"], [role="tab"], [role="menuitem"],
+    [role="menuitemcheckbox"], [role="switch"]):is(:disabled, [aria-disabled="true"]) {
+  cursor: not-allowed;
 }
