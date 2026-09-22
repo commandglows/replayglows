@@ -7,7 +7,6 @@ import {
 } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
 import {
-  REPLAYGLOWS_LEGACY_PRODUCT_IDS,
   REPLAYGLOWS_PRODUCT_ID,
   requireReplayGlowsAccess,
 } from "./access";
@@ -141,24 +140,19 @@ async function getLastNewVideoPushAt(ctx: MutationCtx, userId: string) {
 
 async function hasCurrentReplayGlowsAccess(ctx: MutationCtx, userId: string) {
   const now = Date.now();
-  for (const productId of [
-    REPLAYGLOWS_PRODUCT_ID,
-    ...REPLAYGLOWS_LEGACY_PRODUCT_IDS,
-  ]) {
-    const snapshot = await ctx.db
-      .query("productAccessSnapshots")
-      .withIndex("by_user_product", (q) =>
-        q.eq("userId", userId).eq("productId", productId),
-      )
-      .first();
+  const snapshot = await ctx.db
+    .query("productAccessSnapshots")
+    .withIndex("by_user_product", (q) =>
+      q.eq("userId", userId).eq("productId", REPLAYGLOWS_PRODUCT_ID),
+    )
+    .first();
 
-    if (
-      snapshot &&
-      snapshot.expiresAt > now &&
-      (snapshot.status === "active" || snapshot.status === "trialing")
-    ) {
-      return true;
-    }
+  if (
+    snapshot &&
+    snapshot.expiresAt > now &&
+    (snapshot.status === "active" || snapshot.status === "trialing")
+  ) {
+    return true;
   }
 
   return false;

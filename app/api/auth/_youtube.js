@@ -2,7 +2,6 @@ const DEFAULT_RETURN_TO = '/#/playlists';
 const YOUTUBE_SCOPE = 'https://www.googleapis.com/auth/youtube';
 const _HOST_PATTERN = /^[A-Za-z0-9.-]+(?::\d+)?$/;
 const DEFAULT_PRODUCT_ID = 'replayglows';
-const DEFAULT_LEGACY_PRODUCT_IDS = ['tubeflow'];
 const OAUTH_TICKET_VERSION = 1;
 const OAUTH_TICKET_TTL_MS = 15 * 60 * 1000;
 
@@ -275,27 +274,15 @@ function openOAuthTicket(ticket, secret, now = Date.now()) {
   }
 }
 
-function parseLegacyProductIds(raw) {
-  if (!raw || !raw.trim()) return DEFAULT_LEGACY_PRODUCT_IDS;
-  const ids = raw
-    .split(',')
-    .map((value) => value.trim())
-    .filter(Boolean);
-  return ids.length > 0 ? ids : DEFAULT_LEGACY_PRODUCT_IDS;
-}
-
 function resolveEntitlementInputs() {
   return {
     productId: getEnv('REPLAYGLOWS_PRODUCT_ID') || DEFAULT_PRODUCT_ID,
-    legacyProductIds: parseLegacyProductIds(
-      getEnv('REPLAYGLOWS_LEGACY_PRODUCT_IDS'),
-    ),
     verifyUrl: getEnv('SUITE_ENTITLEMENT_VERIFY_URL'),
     verifySecret: getEnv('SUITE_ENTITLEMENT_VERIFY_SECRET'),
   };
 }
 
-function resolveEntitlementResult(payload, productId, legacyProductIds) {
+function resolveEntitlementResult(payload, productId) {
   if (!payload || typeof payload !== 'object') {
     return { hasAccess: false, reasonCode: 'invalid_entitlement_payload' };
   }
@@ -313,14 +300,13 @@ function resolveEntitlementResult(payload, productId, legacyProductIds) {
   }
 
   const entitlements = Array.isArray(payload.entitlements) ? payload.entitlements : [];
-  const accepted = new Set([productId, ...legacyProductIds]);
   const hasAccess = entitlements.some((entitlement) => {
     if (!entitlement || typeof entitlement !== 'object') return false;
     const entitlementProductId = entitlement.productId;
     const status = entitlement.status;
     return (
       typeof entitlementProductId === 'string' &&
-      accepted.has(entitlementProductId) &&
+      entitlementProductId === productId &&
       (status === 'active' || status === 'trialing')
     );
   });
@@ -344,7 +330,6 @@ async function verifySuiteSessionAndEntitlement({
   verifyUrl,
   verifySecret,
   productId,
-  legacyProductIds,
   requestId,
 }) {
   if (!verifyUrl) {
@@ -373,7 +358,6 @@ async function verifySuiteSessionAndEntitlement({
       },
       body: JSON.stringify({
         productId,
-        legacyProductIds,
       }),
     });
   } catch (_) {
@@ -401,7 +385,6 @@ async function verifySuiteSessionAndEntitlement({
   const entitlement = resolveEntitlementResult(
     payload,
     productId,
-    legacyProductIds,
   );
   if (!entitlement.hasAccess) {
     return {
@@ -465,7 +448,6 @@ async function verifyReplayGlowsSessionAndAccess({
   sessionToken,
   convexUrl,
   productId,
-  legacyProductIds,
 }) {
   if (!convexUrl) {
     return { ok: false, status: 503, error: 'convex_url_not_configured' };
@@ -504,7 +486,6 @@ async function verifyReplayGlowsSessionAndAccess({
     path: 'users:getProductAccessStatus',
     args: {
       productId,
-      legacyProductIds,
     },
   });
   if (!access.ok) {
@@ -545,7 +526,6 @@ async function verifyReplayGlowsSessionAccessWithFallback({
   verifyUrl,
   verifySecret,
   productId,
-  legacyProductIds,
   requestId,
 }) {
   if (convexUrl) {
@@ -553,7 +533,6 @@ async function verifyReplayGlowsSessionAccessWithFallback({
       sessionToken,
       convexUrl,
       productId,
-      legacyProductIds,
     });
     if (productVerification.ok || productVerification.status !== 503) {
       return productVerification;
@@ -565,21 +544,18 @@ async function verifyReplayGlowsSessionAccessWithFallback({
     verifyUrl,
     verifySecret,
     productId,
-    legacyProductIds,
     requestId,
   });
 }
 
 module.exports = {
   DEFAULT_PRODUCT_ID,
-  DEFAULT_LEGACY_PRODUCT_IDS,
   YOUTUBE_SCOPE,
   getEnv,
   getRequestOrigin,
   isSecureOrigin,
   getBearerTokenFromAuthHeader,
   decodeJwtPayload,
-  parseLegacyProductIds,
   resolveEntitlementInputs,
   verifyReplayGlowsSessionAndAccess,
   verifyReplayGlowsSessionAccessWithFallback,

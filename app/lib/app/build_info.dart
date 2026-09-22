@@ -56,53 +56,26 @@ const _replayGlowsProductId = String.fromEnvironment(
   'REPLAYGLOWS_PRODUCT_ID',
   defaultValue: '',
 );
-const _replayGlowzProductId = String.fromEnvironment(
-  'REPLAYGLOWZ_PRODUCT_ID',
-  defaultValue: '',
-);
 const replayGlowsProductId = _replayGlowsProductId != ''
     ? _replayGlowsProductId
-    : (_replayGlowzProductId != '' ? _replayGlowzProductId : 'replayglows');
+    : 'replayglows';
 
-const _replayGlowsLegacyProductIds = String.fromEnvironment(
-  'REPLAYGLOWS_LEGACY_PRODUCT_IDS',
-  defaultValue: '',
-);
-const _replayGlowzLegacyProductIds = String.fromEnvironment(
-  'REPLAYGLOWZ_LEGACY_PRODUCT_IDS',
-  defaultValue: '',
-);
-const replayGlowsLegacyProductIds = _replayGlowsLegacyProductIds != ''
-    ? _replayGlowsLegacyProductIds
-    : (_replayGlowzLegacyProductIds != ''
-          ? _replayGlowzLegacyProductIds
-          : 'replayglowz,tubeflow');
 
 const _replayGlowsAccountCenterUrl = String.fromEnvironment(
   'REPLAYGLOWS_ACCOUNT_CENTER_URL',
   defaultValue: '',
 );
-const _replayGlowzAccountCenterUrl = String.fromEnvironment(
-  'REPLAYGLOWZ_ACCOUNT_CENTER_URL',
-  defaultValue: '',
-);
 const replayGlowsAccountCenterUrl = _replayGlowsAccountCenterUrl != ''
     ? _replayGlowsAccountCenterUrl
-    : (_replayGlowzAccountCenterUrl != ''
-          ? _replayGlowzAccountCenterUrl
-          : 'https://winflows.com/account');
+    : 'https://winflows.com/account';
 
 const _replayGlowsAppUrl = String.fromEnvironment(
   'REPLAYGLOWS_APP_URL',
   defaultValue: '',
 );
-const _replayGlowzAppUrl = String.fromEnvironment(
-  'REPLAYGLOWZ_APP_URL',
-  defaultValue: '',
-);
 const replayGlowsAppUrl = _replayGlowsAppUrl != ''
     ? _replayGlowsAppUrl
-    : _replayGlowzAppUrl;
+    : 'https://app.replayglows.com';
 
 const sentryDsn = String.fromEnvironment('SENTRY_DSN', defaultValue: '');
 

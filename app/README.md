@@ -11,7 +11,6 @@ ReplayGlows uses suite Clerk web identity plus server-verified product access on
 - Entitlement authority: WinFlowz suite verifier (`SUITE_ENTITLEMENT_VERIFY_URL`)
 - Product data authority: ReplayGlows product Convex (`CONVEX_URL`)
 - Canonical entitlement product id: `replayglows`
-- Legacy alias (read/migration only): `tubeflow`
 
 ## Quick Start
 
@@ -24,7 +23,6 @@ flutter run -d chrome \
   --dart-define=CLERK_SIGN_IN_URL=/sign-in \
   --dart-define=CLERK_SIGN_UP_URL=/sign-up \
   --dart-define=REPLAYGLOWS_PRODUCT_ID=replayglows \
-  --dart-define=REPLAYGLOWS_LEGACY_PRODUCT_IDS=tubeflow \
   --dart-define=REPLAYGLOWS_ACCOUNT_CENTER_URL=https://winflows.com/account \
   --dart-define=REPLAYGLOWS_APP_URL=https://app.replayglows.com
 
@@ -33,7 +31,6 @@ CLERK_PUBLISHABLE_KEY=... \
 CLERK_SIGN_IN_URL=/sign-in \
 CLERK_SIGN_UP_URL=/sign-up \
 REPLAYGLOWS_PRODUCT_ID=replayglows \
-REPLAYGLOWS_LEGACY_PRODUCT_IDS=tubeflow \
 REPLAYGLOWS_ACCOUNT_CENTER_URL=https://winflows.com/account \
 REPLAYGLOWS_APP_URL=https://app.replayglows.com \
 bash build.sh
@@ -48,7 +45,6 @@ Flutter build-time (`--dart-define`) values:
 - `CLERK_SIGN_IN_URL`
 - `CLERK_SIGN_UP_URL`
 - `REPLAYGLOWS_PRODUCT_ID` (`replayglows`)
-- `REPLAYGLOWS_LEGACY_PRODUCT_IDS` (`tubeflow`)
 - `REPLAYGLOWS_ACCOUNT_CENTER_URL`
 - `REPLAYGLOWS_APP_URL`
 - `BUILD_COMMIT_SHA`, `BUILD_ENVIRONMENT`, `BUILD_TIMESTAMP` (optional diagnostics)

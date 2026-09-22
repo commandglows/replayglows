@@ -123,21 +123,6 @@ void main() {
       },
     );
 
-    test('treats legacy tubeflow entitlement as ReplayGlows access', () {
-      const snapshot = SuiteIdentitySnapshot(
-        status: SuiteIdentityStatus.accessActive,
-        entitlements: [
-          ProductEntitlement(
-            productId: 'tubeflow',
-            status: ProductEntitlementStatus.active,
-          ),
-        ],
-        productToken: 'bridge-token',
-      );
-
-      expect(snapshot.hasReplayGlowsAccess, isTrue);
-    });
-
     test('returns issue on non-200 bridge response', () async {
       final client = MockClient((Request request) async {
         return Response('nope', 503);

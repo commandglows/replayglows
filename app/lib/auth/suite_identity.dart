@@ -55,10 +55,6 @@ class SuiteIdentitySnapshot {
   bool get hasReplayGlowsAccess {
     final productIds = {
       replayGlowsProductId.trim(),
-      ...replayGlowsLegacyProductIds
-          .split(',')
-          .map((value) => value.trim())
-          .where((value) => value.isNotEmpty),
     }..removeWhere((value) => value.isEmpty);
 
     return entitlements.any(
