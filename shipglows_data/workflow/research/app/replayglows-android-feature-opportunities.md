@@ -2,7 +2,7 @@
 artifact: research
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-06-11"
 updated: "2026-06-11"
 status: reviewed
@@ -30,19 +30,19 @@ evidence:
 next_step: "Prioritize one low-risk Android-native feature and write a delivery spec."
 ---
 
-# Research: ReplayGlowz Android-native feature opportunities
+# Research: ReplayGlows Android-native feature opportunities
 
 > Generated 2026-06-11 - Sources: 10
 
 ## Executive Summary
 
-ReplayGlowz now has an Android surface, which opens product opportunities that are not worth doing on the web and are specifically good at reducing user friction. The strongest opportunities are the ones that expose existing ReplayGlowz value faster: resuming playback, surfacing new videos/transcripts, capturing items into the app from elsewhere, and making search resilient offline.
+ReplayGlows now has an Android surface, which opens product opportunities that are not worth doing on the web and are specifically good at reducing user friction. The strongest opportunities are the ones that expose existing ReplayGlows value faster: resuming playback, surfacing new videos/transcripts, capturing items into the app from elsewhere, and making search resilient offline.
 
-The main constraint is YouTube policy. ReplayGlowz should not plan Android features that imply background playback of the YouTube player or offline YouTube video/audio downloads through the API. The best Android-native roadmap is therefore utility-first, not "YouTube replacement" behavior.
+The main constraint is YouTube policy. ReplayGlows should not plan Android features that imply background playback of the YouTube player or offline YouTube video/audio downloads through the API. The best Android-native roadmap is therefore utility-first, not "YouTube replacement" behavior.
 
 ## Product context from the repo
 
-Current ReplayGlowz capabilities already suggest where Android-native work will pay off:
+Current ReplayGlows capabilities already suggest where Android-native work will pay off:
 
 - product data already includes playlists, feeds, notes, transcripts, preferences, notifications, and playback progress
 - the app already has notification preferences and a notifications screen
@@ -81,9 +81,9 @@ Android officially supports:
 
 ## 1. Home screen widgets for "Continue watching" and "New in my feeds"
 
-### Why this fits ReplayGlowz
+### Why this fits ReplayGlows
 
-Widgets are best when they expose the app's most important information without forcing a full open. ReplayGlowz already has the right objects for this:
+Widgets are best when they expose the app's most important information without forcing a full open. ReplayGlows already has the right objects for this:
 
 - last watched video / playback progress
 - unread notifications
@@ -93,7 +93,7 @@ Widgets are best when they expose the app's most important information without f
 ### Concrete widget ideas
 
 - `Continue watching`: thumbnail, title, progress bar, one-tap resume
-- `New in my feeds`: 2-4 recent items from a chosen ReplayGlowz feed
+- `New in my feeds`: 2-4 recent items from a chosen ReplayGlows feed
 - `Transcript ready`: compact queue/status widget for transcript jobs
 
 ### User value
@@ -108,35 +108,35 @@ Widgets are best when they expose the app's most important information without f
 - avoid trying to build a dense interactive mini-app in v1
 - tie refresh cadence to existing backend sync state rather than aggressive polling
 
-## 2. Android Sharesheet ingestion: "Send to ReplayGlowz"
+## 2. Android Sharesheet ingestion: "Send to ReplayGlows"
 
-### Why this fits ReplayGlowz
+### Why this fits ReplayGlows
 
 This is likely the single highest-leverage Android-specific convenience feature. Users discover videos, links, and text snippets outside the app all the time. Android can receive shared text/URLs and expose Direct Share targets.
 
 ### Concrete flows
 
-- share a YouTube URL from YouTube, Chrome, or messaging -> open ReplayGlowz import sheet
+- share a YouTube URL from YouTube, Chrome, or messaging -> open ReplayGlows import sheet
 - share selected text from another app -> create a note or save it against the currently active video/feed
 - share a playlist/channel URL -> jump directly into the existing feed/playlist import flow
 
 ### User value
 
 - removes the "copy link -> switch apps -> paste" loop
-- turns ReplayGlowz into a collection inbox
+- turns ReplayGlows into a collection inbox
 - makes feed building feel native instead of form-driven
 
 ### Engineering notes
 
 - v1 should focus on URL ingestion only
 - support plain text fallback because many apps share URLs as text
-- deep-link into the existing ReplayGlowz playlist/channel onboarding rather than inventing a separate import stack
+- deep-link into the existing ReplayGlows playlist/channel onboarding rather than inventing a separate import stack
 
 ## 3. App shortcuts for the highest-frequency actions
 
-### Why this fits ReplayGlowz
+### Why this fits ReplayGlows
 
-Android app shortcuts are specifically intended to launch common or recommended tasks quickly. ReplayGlowz has a small set of obvious frequent actions.
+Android app shortcuts are specifically intended to launch common or recommended tasks quickly. ReplayGlows has a small set of obvious frequent actions.
 
 ### Good shortcut candidates
 
@@ -150,7 +150,7 @@ Android app shortcuts are specifically intended to launch common or recommended 
 
 - faster launch into an existing habit
 - better re-entry from launcher and Assistant surfaces
-- especially useful for power users who use ReplayGlowz repeatedly during the day
+- especially useful for power users who use ReplayGlows repeatedly during the day
 
 ### Engineering notes
 
@@ -160,9 +160,9 @@ Android app shortcuts are specifically intended to launch common or recommended 
 
 ## 4. Native notifications that are actionable, not just informational
 
-### Why this fits ReplayGlowz
+### Why this fits ReplayGlows
 
-ReplayGlowz already models notifications and transcript readiness. Android can make these materially more useful if the notifications become action surfaces instead of passive alerts.
+ReplayGlows already models notifications and transcript readiness. Android can make these materially more useful if the notifications become action surfaces instead of passive alerts.
 
 ### Concrete notification actions
 
@@ -180,14 +180,14 @@ ReplayGlowz already models notifications and transcript readiness. Android can m
 ### Engineering notes
 
 - Android 13+ requires the normal notification permission flow for most app notifications
-- media-session notifications are treated differently, but ReplayGlowz should not use that as a loophole for forbidden YouTube background-play behavior
+- media-session notifications are treated differently, but ReplayGlows should not use that as a loophole for forbidden YouTube background-play behavior
 - v1 should prioritize high-signal notifications only; do not spam every feed event
 
 ## 5. Quick Settings tile for "Sync now"
 
-### Why this fits ReplayGlowz
+### Why this fits ReplayGlows
 
-Android recommends tiles for actions users access often or need fast access to. ReplayGlowz already has a quota-aware backend sync action. A tile for manual sync is unusually well matched to the product.
+Android recommends tiles for actions users access often or need fast access to. ReplayGlows already has a quota-aware backend sync action. A tile for manual sync is unusually well matched to the product.
 
 ### Concrete tile behavior
 
@@ -208,9 +208,9 @@ Android recommends tiles for actions users access often or need fast access to. 
 
 ## 6. Offline-first transcript and note search with AppSearch
 
-### Why this fits ReplayGlowz
+### Why this fits ReplayGlows
 
-This is the most strategically differentiated Android feature in the list. Android AppSearch is designed for local, structured, full-text search and explicitly supports offline search. ReplayGlowz transcripts and notes map well to that model.
+This is the most strategically differentiated Android feature in the list. Android AppSearch is designed for local, structured, full-text search and explicitly supports offline search. ReplayGlows transcripts and notes map well to that model.
 
 ### Concrete scope
 
@@ -220,7 +220,7 @@ This is the most strategically differentiated Android feature in the list. Andro
 
 ### User value
 
-- makes ReplayGlowz feel fast and "knowledge-first"
+- makes ReplayGlows feel fast and "knowledge-first"
 - improves usefulness in poor network conditions
 - creates genuine independent value beyond raw YouTube playback
 
@@ -232,9 +232,9 @@ This is the most strategically differentiated Android feature in the list. Andro
 
 ## 7. PiP for in-app playback, with a hard policy review first
 
-### Why this fits ReplayGlowz
+### Why this fits ReplayGlows
 
-PiP is one of the native things users expect from Android video apps. Android supports it well. But for ReplayGlowz, this one sits behind a policy and implementation review because the video surface is YouTube-backed.
+PiP is one of the native things users expect from Android video apps. Android supports it well. But for ReplayGlows, this one sits behind a policy and implementation review because the video surface is YouTube-backed.
 
 ### Value
 
@@ -275,13 +275,13 @@ High appeal, but it needs dedicated policy and implementation validation.
 
 ## Best overall recommendation
 
-If ReplayGlowz wants one Android-native feature set that clearly improves user life without wandering into YouTube-policy risk, the best package is:
+If ReplayGlows wants one Android-native feature set that clearly improves user life without wandering into YouTube-policy risk, the best package is:
 
-1. `Send to ReplayGlowz` from Android share targets
+1. `Send to ReplayGlows` from Android share targets
 2. `Continue watching` widget
 3. actionable notifications for transcript-ready and new-video events
 
-That trio makes ReplayGlowz more capture-friendly, easier to resume, and more useful when the user is not already inside the app. It also reuses existing backend and product concepts instead of requiring a new product architecture.
+That trio makes ReplayGlows more capture-friendly, easier to resume, and more useful when the user is not already inside the app. It also reuses existing backend and product concepts instead of requiring a new product architecture.
 
 ## Sources
 

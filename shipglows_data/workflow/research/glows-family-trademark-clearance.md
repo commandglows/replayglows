@@ -2,7 +2,7 @@
 artifact: research
 metadata_schema_version: "1.0"
 artifact_version: "1.11.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-08-03"
 updated: "2026-08-05"
 status: reviewed
@@ -232,14 +232,14 @@ Checked 2026-08-03 at 23:04 UTC, immediately before the operator's intended doma
 
 Preliminary verdict: `CommandGlows` passes the available free pre-reservation screen and is a rational bootstrap choice among the candidates reviewed. This is permission to proceed under an explicitly accepted residual-risk strategy, not legal clearance. The checks cannot exclude unindexed applications, pending filings, unregistered local use, private launch preparations, phonetic/conceptual conflicts, or a filing made after the timestamp.
 
-## Product-name comparison: ReplayGlowz and TubeGlows
+## Product-name comparison: ReplayGlows and TubeGlows
 
 | Candidate | Exact/close evidence | Platform-policy dimension | Preliminary disposition |
 |---|---|---|---|
-| `ReplayGlowz` | No material indexed software/app use found for the exact `ReplayGlows` or `ReplayGlowz` compound. `Replay Glow` is used for children's glow-in-the-dark eyewear, a distant goods category. `replayglows.com` is registered by the current project; singular/plural `ReplayGlow(s)` `.com` strings returned no RDAP record | Does not contain or imitate the YouTube name; describes revisiting video content and remains usable beyond one source platform | Retain. Suggestive rather than fanciful, but aligned with the actual video-learning, notes, playlists, retrieval, and review workflow |
+| `ReplayGlows` | No material indexed software/app use found for the exact `ReplayGlows` or `ReplayGlows` compound. `Replay Glow` is used for children's glow-in-the-dark eyewear, a distant goods category. `replayglows.com` is registered by the current project; singular/plural `ReplayGlow(s)` `.com` strings returned no RDAP record | Does not contain or imitate the YouTube name; describes revisiting video content and remains usable beyond one source platform | Retain. Suggestive rather than fanciful, but aligned with the actual video-learning, notes, playlists, retrieval, and review workflow |
 | `TubeGlows` | Exact singular `TubeGlow` is currently used by an iPhone game and multiple lighting products. `tubeglow.com` is registered; `tubeglows.com` and `tubeglowz.com` returned no RDAP record | In a YouTube-centered client, `Tube` predictably evokes YouTube. Google's API branding rules prohibit `YouTube`, `YT`, `You-Tube`, or a derivative in an application's overall name. Whether `TubeGlows` legally qualifies as a derivative is unresolved, but the avoidable policy/association risk is material | Reject. It is less platform-independent, has exact singular commercial uses, and gains most of its intended meaning from proximity to YouTube |
 
-`ReplayGlowz` is materially safer and strategically stronger than `TubeGlows` for the current product. This is not definitive clearance: broad `REPLAY` and `GLOW` similarity still requires official register review if the operator later files.
+`ReplayGlows` is materially safer and strategically stronger than `TubeGlows` for the current product. This is not definitive clearance: broad `REPLAY` and `GLOW` similarity still requires official register review if the operator later files.
 
 ### What the existing TubeFlow products do—and do not—prove
 

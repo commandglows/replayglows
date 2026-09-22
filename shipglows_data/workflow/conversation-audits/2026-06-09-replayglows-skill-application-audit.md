@@ -2,7 +2,7 @@
 artifact: conversation_audit
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: replayglowz
+project: replayglows
 created: "2026-06-09"
 updated: "2026-06-09"
 status: draft
@@ -58,7 +58,7 @@ next_step: "/sf-spec shipglows-skill-reporting-and-proof-hardening"
 
 - Source transcript: live conversation context; no stored transcript file was available in `shipglows_data/workflow/conversations/`.
 - Audit mode: `default`
-- Audit scope: ReplayGlowz session skill application, especially `sf-build`, `sf-bug`, `sf-spec`, `sf-ready`, and `sf-resume`.
+- Audit scope: ReplayGlows session skill application, especially `sf-build`, `sf-bug`, `sf-spec`, `sf-ready`, and `sf-resume`.
 - Reviewed at: `2026-06-09 16:59:20 UTC`
 - cleaned_input_used: visible user/agent turns summarized from the active thread; terminal output, diffs, and long command output excluded.
 
@@ -92,7 +92,7 @@ Each finding keeps the same structure:
 | over_reporting | medium | Readiness/spec status was reported with too much lifecycle machinery for the user's active need. | medium | User repeatedly asked for simpler explanation and then answered numbered questions; the skill flow made the state harder to follow than necessary. | sf-build | Add a compact readiness-response pattern: "decision needed", "my recommended default", "what changes if you choose otherwise". |
 | proof_gap | high | UI behavior changes were not consistently tied to a visible proof ladder before completion claims. | high | Later user reports covered concrete regressions: swipe advanced bar unreliable after navigation, metadata not ready for action buttons, button feedback absent. | sf-verify | Require `sf-build`/`sf-bug` reports for Flutter UI controls to name widget test, Flutter Web smoke, or explicit exception-with-proof before saying behavior is fixed. |
 | stale_skill_contract | medium | `sf-ready` reached a ready transition that still needed metadata repair after lint caught `artifact_version` drift. | medium | Session state: spec was marked ready, metadata lint failed because `artifact_version` remained `0.1.0`, then it was repaired to `1.0.0`. | sf-spec | Update readiness/status transition checklist so status changes and `artifact_version` bumps are applied atomically before lint. |
-| weak_follow_through | medium | Repeated `$sf-ready` invocations suggest the previous ready handoff did not leave the user with a clear next action. | medium | User invoked `$sf-ready replayglowz-global-focus-swipe-menus` multiple times and asked for simple questions before accepting the spec. | sf-build | At the end of readiness/spec turns, report exactly one next command and one sentence explaining what it will do. |
+| weak_follow_through | medium | Repeated `$sf-ready` invocations suggest the previous ready handoff did not leave the user with a clear next action. | medium | User invoked `$sf-ready replayglows-global-focus-swipe-menus` multiple times and asked for simple questions before accepting the spec. | sf-build | At the end of readiness/spec turns, report exactly one next command and one sentence explaining what it will do. |
 
 ## Aggregate Signals
 
@@ -111,7 +111,7 @@ Each finding keeps the same structure:
 
 - title: ShipGlows skill reporting and proof hardening
 - reason: Multiple skill applications in this session show the same operational pattern: internal lifecycle language reached the user, and UI-fix completion claims were not consistently backed by a visible proof path.
-- owner route: `sf-spec` to define the contract update, then `sf-verify` to pressure-test it on ReplayGlowz-like UI sessions.
+- owner route: `sf-spec` to define the contract update, then `sf-verify` to pressure-test it on ReplayGlows-like UI sessions.
 
 ## Next Step
 
