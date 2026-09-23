@@ -10,20 +10,44 @@ const { t } = useAppI18n()
 
 const bookmarks = ref<Bookmark[]>([])
 const error = ref('')
+const loadError = ref('')
 const editing = ref<Bookmark | null>(null)
 const note = ref('')
-const busy = ref<string | null>(null)
+const busy = ref(new Set<string>())
+let editSession = 0
+let loadVersion = 0
+let disposed = false
 
-const groups = computed(() => Object.values(groupBookmarks(bookmarks.value)))
+function bookmarkKey(bookmark: Bookmark): string {
+  return `${bookmark.url}:${bookmark.time}`
+}
+
+const draftDeleted = computed(() => {
+  const draft = editing.value
+  return !!draft && !bookmarks.value.some(item => bookmarkKey(item) === bookmarkKey(draft))
+})
+
+const groups = computed(() => {
+  const records = [...bookmarks.value]
+  const draft = editing.value
+  // Keep a deleted record's draft reachable until the user cancels it.
+  if (draft && draftDeleted.value) {
+    records.push(draft)
+  }
+  return Object.values(groupBookmarks(records))
+})
 
 async function load(): Promise<void> {
+  const version = ++loadVersion
   try {
     const result = await chrome.storage.local.get('bookmarks')
+    if (disposed || version !== loadVersion) return
     bookmarks.value = normalizeBookmarks(result.bookmarks ?? []).sort(
       (a, b) => (a.title ?? '').localeCompare(b.title ?? '') || a.time - b.time,
     )
+    loadError.value = ''
   } catch {
-    error.value = t('local.loadError')
+    if (!disposed && version === loadVersion) loadError.value = t('local.loadError')
   }
 }
 
@@ -35,39 +59,52 @@ onMounted(() => {
   void load()
   chrome.storage.onChanged.addListener(onStorage)
 })
-onUnmounted(() => chrome.storage.onChanged.removeListener(onStorage))
+onUnmounted(() => {
+  disposed = true
+  chrome.storage.onChanged.removeListener(onStorage)
+})
 
 async function mutate(action: string, bookmark: Bookmark): Promise<void> {
+  const key = bookmarkKey(bookmark)
+  if (busy.value.has(key)) return
+  const session = editSession
+  const submittedNote = bookmark.note
   error.value = ''
-  const key = `${bookmark.url}:${bookmark.time}`
-  busy.value = key
+  busy.value.add(key)
   try {
     const response = await chrome.runtime.sendMessage({ action, bookmark })
-    if (response?.error) throw new Error(response.error)
-    editing.value = null
+    if (response?.success !== true) throw new Error(response?.error ?? 'Missing confirmation')
+    if (disposed) return
+    if (session === editSession && editing.value && bookmarkKey(editing.value) === key &&
+      (action === 'deleteBookmark' || note.value === submittedNote)) cancelEdit()
     await load()
   } catch {
-    error.value = t('common.error')
+    if (!disposed) error.value = t('common.error')
   } finally {
-    busy.value = null
+    busy.value.delete(key)
   }
 }
 
 function visit(bookmark: Bookmark): void {
-  void chrome.tabs.create({ url: `${bookmark.url}&t=${bookmark.time}s` })
+  void chrome.tabs.create({ url: `${bookmark.url}&t=${bookmark.time}s` }).catch(() => {
+    if (!disposed) error.value = t('common.error')
+  })
 }
 
 function startEdit(bookmark: Bookmark): void {
-  editing.value = bookmark
+  if (editing.value && bookmarkKey(editing.value) === bookmarkKey(bookmark)) return
+  editSession++
+  editing.value = { ...bookmark }
   note.value = bookmark.note
 }
 
 function cancelEdit(): void {
+  editSession++
   editing.value = null
 }
 
 function saveEdit(): void {
-  if (editing.value) void mutate('updateBookmark', { ...editing.value, note: note.value })
+  if (editing.value && !draftDeleted.value) void mutate('updateBookmark', { ...editing.value, note: note.value })
 }
 
 function remove(bookmark: Bookmark): void {
@@ -87,15 +124,15 @@ function remove(bookmark: Bookmark): void {
     </header>
 
     <p
-      v-if="error"
+      v-if="error || loadError"
       class="rg-local__error"
       role="alert"
     >
-      {{ error }}
+      {{ error || loadError }}
     </p>
 
     <div
-      v-if="bookmarks.length === 0"
+      v-if="bookmarks.length === 0 && !editing"
       class="rg-local__empty"
     >
       <p class="rg-local__empty-title">
@@ -133,14 +170,44 @@ function remove(bookmark: Bookmark): void {
               >
                 {{ bookmark.formattedTime }}
               </button>
-              <p class="rg-local__note">
+              <input
+                v-if="editing && bookmarkKey(editing) === bookmarkKey(bookmark)"
+                v-model="note"
+                class="rg-input rg-local__note-input"
+                :aria-label="t('local.editNote')"
+                :disabled="busy.has(bookmarkKey(bookmark)) || draftDeleted"
+                @keyup.enter="saveEdit"
+                @keyup.esc="cancelEdit"
+              >
+              <p
+                v-else
+                class="rg-local__note"
+              >
                 {{ bookmark.note || t('local.noNote') }}
               </p>
               <div class="rg-local__actions">
                 <button
+                  v-if="editing && bookmarkKey(editing) === bookmarkKey(bookmark)"
                   type="button"
                   class="rg-link"
-                  :disabled="busy === `${bookmark.url}:${bookmark.time}`"
+                  :disabled="busy.has(bookmarkKey(bookmark)) || draftDeleted"
+                  @click="saveEdit"
+                >
+                  {{ t('common.save') }}
+                </button>
+                <button
+                  v-if="editing && bookmarkKey(editing) === bookmarkKey(bookmark)"
+                  type="button"
+                  class="rg-link"
+                  @click="cancelEdit"
+                >
+                  {{ t('common.cancel') }}
+                </button>
+                <button
+                  v-else
+                  type="button"
+                  class="rg-link"
+                  :disabled="busy.has(bookmarkKey(bookmark))"
                   @click="startEdit(bookmark)"
                 >
                   {{ t('common.edit') }}
@@ -148,38 +215,20 @@ function remove(bookmark: Bookmark): void {
                 <button
                   type="button"
                   class="rg-link rg-link--danger"
-                  :disabled="busy === `${bookmark.url}:${bookmark.time}`"
+                  :disabled="busy.has(bookmarkKey(bookmark))"
                   @click="remove(bookmark)"
                 >
                   {{ t('common.delete') }}
                 </button>
               </div>
+              <p
+                v-if="editing && bookmarkKey(editing) === bookmarkKey(bookmark) && draftDeleted"
+                class="rg-local__error"
+                role="status"
+              >
+                {{ t('local.draftDeleted') }}
+              </p>
             </div>
-            <form
-              v-if="editing === bookmark"
-              class="rg-local__edit"
-              @submit.prevent="saveEdit"
-            >
-              <input
-                v-model="note"
-                class="rg-input"
-                :aria-label="t('local.editNote')"
-              >
-              <button
-                type="submit"
-                class="rg-btn"
-                :disabled="busy === `${bookmark.url}:${bookmark.time}`"
-              >
-                {{ t('common.save') }}
-              </button>
-              <button
-                type="button"
-                class="rg-btn rg-btn--ghost"
-                @click="cancelEdit"
-              >
-                {{ t('common.cancel') }}
-              </button>
-            </form>
           </li>
         </ul>
       </li>
