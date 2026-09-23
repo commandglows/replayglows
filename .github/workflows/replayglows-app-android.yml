@@ -254,7 +254,6 @@ jobs:
             --dart-define=CLERK_SIGN_IN_URL="/sign-in" \
             --dart-define=CLERK_SIGN_UP_URL="/sign-up" \
             --dart-define=REPLAYGLOWS_PRODUCT_ID="replayglows" \
-            --dart-define=REPLAYGLOWS_LEGACY_PRODUCT_IDS="tubeflow" \
             --dart-define=REPLAYGLOWS_ACCOUNT_CENTER_URL="$REPLAYGLOWS_ACCOUNT_CENTER_URL" \
             --dart-define=REPLAYGLOWS_APP_URL="$REPLAYGLOWS_APP_URL" \
             --dart-define=SENTRY_DSN="$SENTRY_DSN" \

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart';
 import 'package:http/testing.dart';
-import 'package:replayglows_app/auth/product_entitlement.dart';
 import 'package:replayglows_app/auth/suite_identity.dart';
 import 'package:replayglows_app/auth/suite_identity_bridge_client.dart';
 
