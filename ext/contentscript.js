@@ -600,10 +600,9 @@ const YouTubeBookmarker = {
       bar.removeAttribute('data-scrubbing');
       slider.min = '0.25'; slider.max = '4'; slider.step = '0.05';
       slider.setAttribute('aria-label', this.t('speed'));
-      video.muted = previous.muted;
-      // Do not start a new video after a SPA/source replacement.
-      if (!previous.paused && sameVideo(previous)) {
-        void video.play().catch(() => showError(this.t('speedError')));
+      // Restore mute only on the same video; scrubbing never pauses playback.
+      if (sameVideo(previous)) {
+        video.muted = previous.muted;
       }
       renderRate();
       this.updateSpeedBarLayout?.();
@@ -726,7 +725,6 @@ const YouTubeBookmarker = {
         source: video.currentSrc, identity: videoIdentity(), last: performance.now(), frame: 0,
         target: video.currentTime, committed: video.currentTime, lastSeek: 0 };
       scrub = gesture;
-      video.pause();
       video.muted = true;
       slider.min = '-100'; slider.max = '100'; slider.step = '1'; slider.value = '0';
       slider.setAttribute('aria-label', this.locale === 'fr' ? 'Reculer ou avancer dans la vidéo' : 'Seek backward or forward');
