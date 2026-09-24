@@ -200,3 +200,65 @@
 
 - The player hides the system pointer during ordinary speed-bar attachment, using the red range thumb as the visual pointer. Existing detachment/blur/suspension/teardown cleanup restores the cursor. Attached controls stay visible, including during host auto-hide.
 - The generated extension package passes build/resource verification; the browser scenario checks computed cursor visibility on attachment, escape and blur.
+
+## Extension options organization — 2026-09-17
+
+- Done: integrate playback settings into the existing options card design with three desktop columns (playback/display, playback shortcuts, bookmarks/data), two intermediate columns and one narrow column. Preserve autosave and import/export; move detailed help below settings.
+- Spec: `shipglows_data/workflow/specs/monorepo/2026-09-17-extension-options-layout.md`.
+- Proof: type-check, focused ESLint, build/package verification, packaged playback regressions and options browser tests passed; FR 1600/1000/390 px and EN desktop screenshots inspected. Personal Chrome extension reload remains required.
+
+- Options follow-up: compact responsive shortcut rows and accessible eraser buttons verified in packaged Chromium; build and focused lint passed.
+
+
+## Ctrl wheel split steps (2026-09-17)
+
+- Ctrl + wheel aligns volume/brightness to the next 5% grid boundary and speed to the next 0.05x boundary. Existing unmodified wheel behavior is retained.
+- Position uses chapter starts from current media chapter tracks, YouTube chapter-panel timestamps or same-video description timestamp links. Reads are fresh per gesture; unavailable chapters preserve position and show guidance to open the chapter list. No approximate timeline geometry or arbitrary time jump substitutes for a chapter.
+- Proof: build/package verification and Chromium packaged suite passed, including Ctrl alignment from off-grid values, forward/backward chapter navigation and unchanged position without chapter data. Browser fixtures do not establish live YouTube chapter availability.
+
+
+## Split chart icons (2026-09-17)
+
+- Added inline speaker, sun, speedometer and timeline SVG icons near the bottom of each chart, above the player controls. Icons inherit the split color, retain pointer transparency and follow the existing active-zone hiding/fade state. No dependency or permission changes.
+- User refinement: large full-opacity icons, responsive 40–72px (64px at 1280px viewport). Initial icon package passed the Chromium suite; enlarged CSS package rebuilt successfully.
+
+
+## Animated split icons (2026-09-17)
+
+- Sun rays pulse and volume waves breathe only during active wheel interaction. Volume wave opacity reflects the actual volume; the speed needle maps the actual 0.25–4x rate onto a 240-degree sweep, and the timeline marker follows actual progress. Needle/marker transitions use 80ms. Reduced-motion preference disables decorative animation and transitions while retaining accurate value positions. No new animation timers or dependencies.
+- Proof: build/package verification and packaged Chromium fixture suite passed; assertions verify active sun animation, reduced-motion opt-out and speed-needle angle derived from real playback rate.
+
+
+## Continuous wheel repair and individual icon animation (2026-09-17)
+
+- Removed the shared 40px quantization from unmodified split wheel input. Only Ctrl accumulates discrete steps; normal input changes values proportionally to delta, including fine trackpad movements. Worker rate normalization retains six decimals rather than rounding fine changes to hundredths. Switching Ctrl mode clears partial accumulation.
+- Split the sun into eight independently phased rays and the speaker into two phased outward waves. Existing active-only and reduced-motion animation guards remain.
+- Proof: rebuilt package, 21 playback unit tests and packaged Chromium suite passed. Fine unmodified 2px wheel input changes volume by 0.001 and speed by 0.002; Ctrl/chapter behavior and per-ray animation delays are checked. Live personal Chrome remains separate.
+
+
+## Full-notch wheel smoothing (2026-09-17)
+
+- Follow-up: proportional deltas alone still jumped on discrete mouse wheels. Unmodified volume, brightness and speed now interpolate actual values over 160ms, accumulate same-direction target input, and retarget on reversal. Ctrl stays immediate/discrete and position behavior is unchanged.
+- Speed updates allow one request in flight plus the latest pending rate. Pointer exit, zone/mode changes and teardown cancel interpolation and pending updates; an already-dispatched worker request cannot be recalled.
+- Proof: package build and Chromium fixture suite passed. Full-notch sampling measured actual volume 0.5 immediately, 0.5341796875 mid-transition, then 0.55; Ctrl/chapter and existing interaction tests passed.
+
+
+## Restore direct wheel response (2026-09-17)
+
+- User rejected the 160ms interpolation. Removed its animation frames, target accumulation and rate queue. Normal wheel updates parameters directly from the scroll delta; Ctrl alone retains quantized steps/chapter navigation. Existing requested chart and icon presentation animations are preserved.
+- Proof: rebuilt package and browser fixture checks verify immediate volume response (0.55 at dispatch and unchanged at 70/220ms), fine unmodified wheel input and retained Ctrl/chapter behavior.
+
+
+## Hardware-wheel sensitivity repair (2026-09-17)
+
+- The supplied Chrome recording showed the brightness threshold moving by about 5% of the chart height per physical wheel notch. The normal wheel path used the same effective 5% change as Ctrl, so the two modes were visually indistinguishable.
+- Normal wheel input now changes volume, brightness, and speed by 1% of their respective ranges per full notch, with proportional handling for high-resolution wheel and trackpad deltas. Ctrl retains the 5% grid and chapter navigation. Position keeps its accepted direct five-second behavior.
+- Proof: the extension package builds; the packaged Chromium suite verifies an immediate 50% to 51% volume change with no delayed drift, 1.75% brightness-range movement, 0.0375x speed movement, fine-delta input, Ctrl steps, chapter navigation, and all existing split/bar interactions.
+
+
+## Split chart layer synchronization (2026-09-17)
+
+- Fixed the visible gap between the horizontal threshold and the tinted chart regions during wheel input. The lower fill height, upper tint boundary, and 2px threshold now share the same 80ms linear transition.
+- Reduced-motion mode disables all three transitions together. The packaged Chromium scenario samples the chart mid-transition and requires the fill edge, upper-region edge, and threshold edge to remain aligned within one pixel.
+
+- Playback shortcut erasers: empty display, independent label/button semantics and all 11 direct SVG click cases verified in packaged Chromium, including persistence after reload.

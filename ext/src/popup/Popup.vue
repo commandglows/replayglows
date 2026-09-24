@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { type Bookmark, normalizeBookmarks } from '../bookmarks'
 import PlaybackCard from '../playback/PlaybackCard.vue'
 import DiscoveryGuide from '../discovery/DiscoveryGuide.vue'
@@ -10,10 +10,13 @@ const { t } = useI18n()
 const guide = ref<InstanceType<typeof DiscoveryGuide>>()
 const playback = ref<InstanceType<typeof PlaybackCard>>()
 const playbackView = ref<PlaybackView | null>(null)
+const guideVisible = ref(false)
 const bookmarkSection = ref<HTMLElement>()
 const helpButton = ref<HTMLButtonElement>()
-const practice = (topic: Milestone) => {
+const practice = async (topic: Milestone) => {
   if (topic === 'note' || topic === 'opened') {
+    guideVisible.value = false
+    await nextTick()
     bookmarkSection.value?.scrollIntoView({ block: 'start' })
     bookmarkSection.value?.focus()
   } else playback.value?.focusControls(topic === 'loop')
@@ -22,7 +25,6 @@ const bookmarks = ref<Bookmark[]>([])
 const error = ref('')
 const editing = ref<Bookmark | null>(null)
 const note = ref('')
-const openOptions = () => chrome.runtime.openOptionsPage()
 const openApp = () => void chrome.tabs.create({ url: chrome.runtime.getURL('src/app/index.html') })
 const load = async () => {
   try {
@@ -57,37 +59,45 @@ const visit = async (bookmark: Bookmark) => {
 
 <template>
   <main class="sg-popup">
-    <div class="sg-brand-row">
-      <div
-        class="sg-brand-mark"
-        aria-hidden="true"
-      >
-        R
+    <header class="sg-brand-row">
+      <div class="sg-brand-info">
+        <div class="sg-brand-mark" aria-hidden="true">R</div>
+        <div class="sg-brand-copy">
+          <p class="sg-eyebrow">{{ t('playbackBookmarks') }}</p>
+          <h1 class="sg-title">ReplayGlows</h1>
+          <p class="sg-local-indicator" :title="t('localFooter')">
+            <span class="sg-status-dot" aria-hidden="true" />{{ t('localFooter') }}
+          </p>
+        </div>
       </div>
-      <div>
-        <p class="sg-eyebrow">
-          {{ t('playbackBookmarks') }}
-        </p><h1 class="sg-title">
-          ReplayGlows
-        </h1>
+      <div class="sg-popup-actions">
+        <button class="sg-button sg-button--secondary" type="button" @click="openApp">
+          {{ t('openApp') }}
+        </button>
+        <button
+          ref="helpButton"
+          class="sg-button sg-button--secondary sg-help-entry"
+          type="button"
+          aria-controls="discovery-guide"
+          :aria-expanded="guideVisible"
+          @click="playback?.closeReview(); guideVisible ? guide?.hide() : guide?.show()"
+        >
+          {{ t('discoverHelp') }}
+        </button>
       </div>
-      <button
-        ref="helpButton"
-        class="sg-button sg-button--secondary sg-help-entry"
-        type="button"
-        @click="playback?.closeReview(); guide?.show()"
-      >
-        {{ t('discoverHelp') }}
-      </button>
-    </div>
+    </header>
     <div class="sg-bookmark-scroll">
-      <DiscoveryGuide
-        ref="guide"
-        :view="playbackView"
-        @practice="practice"
-        @hidden="helpButton?.focus()"
-      />
+      <div id="discovery-guide" v-show="guideVisible">
+        <DiscoveryGuide
+          ref="guide"
+          :view="playbackView"
+          @visibility="guideVisible = $event"
+          @practice="practice"
+          @hidden="helpButton?.focus()"
+        />
+      </div>
       <div
+        v-if="!guideVisible"
         ref="bookmarkSection"
         tabindex="-1"
         :aria-label="t('youtubeBookmarks')"
@@ -133,18 +143,25 @@ const visit = async (bookmark: Bookmark) => {
             >
               {{ bookmark.title || t('youtubeVideo') }} · {{ bookmark.formattedTime }}
             </button>
-            <form
+            <input
               v-if="editing === bookmark"
-              @submit.prevent="mutate('updateBookmark', { ...bookmark, note })"
+              v-model="note"
+              class="inp sg-inline-note"
+              :aria-label="t('editNote')"
+              @keyup.enter="mutate('updateBookmark', { ...bookmark, note })"
+              @keyup.esc="editing = null"
             >
-              <label>{{ t('note') }} <input
-                v-model="note"
-                class="inp"
-                :aria-label="t('editNote')"
-              ></label>
+            <p
+              v-else
+              class="sg-muted"
+            >
+                {{ bookmark.note || t('noNote') }}
+            </p>
+            <template v-if="editing === bookmark">
               <button
                 class="sg-button sg-button--primary"
-                type="submit"
+                type="button"
+                @click="mutate('updateBookmark', { ...bookmark, note })"
               >
                 {{ t('save') }}
               </button>
@@ -155,11 +172,8 @@ const visit = async (bookmark: Bookmark) => {
               >
                 {{ t('cancel') }}
               </button>
-            </form>
+            </template>
             <template v-else>
-              <p class="sg-muted">
-                {{ bookmark.note || t('noNote') }}
-              </p>
               <button
                 class="sg-button"
                 type="button"
@@ -178,31 +192,11 @@ const visit = async (bookmark: Bookmark) => {
           </article>
         </section>
       </div>
-      <button
-        class="sg-button sg-button--primary"
-        type="button"
-        @click="openApp"
-      >
-        {{ t('openApp') }}
-      </button>
-      <button
-        class="sg-button sg-button--primary"
-        type="button"
-        @click="openOptions"
-      >
-        {{ t('optionsImportExport') }}
-      </button>
     </div>
     <PlaybackCard
       ref="playback"
       :bookmarks="bookmarks"
       @view="playbackView = $event"
     />
-    <footer class="sg-popup-footer">
-      <span
-        class="sg-status-dot"
-        aria-hidden="true"
-      /><span>{{ t('localFooter') }}</span>
-    </footer>
   </main>
 </template>

@@ -28,7 +28,9 @@ const tabId = ref<number>()
 const tabUrl = ref('')
 const error = ref('')
 const pending = ref(false)
+const pendingAction = ref('')
 const loading = ref(true)
+const retrying = ref(false)
 const previewRate = ref<number | null>(null)
 const openOptions = () => chrome.runtime.openOptionsPage()
 const a = ref('')
@@ -46,6 +48,17 @@ const currentBookmarks = computed(() => props.bookmarks.filter(item => {
   } catch { return false }
 }))
 const formatTime = (time: number) => `${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`
+async function retry() {
+  if (retrying.value) return
+  retrying.value = true
+  const started = performance.now()
+  try { await refresh() }
+  finally {
+    const remaining = 450 - (performance.now() - started)
+    if (remaining > 0) await new Promise(resolve => setTimeout(resolve, remaining))
+    retrying.value = false
+  }
+}
 async function refresh(afterCommand = false) {
   if (fetching) { await fetchDone; if (!afterCommand) return }
   if (pending.value || tabId.value === undefined || disposed) return
@@ -70,6 +83,7 @@ async function refresh(afterCommand = false) {
 async function act(action: string, values: Record<string, unknown> = {}) {
   if (pending.value || tabId.value === undefined) return
   pending.value = true
+  pendingAction.value = action
   error.value = ''
   let succeeded = false
   try {
@@ -80,6 +94,7 @@ async function act(action: string, values: Record<string, unknown> = {}) {
   finally {
     const commandError = error.value
     pending.value = false
+    pendingAction.value = ''
     await refresh(true)
     if (commandError) error.value = commandError
   }
@@ -142,65 +157,89 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
       </div>
       <button
         v-if="view"
-        class="sg-button sg-button--secondary"
+        class="sg-playback-icon-button"
         type="button"
         :aria-pressed="view.pinned"
+        :aria-label="view.pinned ? t('unpin') : t('pin')"
         :title="view.pinned ? t('unpin') : t('pin')"
         :disabled="pending || !media?.available"
         @click="act('rg:pin', { pinned: !view.pinned })"
       >
-        {{ view.pinned ? t('unpin') : t('pin') }}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 5 5-4 1-4 4 3 3-2 2-4-4-5 7-2-2 7-5-4-4 2-2 3 3 4-4 1-4Z" /></svg>
       </button>
       <button
-        class="sg-button sg-button--secondary"
+        class="sg-playback-icon-button"
         type="button"
         :aria-label="t('playbackSettings')"
+        :title="t('playbackSettings')"
         @click="openOptions"
       >
-        {{ t('settings') }}
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" /><path d="m19.4 15 .1.1a1.8 1.8 0 1 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3 .9v.2a1.8 1.8 0 1 1-3.6 0v-.2a1.8 1.8 0 0 0-3-.9l-.1.1a1.8 1.8 0 1 1-2.5-2.5l.1-.1a1.8 1.8 0 0 0-.9-3h-.2a1.8 1.8 0 1 1 0-3.6h.2a1.8 1.8 0 0 0 .9-3l-.1-.1a1.8 1.8 0 1 1 2.5-2.5l.1.1a1.8 1.8 0 0 0 3-.9v-.2a1.8 1.8 0 1 1 3.6 0v.2a1.8 1.8 0 0 0 3 .9l.1-.1a1.8 1.8 0 1 1 2.5 2.5l-.1.1a1.8 1.8 0 0 0 .9 3h.2a1.8 1.8 0 1 1 0 3.6h-.2a1.8 1.8 0 0 0-.9 3Z" /></svg>
       </button>
     </div>
     <progress
-      v-if="pending || loading"
+      v-if="loading"
       :aria-label="t('checkPlayer')"
     />
     <template v-if="view">
-      <p class="sg-speed-value">
-        <output :aria-label="t('currentSpeed')">{{ (media?.available ? media.rate : view.rate).toFixed(2) }}×</output>
-      </p>
-      <input
-        class="sg-speed-slider"
-        type="range"
-        :aria-label="t('playbackTitle')"
-        :min="RATE_MIN"
-        :max="RATE_MAX"
-        step="0.05"
-        :value="previewRate ?? (media?.available ? media.rate : view.rate)"
-        :disabled="!active || (pending && !changingRate)"
-        @input="changeRate(Number(($event.target as HTMLInputElement).value))"
-      >
-      <div
-        class="sg-speed-presets"
-        :aria-label="t('presets')"
-      >
-        <button
-          v-for="rate in [0.5, 1, 1.5, 2]"
-          :key="rate"
-          class="sg-button sg-button--secondary"
-          type="button"
-          :aria-pressed="Math.abs((media?.rate ?? view.rate) - rate) < 0.025"
-          :disabled="!active || pending"
-          @click="changeRate(rate)"
+      <template v-if="media?.available">
+        <div class="sg-speed-control">
+          <p class="sg-speed-value">
+            <output :aria-label="t('currentSpeed')">{{ media.rate.toFixed(2) }}×</output>
+          </p>
+          <input
+            class="sg-speed-slider"
+            :class="{ 'is-inactive': !active, 'is-busy': pendingAction === 'rg:pin' }"
+            type="range"
+            :aria-label="t('playbackTitle')"
+            :min="RATE_MIN"
+            :max="RATE_MAX"
+            step="0.05"
+            :value="previewRate ?? media.rate"
+            :disabled="!active || (pending && !changingRate && pendingAction !== 'rg:pin')"
+            :aria-disabled="pendingAction === 'rg:pin' ? 'true' : undefined"
+            :tabindex="pendingAction === 'rg:pin' ? -1 : undefined"
+            @input="changeRate(Number(($event.target as HTMLInputElement).value))"
+          >
+        </div>
+        <div
+          class="sg-speed-presets"
+          :aria-label="t('presets')"
         >
-          {{ rate }}×
-        </button>
+          <button
+            v-for="rate in [0.5, 1, 1.5, 2]"
+            :key="rate"
+            class="sg-button sg-button--secondary"
+            type="button"
+            :aria-pressed="Math.abs(media.rate - rate) < 0.025"
+            :disabled="!active || pending"
+            @click="changeRate(rate)"
+          >
+            {{ rate }}×
+          </button>
+          <button
+            class="sg-button sg-button--secondary"
+            type="button"
+            :disabled="!active || pending"
+            @click="changeRate(view.settings.favorite)"
+          >
+            {{ t('favorite') }}
+          </button>
+        </div>
+      </template>
+      <div v-else class="sg-speed-status">
+        <p class="sg-muted" role="status">{{ t('noMedia') }}</p>
         <button
-          class="sg-button sg-button--secondary"
+          class="sg-playback-icon-button"
+          :class="{ 'is-spinning': retrying }"
           type="button"
-          :disabled="!active || pending"
-          @click="changeRate(view.settings.favorite)"
+          :aria-label="t('retry')"
+          :title="t('retry')"
+          :aria-busy="retrying"
+          :disabled="pending || retrying"
+          @click="retry()"
         >
-          {{ t('favorite') }}
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" /><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2" /></svg>
         </button>
       </div>
       <p
@@ -211,28 +250,25 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
         {{ notice }}
       </p>
       <p
-        v-if="!media?.available"
-        class="sg-muted"
-        role="status"
-      >
-        {{ t('noMedia') }}
-      </p>
-      <p
         v-if="error || media?.error"
         class="sg-playback-error"
         role="alert"
       >
         {{ error || media?.error }}
+        <button
+          v-if="media?.available"
+          class="sg-playback-icon-button sg-playback-retry"
+          :class="{ 'is-spinning': retrying }"
+          type="button"
+          :aria-label="t('retry')"
+          :title="t('retry')"
+          :aria-busy="retrying"
+          :disabled="pending || retrying"
+          @click="retry()"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" /><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2" /></svg>
+        </button>
       </p>
-      <button
-        v-if="!media?.available || error || media?.error"
-        class="sg-button"
-        type="button"
-        :disabled="pending || loading"
-        @click="refresh()"
-      >
-        {{ t('retry') }}
-      </button>
       <details
         ref="review"
         class="sg-review-controls"

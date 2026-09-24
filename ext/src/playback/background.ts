@@ -15,7 +15,7 @@ function canonicalShortcut(shortcut: string): string {
 function object(value: unknown): value is Request { return !!value && typeof value === 'object' && !Array.isArray(value) }
 function rate(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < RATE_MIN || value > RATE_MAX) throw new Error('Vitesse invalide (0,25–4×).')
-  return Math.round(value * 100) / 100
+  return Math.round(value * 1000000) / 1000000
 }
 function validateSettings(value: unknown): Partial<PlaybackSettings> {
   if (!object(value) || Object.keys(value).some(key => !['rate', 'favorite', 'step', 'enabled', 'attachPointerToSpeedBar', 'videoHoverSplits', 'altSeekOnSpeedBar', 'keys'].includes(key))) throw new Error('Réglages invalides.')

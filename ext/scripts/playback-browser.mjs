@@ -124,7 +124,7 @@ try {
     assert.equal(await control.locator('input[type="number"]').first().inputValue(), '1.75')
     assert.equal(await control.locator('.sg-playback-form input[type="checkbox"]').first().isChecked(), nextValue)
 
-    const addKey = control.locator('.hotkey-input').first().locator('input')
+    const addKey = control.locator('.sg-bookmark-shortcuts .hotkey-input').first().locator('input')
     await addKey.focus(); await addKey.press('Alt+Shift+S')
     await control.getByText('Ce raccourci est déjà utilisé pour la lecture ou un autre marque-page.').waitFor()
     const stored = await control.evaluate(() => chrome.storage.local.get('hotkeys'))

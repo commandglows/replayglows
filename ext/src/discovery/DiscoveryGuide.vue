@@ -6,8 +6,9 @@ import { useI18n } from '../i18n'
 const { locale, t } = useI18n()
 
 const props = defineProps<{ view?: PlaybackView | null; standalone?: boolean }>()
-const emit = defineEmits<{ practice: [topic: Milestone]; hidden: [] }>()
+const emit = defineEmits<{ practice: [topic: Milestone]; hidden: []; visibility: [visible: boolean] }>()
 const data = ref<Record<string, unknown>>({})
+let visibilityChanged = false
 const loaded = ref(false)
 const busy = ref(false)
 const error = ref('')
@@ -44,11 +45,15 @@ async function load() {
     if (!loaded.value) {
       const saved = data.value[key('selected')]
       selected.value = MILESTONES.includes(saved as Milestone) ? saved as Milestone : nextLesson(data.value) ?? 'speed'
-      visible.value = props.standalone || data.value[key('hidden')] !== true
+      visible.value = props.standalone || (visibilityChanged ? visible.value : data.value[key('hidden')] === false)
+      emit('visibility', visible.value)
     }
     loaded.value = true
     error.value = ''
-  } catch { error.value = locale.value === 'fr' ? 'Impossible de lire votre progression. Réessayez ; les commandes restent disponibles.' : 'Unable to read your progress. Try again; controls remain available.' }
+  } catch {
+    error.value = locale.value === 'fr' ? 'Impossible de lire votre progression. Réessayez ; les commandes restent disponibles.' : 'Unable to read your progress. Try again; controls remain available.'
+    if (!loaded.value) emit('visibility', true)
+  }
 }
 async function save(values: Record<string, unknown>) {
   busy.value = true
@@ -61,14 +66,21 @@ async function save(values: Record<string, unknown>) {
   finally { busy.value = false }
 }
 async function show() {
+  visibilityChanged = true
   visible.value = true
+  emit('visibility', true)
   await save({ [key('hidden')]: false })
   await nextTick()
   heading.value?.focus()
   heading.value?.scrollIntoView({ block: 'start' })
 }
 async function hide() {
-  if (await save({ [key('hidden')]: true })) { visible.value = false; emit('hidden') }
+  visibilityChanged = true
+  if (await save({ [key('hidden')]: true })) {
+    visible.value = false
+    emit('visibility', false)
+    emit('hidden')
+  }
 }
 async function select(id: Milestone) {
   selected.value = id
@@ -84,7 +96,7 @@ async function resume() { await save({ [key(`skip.${selected.value}`)]: false })
 const onStorage = (_changes: Record<string, chrome.storage.StorageChange>, area: string) => { if (area === 'local') void load() }
 onMounted(() => { void load(); chrome.storage.onChanged.addListener(onStorage) })
 onUnmounted(() => chrome.storage.onChanged.removeListener(onStorage))
-defineExpose({ show })
+defineExpose({ show, hide })
 </script>
 
 <template>

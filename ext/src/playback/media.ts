@@ -10,6 +10,10 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
   let discoveryPending = false
   const pendingSubtrees = new Set<Element>()
   const media = new Set<HTMLMediaElement>()
+  // Weak references to custom elements cover the common shadow DOM hosts
+  // without retaining page nodes. A slower document pass covers unusual hosts.
+  const shadowHosts = new Set<WeakRef<Element>>()
+  const knownShadowHosts = new WeakSet<Element>()
   const boundMedia = new WeakSet<HTMLMediaElement>()
   const errors = new WeakMap<HTMLMediaElement, string>()
   const sources = new WeakMap<HTMLMediaElement, string>()
@@ -128,6 +132,10 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
       observer.observe(root, { childList: true, subtree: true })
     }
     const visit = (element: Element) => {
+      if (element.localName.includes('-') && !knownShadowHosts.has(element)) {
+        knownShadowHosts.add(element)
+        shadowHosts.add(new WeakRef(element))
+      }
       if (element instanceof HTMLMediaElement) register(element)
       if (element.shadowRoot) scan(element.shadowRoot)
     }
@@ -140,6 +148,24 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
     scan(document)
     choose()
   }
+  function discoverLateShadowRoots(): void {
+    resetNavigation()
+    let foundRoot = false
+    for (const reference of shadowHosts) {
+      const host = reference.deref()
+      if (!host) {
+        shadowHosts.delete(reference)
+        continue
+      }
+      if (!host.isConnected) continue
+      const root = host.shadowRoot
+      if (root && !observed.has(root)) {
+        scan(root)
+        foundRoot = true
+      }
+    }
+    if (foundRoot) choose()
+  }
   const observer = new MutationObserver(records => {
     for (const record of records) for (const node of record.addedNodes) {
       if (node instanceof Element) pendingSubtrees.add(node)
@@ -149,12 +175,20 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
     setTimeout(() => {
       discoveryPending = false
       resetNavigation()
-      for (const root of pendingSubtrees) {
-        if (!root.isConnected) continue
-        // A parent addition already covers nested additions from this batch.
-        if (![...pendingSubtrees].some(parent => parent !== root && parent.contains(root))) scan(root)
-      }
+      const roots = [...pendingSubtrees]
       pendingSubtrees.clear()
+      const candidates = new Set(roots)
+      for (const root of roots) {
+        if (!root.isConnected) continue
+        // Walk ancestors once per candidate instead of comparing every pair.
+        let parent = root.parentElement
+        let covered = false
+        while (parent) {
+          if (candidates.has(parent)) { covered = true; break }
+          parent = parent.parentElement
+        }
+        if (!covered) scan(root)
+      }
       choose()
     }, 100)
   })
@@ -237,8 +271,15 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
   })
   discover()
   // MutationObserver cannot see a shadow root attached to an existing host.
-  // Bound the fallback scan frequency, and avoid scanning hidden tabs.
-  setInterval(() => { if (!document.hidden) discover(); else resetNavigation() }, 10000)
+  // Check likely hosts frequently and retain a slower fallback for unusual hosts.
+  let nextFullDiscovery = Date.now() + 60000
+  setInterval(() => {
+    if (document.hidden) { resetNavigation(); return }
+    if (Date.now() >= nextFullDiscovery) {
+      nextFullDiscovery = Date.now() + 60000
+      discover()
+    } else discoverLateShadowRoots()
+  }, 10000)
   void send({ action: 'rg:register' }).then(result => {
     if (result && typeof result === 'object' && 'settings' in result) setContext(result as PlaybackContext)
   })

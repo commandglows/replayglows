@@ -48,7 +48,9 @@ source_policy: "Track public sources only; do not copy private positioning, paid
 TODO
 https://github.com/EfficientStreet/youtube-subscriptions-ingest
 https://appsumo.com/products/bookster/
-https://github.com/THU-MAIC/OpenMAIC
+<https://github.com/THU-MAIC/OpenMAIC>
+
+https://ytranscript.com/
 
 ## Lecture projet
 
@@ -56,28 +58,28 @@ ReplayGlows cible les workflows d'apprentissage vidéo: notes horodatées, playl
 
 ## Liens prioritaires
 
-| Lien | Type | Score | Usage concret |
-|---|---:|:---:|---|
-| [FlowSpeech](https://betalist.com/startups/flowspeech) | Inspiration audio | 8/10 | Transformer des notes ou résumés en voix naturelle; utile pour mode révision audio. |
-| [TubeFlow](https://tubeflow.ai/) | Concurrent direct recherche vidéo | 8/10 | À surveiller de près: workspace YouTube orienté recherche avec notes, playlists et résumés IA, très proche du coeur d'usage ReplayGlows. |
-| [Igloo](https://betalist.com/startups/igloo-2) | Concurrent indirect créateur | 7/10 | Inspiration pour convertir un contenu long en reels courts. |
-| [AutoKap](https://betalist.com/startups/autokap) | Inspiration assets | 7/10 | Générer automatiquement captures, snippets ou visuels de release à partir de vidéos/notes. |
-| [Kurate](https://betalist.com/startups/kurate) | Inspiration curation | 6/10 | Pattern de ranking de contenus techniques/scientifiques; utile pour recommander vidéos ou sources. |
-| [TonimusAI](https://betalist.com/startups/tonimusai) | Concurrent indirect creator analytics | 6/10 | À surveiller pour analytics créateur et suivi de revenus/performances. |
-| [Spec27](https://betalist.com/startups/spec27) | Qualité agent | 6/10 | Pertinent pour valider les agents de résumé/transcription contre des specs. |
+| Lien                                                   |                                  Type | Score | Usage concret                                                                                                                            |
+| ------------------------------------------------------ | ------------------------------------: | :---: | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| [FlowSpeech](https://betalist.com/startups/flowspeech) |                     Inspiration audio | 8/10  | Transformer des notes ou résumés en voix naturelle; utile pour mode révision audio.                                                      |
+| [TubeFlow](https://tubeflow.ai/)                       |     Concurrent direct recherche vidéo | 8/10  | À surveiller de près: workspace YouTube orienté recherche avec notes, playlists et résumés IA, très proche du coeur d'usage ReplayGlows. |
+| [Igloo](https://betalist.com/startups/igloo-2)         |          Concurrent indirect créateur | 7/10  | Inspiration pour convertir un contenu long en reels courts.                                                                              |
+| [AutoKap](https://betalist.com/startups/autokap)       |                    Inspiration assets | 7/10  | Générer automatiquement captures, snippets ou visuels de release à partir de vidéos/notes.                                               |
+| [Kurate](https://betalist.com/startups/kurate)         |                  Inspiration curation | 6/10  | Pattern de ranking de contenus techniques/scientifiques; utile pour recommander vidéos ou sources.                                       |
+| [TonimusAI](https://betalist.com/startups/tonimusai)   | Concurrent indirect creator analytics | 6/10  | À surveiller pour analytics créateur et suivi de revenus/performances.                                                                   |
+| [Spec27](https://betalist.com/startups/spec27)         |                         Qualité agent | 6/10  | Pertinent pour valider les agents de résumé/transcription contre des specs.                                                              |
 
 ## À surveiller
 
-| Lien | Type | Score | Pourquoi |
-|---|---:|:---:|---|
-| [MemoryPlugin](https://betalist.com/startups/memoryplugin) | Mémoire IA | 5/10 | Mémoire cross-outils intéressante si ReplayGlows veut personnaliser apprentissage et rappels. |
-| [Web-Analytics.ai](https://web-analytics.ai/) | Reporting | 5/10 | Résumés simples de l'usage produit pour comprendre les flux d'apprentissage. |
-| [TubeOnAI](https://saaszilla.co/deals/tubeonai/) | Concurrent indirect / inspiration | 6/10 | Résumé et repurposing de vidéos, podcasts et articles, plus proche d'un assistant de synthèse que d'un outil de prise de notes learning. À surveiller pour les workflows d'extraction et de génération de contenu à partir de sources vidéo. |
+| Lien                                                       |                              Type | Score | Pourquoi                                                                                                                                                                                                                                     |
+| ---------------------------------------------------------- | --------------------------------: | :---: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [MemoryPlugin](https://betalist.com/startups/memoryplugin) |                        Mémoire IA | 5/10  | Mémoire cross-outils intéressante si ReplayGlows veut personnaliser apprentissage et rappels.                                                                                                                                                |
+| [Web-Analytics.ai](https://web-analytics.ai/)              |                         Reporting | 5/10  | Résumés simples de l'usage produit pour comprendre les flux d'apprentissage.                                                                                                                                                                 |
+| [TubeOnAI](https://saaszilla.co/deals/tubeonai/)           | Concurrent indirect / inspiration | 6/10  | Résumé et repurposing de vidéos, podcasts et articles, plus proche d'un assistant de synthèse que d'un outil de prise de notes learning. À surveiller pour les workflows d'extraction et de génération de contenu à partir de sources vidéo. |
 
 ## Video Speed Controller — competitive review, 2026-09-05
 
-| Reference | Category | Status | Scope |
-| --- | --- | --- | --- |
+| Reference                                                                                                                  | Category                      | Status    | Scope                                                                         |
+| -------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | --------- | ----------------------------------------------------------------------------- |
 | [Video Speed Controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk) | Competitor: playback controls | candidate | User-supplied reference; overlaps with ReplayGlows playback and video review. |
 
 ### Evidence and limits
@@ -92,20 +94,20 @@ Sources checked on 2026-09-05:
 
 ### Capability comparison
 
-| Capability | Video Speed Controller | ReplayGlows evidence | Assessment |
-| --- | --- | --- | --- |
-| Media coverage | Store advertises HTML5 video/audio across websites and local files. | App centers on YouTube; extension centers on YouTube bookmarks. | Competitor has broader advertised playback coverage; site compatibility remains untested. |
-| Speed range | Store: 0.07–16x with configurable increments. | App `play_screen.dart`: 0.25–2x bounds, seven preset rates, plus delta adjustment. No dedicated speed controller found in the extension paths inspected. | Clear configuration gap; supported player rates must be checked before expanding app bounds. |
-| Skip backward/forward | Store: keyboard skips of 10 seconds. | App binds left/right arrows to minus/plus 10 seconds. | Basic functional overlap, not measured UX parity. |
-| Custom keyboard actions | Store: remappable keys, modifiers and speed toggles. | App playback bindings are fixed in `_shortcutBindings`; extension options customize five bookmark actions. | ReplayGlows customization exists for bookmarks, not equivalent speed controls. |
-| Remember speed / domain defaults | Store documents both. | App playback rate is held in controller state; cross-session speed persistence and domain rules were not established by the inspected code. | Evidence gap in ReplayGlows; do not equate in-memory state with durable preferences. |
-| Movable controller | Store documents repositioning. README additionally documents custom CSS and per-site disabling. | App controls and extension bookmark UI; no equivalent universal speed overlay identified. | Competitor advantage for adapting controls to existing players. |
-| Resist player speed resets | Official README documents reapplying the selected speed. | No equivalent policy established in this review. | Candidate robustness pattern; README claim, not tested release behavior. |
-| Return to a marked moment | README documents a marker and jump-back commands. | App timestamped notes; extension multiple saved bookmarks with notes, navigation and deletion. | Both support revisiting a moment; ReplayGlows supports a richer persistent collection. |
-| Repeat video | Not established by reviewed sources. | App end handling checks `loopEnabled` and restarts playback. | ReplayGlows whole-video repeat is evidenced; A–B segment looping is not established here. |
-| Notes and portable records | Rich notes and exports not documented in reviewed sources. | Extension options implement Markdown/JSON export and validated JSON import; app has timestamped notes. | ReplayGlows strength for retaining learning material. No app-extension synchronization claim. |
-| Playlists, feeds and viewing continuity | Not documented in reviewed sources. | App product contract and routes cover playlists, feeds and history. | ReplayGlows extends beyond playback into organization. |
-| Transcripts / AI | Not documented in reviewed sources. | Transcript handling appears in app/backend; `notes.ts` schedules `internal.openai.summary`, implemented in `openai.ts`. | Code exists, but end-to-end availability was not checked. Older product contracts still restrict AI promises; do not advertise mature AI on this evidence. |
+| Capability                              | Video Speed Controller                                                                          | ReplayGlows evidence                                                                                                                                     | Assessment                                                                                                                                                 |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Media coverage                          | Store advertises HTML5 video/audio across websites and local files.                             | App centers on YouTube; extension centers on YouTube bookmarks.                                                                                          | Competitor has broader advertised playback coverage; site compatibility remains untested.                                                                  |
+| Speed range                             | Store: 0.07–16x with configurable increments.                                                   | App `play_screen.dart`: 0.25–2x bounds, seven preset rates, plus delta adjustment. No dedicated speed controller found in the extension paths inspected. | Clear configuration gap; supported player rates must be checked before expanding app bounds.                                                               |
+| Skip backward/forward                   | Store: keyboard skips of 10 seconds.                                                            | App binds left/right arrows to minus/plus 10 seconds.                                                                                                    | Basic functional overlap, not measured UX parity.                                                                                                          |
+| Custom keyboard actions                 | Store: remappable keys, modifiers and speed toggles.                                            | App playback bindings are fixed in `_shortcutBindings`; extension options customize five bookmark actions.                                               | ReplayGlows customization exists for bookmarks, not equivalent speed controls.                                                                             |
+| Remember speed / domain defaults        | Store documents both.                                                                           | App playback rate is held in controller state; cross-session speed persistence and domain rules were not established by the inspected code.              | Evidence gap in ReplayGlows; do not equate in-memory state with durable preferences.                                                                       |
+| Movable controller                      | Store documents repositioning. README additionally documents custom CSS and per-site disabling. | App controls and extension bookmark UI; no equivalent universal speed overlay identified.                                                                | Competitor advantage for adapting controls to existing players.                                                                                            |
+| Resist player speed resets              | Official README documents reapplying the selected speed.                                        | No equivalent policy established in this review.                                                                                                         | Candidate robustness pattern; README claim, not tested release behavior.                                                                                   |
+| Return to a marked moment               | README documents a marker and jump-back commands.                                               | App timestamped notes; extension multiple saved bookmarks with notes, navigation and deletion.                                                           | Both support revisiting a moment; ReplayGlows supports a richer persistent collection.                                                                     |
+| Repeat video                            | Not established by reviewed sources.                                                            | App end handling checks `loopEnabled` and restarts playback.                                                                                             | ReplayGlows whole-video repeat is evidenced; A–B segment looping is not established here.                                                                  |
+| Notes and portable records              | Rich notes and exports not documented in reviewed sources.                                      | Extension options implement Markdown/JSON export and validated JSON import; app has timestamped notes.                                                   | ReplayGlows strength for retaining learning material. No app-extension synchronization claim.                                                              |
+| Playlists, feeds and viewing continuity | Not documented in reviewed sources.                                                             | App product contract and routes cover playlists, feeds and history.                                                                                      | ReplayGlows extends beyond playback into organization.                                                                                                     |
+| Transcripts / AI                        | Not documented in reviewed sources.                                                             | Transcript handling appears in app/backend; `notes.ts` schedules `internal.openai.summary`, implemented in `openai.ts`.                                  | Code exists, but end-to-end availability was not checked. Older product contracts still restrict AI promises; do not advertise mature AI on this evidence. |
 
 ### Interpretation and recommendations
 
@@ -133,10 +135,10 @@ Follow-up on 2026-09-05: the operator requested playback controls in the Chrome 
 
 ## Additional playback competitors — 2026-09-05
 
-| Reference | Category | Status | Scope |
-| --- | --- | --- | --- |
-| [Video Speed Control](https://chromewebstore.google.com/detail/video-speed-control/aejbmaihhlajphnlcdbojkjbdckkfdki) | Competitor: playback controls | candidate | Popup-based HTML5 video speed adjustment. |
-| [Global Speed](https://chromewebstore.google.com/detail/global-speed-video-speed/jpbjcnkcffbooppibceonlgknpkniiff) | Competitor: playback controls | candidate | Automatic video/audio speed management and advanced media commands. |
+| Reference                                                                                                            | Category                      | Status    | Scope                                                               |
+| -------------------------------------------------------------------------------------------------------------------- | ----------------------------- | --------- | ------------------------------------------------------------------- |
+| [Video Speed Control](https://chromewebstore.google.com/detail/video-speed-control/aejbmaihhlajphnlcdbojkjbdckkfdki) | Competitor: playback controls | candidate | Popup-based HTML5 video speed adjustment.                           |
+| [Global Speed](https://chromewebstore.google.com/detail/global-speed-video-speed/jpbjcnkcffbooppibceonlgknpkniiff)   | Competitor: playback controls | candidate | Automatic video/audio speed management and advanced media commands. |
 
 ### Verified public-source observations
 
@@ -148,16 +150,16 @@ These are dated publisher claims and store counts, not hands-on compatibility, p
 
 ### Expanded comparison and design implications
 
-| Dimension | Video Speed Controller | Video Speed Control | Global Speed | Current ReplayGlows extension |
-| --- | --- | --- | --- | --- |
-| Primary model | Fine playback controls and overlay | Explicit adjustment from popup | Automatic media policy and advanced controls | Persistent YouTube bookmarks and notes |
-| Video/audio | Both advertised | Video only | Both advertised | YouTube video context |
-| Apply after reload | Optional remembered speed advertised | Manual action required again | Automatic application advertised | No dedicated speed feature identified |
-| Site-specific policy | Domain defaults and disabling documented | Not established | URL rules documented | Not implemented in inspected extension paths |
-| Configurable commands | Extensive speed/media bindings | Not established | Extensive media bindings and trigger modes | Five bookmark commands |
-| Compact controls | User image provides a speed-card reference; exact installed build not identified | Popup is the documented primary control surface | Configurable presets documented | Existing popup lists notes; speed card requested |
-| Advanced effects | Not established in reviewed material | Not established | Frame stepping, video filters and audio processing | Not identified |
-| Learning records | Simple return marker documented | Not documented | Notes/export not documented in reviewed material | Multiple notes, timestamp navigation, JSON/Markdown export and JSON import |
+| Dimension             | Video Speed Controller                                                           | Video Speed Control                             | Global Speed                                       | Current ReplayGlows extension                                              |
+| --------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------- |
+| Primary model         | Fine playback controls and overlay                                               | Explicit adjustment from popup                  | Automatic media policy and advanced controls       | Persistent YouTube bookmarks and notes                                     |
+| Video/audio           | Both advertised                                                                  | Video only                                      | Both advertised                                    | YouTube video context                                                      |
+| Apply after reload    | Optional remembered speed advertised                                             | Manual action required again                    | Automatic application advertised                   | No dedicated speed feature identified                                      |
+| Site-specific policy  | Domain defaults and disabling documented                                         | Not established                                 | URL rules documented                               | Not implemented in inspected extension paths                               |
+| Configurable commands | Extensive speed/media bindings                                                   | Not established                                 | Extensive media bindings and trigger modes         | Five bookmark commands                                                     |
+| Compact controls      | User image provides a speed-card reference; exact installed build not identified | Popup is the documented primary control surface | Configurable presets documented                    | Existing popup lists notes; speed card requested                           |
+| Advanced effects      | Not established in reviewed material                                             | Not established                                 | Frame stepping, video filters and audio processing | Not identified                                                             |
+| Learning records      | Simple return marker documented                                                  | Not documented                                  | Notes/export not documented in reviewed material   | Multiple notes, timestamp navigation, JSON/Markdown export and JSON import |
 
 The three references support distinct lessons: a small discoverable control surface, durable personalized playback, and advanced media tooling. Global Speed is the strongest functional benchmark of these sources for advanced media control; Video Speed Control demonstrates a simpler popup flow but adds an explicit apply step. This is an analytical judgment, not a measured usability ranking.
 
@@ -177,17 +179,17 @@ On 2026-09-05, the English caption track of [Global Speed - Demo](https://www.yo
 
 Additional capabilities described by the demo:
 
-| Time | Demonstrated behavior described in captions | ReplayGlows opportunity |
-| --- | --- | --- |
-| [00:10](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=10s) | One shared context applies a base speed across tabs. Pinning excludes a tab from that shared context so it can use a specific speed. | Shared speed by default, explicit pinned exceptions. Operator clarified this model on 2026-09-05; it is not independent settings per tab by default or Chrome's native pinned-tab feature. |
-| [00:43](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=43s) | Frame stepping. | Precise review of demonstrations and gestures. |
-| [00:57](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=57s) | Set and revisit a position marker. | Connect playback controls with existing saved timestamps. |
-| [01:12](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=72s) | A–B segment repeat; a shortcut or seeking outside the segment clears it. | High-value learning candidate: repeat a passage around a note, with visible bounds and an exit control. |
-| [01:39](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=99s) | Media target selection, including another tab; default selection uses media duration. | Make the controlled video explicit, especially if broader media support is approved. |
-| [02:08](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=128s) | A modifier enables finer filter adjustments. | Consider a fine-adjustment interaction for speed; adapting this to speed is our proposal, not a claim about the demo. |
-| [02:41](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=161s) | Scaling, rotation and video/page filters. | Secondary accessibility or inspection candidates; keep separate from the compact speed card. |
-| [03:39](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=219s) | Audio effects and tab capture workflows. | Separate technical and permission assessment; do not promise the demo's fullscreen workaround on current Chrome without fresh verification. |
-| [05:04](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=304s) | Suspend controls; rules can disable selected shortcuts or assign speeds by URL. | Provide an easy suspension control and protect text entry; URL policies depend on the chosen site scope. |
+| Time                                                        | Demonstrated behavior described in captions                                                                                          | ReplayGlows opportunity                                                                                                                                                                    |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [00:10](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=10s)  | One shared context applies a base speed across tabs. Pinning excludes a tab from that shared context so it can use a specific speed. | Shared speed by default, explicit pinned exceptions. Operator clarified this model on 2026-09-05; it is not independent settings per tab by default or Chrome's native pinned-tab feature. |
+| [00:43](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=43s)  | Frame stepping.                                                                                                                      | Precise review of demonstrations and gestures.                                                                                                                                             |
+| [00:57](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=57s)  | Set and revisit a position marker.                                                                                                   | Connect playback controls with existing saved timestamps.                                                                                                                                  |
+| [01:12](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=72s)  | A–B segment repeat; a shortcut or seeking outside the segment clears it.                                                             | High-value learning candidate: repeat a passage around a note, with visible bounds and an exit control.                                                                                    |
+| [01:39](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=99s)  | Media target selection, including another tab; default selection uses media duration.                                                | Make the controlled video explicit, especially if broader media support is approved.                                                                                                       |
+| [02:08](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=128s) | A modifier enables finer filter adjustments.                                                                                         | Consider a fine-adjustment interaction for speed; adapting this to speed is our proposal, not a claim about the demo.                                                                      |
+| [02:41](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=161s) | Scaling, rotation and video/page filters.                                                                                            | Secondary accessibility or inspection candidates; keep separate from the compact speed card.                                                                                               |
+| [03:39](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=219s) | Audio effects and tab capture workflows.                                                                                             | Separate technical and permission assessment; do not promise the demo's fullscreen workaround on current Chrome without fresh verification.                                                |
+| [05:04](https://www.youtube.com/watch?v=5x8Kg8ahxjM&t=304s) | Suspend controls; rules can disable selected shortcuts or assign speeds by URL.                                                      | Provide an easy suspension control and protect text entry; URL policies depend on the chosen site scope.                                                                                   |
 
 Updated recommendation: keep the compact popup card as the primary interface, with a shared base speed and pinned-tab exceptions, then prioritize A–B repeat integrated with timestamps and temporary speed changes. Place advanced controls in settings or a secondary panel. Audio processing and broad visual filters offer less direct value for the current note-taking workflow. These are research candidates, not an approved expanded implementation scope. The then-pending scope decision was subsequently resolved in favor of multisite HTML5 playback; see the delivery status below.
 
@@ -195,17 +197,17 @@ Updated recommendation: keep the compact popup card as the primary interface, wi
 
 Operator input on 2026-09-05 establishes the intended shared-context interpretation and supports developing this feature matrix. Rows below are proposals, not delivered features or a frozen implementation plan. Existing extension features and app-only capabilities remain distinct.
 
-| Candidate | Existing anchor | Connected user workflow | Design or implementation boundary |
-| --- | --- | --- | --- |
-| Shared base speed with pinned exceptions | Extension popup and local settings | Set the usual listening pace once; pin a particular tab to review slowly while other supported tabs keep the base speed. | Show Global/Pinned scope beside the rate. Proposal: unpin immediately rejoins the current base speed. Pin lifetime across navigation, closure and browser restart remains to specify. |
-| Compact speed card | Popup bookmark list and options entry | Adjust speed while consulting saved moments, with slider, presets, reset and settings access. | Keep the card at the bottom and accessible when the bookmark list is long; display actual playback state. |
-| A–B repeat from timestamps | Saved timestamp bookmarks and previous/next navigation | Use two bookmarks as bounds, or set an end after an existing bookmark, then repeat the passage. | Temporary looping can reuse timestamps; saving a segment requires a separate data-format decision. App whole-video repeat is not existing extension A–B support. |
-| Note-linked review speed | Timestamped notes | Revisit a difficult passage more slowly. | A new proposal: optional speed associated with a note, distinct from the competitor's demonstrated marker. Define restoration of the global or pinned rate after review. |
-| Temporary acceleration or slowdown | Configurable bookmark shortcuts | Hold a key to scan or listen carefully, then return to the effective speed on release. | Avoid input and shortcut conflicts; restore on lost focus or navigation as well as key release. |
-| Frame stepping with note capture | Add bookmark at current position | Inspect a gesture and annotate the relevant moment. | Verify achievable seeking precision on the supported player; do not promise frame-exact behavior from a nominal time increment. |
-| Unified shortcut settings and suspension | Five configurable bookmark actions in extension options | Configure playback and note capture together; suspend commands when they interfere. | Clear action groups, conflict feedback and text-input protection. Site rules are separate from tab pinning. |
-| Explicit media target | Current YouTube player integration | Ensure commands and new notes refer to the intended media. | Most valuable with multiple media or cross-tab control; do not confuse media selection with speed-context pinning. |
-| Portable review records | JSON/Markdown export and validated JSON import | Retain learning context when moving saved notes. | If saved loops or note-specific rates are adopted, version and validate their representation while accepting old bookmark records. Tab IDs are transient, not portable learning data. |
+| Candidate                                | Existing anchor                                         | Connected user workflow                                                                                                  | Design or implementation boundary                                                                                                                                                     |
+| ---------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared base speed with pinned exceptions | Extension popup and local settings                      | Set the usual listening pace once; pin a particular tab to review slowly while other supported tabs keep the base speed. | Show Global/Pinned scope beside the rate. Proposal: unpin immediately rejoins the current base speed. Pin lifetime across navigation, closure and browser restart remains to specify. |
+| Compact speed card                       | Popup bookmark list and options entry                   | Adjust speed while consulting saved moments, with slider, presets, reset and settings access.                            | Keep the card at the bottom and accessible when the bookmark list is long; display actual playback state.                                                                             |
+| A–B repeat from timestamps               | Saved timestamp bookmarks and previous/next navigation  | Use two bookmarks as bounds, or set an end after an existing bookmark, then repeat the passage.                          | Temporary looping can reuse timestamps; saving a segment requires a separate data-format decision. App whole-video repeat is not existing extension A–B support.                      |
+| Note-linked review speed                 | Timestamped notes                                       | Revisit a difficult passage more slowly.                                                                                 | A new proposal: optional speed associated with a note, distinct from the competitor's demonstrated marker. Define restoration of the global or pinned rate after review.              |
+| Temporary acceleration or slowdown       | Configurable bookmark shortcuts                         | Hold a key to scan or listen carefully, then return to the effective speed on release.                                   | Avoid input and shortcut conflicts; restore on lost focus or navigation as well as key release.                                                                                       |
+| Frame stepping with note capture         | Add bookmark at current position                        | Inspect a gesture and annotate the relevant moment.                                                                      | Verify achievable seeking precision on the supported player; do not promise frame-exact behavior from a nominal time increment.                                                       |
+| Unified shortcut settings and suspension | Five configurable bookmark actions in extension options | Configure playback and note capture together; suspend commands when they interfere.                                      | Clear action groups, conflict feedback and text-input protection. Site rules are separate from tab pinning.                                                                           |
+| Explicit media target                    | Current YouTube player integration                      | Ensure commands and new notes refer to the intended media.                                                               | Most valuable with multiple media or cross-tab control; do not confuse media selection with speed-context pinning.                                                                    |
+| Portable review records                  | JSON/Markdown export and validated JSON import          | Retain learning context when moving saved notes.                                                                         | If saved loops or note-specific rates are adopted, version and validate their representation while accepting old bookmark records. Tab IDs are transient, not portable learning data. |
 
 Suggested grouping: playback foundation (card, shared speed, pinning, shortcuts); learning integration (A–B, note-linked pace, precise inspection); optional broader media tools (cross-site rules, target selection, filters and audio effects). These groups originally organized discussion without committing implementation order or expanding permissions.
 
@@ -213,18 +215,18 @@ Suggested grouping: playback foundation (card, shared speed, pinning, shortcuts)
 
 The preceding comparison and proposal tables preserve the pre-implementation research snapshot. This matrix is the current status; the canonical behavior and limits are in `shipglows_data/product/ext/product.md`.
 
-| Research opportunity | Current delivery | Connection or remaining boundary |
-| --- | --- | --- |
-| Shared base speed and pinned exceptions | Implemented, verified | One default context; unpin rejoins current base. Pins last for the tab/session, including navigation and worker restart. |
-| Compact speed card, presets and favorite | Implemented, verified | Bottom popup card next to the existing YouTube bookmark workflow. |
-| Multisite HTML5 video/audio | Implemented, verified on bounded fixtures and public pages | HTTP/HTTPS access; not a guarantee for every player. Notes remain YouTube-specific. |
-| A–B repeat linked to timestamps | Temporary loops implemented, verified | Current positions or existing YouTube bookmark pairs; saved segments remain research. |
-| Temporary acceleration/slowdown | Held acceleration implemented, verified | Release restores context; a separate configurable held slowdown is not implemented. |
-| Unified shortcut settings and suspension | Implemented, verified | Input safety and collisions with bookmark commands checked. |
-| Note-linked review speed and frame stepping | Research only | Requires a later behavior and persistence decision. |
-| Explicit media target | Automatic targeting implemented | Manual selection remains research; pinning controls speed context, not media choice. |
-| Portable review records | Existing bookmark portability preserved | New loop/rate fields are not included in exported records. |
-| URL rules, audio and visual effects | Research only | No approved implementation batch. |
+| Research opportunity                        | Current delivery                                           | Connection or remaining boundary                                                                                         |
+| ------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Shared base speed and pinned exceptions     | Implemented, verified                                      | One default context; unpin rejoins current base. Pins last for the tab/session, including navigation and worker restart. |
+| Compact speed card, presets and favorite    | Implemented, verified                                      | Bottom popup card next to the existing YouTube bookmark workflow.                                                        |
+| Multisite HTML5 video/audio                 | Implemented, verified on bounded fixtures and public pages | HTTP/HTTPS access; not a guarantee for every player. Notes remain YouTube-specific.                                      |
+| A–B repeat linked to timestamps             | Temporary loops implemented, verified                      | Current positions or existing YouTube bookmark pairs; saved segments remain research.                                    |
+| Temporary acceleration/slowdown             | Held acceleration implemented, verified                    | Release restores context; a separate configurable held slowdown is not implemented.                                      |
+| Unified shortcut settings and suspension    | Implemented, verified                                      | Input safety and collisions with bookmark commands checked.                                                              |
+| Note-linked review speed and frame stepping | Research only                                              | Requires a later behavior and persistence decision.                                                                      |
+| Explicit media target                       | Automatic targeting implemented                            | Manual selection remains research; pinning controls speed context, not media choice.                                     |
+| Portable review records                     | Existing bookmark portability preserved                    | New loop/rate fields are not included in exported records.                                                               |
+| URL rules, audio and visual effects         | Research only                                              | No approved implementation batch.                                                                                        |
 
 ### Implementation decision following research
 
@@ -232,8 +234,8 @@ The operator subsequently approved development and explicitly chose all sites. T
 
 ## Ambient light for YouTube — competitive review, 2026-09-05
 
-| Reference | Category | Status | Scope |
-| --- | --- | --- | --- |
+| Reference                                                                                                                        | Category                                             | Status   | Scope                                                |
+| -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | -------- | ---------------------------------------------------- |
 | [Ambient light for YouTube](https://chromewebstore.google.com/detail/ambient-light-for-youtube/paponcgjfojgemddooebbgniglhkajkj) | Indirect competitor / viewing-experience inspiration | reviewed | User-supplied YouTube visual-enhancement specialist. |
 
 Owner: Diane. Outcome: qualify this reference for ReplayGlows and identify useful opportunities. This is a bounded competitive review, not a market-size study or an approved implementation plan.
@@ -251,15 +253,15 @@ Sources inspected on 2026-09-05:
 
 The competitor column summarizes publisher claims from the store, not hands-on verification.
 
-| Dimension | Ambient light for YouTube | ReplayGlows assessment |
-| --- | --- | --- |
-| Visual immersion | Adjustable ambient glow, direction, blur and transitions. | Outside the current extension contract; an optional inspiration, not a parity defect. |
-| Fit and readability | Black/colored-bar removal, screen filling, zoom, brightness/contrast/saturation filters. | Potential aid for inspecting demonstrations; cropping could hide instructional details and needs task-based testing. |
-| Page distractions | Theater-mode element hiding and page opacity controls. | Candidate focus workflow around saved learning moments; keep notes and controls accessible. |
-| Performance controls | Frame-rate/resolution limits, WebGL, static-video energy saving and diagnostics. | Useful design lesson if effects are considered: establish resource budgets and an easy disable path before adding visual complexity. |
-| Settings | Import/export and activation by viewing mode, including PiP. | Existing portable bookmark records serve a different purpose; do not conflate note export with complete settings portability. |
-| Coverage | YouTube viewing experience. | ReplayGlows controls accessible HTML5 video/audio across HTTP/HTTPS sites; annotations remain YouTube-specific. |
-| Learning continuity | Notes, playlists and learning-record exports not established by inspected sources. | ReplayGlows combines timestamped notes, portable bookmarks and temporary A–B review. Those are the stronger learning-workflow differentiators. |
+| Dimension            | Ambient light for YouTube                                                                | ReplayGlows assessment                                                                                                                         |
+| -------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Visual immersion     | Adjustable ambient glow, direction, blur and transitions.                                | Outside the current extension contract; an optional inspiration, not a parity defect.                                                          |
+| Fit and readability  | Black/colored-bar removal, screen filling, zoom, brightness/contrast/saturation filters. | Potential aid for inspecting demonstrations; cropping could hide instructional details and needs task-based testing.                           |
+| Page distractions    | Theater-mode element hiding and page opacity controls.                                   | Candidate focus workflow around saved learning moments; keep notes and controls accessible.                                                    |
+| Performance controls | Frame-rate/resolution limits, WebGL, static-video energy saving and diagnostics.         | Useful design lesson if effects are considered: establish resource budgets and an easy disable path before adding visual complexity.           |
+| Settings             | Import/export and activation by viewing mode, including PiP.                             | Existing portable bookmark records serve a different purpose; do not conflate note export with complete settings portability.                  |
+| Coverage             | YouTube viewing experience.                                                              | ReplayGlows controls accessible HTML5 video/audio across HTTP/HTTPS sites; annotations remain YouTube-specific.                                |
+| Learning continuity  | Notes, playlists and learning-record exports not established by inspected sources.       | ReplayGlows combines timestamped notes, portable bookmarks and temporary A–B review. Those are the stronger learning-workflow differentiators. |
 
 ### Interpretation and recommended priority
 
@@ -275,8 +277,8 @@ Documentation impact: this internal registry only. Public copy, product promises
 
 ## Screenshot YouTube — competitive review, 2026-09-07
 
-| Reference | Category | Status | Scope |
-| --- | --- | --- | --- |
+| Reference                                                                                                          | Category                          | Status    | Scope                                                                  |
+| ------------------------------------------------------------------------------------------------------------------ | --------------------------------- | --------- | ---------------------------------------------------------------------- |
 | [Screenshot YouTube](https://chromewebstore.google.com/detail/screenshot-youtube/gjoijpfmdhbjkkgnmahganhoinjjpohk) | Competitor: YouTube frame capture | candidate | User-supplied specialist reference for saving visual learning moments. |
 
 Owner: Diane. Outcome: add the supplied competitor, check existing ReplayGlows coverage and explain an implementation path. The recommendations below are research, not an approved feature implementation or a public delivery claim.
@@ -290,14 +292,14 @@ Owner: Diane. Outcome: add the supplied competitor, check existing ReplayGlows c
 
 ### Does ReplayGlows already have it?
 
-| Capability | Current local evidence | Assessment |
-| --- | --- | --- |
-| Save the current video frame as an image | No product capture pipeline found (`drawImage`, `toBlob`, `captureVisibleTab`, Flutter image capture); screenshot matches in browser scripts are test artifacts. | Missing from inspected product code. |
-| Copy the video image to the clipboard | Extension options copy Markdown using `writeText`; Flutter copies text. | Text export exists; image clipboard export was not found. |
-| Timestamped learning context | `ext/src/bookmarks.ts` stores URL, time, formatted time, note and optional title. | Existing foundation for associating a frame with a learning moment. |
-| Retain images in bookmarks | The bookmark schema has no attachment field; `normalizeBookmark` reconstructs only known fields and Markdown export contains text/link data. | Adding an image field alone would not preserve it through import/export. |
-| Playback speed and configurable shortcuts | Current extension product contract and `ext/src/playback/` implement speed, shortcuts and A–B review. | Existing overlap; no need to rebuild speed controls for this competitor. |
-| Capture from the Flutter web player | `app/lib/widgets/play/web_youtube_embed_web.dart` embeds an `HTMLIFrameElement` on `youtube-nocookie.com`. | Parent-page code cannot directly read the embedded video's pixels across origins. A separate integration is needed. |
+| Capability                                | Current local evidence                                                                                                                                           | Assessment                                                                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Save the current video frame as an image  | No product capture pipeline found (`drawImage`, `toBlob`, `captureVisibleTab`, Flutter image capture); screenshot matches in browser scripts are test artifacts. | Missing from inspected product code.                                                                                |
+| Copy the video image to the clipboard     | Extension options copy Markdown using `writeText`; Flutter copies text.                                                                                          | Text export exists; image clipboard export was not found.                                                           |
+| Timestamped learning context              | `ext/src/bookmarks.ts` stores URL, time, formatted time, note and optional title.                                                                                | Existing foundation for associating a frame with a learning moment.                                                 |
+| Retain images in bookmarks                | The bookmark schema has no attachment field; `normalizeBookmark` reconstructs only known fields and Markdown export contains text/link data.                     | Adding an image field alone would not preserve it through import/export.                                            |
+| Playback speed and configurable shortcuts | Current extension product contract and `ext/src/playback/` implement speed, shortcuts and A–B review.                                                            | Existing overlap; no need to rebuild speed controls for this competitor.                                            |
+| Capture from the Flutter web player       | `app/lib/widgets/play/web_youtube_embed_web.dart` embeds an `HTMLIFrameElement` on `youtube-nocookie.com`.                                                       | Parent-page code cannot directly read the embedded video's pixels across origins. A separate integration is needed. |
 
 Interpretation: this is a specialist substitute for a single YouTube utility, not evidence of a full learning-workspace competitor. A useful ReplayGlows opportunity is preserving a diagram, slide or code example alongside a timestamp and note. Its learning benefit and demand remain hypotheses.
 

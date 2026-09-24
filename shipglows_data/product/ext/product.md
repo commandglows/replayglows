@@ -62,7 +62,7 @@ Implementation was delivered in commit `e9b4ad3813d697aa0f4e6c28dd22019581be8dec
 
 ## In-Extension Discovery
 
-The French popup offers optional progressive guidance through its permanent `Découvrir / Aide` entry; options also contain the practical guide. First guidance is visible by default. Hiding help, selecting a topic and postponing an exercise persist locally under independent `discovery.v1.*` keys. Postponed is not completed; completed milestones describe past success, not the current media state.
+The popup offers optional progressive guidance through its permanent `Découvrir / Aide` entry; options also contain the practical guide. In the popup, help starts collapsed when `discovery.v1.hidden` is absent, opens by request, and persists the explicit visibility choice (`false` visible, `true` hidden). Selecting a topic and postponing an exercise persist locally under independent `discovery.v1.*` keys. Postponed is not completed; completed milestones describe past success, not the current media state.
 
 Five milestones cover a changed speed confirmed by a fresh accepted-media snapshot, an observed pinned context, an observed valid A–B loop, an existing persisted nonempty note, and successful opening of a saved bookmark URL. The last milestone confirms tab creation, not observed playback/seek. Existing notes qualify without forcing a new note. The speed exercise uses the popup controls; reading instructions alone never qualifies. Playback and bookmark schemas, permissions, and exports remain unchanged. Playback shortcut help reads effective validated settings, while disabled bookmark shortcuts are shown as disabled.
 

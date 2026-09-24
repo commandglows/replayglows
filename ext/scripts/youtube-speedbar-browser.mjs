@@ -20,7 +20,7 @@ wav.writeUInt32LE(8000, 24); wav.writeUInt32LE(16000, 28); wav.writeUInt16LE(2, 
 wav.write('data', 36); wav.writeUInt32LE(wav.length - 44, 40)
 const html = `<html lang="fr"><head><meta charset="utf-8"><title>YouTube speedbar fixture</title><style>
 html{font-size:10px}body{margin:0;background:#171717;color:white;font-family:Arial}.html5-video-player{position:relative;width:calc(100% - 40px);height:450px;margin:20px;background:#333}video{width:100%;height:100%}.ytp-chrome-bottom{position:absolute;bottom:0;left:12px;right:12px}.ytp-progress-bar{position:relative;height:4px;background:#f03;margin-bottom:8px}.ytp-chrome-controls{display:flex;position:relative;height:48px;width:100%;line-height:48px;pointer-events:auto}.ytp-left-controls{flex:1;min-width:0;display:flex;align-items:center;height:48px}.ytp-right-controls{flex-shrink:0;display:flex;align-items:center;height:48px;width:140px}.ytp-time-display{width:70px}.ytp-chapter-title{width:110px;white-space:nowrap;overflow:hidden}.ytp-button{width:40px;height:40px;border:0;color:white;background:transparent}
-/* Native modern YouTube groups cover the transparent gap behind our toolbar. */.ytp-left-controls,.ytp-right-controls{z-index:59;pointer-events:auto}</style></head><body><div class="html5-video-player"><video src="data:audio/wav;base64,${wav.toString('base64')}"></video><div class="ytp-chrome-bottom"><div class="ytp-progress-bar"></div><div class="ytp-chrome-controls"><div class="ytp-left-controls"><button class="ytp-button">▶</button><span class="ytp-time-display">0:00 / 0:30</span><span class="ytp-chapter-title">Introduction</span></div><div class="ytp-right-controls"><button class="ytp-button">⚙</button><button class="ytp-button">□</button></div></div></div></div></body></html>`
+/* Native modern YouTube groups cover the transparent gap behind our toolbar. */.ytp-left-controls,.ytp-right-controls{z-index:59;pointer-events:auto}</style></head><body><div class="html5-video-player"><video src="data:audio/wav;base64,${wav.toString('base64')}"></video><div class="ytp-chrome-bottom"><div class="ytp-progress-bar"></div><div class="ytp-chrome-controls"><div class="ytp-left-controls"><button class="ytp-button">▶</button><span class="ytp-time-display">0:00 / 0:30</span><span class="ytp-chapter-title">Introduction</span></div><div class="ytp-right-controls"><button class="ytp-button">⚙</button><button class="ytp-button">□</button></div></div></div></div><script>(()=>{const v=document.querySelector('video'),p=document.querySelector('.ytp-progress-bar');const sync=()=>p.style.setProperty('--progress',String(v.currentTime/v.duration));v.addEventListener('timeupdate',sync);v.addEventListener('seeked',sync)})()</script></body></html>`
 try {
   const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker')
   const id = new URL(worker.url()).host
@@ -31,6 +31,10 @@ try {
   await context.route('https://www.youtube.com/**', route => route.fulfill({ contentType: 'text/html', body: html }))
   const page = await context.newPage()
   await page.goto('https://www.youtube.com/watch?v=rgSpeedTest')
+  await page.evaluate(() => {
+    window.__rgSeekEvents = 0
+    document.querySelector('video').addEventListener('seeking', () => window.__rgSeekEvents++)
+  })
   await page.locator('#bookmark-button').waitFor()
   await page.waitForFunction(() => document.querySelector('video').duration === 30)
   const tabs = await worker.evaluate(() => chrome.tabs.query({}))
@@ -58,6 +62,10 @@ try {
   await bar.getByRole('button', { name: '2×', exact: true }).click()
   await rateIs(2)
   assert.equal((await send({ action: 'rg:get', tabId })).media.rate, 2)
+  for (const rate of [2.5, 3, 3.5, 4]) {
+    await bar.getByRole('button', { name: `${rate}×`, exact: true }).click()
+    await rateIs(rate)
+  }
   const slider = bar.locator('input[type="range"]')
   await slider.click();
   await rateIs(Number(await slider.inputValue()))
@@ -121,7 +129,7 @@ try {
   await page.waitForFunction(() => !document.querySelector('.rg-yt-speedbar input').disabled)
   // Enable through the real settings UI and verify persistence after reopening.
   await control.reload()
-  const attachOption = control.getByRole('checkbox', { name: 'Attacher le pointeur à la barre de vitesse', exact: true })
+  const attachOption = control.getByRole('checkbox', { name: /Attacher le pointeur à la barre de vitesse/ })
   assert.equal(await attachOption.isChecked(), false)
   await attachOption.check()
   await control.waitForFunction(() => chrome.storage.local.get('playbackSettings').then(v => v.playbackSettings.attachPointerToSpeedBar === true))
@@ -135,6 +143,19 @@ try {
   await rateIs(1)
   assert.equal(await bar.getAttribute('data-pointer-attached'), 'true')
   assert.equal(await slider.evaluate(e => getComputedStyle(e).cursor), 'none')
+  await page.mouse.down()
+  await page.mouse.up()
+  assert.equal(await bar.getAttribute('data-pointer-attached'), null)
+  assert.notEqual(await slider.evaluate(e => getComputedStyle(e).cursor), 'none')
+  await page.mouse.move(x(0.8), y)
+  await page.waitForTimeout(150)
+  await rateIs(1) // Click fixes the hovered rate even as the pointer moves within the bar.
+  await page.mouse.move(x(0.8), rect.y - 70)
+  await rateIs(1)
+  await page.mouse.move(x(0.2), y)
+  await rateIs(1)
+  assert.equal(await bar.getAttribute('data-pointer-attached'), 'true')
+
   await page.mouse.move(x(0.6), rect.y - 20)
   await rateIs(2.5)
   await page.mouse.move(x(0.8), rect.y - 50)
@@ -158,7 +179,7 @@ try {
   await page.waitForTimeout(150)
   await rateIs(0.25)
   await control.reload()
-  const scrubOption = control.getByRole('checkbox', { name: 'Maintenir Alt pour parcourir la vidéo', exact: true })
+  const scrubOption = control.getByRole('checkbox', { name: /Maintenir Alt pour parcourir la vidéo/ })
   assert.equal(await scrubOption.isChecked(), false)
   await scrubOption.check()
   await control.waitForFunction(() => chrome.storage.local.get('playbackSettings').then(v => v.playbackSettings.altSeekOnSpeedBar === true))
@@ -175,6 +196,7 @@ try {
   assert.equal(await page.locator('video').evaluate(v => v.muted), true)
   assert.equal(await page.locator('video').evaluate(v => v.paused), false)
   await page.waitForFunction(() => document.querySelector('video').currentTime > 15.1)
+  await page.waitForFunction(() => Number(document.querySelector('.ytp-progress-bar').style.getPropertyValue('--progress')) > 0.5)
   assert.ok(await page.locator('.ytp-progress-bar').evaluate(element => Number(element.style.getPropertyValue('--progress'))) > 0.5,
     'The timeline keeps moving during neutral Alt scrub')
   const scrubRect = await slider.boundingBox()
@@ -182,11 +204,15 @@ try {
   await page.mouse.move(x(0.4) - half * 0.65, y)
   await page.waitForFunction(() => document.querySelector('video').currentTime < 14)
   await page.mouse.move(x(0.4), y)
-  const stopped = await page.locator('video').evaluate(v => v.currentTime)
+  await page.waitForFunction(() => !document.querySelector('video').seeking)
+  await page.waitForTimeout(100)
+  const parked = await page.evaluate(() => ({ time: document.querySelector('video').currentTime, seeks: window.__rgSeekEvents }))
   await page.waitForTimeout(150)
-  assert.equal(await page.locator('video').evaluate(v => v.currentTime), stopped)
+  const afterPark = await page.evaluate(() => ({ time: document.querySelector('video').currentTime, seeks: window.__rgSeekEvents }))
+  assert.equal(afterPark.seeks, parked.seeks, 'a stationary neutral pointer sends no more seek requests')
+  assert.ok(afterPark.time >= parked.time, 'the playing video does not move backwards while the pointer is parked')
   await page.mouse.move(x(0.4) + half * 0.8, y)
-  await page.waitForFunction(t => document.querySelector('video').currentTime > t + 1, stopped)
+  await page.waitForFunction(t => document.querySelector('video').currentTime > t + 1, parked.time)
   await page.keyboard.up('Alt')
   assert.equal(await bar.getAttribute('data-scrubbing'), null)
   assert.deepEqual(await page.locator('video').evaluate(v => ({ muted: v.muted, volume: v.volume, paused: v.paused, rate: v.playbackRate })), { muted: false, volume: 0.6, paused: false, rate: 1.75 })
@@ -201,7 +227,7 @@ try {
   assert.equal(await page.locator('video').evaluate(v => v.muted), true)
   assert.equal(await page.locator('.html5-video-player').evaluate(e => e.classList.contains('rg-speedbar-scrubbing')), false)
   await page.keyboard.up('Alt')
-  // Detachment stops seeking and restores sound; bounds remain inside the video.
+  // Detachment stops seeking and restores sound without changing playback; bounds stay inside the video.
   await page.locator('video').evaluate(v => { v.pause(); v.muted = false; v.currentTime = 0.1 })
   await page.mouse.move(x(0.4), y)
   await page.keyboard.down('Alt')
@@ -235,14 +261,53 @@ try {
     assert.equal(response.exceptionDetails, undefined, JSON.stringify(response.exceptionDetails))
     return response.result.value
   }
+  // On a media element without video frames, the fallback must still advance
+  // the target while issuing fewer decoder seeks than the old 10 Hz loop.
+  await page.locator('video').evaluate(v => { v.pause(); v.currentTime = 10 })
+  await isolated(`(() => {
+    const video = document.querySelector('video');
+    const nativeTime = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'currentTime');
+    let writes = 0;
+    Object.defineProperty(video, 'currentTime', { configurable: true,
+      get: () => nativeTime.get.call(video),
+      set: value => { writes++; nativeTime.set.call(video, value) },
+    });
+    globalThis.fastSeekWrites = () => writes;
+    globalThis.restoreFastSeekCount = () => { delete video.currentTime; delete globalThis.fastSeekWrites; delete globalThis.restoreFastSeekCount };
+  })()`)
+  await page.mouse.move(x(0.4), y)
+  await page.keyboard.down('Alt')
+  const previewRect = await slider.boundingBox()
+  await page.mouse.move(x(0.4) + (previewRect.width - 16) / 4, y)
+  await page.waitForTimeout(1250)
+  await page.keyboard.up('Alt')
+  const previewWrites = await isolated('globalThis.fastSeekWrites()')
+  assert.ok(previewWrites >= 2 && previewWrites <= 9, `preview seeks should be coalesced, got ${previewWrites}`)
+  assert.ok(await page.locator('video').evaluate(v => v.currentTime) > 11, 'preview still advances the media')
+  await isolated('globalThis.restoreFastSeekCount()')
+  console.log(`PASS Alt preview backpressure: ${previewWrites} seeks in 1.25 seconds without video frames`)
   await isolated(`(() => {
     const video = document.querySelector('video'); video.pause();
-    let position = 3600, seekingUntil = 0;
+    let position = 3600, seeking = false, latestApplied = 3600, discarded = 0;
     Object.defineProperties(video, {
       duration: { configurable: true, get: () => 7200 },
-      currentTime: { configurable: true, get: () => position, set: value => { position = value; seekingUntil = performance.now() + 250 } },
-      seeking: { configurable: true, get: () => performance.now() < seekingUntil },
+      currentTime: { configurable: true, get: () => position, set: value => {
+        if (seeking) { discarded++; return; }
+        position = value; latestApplied = value; seeking = true;
+        video.dispatchEvent(new Event('timeupdate'));
+        setTimeout(() => { seeking = false; video.dispatchEvent(new Event('seeked')); }, 250);
+      } },
+      seeking: { configurable: true, get: () => seeking },
     });
+    const progress = document.querySelector('.ytp-progress-bar');
+    const syncProgress = () => progress.style.setProperty('--progress', String(video.currentTime / video.duration));
+    video.addEventListener('timeupdate', syncProgress);
+    video.addEventListener('seeked', syncProgress);
+    globalThis.restoreSlowSeekProgress = () => {
+      video.removeEventListener('timeupdate', syncProgress);
+      video.removeEventListener('seeked', syncProgress);
+    };
+    globalThis.slowSeekStats = () => ({ position, latestApplied, discarded });
   })()`)
   await isolated(`(() => {
     const send = chrome.runtime.sendMessage.bind(chrome.runtime);
@@ -267,11 +332,17 @@ try {
   await page.waitForTimeout(7500)
   assert.equal(await bar.getAttribute('data-scrubbing'), 'true')
   assert.equal(await isolated("document.querySelector('video').currentTime"), 7200, 'Maximum forward reaches the end')
+  const slowSeekStats = await isolated('globalThis.slowSeekStats()')
+  assert.equal(slowSeekStats.discarded, 0, 'No currentTime write should be attempted while a seek is active')
+  assert.equal(slowSeekStats.position, slowSeekStats.latestApplied, 'The final media position must match the last applied target')
+  assert.equal(slowSeekStats.latestApplied, 7200, 'The target reached at the forward bound must be applied')
+  assert.equal(await page.locator('.ytp-progress-bar').evaluate(element => Number(element.style.getPropertyValue('--progress'))), 1,
+    'The fixture timeline must follow the applied media position')
   await page.keyboard.up('Alt')
   assert.equal(await bar.getAttribute('data-scrubbing'), null)
   assert.equal(await page.locator('video').evaluate(v => v.muted), false)
   await page.locator('.ytp-chrome-bottom').evaluate(element => { element.style.opacity = ''; element.style.visibility = '' })
-  await isolated(`(() => { const video = document.querySelector('video'); delete video.currentTime; delete video.duration; delete video.seeking; globalThis.restoreScrubSend(); delete globalThis.restoreScrubSend })()`)
+  await isolated(`(() => { const video = document.querySelector('video'); globalThis.restoreSlowSeekProgress(); delete globalThis.restoreSlowSeekProgress; delete video.currentTime; delete video.duration; delete video.seeking; delete globalThis.slowSeekStats; globalThis.restoreScrubSend(); delete globalThis.restoreScrubSend })()`)
   await cdp.detach()
   console.log('PASS sustained Alt scrub: slow decoder, two-hour video to both bounds, host auto-hide, overshoot, restoration')
   await send({ action: 'rg:settings', settings: { altSeekOnSpeedBar: false } })
@@ -281,7 +352,7 @@ try {
   await page.keyboard.up('Alt')
   // Four hover zones use the video surface without stealing toolbar scrolling.
   await control.reload()
-  const splitsOption = control.getByRole('checkbox', { name: 'Contrôler la vidéo avec quatre zones au survol', exact: true })
+  const splitsOption = control.getByRole('checkbox', { name: /Contrôler la vidéo avec quatre zones au survol/ })
   assert.equal(await splitsOption.isChecked(), false)
   await splitsOption.check()
   await control.waitForFunction(() => chrome.storage.local.get('playbackSettings').then(v => v.playbackSettings.videoHoverSplits === true))
@@ -291,16 +362,26 @@ try {
   await page.locator('video').evaluate(v => { v.volume = 0.5; v.muted = false; v.currentTime = 15 })
   const vr = await page.locator('video').boundingBox()
   const hoverZone = async index => page.mouse.move(vr.x + vr.width * (index + 0.5) / 4, vr.y + vr.height / 2)
-  const wheel = async delta => { await page.mouse.wheel(0, delta); await page.waitForTimeout(100) }
+  const wheel = async delta => { await page.mouse.wheel(0, delta); await page.waitForTimeout(220) }
   const splits = page.locator('.rg-video-splits')
   await hoverZone(0)
   await splits.waitFor({ state: 'visible' })
   assert.equal(await splits.locator(':scope > div').count(), 4)
-  await wheel(-100)
-  assert.ok(Math.abs(await page.locator('video').evaluate(v => v.volume) - 0.55) < 0.001)
+  await page.mouse.wheel(0, -100)
+  await page.waitForTimeout(40)
+  const chartEdges = await splits.locator(':scope > div').first().evaluate(band => {
+    const fill = band.querySelector('.rg-video-split-fill').getBoundingClientRect()
+    const above = band.querySelector('.rg-video-split-above').getBoundingClientRect()
+    const threshold = band.querySelector('.rg-video-split-threshold').getBoundingClientRect()
+    return { fillTop: fill.top, aboveBottom: above.bottom, thresholdBottom: threshold.bottom }
+  })
+  assert.ok(Math.abs(chartEdges.fillTop - chartEdges.thresholdBottom) <= 1, JSON.stringify(chartEdges))
+  assert.ok(Math.abs(chartEdges.fillTop - chartEdges.aboveBottom) <= 1, JSON.stringify(chartEdges))
+  await page.waitForTimeout(180)
+  assert.ok(Math.abs(await page.locator('video').evaluate(v => v.volume) - 0.51) < 0.001)
   assert.equal(await page.locator('video').evaluate(v => getComputedStyle(v).cursor), 'none')
   assert.equal(await splits.locator(':scope > div').nth(1).evaluate(e => getComputedStyle(e).visibility), 'hidden')
-  assert.ok(Math.abs(await splits.locator(':scope > div').first().evaluate(e => parseFloat(e.style.getPropertyValue('--level'))) - 55) < 0.001)
+  assert.ok(Math.abs(await splits.locator(':scope > div').first().evaluate(e => parseFloat(e.style.getPropertyValue('--level'))) - 51) < 0.001)
   assert.equal(await splits.locator('.rg-video-split-threshold').first().evaluate(e => getComputedStyle(e).height), '2px')
   await page.screenshot({ path: join(output, 'split-volume-interacting.png') })
   await page.waitForFunction(() => !document.querySelector('video').classList.contains('rg-video-splits-interacting'))
@@ -317,18 +398,85 @@ try {
   assert.equal(await page.locator('video').evaluate(v => v.classList.contains('rg-video-splits-interacting')), false)
   await page.locator('video').evaluate(v => { v.volume = 0.55 })
   await hoverZone(1); await wheel(-100)
-  assert.match(await page.locator('video').evaluate(v => v.style.filter), /brightness\(1.05\)/)
+  assert.equal(await splits.locator('.rg-icon-rays').first().evaluate(e => getComputedStyle(e).animationName), 'rg-sun-pulse')
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  assert.equal(await splits.locator('.rg-icon-rays').first().evaluate(e => getComputedStyle(e).animationName), 'none')
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  assert.match(await page.locator('video').evaluate(v => v.style.filter), /brightness\(1.0175\)/)
   await send({ action: 'rg:rate', tabId, rate: 1 })
-  await hoverZone(2); await wheel(-100); await rateIs(1.1)
+  await hoverZone(2); await wheel(-100); await rateIs(1.0375)
+  await page.waitForFunction(() => Math.abs(parseFloat(document.querySelector('.rg-video-splits > div:nth-child(3)').style.getPropertyValue('--needle-angle')) - (-120 + (1.0375 - 0.25) / 3.75 * 240)) < 0.001)
   await hoverZone(3); await wheel(100)
   assert.equal(await page.locator('video').evaluate(v => v.currentTime), 10)
   await wheel(-100)
   assert.equal(await page.locator('video').evaluate(v => v.currentTime), 15)
-  // Leaving cancels partial trackpad accumulation.
+  await hoverZone(0)
+  await page.locator('video').evaluate(v => { v.volume = 0.371 })
+  await page.keyboard.down('Control'); await wheel(-100); await page.keyboard.up('Control')
+  assert.ok(Math.abs(await page.locator('video').evaluate(v => v.volume) - 0.4) < 0.001)
+  await hoverZone(2)
+  await send({ action: 'rg:rate', tabId, rate: 1.13 }); await rateIs(1.13)
+  await page.keyboard.down('Control'); await wheel(-100); await page.keyboard.up('Control')
+  await rateIs(1.15)
+  await page.evaluate(() => {
+    const panel = document.createElement('div'); panel.id = 'test-chapters';
+    for (const time of ['0:00', '0:10', '0:20']) {
+      const row = document.createElement('ytd-macro-markers-list-item-renderer');
+      const stamp = document.createElement('span'); stamp.id = 'time'; stamp.textContent = time;
+      row.append(stamp); panel.append(row);
+    }
+    document.body.append(panel);
+  })
+  await hoverZone(3)
+  await page.keyboard.down('Control'); await wheel(-100)
+  assert.equal(await page.locator('video').evaluate(v => v.currentTime), 20)
+  await wheel(100)
+  assert.equal(await page.locator('video').evaluate(v => v.currentTime), 10)
+  await page.keyboard.up('Control')
+  await page.evaluate(() => document.querySelector('#test-chapters').remove())
+  await page.keyboard.down('Control'); await wheel(-100); await page.keyboard.up('Control')
+  assert.equal(await page.locator('video').evaluate(v => v.currentTime), 10)
+  await page.locator('video').evaluate(v => { v.currentTime = 15; v.volume = 0.55 })
+  console.log('PASS Ctrl wheel: aligned volume/speed steps, next/previous chapter, missing chapters preserve position')
+  // A full mouse notch changes the real value immediately, with no delayed drift.
+  await hoverZone(0)
+  const samples = await page.locator('video').evaluate(async v => {
+    v.volume = 0.5;
+    const r = v.getBoundingClientRect();
+    v.dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: -100, clientX: r.x + r.width / 8, clientY: r.y + r.height / 2 }));
+    const immediate = v.volume;
+    await new Promise(resolve => setTimeout(resolve, 70));
+    const middle = v.volume;
+    await new Promise(resolve => setTimeout(resolve, 150));
+    return { immediate, middle, end: v.volume };
+  })
+  assert.ok(Math.abs(samples.immediate - 0.51) < 0.00001)
+  assert.equal(samples.middle, samples.immediate)
+  assert.ok(Math.abs(samples.end - 0.51) < 0.00001)
+  console.log('PASS immediate wheel response without delayed drift', samples)
+  // Unmodified fine wheel input must change each parameter before any 40px threshold.
+  await hoverZone(0); await wheel(-2)
+  assert.ok(Math.abs(await page.locator('video').evaluate(v => v.volume) - 0.5102) < 0.00001)
+  await hoverZone(1)
+  const priorFilter = await page.locator('video').evaluate(v => v.style.filter)
+  await wheel(-2)
+  assert.notEqual(await page.locator('video').evaluate(v => v.style.filter), priorFilter)
+  assert.equal(await splits.locator('.rg-icon-rays').count(), 8)
+  assert.equal(await splits.locator('.rg-icon-waves').count(), 2)
+  assert.equal(new Set(await splits.locator('.rg-icon-rays').evaluateAll(nodes => nodes.map(e => getComputedStyle(e).animationDelay))).size, 8)
+  await hoverZone(2)
+  await send({ action: 'rg:rate', tabId, rate: 1 }); await rateIs(1)
+  await wheel(-2); await rateIs(1.00075)
+  await hoverZone(3)
+  await page.locator('video').evaluate(v => { v.volume = 0.55 })
+  console.log('PASS continuous non-Ctrl input and individually phased icon parts')
+  // Leaving cancels partial Ctrl trackpad accumulation.
+  await page.keyboard.down('Control')
   await wheel(20); await page.mouse.move(5, 5)
   await splits.waitFor({ state: 'hidden' })
   await hoverZone(3); await wheel(20)
   assert.equal(await page.locator('video').evaluate(v => v.currentTime), 15)
+  await page.keyboard.up('Control')
   await page.locator('video').evaluate(v => { v.currentTime = 29 })
   await wheel(-100)
   assert.equal(await page.locator('video').evaluate(v => v.currentTime), 30)

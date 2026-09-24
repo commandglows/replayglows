@@ -11,8 +11,8 @@
  * to provide a seamless bookmarking experience directly on the video player.
  */
 const YOUTUBE_MESSAGES = {
-  fr: { add: 'Ajouter un marque-page', notePlaceholder: 'Ajouter une note pour ce marque-page', noteLabel: 'Note du marque-page', saved: 'Marque-page enregistré !', missingPlayer: 'Impossible ! La barre de progression ou la vidéo actuelle sont manquantes.', playAt: 'Lire le marque-page à {time}', deleteOne: 'Supprimer ce marque-page', listLabel: 'Marque-pages de cette vidéo', listTitle: 'Marque-pages pour cette vidéo', listEmpty: 'Aucun marque-page pour cette vidéo', deleteVideo: 'Supprimer les marque-pages de cette vidéo', seekAt: 'Lire à {time}', edit: 'Modifier', editNote: 'Modifier la note', save: 'Enregistrer', cancel: 'Annuler', delete: 'Supprimer', videoDeleted: 'Marque-pages de cette vidéo supprimés', openLocal: 'Ouvrir dans l’app locale', openCloud: 'Ouvrir dans le cloud', showController: 'Afficher le contrôleur', showSpeed: 'Montrer la barre de vitesse', hideSpeed: 'Masquer la barre de vitesse', speed: 'Vitesse de lecture', favoriteSpeed: 'Vitesse favorite', speedError: 'Impossible de modifier la vitesse. Réessayez.', speedSuspended: 'Contrôle de vitesse suspendu' },
-  en: { add: 'Add a bookmark', notePlaceholder: 'Add a note for this bookmark', noteLabel: 'Bookmark note', saved: 'Bookmark saved!', missingPlayer: 'The progress bar or current video is unavailable.', playAt: 'Play bookmark at {time}', deleteOne: 'Delete this bookmark', listLabel: 'Bookmarks for this video', listTitle: 'Bookmarks for this video', listEmpty: 'No bookmarks for this video', deleteVideo: 'Delete bookmarks for this video', seekAt: 'Play at {time}', edit: 'Edit', editNote: 'Edit note', save: 'Save', cancel: 'Cancel', delete: 'Delete', videoDeleted: 'Bookmarks for this video deleted', openLocal: 'Open in the local app', openCloud: 'Open in the cloud', showController: 'Show controller', showSpeed: 'Show speed bar', hideSpeed: 'Hide speed bar', speed: 'Playback speed', favoriteSpeed: 'Favorite speed', speedError: 'Unable to change speed. Try again.', speedSuspended: 'Speed control suspended' }
+  fr: { add: 'Ajouter un marque-page', notePlaceholder: 'Ajouter une note pour ce marque-page', noteLabel: 'Note du marque-page', saved: 'Marque-page enregistré !', missingPlayer: 'Impossible ! La barre de progression ou la vidéo actuelle sont manquantes.', playAt: 'Lire le marque-page à {time}', deleteOne: 'Supprimer ce marque-page', listLabel: 'Marque-pages de cette vidéo', listTitle: 'Marque-pages pour cette vidéo', listEmpty: 'Aucun marque-page pour cette vidéo', deleteVideo: 'Supprimer les marque-pages de cette vidéo', seekAt: 'Lire à {time}', edit: 'Modifier', editNote: 'Modifier la note', save: 'Enregistrer', cancel: 'Annuler', delete: 'Supprimer', videoDeleted: 'Marque-pages de cette vidéo supprimés', openLocal: 'Ouvrir dans l’app locale', openCloud: 'Ouvrir dans le cloud', openError: 'Impossible d’ouvrir l’app. Réessayez.', showSpeed: 'Montrer la barre de vitesse', hideSpeed: 'Masquer la barre de vitesse', speed: 'Vitesse de lecture', favoriteSpeed: 'Vitesse favorite', speedError: 'Impossible de modifier la vitesse. Réessayez.', speedSuspended: 'Contrôle de vitesse suspendu' },
+  en: { add: 'Add a bookmark', notePlaceholder: 'Add a note for this bookmark', noteLabel: 'Bookmark note', saved: 'Bookmark saved!', missingPlayer: 'The progress bar or current video is unavailable.', playAt: 'Play bookmark at {time}', deleteOne: 'Delete this bookmark', listLabel: 'Bookmarks for this video', listTitle: 'Bookmarks for this video', listEmpty: 'No bookmarks for this video', deleteVideo: 'Delete bookmarks for this video', seekAt: 'Play at {time}', edit: 'Edit', editNote: 'Edit note', save: 'Save', cancel: 'Cancel', delete: 'Delete', videoDeleted: 'Bookmarks for this video deleted', openLocal: 'Open in the local app', openCloud: 'Open in the cloud', openError: 'Unable to open the app. Try again.', showSpeed: 'Show speed bar', hideSpeed: 'Hide speed bar', speed: 'Playback speed', favoriteSpeed: 'Favorite speed', speedError: 'Unable to change speed. Try again.', speedSuspended: 'Speed control suspended' }
 };
 
 const YouTubeBookmarker = {
@@ -55,6 +55,22 @@ const YouTubeBookmarker = {
     return this.state.currentVideo ? this.state.currentVideo.currentTime : 0;
   },
 
+  restoreBookmarkPlayback() {
+    const video = this.bookmarkVideo;
+    const url = this.bookmarkUrl;
+    const shouldResume = this.bookmarkWasPlaying;
+    this.bookmarkVideo = null;
+    this.bookmarkUrl = null;
+    this.bookmarkWasPlaying = false;
+    this.state.bookmarkInputContainer?.remove();
+    this.state.bookmarkInputContainer = null;
+    this.state.bookmarkInputElement = null;
+    this.state.bookmarkContainerVisible = false;
+    this.state.bookmarkTime = null;
+    this.state.wasPlayingBeforeBookmark = false;
+    if (shouldResume && url === this.currentUrl && video?.isConnected && video.paused) video.play().catch(() => {});
+  },
+
   /**
    * Gets the canonical URL for the current video.
    * Strips query parameters (except 'v') to ensure consistent bookmark grouping.
@@ -85,36 +101,39 @@ const YouTubeBookmarker = {
    */
   async init() {
     const generation = this.generation = (this.generation || 0) + 1;
+    const videoUrl = this.currentUrl;
     clearTimeout(this.clickGesture?.timer);
     this.clickGesture = null;
     this.videoSplitsCleanup?.();
     this.speedBarCleanup?.();
+    this.dragCleanup?.();
+    this.restoreBookmarkPlayback?.();
     this.events?.abort();
     this.hotkeyEvents?.abort();
     this.events = new AbortController();
     const visibilityRevision = this.speedBarVisibilityRevision || 0;
     const { language = 'auto', speedBarVisible = false } = await chrome.storage.local.get(['language', 'speedBarVisible']);
-    if (generation !== this.generation) return;
+    if (generation !== this.generation || videoUrl !== this.currentUrl) return;
     if (visibilityRevision === (this.speedBarVisibilityRevision || 0)) this.speedBarVisible = speedBarVisible === true;
     this.locale = language === 'fr' || (language === 'auto' && navigator.languages.some(item => item.toLowerCase().startsWith('fr'))) ? 'fr' : 'en';
     this.state.bookmarkInputContainer?.remove();
     document.querySelectorAll('.bookmarks-list, .custom-bookmark-icon-container, .rg-yt-menu').forEach(el => el.remove());
     if (window.location.pathname !== '/watch') return;
-    // A navigation can supersede player readiness; never initialize a stale page.
-    for (let attempt = 0; attempt < 100; attempt++) {
-      if (generation !== this.generation) return;
-      if (document.querySelector('video') && document.querySelector('.ytp-time-display') && document.querySelector('.ytp-progress-bar')) break;
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    if (generation !== this.generation || !document.querySelector('video')) return;
+    // Player readiness is bounded and cancelled when navigation supersedes this init.
+    const player = await this.waitForYouTubePlayer(generation, 10000, videoUrl);
+    if (generation !== this.generation || videoUrl !== this.currentUrl || !player) return;
     try {
-      await this.resetState();
+      await this.resetState(player, videoUrl);
+      if (generation !== this.generation || videoUrl !== this.currentUrl || this.state.player !== player || !this.state.currentVideo?.isConnected) return;
       await this.addBookmarkButton();
+      if (generation !== this.generation || videoUrl !== this.currentUrl) return;
       this.setupSpeedBar();
       this.setupVideoSplits();
       this.setupOverflowMenu();
       await this.setupHotkeys();
+      if (generation !== this.generation || videoUrl !== this.currentUrl) return;
       await this.updateUIElements();
+      if (generation !== this.generation || videoUrl !== this.currentUrl) return;
       this.setupEventListeners();
     } catch (error) { this.afficherMessage(error.message, 'error'); }
   },
@@ -124,21 +143,25 @@ const YouTubeBookmarker = {
    * Filters bookmarks to show only those relevant to the current video URL.
    * Also re-queries DOM elements in case of dynamic page changes.
    */
-  async resetState() {
+  async resetState(player = this.state.player, videoUrl = this.currentUrl) {
+    const generation = this.generation;
     const result = await chrome.runtime.sendMessage({ action: 'getBookmarks' });
+    if (generation !== this.generation || videoUrl !== this.currentUrl) return;
     if (result.error) throw new Error(result.error);
     const storedBookmarks = result.bookmarks || [];
-    const bookmarksForThisUrl = storedBookmarks.filter(bookmark => bookmark.url === this.currentUrl).sort((a, b) => a.time - b.time);
+    const video = player?.querySelector('video');
+    if (!player?.isConnected || !video) return;
+    const bookmarksForThisUrl = storedBookmarks.filter(bookmark => bookmark.url === videoUrl).sort((a, b) => a.time - b.time);
     this.state = {
-      currentUrl: this.currentUrl,
-      wasPlayingBeforeBookmark: this.state.player && !this.state.player.paused,
+      currentUrl: videoUrl,
+      wasPlayingBeforeBookmark: false,
       bookmarks: storedBookmarks,
       bookmarksForThisUrl: bookmarksForThisUrl || [],
-      currentVideo: document.querySelector('video'),
-      player: document.querySelector('.html5-video-player'),
-      bookmarkButton: document.getElementById(this.CONSTANTS.BOOKMARK_BUTTON_ID),
-      timeDisplay: document.querySelector('.ytp-time-display'),
-      progressBar: document.querySelector('.ytp-progress-bar'),
+      currentVideo: video,
+      player,
+      bookmarkButton: player.querySelector(`#${this.CONSTANTS.BOOKMARK_BUTTON_ID}`),
+      timeDisplay: player.querySelector('.ytp-time-display'),
+      progressBar: player.querySelector('.ytp-progress-bar'),
       parentContainer: document.querySelector('ytd-watch-next-secondary-results-renderer'),
       bookmarksList: document.querySelector('.bookmarks-list'),
       bookmarkInputVisible: false,
@@ -154,16 +177,28 @@ const YouTubeBookmarker = {
    * YouTube loads content dynamically, so we poll until the player appears.
    * Returns a Promise that resolves with the player element.
    */
-  waitForYouTubePlayer() {
-    return new Promise((resolve) => {
-      const interval = setInterval(() => {
-        const player = document.querySelector('.html5-video-player');
-        if (player) {
-          clearInterval(interval);
-          resolve(player);
-          this.state.player = player;
-        }
-      }, 100);
+  waitForYouTubePlayer(generation = this.generation, timeoutMs = 10000, videoUrl = this.currentUrl) {
+    return new Promise(resolve => {
+      const signal = this.events?.signal;
+      let interval;
+      const finish = player => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+        signal?.removeEventListener('abort', onAbort);
+        if (player && generation === this.generation) this.state.player = player;
+        resolve(player);
+      };
+      const onAbort = () => finish(null);
+      const check = () => {
+        if (signal?.aborted || generation !== this.generation || videoUrl !== this.currentUrl || window.location.pathname !== '/watch') return finish(null);
+        const player = [...document.querySelectorAll('.html5-video-player')].find(candidate =>
+          candidate.querySelector('video') && candidate.querySelector('.ytp-time-display') && candidate.querySelector('.ytp-progress-bar'));
+        if (player) finish(player);
+      };
+      const timeout = setTimeout(() => finish(null), timeoutMs);
+      signal?.addEventListener('abort', onAbort, { once: true });
+      interval = setInterval(check, 100);
+      check();
     });
   },
 
@@ -206,7 +241,9 @@ const YouTubeBookmarker = {
    * Supports modifier keys (Ctrl, Alt, Shift) combined with any key.
    */
   async setupHotkeys() {
+    const generation = this.generation;
     const { hotkeys } = await chrome.storage.local.get('hotkeys');
+    if (generation !== this.generation) return;
     const hotkeysToUse = hotkeys || { 'add-bookmark': 'ALT+B', 'delete-bookmark': 'ALT+D', 'quick-bookmark': 'ALT+Q', 'prev-bookmark': 'ALT+1', 'next-bookmark': 'ALT+2' };
     this.hotkeyEvents?.abort();
     this.hotkeyEvents = new AbortController();
@@ -250,13 +287,15 @@ const YouTubeBookmarker = {
    * Waits for the player to be ready before adding the button.
    */
   async addBookmarkButton() {
-    return this.waitForYouTubePlayer().then(() => {
-      if (!this.state.player) {
+    const generation = this.generation;
+    return this.waitForYouTubePlayer(generation).then(player => {
+      if (generation !== this.generation) return;
+      if (!player || this.state.player !== player) {
         console.error("Le lecteur YouTube est introuvable.");
         return;
       }
       // Prevent duplicate buttons on re-initialization
-      if (this.state.bookmarkButton?.isConnected) {
+      if (this.state.bookmarkButton?.isConnected && player.contains(this.state.bookmarkButton)) {
 
         return;
       }
@@ -299,8 +338,8 @@ const YouTubeBookmarker = {
   },
 
   /**
-   * Adds a dropdown to the bookmark button. Opening downward, it closes when
-   * the hover stops (button and dropdown) and offers cross-app actions.
+   * Adds a viewport-bounded menu to the bookmark button, inside the fullscreen
+   * element when needed. It closes when the hover stops or the viewport changes.
    */
   setupOverflowMenu() {
     const button = this.state.bookmarkButton;
@@ -312,7 +351,6 @@ const YouTubeBookmarker = {
     const items = [
       { key: 'openLocal', run: () => this.openInApp('watch') },
       { key: 'openCloud', run: () => this.openInApp('play') },
-      { key: 'showController', run: () => {} },
       { key: 'showSpeed', run: () => this.toggleSpeedBar() },
     ];
     for (const item of items) {
@@ -335,15 +373,33 @@ const YouTubeBookmarker = {
       }, { signal: this.events.signal });
       menu.appendChild(entry);
     }
-    document.body.appendChild(menu);
+    const mountMenu = () => (document.fullscreenElement || document.body).appendChild(menu);
+    mountMenu();
     let open = false;
     let leaveTimer = null;
+    const positionMenu = () => {
+      const rect = button.getBoundingClientRect();
+      const margin = 8;
+      const width = Math.max(0, window.innerWidth - margin * 2);
+      const height = Math.max(0, window.innerHeight - margin * 2);
+      menu.style.boxSizing = 'border-box';
+      menu.style.minWidth = `${Math.min(220, width)}px`;
+      menu.style.maxWidth = `${width}px`;
+      menu.style.maxHeight = `${height}px`;
+      menu.style.overflowY = 'auto';
+      const menuWidth = menu.offsetWidth;
+      const menuHeight = menu.offsetHeight;
+      const below = rect.bottom + margin;
+      const top = below + menuHeight <= window.innerHeight - margin
+        ? below : rect.top - menuHeight - margin;
+      menu.style.left = `${Math.max(margin, Math.min(rect.left, window.innerWidth - menuWidth - margin))}px`;
+      menu.style.top = `${Math.max(margin, Math.min(top, window.innerHeight - menuHeight - margin))}px`;
+    };
     const openMenu = () => {
       if (open) return;
       open = true;
-      const rect = button.getBoundingClientRect();
-      menu.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - 240))}px`;
-      menu.style.top = `${rect.bottom + 8}px`;
+      mountMenu();
+      positionMenu();
       menu.classList.add('rg-yt-menu--open');
     };
     const close = () => {
@@ -363,6 +419,18 @@ const YouTubeBookmarker = {
     button.addEventListener('mouseleave', leave, { signal: this.events.signal });
     menu.addEventListener('mouseenter', enter, { signal: this.events.signal });
     menu.addEventListener('mouseleave', leave, { signal: this.events.signal });
+    document.addEventListener('fullscreenchange', () => {
+      close();
+      mountMenu();
+    }, { signal: this.events.signal });
+    window.addEventListener('resize', close, { signal: this.events.signal });
+    window.addEventListener('scroll', event => {
+      if (!menu.contains(event.target)) close();
+    }, { signal: this.events.signal, capture: true });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') close();
+    }, { signal: this.events.signal });
+    this.events.signal.addEventListener('abort', close, { once: true });
     this.state.overlayMenu = menu;
   },
 
@@ -388,6 +456,30 @@ const YouTubeBookmarker = {
     if (this.speedBarVisible) this.refreshSpeedContext?.();
   },
 
+  seekVideo(time, video = this.state.currentVideo) {
+    if (!video || !Number.isFinite(time)) return;
+    this.seekQueues ??= new WeakMap();
+    let queue = this.seekQueues.get(video);
+    if (!queue) {
+      queue = { pending: null };
+      this.seekQueues.set(video, queue);
+      video.addEventListener('seeked', () => {
+        const latest = queue.pending;
+        if (latest === null) return;
+        queue.pending = null;
+        if (!video.isConnected || this.state.currentVideo !== video) return;
+        if (video.seeking) { queue.pending = latest; return; }
+        video.currentTime = latest;
+      });
+    }
+    if (video.seeking) {
+      queue.pending = time;
+      return;
+    }
+    queue.pending = null;
+    video.currentTime = time;
+  },
+
   setupVideoSplits() {
     const video = this.state.currentVideo;
     const player = this.state.player;
@@ -397,6 +489,7 @@ const YouTubeBookmarker = {
     let settings = null;
     let active = -1;
     let accumulated = 0;
+    let steppedMode = false;
     let brightness = 1;
     let revision = 0;
     const originalFilter = video.style.getPropertyValue('filter');
@@ -411,13 +504,23 @@ const YouTubeBookmarker = {
     let idleTimer;
     let fadeTimer;
     let frame;
-    const bands = Array.from({ length: 4 }, () => {
+    const splitIcons = [
+      '<path d="M11 5 6 9H3v6h3l5 4V5Z"/><path class="rg-icon-waves" style="--phase:0ms" d="M15 8a6 6 0 0 1 0 8"/><path class="rg-icon-waves" style="--phase:-225ms" d="M18 5a10 10 0 0 1 0 14"/>',
+      '<circle cx="12" cy="12" r="4"/><path class="rg-icon-rays" style="--phase:-0ms" d="M12 2v2"/><path class="rg-icon-rays" style="--phase:-100ms" d="M19 5l-1.5 1.5"/><path class="rg-icon-rays" style="--phase:-200ms" d="M22 12h-2"/><path class="rg-icon-rays" style="--phase:-300ms" d="M19 19l-1.5-1.5"/><path class="rg-icon-rays" style="--phase:-400ms" d="M12 22v-2"/><path class="rg-icon-rays" style="--phase:-500ms" d="M5 19l1.5-1.5"/><path class="rg-icon-rays" style="--phase:-600ms" d="M2 12h2"/><path class="rg-icon-rays" style="--phase:-700ms" d="M5 5l1.5 1.5"/>',
+      '<path d="M4 19a10 10 0 1 1 16 0M3 12h2m14 0h2M12 2v2"/><path class="rg-icon-needle" d="M12 12V5"/><circle cx="12" cy="12" r="1.5"/>',
+      '<path d="M3 17h18M3 14v6m18-6v6M9 3l7 4-7 4V3Z"/><circle class="rg-icon-position" cx="12" cy="17" r="2"/>',
+    ];
+    const bands = Array.from({ length: 4 }, (_, index) => {
       const band = document.createElement('div');
       for (const name of ['above', 'fill', 'threshold']) {
         const layer = document.createElement('div');
         layer.className = `rg-video-split-${name}`;
         band.append(layer);
       }
+      const icon = document.createElement('span');
+      icon.className = 'rg-video-split-icon';
+      icon.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${splitIcons[index]}</svg>`;
+      band.append(icon);
       overlay.append(band);
       return band;
     });
@@ -458,7 +561,11 @@ const YouTubeBookmarker = {
       ];
       bands.forEach((band, index) => {
         band.classList.toggle('rg-video-split-active', index === active);
-        band.style.setProperty('--level', `${Math.max(0, Math.min(1, values[index])) * 100}%`);
+        const level = Math.max(0, Math.min(1, values[index]));
+        band.style.setProperty('--level', `${level * 100}%`);
+        if (index === 0) band.style.setProperty('--wave-opacity', String(0.15 + level * 0.85));
+        if (index === 2) band.style.setProperty('--needle-angle', `${-120 + level * 240}deg`);
+        if (index === 3) band.style.setProperty('--position-offset', `${-8 + level * 16}px`);
       });
     };
     const animate = () => {
@@ -466,10 +573,10 @@ const YouTubeBookmarker = {
       if (!signal.aborted && !overlay.hidden) frame = requestAnimationFrame(animate);
     };
     const zone = event => {
-      if (!settings?.enabled || !settings.videoHoverSplits || !video.isConnected
-        || document.hidden || !video.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return -1;
       // The actual video only: controls, menus, ads and clickable overlays keep their behavior.
-      if (event.target !== video || player.classList.contains('ad-showing')) return -1;
+      if (event.target !== video || !settings?.enabled || !settings.videoHoverSplits || !video.isConnected
+        || document.hidden || player.classList.contains('ad-showing')
+        || !video.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return -1;
       const rect = video.getBoundingClientRect();
       if (!rect.width || !rect.height || event.clientX < rect.left || event.clientX >= rect.right
         || event.clientY < rect.top || event.clientY >= rect.bottom) return -1;
@@ -490,8 +597,11 @@ const YouTubeBookmarker = {
       return true;
     };
     document.addEventListener('pointermove', event => {
-      if (event.pointerType !== 'mouse' || event.buttons) reset();
-      else select(event);
+      // This document listener is needed for pointer capture edge cases, but almost all
+      // page pointer events are irrelevant. Avoid layout and visibility reads off-video.
+      if (event.pointerType !== 'mouse' || event.buttons) { reset(); return; }
+      if (event.target !== video) return;
+      select(event);
     }, { signal, passive: true });
     player.addEventListener('pointerleave', reset, { signal });
     video.addEventListener('pointerleave', reset, { signal });
@@ -499,34 +609,88 @@ const YouTubeBookmarker = {
     document.addEventListener('visibilitychange', reset, { signal });
     window.addEventListener('resize', reset, { signal });
     video.addEventListener('emptied', () => { reset(); restoreBrightness(); }, { signal });
+    // Read current-video chapter timestamps afresh so SPA navigation cannot reuse old ones.
+    const chapterStarts = () => {
+      const starts = [];
+      for (const track of video.textTracks) {
+        if (track.kind === 'chapters') for (const cue of track.cues || []) starts.push(cue.startTime);
+      }
+      const parseTime = text => {
+        const parts = text.trim().split(':');
+        return parts.length >= 2 && parts.every(part => /^\d+$/.test(part))
+          ? parts.reduce((total, part) => total * 60 + Number(part), 0) : NaN;
+      };
+      // Chapter panel timestamps (manual and automatic chapters).
+      for (const stamp of document.querySelectorAll('ytd-macro-markers-list-item-renderer #time')) {
+        starts.push(parseTime(stamp.textContent));
+      }
+      // Authored chapter links remain available when the chapter panel is closed.
+      const videoId = new URL(location.href).searchParams.get('v');
+      for (const link of document.querySelectorAll('ytd-watch-metadata #description a[href]')) {
+        const url = new URL(link.href, location.href);
+        if (url.pathname !== '/watch' || url.searchParams.get('v') !== videoId) continue;
+        const timestamp = parseTime(link.textContent);
+        const linkedTime = Number(url.searchParams.get('t')?.replace(/s$/, ''));
+        if (Number.isFinite(timestamp) && url.searchParams.has('t') && timestamp === linkedTime) starts.push(timestamp);
+      }
+      const sorted = [...new Set(starts.filter(time => Number.isFinite(time) && time >= 0 && time < video.duration))].sort((a, b) => a - b);
+      return sorted.length >= 2 && sorted[0] === 0 ? sorted : [];
+    };
     player.addEventListener('wheel', event => {
-      if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || !event.deltaY || !select(event)) return;
+      if (event.altKey || event.metaKey || event.shiftKey || !event.deltaY || !select(event)) return;
       event.preventDefault(); event.stopImmediatePropagation();
       clearTimeout(interactionTimer);
       overlay.dataset.interacting = 'true';
       video.classList.add('rg-video-splits-interacting');
       interactionTimer = setTimeout(rest, 500);
       const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 100 : 1);
-      if (Math.sign(accumulated) !== Math.sign(delta)) accumulated = 0;
-      accumulated += delta;
-      const steps = Math.trunc(accumulated / 40);
-      if (!steps) return;
-      accumulated -= steps * 40;
-      const direction = -Math.sign(steps);
+      if (steppedMode !== event.ctrlKey) { accumulated = 0; }
+      steppedMode = event.ctrlKey;
+      const direction = -Math.sign(delta);
+      if (event.ctrlKey) {
+        if (Math.sign(accumulated) !== Math.sign(delta)) accumulated = 0;
+        accumulated += delta;
+        const steps = Math.trunc(accumulated / 40);
+        if (!steps) return;
+        accumulated -= steps * 40;
+      } else accumulated = 0;
+      const clampedDelta = Math.max(-100, Math.min(100, delta));
+      // A normal full wheel notch moves 1% of the controlled range. Smaller
+      // high-resolution wheel/trackpad deltas remain proportional. Ctrl keeps
+      // the explicit 5% grid below.
+      const rangeMotion = -clampedDelta / 10000;
+      const positionMotion = -clampedDelta / 100;
       const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+      const stepTo = (value, step) => Number(((direction > 0
+        ? Math.floor(value / step + 1e-7) + 1
+        : Math.ceil(value / step - 1e-7) - 1) * step).toFixed(6));
       if (active === 0) {
-        video.volume = clamp((video.muted ? 0 : video.volume) + direction * 0.05, 0, 1);
+        const current = video.muted ? 0 : video.volume;
+        video.volume = clamp(event.ctrlKey ? stepTo(current, 0.05) : current + rangeMotion, 0, 1);
         video.muted = video.volume === 0;
       } else if (active === 1) {
-        brightness = clamp(Math.round((brightness + direction * 0.05) * 100) / 100, 0.25, 2);
+        brightness = clamp(event.ctrlKey ? stepTo(brightness, 0.05) : brightness + rangeMotion * 1.75, 0.25, 2);
         video.style.setProperty('filter', `${baseFilter === 'none' ? '' : baseFilter} brightness(${brightness})`, 'important');
         ownFilter = video.style.filter;
       } else if (active === 2) {
-        void chrome.runtime.sendMessage({ action: 'rg:rate', delta: direction * settings.step }).then(result => {
+        const request = event.ctrlKey
+          ? { action: 'rg:rate', rate: clamp(stepTo(video.playbackRate, 0.05), 0.25, 4) }
+          : { action: 'rg:rate', delta: rangeMotion * 3.75 };
+        void chrome.runtime.sendMessage(request).then(result => {
           if (!signal.aborted && result?.error) this.afficherMessage(result.error, 'error');
         }).catch(() => { if (!signal.aborted) this.afficherMessage(this.t('speedError'), 'error'); });
       } else if (Number.isFinite(video.duration) && video.duration > 0) {
-        video.currentTime = clamp(video.currentTime + direction * 5, 0, video.duration);
+        if (event.ctrlKey) {
+          const chapters = chapterStarts();
+          if (!chapters.length) {
+            this.afficherMessage(this.locale === 'fr' ? 'Chapitres indisponibles : ouvrez la liste des chapitres de cette vidéo.' : 'Chapters unavailable: open this video’s chapter list.', 'info');
+          } else {
+            const target = direction > 0
+              ? chapters.find(time => time > video.currentTime + 0.05)
+              : chapters.findLast(time => time < video.currentTime - 0.05);
+            if (target !== undefined) this.seekVideo(target, video);
+          }
+        } else this.seekVideo(clamp(video.currentTime + positionMotion * 5, 0, video.duration), video);
       }
       render();
     }, { signal, passive: false, capture: true });
@@ -583,18 +747,47 @@ const YouTubeBookmarker = {
     const videoIdentity = () => `${location.pathname}:${new URL(location.href).searchParams.get('v') || ''}`;
     const sameVideo = gesture => video.isConnected && video.currentSrc === gesture.source
       && videoIdentity() === gesture.identity;
-    const commitScrub = gesture => {
+    const clearPreviewWait = gesture => {
+      clearTimeout(gesture.previewTimer);
+      if (gesture.previewSeeked) video.removeEventListener('seeked', gesture.previewSeeked);
+      if (gesture.previewFrame && video.cancelVideoFrameCallback) video.cancelVideoFrameCallback(gesture.previewFrame);
+      gesture.previewSeeked = null;
+      gesture.previewFrame = 0;
+      gesture.previewTimer = 0;
+    };
+    const commitScrub = (gesture, preview = false) => {
       if (!sameVideo(gesture) || gesture.target === gesture.committed) return;
+      if (preview && (!gesture.previewReady || video.seeking)) return;
       try {
-        video.currentTime = gesture.target;
+        if (preview) {
+          gesture.previewReady = false;
+          const ready = () => {
+            clearPreviewWait(gesture);
+            gesture.previewReady = true;
+          };
+          gesture.previewSeeked = () => {
+            video.removeEventListener('seeked', gesture.previewSeeked);
+            gesture.previewSeeked = null;
+            clearTimeout(gesture.previewTimer);
+            if (typeof video.requestVideoFrameCallback === 'function') {
+              gesture.previewFrame = video.requestVideoFrameCallback(ready);
+              gesture.previewTimer = setTimeout(ready, 150);
+            } else ready();
+          };
+          video.addEventListener('seeked', gesture.previewSeeked, { once: true });
+          // A decoder can omit seeked or frame callbacks; never leave scrubbing stalled.
+          gesture.previewTimer = setTimeout(ready, 500);
+        }
+        this.seekVideo(gesture.target, video);
         gesture.committed = gesture.target;
-      } catch { showError(this.t('speedError')); }
+      } catch { clearPreviewWait(gesture); gesture.previewReady = true; showError(this.t('speedError')); }
     };
     const stopScrub = () => {
       if (!scrub) return;
       const previous = scrub;
       scrub = null;
       cancelAnimationFrame(previous.frame);
+      clearPreviewWait(previous);
       commitScrub(previous);
       player?.classList.remove('rg-speedbar-scrubbing');
       bar.removeAttribute('data-scrubbing');
@@ -608,6 +801,8 @@ const YouTubeBookmarker = {
       this.updateSpeedBarLayout?.();
     };
     let pointerAttached = false;
+    let pointerFrozen = false;
+    let suppressPointerClick = false;
     const detachPointer = () => {
       stopScrub();
       pointerAttached = false;
@@ -687,10 +882,11 @@ const YouTubeBookmarker = {
         showError(failure.message || this.t('speedError'));
       } finally { sending = false; pin.disabled = pinning; renderRate(); }
     };
-    for (const rate of [0.5, 1, 1.5, 2]) {
+    for (const rate of [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4]) {
       const button = document.createElement('button');
       button.type = 'button'; button.textContent = format(rate);
       button.dataset.rate = String(rate);
+      if (rate > 2) button.className = 'rg-yt-speedbar__extended-preset';
       button.addEventListener('click', () => changeRate(rate), { signal });
       presets.appendChild(button);
     }
@@ -721,9 +917,10 @@ const YouTubeBookmarker = {
         || !Number.isFinite(video.duration) || video.duration <= 0) return false;
       const rect = slider.getBoundingClientRect();
       const gesture = { originX: pointerX, rect, half: Math.max(1, (rect.width - 16) / 2),
-        offset: 0, paused: video.paused, muted: video.muted,
+        offset: 0, muted: video.muted,
         source: video.currentSrc, identity: videoIdentity(), last: performance.now(), frame: 0,
-        target: video.currentTime, committed: video.currentTime, lastSeek: 0 };
+        target: video.currentTime, committed: video.currentTime, lastSeek: 0,
+        previewReady: true, previewTimer: 0, previewFrame: 0, previewSeeked: null };
       scrub = gesture;
       video.muted = true;
       slider.min = '-100'; slider.max = '100'; slider.step = '1'; slider.value = '0';
@@ -749,9 +946,10 @@ const YouTubeBookmarker = {
         const maximum = Math.max(30, video.duration / 6);
         const velocity = Math.sign(scrub.offset) * (2 * magnitude + (maximum - 2) * magnitude ** 3);
         scrub.target = Math.max(0, Math.min(video.duration, scrub.target + velocity * elapsed));
-        // Accumulate every frame independently of decoder latency; bound seek requests to 10 Hz.
+        // Accumulate every frame, but request another preview after the previous
+        // seek has produced a frame (or a bounded fallback). Release stays exact.
         if (now - scrub.lastSeek >= 100) {
-          commitScrub(scrub);
+          commitScrub(scrub, true);
           scrub.lastSeek = now;
         }
         const speed = Math.abs(velocity);
@@ -766,7 +964,26 @@ const YouTubeBookmarker = {
       scrub.frame = requestAnimationFrame(tick);
       return true;
     };
-    document.addEventListener('pointerdown', () => { if (scrub) detachPointer(); }, { signal, capture: true });
+    document.addEventListener('pointerdown', event => {
+      if (scrub) { detachPointer(); return; }
+      // Confirm the current hovered value, without a native range jump or player click.
+      if (event.pointerType === 'mouse' && event.button === 0
+        && (pointerAttached || (pointerFrozen && event.target === slider))
+        && !event.target?.closest('button, a')) {
+        pointerFrozen = true;
+        suppressPointerClick = true;
+        detachPointer();
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }, { signal, capture: true });
+    document.addEventListener('click', event => {
+      if (!suppressPointerClick) return;
+      suppressPointerClick = false;
+      event.preventDefault();
+      event.stopPropagation();
+    }, { signal, capture: true });
+    document.addEventListener('pointercancel', () => { suppressPointerClick = false; }, { signal });
     document.addEventListener('keydown', event => {
       if (scrub && event.key !== 'Alt') { detachPointer(); return; }
       if (event.defaultPrevented || event.key !== 'Alt' || event.repeat || event.ctrlKey || event.shiftKey || event.metaKey
@@ -782,6 +999,12 @@ const YouTubeBookmarker = {
     // Acquire only over the slider; retain attachment within a forgiving margin.
     // Never lock the OS pointer or intercept neighboring buttons.
     document.addEventListener('pointermove', event => {
+      if (pointerFrozen) {
+        const bounds = bar.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right
+          || event.clientY < bounds.top || event.clientY > bounds.bottom) pointerFrozen = false;
+        return;
+      }
       if (event.pointerType !== 'mouse' || event.buttons || !context?.settings.attachPointerToSpeedBar
         || slider.disabled || bar.hidden || !bar.isConnected || document.hidden) {
         detachPointer();
@@ -844,6 +1067,7 @@ const YouTubeBookmarker = {
       const available = Math.max(0, (end.left - occupiedRight) / scale - 16);
       bar.style.left = `${(occupiedRight - outer.left) / scale + 8}px`;
       bar.style.width = `${available}px`;
+      bar.classList.toggle('rg-yt-speedbar--limited', available < 600);
       bar.classList.toggle('rg-yt-speedbar--compact', available < 380);
       bar.classList.toggle('rg-yt-speedbar--tiny', available < 190);
       bar.hidden = !this.speedBarVisible || available < 125;
@@ -891,10 +1115,19 @@ const YouTubeBookmarker = {
    */
   openInApp(routeName) {
     const id = new URL(window.location.href).searchParams.get('v');
-    if (!id) return;
-    const time = Math.max(0, Math.round(this.currentVideoTime));
-    const url = chrome.runtime.getURL(`src/app/index.html#/${routeName}?v=${encodeURIComponent(id)}&t=${time}`);
-    chrome.tabs.create({ url });
+    if (!id || !/^[A-Za-z0-9_-]{11}$/.test(id) || !['watch', 'play'].includes(routeName)) return;
+    const currentTime = this.currentVideoTime;
+    const time = Number.isFinite(currentTime) ? Math.max(0, Math.round(currentTime)) : 0;
+    const generation = this.generation;
+    const onError = message => {
+      if (generation === this.generation) this.afficherMessage(message, 'error');
+    };
+    try {
+      chrome.runtime.sendMessage({ action: 'rg:openApp', route: routeName, videoId: id, time }, response => {
+        const error = chrome.runtime.lastError;
+        if (error || !response?.success) onError(this.t('openError'));
+      });
+    } catch { onError(this.t('openError')); }
   },
 
   /**
@@ -948,7 +1181,11 @@ const YouTubeBookmarker = {
   async addBookmark() {
     if (this.state.bookmarkInputContainer) { this.state.bookmarkInputElement?.focus(); return; }
     if (!this.state.currentVideo || !this.state.progressBar) return;
-    this.state.wasPlayingBeforeBookmark = !this.state.currentVideo.paused;
+    const generation = this.generation;
+    this.bookmarkVideo = this.state.currentVideo;
+    this.bookmarkUrl = this.currentUrl;
+    this.bookmarkWasPlaying = !this.bookmarkVideo.paused;
+    this.state.wasPlayingBeforeBookmark = this.bookmarkWasPlaying;
     this.state.bookmarkTime = Math.round(this.currentVideoTime);
     this.state.currentVideo.pause();
     if (!this.state.bookmarkInputContainer) {
@@ -994,6 +1231,11 @@ const YouTubeBookmarker = {
       const { showBookmarkButtons } = await new Promise(resolve =>
         chrome.storage.local.get({ showBookmarkButtons: true }, resolve)
       );
+      if (generation !== this.generation || this.bookmarkVideo !== this.state.currentVideo) {
+        inputContainer.remove();
+        this.restoreBookmarkPlayback();
+        return;
+      }
 
       if (showBookmarkButtons) {
         const addButton = document.createElement('button');
@@ -1103,17 +1345,22 @@ const YouTubeBookmarker = {
       if (generation === this.generation && editor === this.state.bookmarkInputContainer && video === this.state.currentVideo) {
         await this.closeBookmarkInput();
       }
+      if (generation !== this.generation || video !== this.state.currentVideo) return;
       await this.refreshBookmarks();
+      if (generation !== this.generation || video !== this.state.currentVideo) return;
       this.afficherMessage(this.t('saved'));
     } catch (error) { this.afficherMessage(error.message, 'error'); }
   },
 
   async refreshBookmarks() {
+    const generation = this.generation;
+    const url = this.currentUrl;
     const response = await chrome.runtime.sendMessage({ action: 'getBookmarks' });
+    if (generation !== this.generation || url !== this.currentUrl) return;
     if (response.error) { this.afficherMessage(response.error, 'error'); return; }
     const bookmarks = response.bookmarks || [];
     this.state.bookmarks = bookmarks;
-    this.state.bookmarksForThisUrl = bookmarks.filter(b => b.url === this.currentUrl).sort((a, b) => a.time - b.time);
+    this.state.bookmarksForThisUrl = bookmarks.filter(b => b.url === url).sort((a, b) => a.time - b.time);
     if (window.location.pathname === '/watch') await this.updateUIElements();
   },
 
@@ -1131,21 +1378,7 @@ const YouTubeBookmarker = {
    * Resumes video playback if it was playing before opening the input.
    */
   async closeBookmarkInput() {
-    if (this.state.bookmarkInputContainer) {
-      this.state.bookmarkInputContainer.remove();
-      this.state.bookmarkInputContainer = null;
-      this.state.bookmarkInputElement = null;
-      this.state.bookmarkContainerVisible = false;
-    } else {
-    }
-    if (this.state.bookmarkInputElement) {
-      this.state.bookmarkInputElement = null;
-      this.state.bookmarkContainerVisible = false;
-    }
-    // Resume playback if video was playing before bookmark action
-    this.state.bookmarkTime = null;
-    if (this.state.wasPlayingBeforeBookmark) this.state.currentVideo?.play().catch(() => {});
-    this.state.wasPlayingBeforeBookmark = false;
+    this.restoreBookmarkPlayback();
     this.state.bookmarkButton?.focus();
     return;
   },
@@ -1156,8 +1389,9 @@ const YouTubeBookmarker = {
    * for each bookmark at its corresponding position on the timeline.
    */
   async loadBookmarks() {
+    this.dragCleanup?.();
     // Remove all existing bookmark icons before reloading
-    document.querySelectorAll(`.${this.CONSTANTS.BOOKMARK_ICON_CONTAINER_CLASS}`).forEach(el => el.remove());
+    this.state.player?.querySelectorAll(`.${this.CONSTANTS.BOOKMARK_ICON_CONTAINER_CLASS}`).forEach(el => el.remove());
     try {
       this.state.bookmarksForThisUrl.forEach(bookmark => {
         try {
@@ -1271,6 +1505,7 @@ const YouTubeBookmarker = {
      */
     const startDragging = (e) => {
       if (e.button !== 0 || infoContainer.contains(e.target)) return;
+      this.dragCleanup?.();
       e.stopPropagation();
       isDragging = true;
       moved = false;
@@ -1279,6 +1514,7 @@ const YouTubeBookmarker = {
       dragStartLeft = markerRect.left + markerRect.width / 2 - this.state.progressBar.getBoundingClientRect().left;
       dragStartTime = bookmark.time;
       iconContainer.classList.add('dragging');
+      this.dragCleanup = cleanupDrag;
       document.addEventListener('mousemove', dragBookmark);
       document.addEventListener('mouseup', stopDragging);
       e.preventDefault();
@@ -1303,11 +1539,24 @@ const YouTubeBookmarker = {
      * Completes drag operation and updates bookmark time if moved significantly.
      * Requires at least 5 seconds of movement to prevent accidental changes.
      */
-    const stopDragging = async (e) => {
+    const generation = this.generation;
+    const video = this.state.currentVideo;
+    const cleanupDrag = () => {
+      if (isDragging && Number.isFinite(video?.duration) && video.duration > 0)
+        iconContainer.style.left = `${(dragStartTime / video.duration) * 100}%`;
       isDragging = false;
       iconContainer.classList.remove('dragging');
       document.removeEventListener('mousemove', dragBookmark);
       document.removeEventListener('mouseup', stopDragging);
+      if (this.dragCleanup === cleanupDrag) this.dragCleanup = null;
+    };
+    const stopDragging = async (e) => {
+      if (generation !== this.generation || video !== this.state.currentVideo) return cleanupDrag();
+      isDragging = false;
+      iconContainer.classList.remove('dragging');
+      document.removeEventListener('mousemove', dragBookmark);
+      document.removeEventListener('mouseup', stopDragging);
+      if (this.dragCleanup === cleanupDrag) this.dragCleanup = null;
 
       if (!moved) return;
       const newRatio = parseFloat(iconContainer.style.left) / 100;
@@ -1319,8 +1568,10 @@ const YouTubeBookmarker = {
         try {
           const response = await chrome.runtime.sendMessage({ action: 'updateBookmark', bookmark: updated, originalTime: dragStartTime });
           if (response.error) throw new Error(response.error);
+          if (generation !== this.generation || video !== this.state.currentVideo) return;
           await this.refreshBookmarks();
         } catch (error) {
+          if (generation !== this.generation || video !== this.state.currentVideo) return;
           console.error("Erreur lors de la mise à jour du marque-page:", error);
           // Revert to original position on error
           iconContainer.style.left = `${(dragStartTime / this.state.currentVideo.duration) * 100}%`;

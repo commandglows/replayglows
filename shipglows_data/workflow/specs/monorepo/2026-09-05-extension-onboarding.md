@@ -42,7 +42,7 @@ As a person discovering ReplayGlows in the Chrome popup, I can learn one useful 
 
 ## Minimal Behavior Contract
 
-Opening the popup exposes an optional discovery entry point and initially expanded first actionable guidance. Help presents practical steps matching the active media/context and stores local progress only after the corresponding operation is confirmed. A failed operation remains incomplete and explains recovery. Closing the popup, skipping a topic, or hiding help preserves the user's choice and permits later resumption; an instruction viewed or button clicked alone never counts as a successful media action.
+Opening the popup exposes an optional permanent discovery entry point; the guide starts collapsed when its visibility key is absent. The key is tri-state: absent means collapsed, `false` means explicitly visible, and `true` means explicitly hidden. The entry opens the guide and persists `false`; hiding it persists `true`. Help presents practical steps matching the active media/context and stores local progress only after the corresponding operation is confirmed. A failed operation remains incomplete and explains recovery. Closing the popup, skipping a topic, or hiding help preserves the user's choice and permits later resumption; an instruction viewed or button clicked alone never counts as a successful media action.
 
 ## Success Behavior
 
@@ -64,7 +64,7 @@ The extension has powerful playback and annotation controls but relies on unexpl
 
 ## Solution
 
-Add French, icon-supported progressive help in the popup's scroll area above notes, retaining the compact playback card. Keep a header help control available when the panel is hidden. Guide real existing controls instead of adding a blocking modal tour or duplicating playback state. Record independent local boolean progress keys for milestones, so updates from separate extension contexts do not overwrite one another. Skip remains distinct from completion. Read shortcut labels from effective settings.
+Keep French and English progressive help available from the popup header, collapsed when no explicit visibility choice exists. When requested, the guide occupies the center panel in place of the bookmark list while the compact playback card remains anchored below it. Guide real existing controls instead of adding a blocking modal tour or duplicating playback state. Record independent local boolean progress keys for milestones, so updates from separate extension contexts do not overwrite one another. Skip remains distinct from completion. Read shortcut labels from effective settings.
 
 ## Scope In
 
@@ -129,7 +129,7 @@ Fresh profile; existing user with stored notes but no progress; partial/corrupt 
 
 ## Acceptance Criteria
 
-- AC1: A fresh supported-media popup makes the first useful speed action discoverable without blocking existing controls; only accepted application completes it.
+- AC1: A fresh supported-media popup starts with guidance collapsed and its permanent help entry visible; requesting help reveals the first useful speed action without blocking existing controls, and only accepted application completes it.
 - AC2: Excluding a tab and enabling a valid loop each complete only after confirmed state, with correct scope/lifetime explanations.
 - AC3: Persisted notes and successful bookmark opening have distinct honest milestones; failures do not complete them.
 - AC4: Closing/reopening, independent concurrent writes, hide, skip and resume preserve correct local state. Corrupt values cannot falsely complete milestones.
@@ -144,11 +144,11 @@ ZOMBIES coverage: Zero media/progress/notes; One confirmed useful action; Many c
 
 | Required scenario | Expected evidence |
 | --- | --- |
-| Fresh profile and real accepted speed change | First guidance visible; confirmation follows accepted media result. |
+| Fresh profile and real accepted speed change | Guide is initially collapsed and its permanent entry is visible; opening it exposes first guidance, and confirmation follows accepted media result. |
 | Rejected speed, no media and restricted page | Recovery visible; speed completion remains false. |
 | Tab exclusion and valid/invalid loop | Correct context help and only confirmed successful milestones. |
 | Note persistence and saved timestamp opening | Separate saved/opened markers; failure paths remain incomplete; no asserted seek proof. |
-| Close/reopen, skip/resume and hide/reopen | Local state retained; permanent help entry works. |
+| Close/reopen, absent/false/true visibility, skip/resume and hide/reopen | Missing visibility key starts collapsed; explicit false reopens visibly; true remains hidden until requested; progress is retained and the permanent entry works. |
 | Partial/invalid state and simultaneous milestone writes | Safe defaults and no loss of other keys. |
 | Changed configured shortcuts and editable-field use | Labels reflect effective settings; no new shortcut interception. |
 | Native popup at constrained height, keyboard and long help | Reachable actions, visible focus, no trapped navigation or clipped essential controls. |
@@ -156,7 +156,7 @@ ZOMBIES coverage: Zero media/progress/notes; One confirmed useful action; Many c
 
 ## Risks
 
-False achievement from stale snapshots is the primary risk: tie observation to successful operations and active confirmed state. Help may crowd a compact popup: keep it inline and collapsible and inspect the native surface. Storage failure must not prevent normal controls or show fabricated persistence. Rollback removes discovery integration and its separate keys without touching bookmarks or playback settings. Repeated writes are idempotent; retrying failed user actions retains existing command validation. No sensitive diagnostics, page URLs or note content are required for progress logging.
+False achievement from stale snapshots is the primary risk: tie observation to successful operations and active confirmed state. Help may crowd a compact popup: keep it in the center panel in place of the bookmark list and inspect the native surface. Storage failure must not prevent normal controls or show fabricated persistence. Rollback removes discovery integration and its separate keys without touching bookmarks or playback settings. Repeated writes are idempotent; retrying failed user actions retains existing command validation. No sensitive diagnostics, page URLs or note content are required for progress logging.
 
 ### OWASP Security Gate
 
@@ -186,7 +186,7 @@ Operator-approved experience plan → authored/readiness-reviewed contract → i
 ## Implementation And Verification Record
 
 - Classification: Vue frontend and local discovery-domain state. Canonical tokens remain `ext/src/styles/styles.css`; native select/details/buttons own their standard interactions. JavaScript is required for existing extension APIs, reactive media results and local progress; no animation gates access to content. Agents: two bounded reviewers, with sequential spec/readiness and independent native proof; root owns integration.
-- Implementation: `DiscoveryGuide.vue` in popup/options, strict independent boolean keys, optional hide/postpone/resume, configured shortcuts from validated runtime settings, five historical milestones. Speed confirmation waits for the in-flight poll and a fresh command snapshot and guards URL changes. Storage and message waits are bounded, failed navigation remains incomplete, and hidden/removed actions restore focus.
+- Implementation: `DiscoveryGuide.vue` in popup/options, strict independent boolean keys, optional hide/postpone/resume, configured shortcuts from validated runtime settings, five historical milestones. Speed confirmation waits for the in-flight poll and a fresh command snapshot and guards URL changes. Storage and message waits are bounded, failed navigation remains incomplete, and hidden/removed actions restore focus. The initial visible-guide behavior below records the original September 5 implementation and proof; the current default is collapsed until the user opens the guide.
 - UX correction from native proof: a 95px guide pane concealed instructions. The guide-visible pane now uses a 288px token and the popup scrolls to playback with a sticky header. A trial viewport-dependent body size collapsed the native popup; the final package retains the fixed preferred body size and root overflow isolation. Final 432x510 native proof confirms readable first instruction, practice action, skip/resume, hide/reopen, focused slider, actual 1.5x rate, reachable loop/footer and document scrollY=0.
 - Automated proof: 25 bookmark/playback/discovery tests passed, then the expanded four-test discovery suite (including timeout) passed: 26 distinct tests total. `pnpm type-check`, extension build and seven-resource package validation passed. ESLint passed with four pre-existing warnings in untouched App/type shim files; changed components have no lint errors. Changed/new discovery token scans found zero findings.
 - Packaged browser proof: all five milestones, invalid loop, invalid note save, failed bookmark navigation, failed progress storage, no media/restricted page, refused rate in the content isolated world, configured and malformed settings, suspension, close/reopen and local skip/hide recovery passed. `scripts/playback-browser.mjs` regressions passed after scoping selectors to the loop form; public W3Schools and the supplied YouTube video accepted 1.25x. This is scoped playback proof on public sites, not exhaustive compatibility or real-user onboarding research.

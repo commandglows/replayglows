@@ -1,7 +1,9 @@
 import './background'
 import { registerPlaybackBackground } from '../playback/background'
+import { registerAppNavigation } from './app-navigation'
 import { registerYouTubeEmbedReferrer } from './youtube-embed-referrer'
 registerPlaybackBackground()
+registerAppNavigation()
 registerYouTubeEmbedReferrer()
 
 chrome.runtime.onInstalled.addListener(async details => {
