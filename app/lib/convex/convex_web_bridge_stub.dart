@@ -1,3 +1,5 @@
+void configureYouTubeCaptureBridge(String convexUrl) {}
+
 Future<String?> convexWebQuery({
   required String convexUrl,
   required String path,

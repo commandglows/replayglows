@@ -1,10 +1,10 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: replayglows
 created: "2026-09-05"
-updated: "2026-09-05"
+updated: "2026-09-24"
 status: active
 source_skill: sg-docs
 scope: extension-product
@@ -51,12 +51,13 @@ One shared base speed is the default context for every supported unpinned tab. P
 | A–B review | Temporary loop from current positions or two existing bookmarks on the current YouTube video. Navigation/media replacement, seeking outside the segment or explicit clearing ends the loop. No saved-segment schema is introduced. |
 | Media discovery | Video/audio, dynamic elements, accessible embedded frames and open shadow roots. Commands choose a media target automatically; there is no manual target picker. |
 | Existing learning records | YouTube bookmarks/notes and JSON/Markdown export plus validated JSON import retain their existing contract. Speed preferences and transient tab IDs are not portable note records. |
+| YouTube frame capture | A player capture automatically creates a cloud note when the cached ReplayGlows sign-in state is active; otherwise it saves a PNG under `Downloads/ReplayGlows/<channel>/<video> [ID]/captures/`. The per-video generated `Notes.md` combines relative capture links with timestamped local extension notes and refreshes after capture or bookmark note changes. The first local save explains its location and offers sign-in. Explicit copy and local download remain available in the capture menu; cloud failure falls back to the local archive. |
 
 ## Boundaries and Availability
 
 HTTP/HTTPS host access enables the wider playback scope and changes the permission boundary. Browser-protected pages and file URLs are outside this scope. Closed shadow roots, inaccessible frames and players that enforce their own rate can limit behavior. Do not promise compatibility with every site, proprietary player or DRM service. Missing media and disconnected content scripts have explicit popup states.
 
-Playback settings and session contexts are extension-local; this increment adds no remote service, telemetry or app/backend synchronization. Notes remain YouTube-specific. Reload the unpacked extension and refresh existing tabs to activate its new content bundle.
+Playback settings and session contexts are extension-local. Frame captures are the bounded exception that synchronize a sign-in boolean from the authenticated ReplayGlows app and can create an attached YouTube note in the existing app/backend. The local Markdown index combines local extension notes and capture metadata with relative image links; frame bytes stay local unless the authenticated cloud capture succeeds. Notes remain YouTube-specific. Reload the unpacked extension and refresh existing tabs to activate its new content bundle.
 
 Implementation was delivered in commit `e9b4ad3813d697aa0f4e6c28dd22019581be8dec` on `main`. Verification on 2026-09-05 covered 22 automated tests, typecheck/lint/build, packaged Chromium fixtures, public YouTube/W3Schools playback and the real action-popup target. This is unpacked-extension proof, not Web Store publication or installation in the user's personal browser profile. Detailed evidence and limitations remain in the owning implementation spec.
 

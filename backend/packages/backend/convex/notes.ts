@@ -1,8 +1,13 @@
-import { mutation, query } from "./_generated/server";
+import { internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { requireReplayGlowsAccess } from "./access";
 import { PLANS } from "./subscriptions";
+
+function exposeNote<T extends { imageStorageId?: unknown }>(note: T) {
+  const { imageStorageId, ...safeNote } = note;
+  return { ...safeNote, hasImage: Boolean(imageStorageId) };
+}
 
 // =============================================================================
 // GENERIC NOTES (Legacy)
@@ -22,7 +27,7 @@ export const getNotes = query({
       .collect();
 
     // Return ALL notes (including YouTube notes)
-    return notes;
+    return notes.map(exposeNote);
   },
 });
 
@@ -37,7 +42,7 @@ export const getNote = query({
     if (!id) return null;
     const note = await ctx.db.get(id);
     if (!note || note.userId !== userId) return null;
-    return note;
+    return exposeNote(note);
   },
 });
 
@@ -100,6 +105,59 @@ export const deleteNote = mutation({
 // YOUTUBE VIDEO NOTES
 // =============================================================================
 
+// Upload URL is only issued to an authenticated ReplayGlows user.
+export const createCaptureUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    await requireReplayGlowsAccess(ctx);
+    return ctx.storage.generateUploadUrl();
+  },
+});
+
+// Attach an uploaded JPEG to a new timestamped YouTube note.
+export const createYouTubeCaptureNote = mutation({
+  args: {
+    youtubeVideoId: v.string(),
+    timestamp: v.number(),
+    imageStorageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireReplayGlowsAccess(ctx);
+    if (!userId) throw new Error("Unauthorized");
+    if (!/^[A-Za-z0-9_-]{11}$/.test(args.youtubeVideoId)) {
+      throw new Error("Invalid YouTube video ID");
+    }
+    if (!Number.isFinite(args.timestamp) || args.timestamp < 0) {
+      throw new Error("Invalid video timestamp");
+    }
+    const metadata = await ctx.db.system.get("_storage", args.imageStorageId);
+    if (!metadata || metadata.size <= 0 || metadata.size > 10 * 1024 * 1024 ||
+        metadata.contentType !== "image/jpeg") {
+      await ctx.storage.delete(args.imageStorageId);
+      throw new Error("Invalid capture image");
+    }
+    return ctx.db.insert("notes", {
+      userId,
+      title: "YouTube capture",
+      content: "",
+      youtubeVideoId: args.youtubeVideoId,
+      timestamp: args.timestamp,
+      imageStorageId: args.imageStorageId,
+      createdAt: Date.now(),
+    });
+  },
+});
+
+export const getCaptureImageForCurrentUser = internalQuery({
+  args: { noteId: v.id("notes") },
+  handler: async (ctx, args) => {
+    const userId = await requireReplayGlowsAccess(ctx);
+    if (!userId) return null;
+    const note = await ctx.db.get(args.noteId);
+    return note?.userId === userId ? note.imageStorageId ?? null : null;
+  },
+});
+
 // Get notes for a specific YouTube video
 export const getNotesByYoutubeVideo = query({
   args: { youtubeVideoId: v.string() },
@@ -120,7 +178,7 @@ export const getNotesByYoutubeVideo = query({
       if (a.timestamp === undefined) return 1;
       if (b.timestamp === undefined) return -1;
       return a.timestamp - b.timestamp;
-    });
+    }).map(exposeNote);
   },
 });
 
@@ -221,7 +279,7 @@ export const searchNotes = query({
       }
       // Search in content
       return note.content.toLowerCase().includes(searchTerm);
-    });
+    }).map(exposeNote);
   },
 });
 

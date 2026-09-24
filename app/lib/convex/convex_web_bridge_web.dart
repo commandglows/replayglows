@@ -5,6 +5,7 @@ import 'dart:js_interop';
 external _ReplayGlowsConvexBridge get _bridge;
 
 extension type _ReplayGlowsConvexBridge(JSObject _) implements JSObject {
+  external void configureCapture(JSString convexUrl);
   external JSPromise<JSString> query(
     JSString convexUrl,
     JSString authToken,
@@ -25,6 +26,10 @@ extension type _ReplayGlowsConvexBridge(JSObject _) implements JSObject {
     JSString path,
     JSString argsJson,
   );
+}
+
+void configureYouTubeCaptureBridge(String convexUrl) {
+  _bridge.configureCapture(convexUrl.toJS);
 }
 
 Future<String?> convexWebQuery({

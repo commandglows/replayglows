@@ -4,6 +4,7 @@ export interface Bookmark {
   formattedTime: string
   note: string
   title?: string
+  channel?: string
 }
 export function canonicalUrl(value: string): string {
   const url = new URL(value)
@@ -21,8 +22,8 @@ export function normalizeBookmark(input: unknown): Bookmark {
   const b = input as Record<string, unknown>
   const time = b.time ?? b.timestamp
   const url = b.url ?? (typeof b.videoId === 'string' ? `https://www.youtube.com/watch?v=${b.videoId}` : undefined)
-  if (typeof url !== 'string' || typeof time !== 'number' || !Number.isFinite(time) || time < 0 || (b.note !== undefined && typeof b.note !== 'string') || (b.title !== undefined && typeof b.title !== 'string')) throw new Error('Marque-page invalide : URL, temps ou note')
-  return { url: canonicalUrl(url), time, formattedTime: formatTime(time), note: (b.note as string | undefined) ?? '', ...(typeof b.title === 'string' ? { title: b.title } : {}) }
+  if (typeof url !== 'string' || typeof time !== 'number' || !Number.isFinite(time) || time < 0 || (b.note !== undefined && typeof b.note !== 'string') || (b.title !== undefined && typeof b.title !== 'string') || (b.channel !== undefined && typeof b.channel !== 'string')) throw new Error('Marque-page invalide : URL, temps ou note')
+  return { url: canonicalUrl(url), time, formattedTime: formatTime(time), note: (b.note as string | undefined) ?? '', ...(typeof b.title === 'string' ? { title: b.title } : {}), ...(typeof b.channel === 'string' ? { channel: b.channel } : {}) }
 }
 export function normalizeBookmarks(input: unknown): Bookmark[] {
   if (!Array.isArray(input)) throw new Error('Le fichier doit contenir une liste de marque-pages')

@@ -5,6 +5,48 @@ import { Webhook } from "svix";
 
 const http = httpRouter();
 
+const noteImageCorsHeaders = {
+  "Access-Control-Allow-Origin": "https://app.replayglows.com",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Authorization",
+  "Access-Control-Max-Age": "86400",
+  Vary: "Origin",
+};
+
+http.route({
+  path: "/note-image",
+  method: "OPTIONS",
+  handler: httpAction(async () => new Response(null, { headers: noteImageCorsHeaders })),
+});
+
+http.route({
+  path: "/note-image",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const origin = request.headers.get("Origin");
+    const identity = await ctx.auth.getUserIdentity();
+    if (origin !== "https://app.replayglows.com" || !identity) {
+      return new Response("Unauthorized", { status: 401, headers: noteImageCorsHeaders });
+    }
+    const noteId = new URL(request.url).searchParams.get("noteId");
+    if (!noteId) return new Response("Not found", { status: 404, headers: noteImageCorsHeaders });
+    const storageId = await ctx.runQuery(internal.notes.getCaptureImageForCurrentUser, {
+      noteId: noteId as never,
+    });
+    if (!storageId) return new Response("Not found", { status: 404, headers: noteImageCorsHeaders });
+    const blob = await ctx.storage.get(storageId);
+    if (!blob) return new Response("Not found", { status: 404, headers: noteImageCorsHeaders });
+    return new Response(blob, {
+      headers: {
+        ...noteImageCorsHeaders,
+        "Content-Type": "image/jpeg",
+        "Cache-Control": "private, no-store",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }),
+});
+
 // Clerk webhook endpoint for user sync
 http.route({
   path: "/clerk-webhook",

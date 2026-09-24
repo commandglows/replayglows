@@ -7,7 +7,31 @@
     signInUrl: "/sign-in",
     signUpUrl: "/sign-up",
     accountCenterUrl: "",
+    authListenerInstalled: false,
   };
+
+  function publishExtensionAuthState() {
+    if (!window.Clerk?.loaded) return;
+    window.postMessage({
+      type: "RG_CAPTURE_AUTH_STATE",
+      authenticated: Boolean(window.Clerk?.isSignedIn),
+    }, window.location.origin);
+  }
+
+  function watchExtensionAuthState() {
+    if (!window.Clerk) return;
+    if (!state.authListenerInstalled && typeof window.Clerk.addListener === "function") {
+      state.authListenerInstalled = true;
+      window.Clerk.addListener(() => publishExtensionAuthState());
+    }
+    publishExtensionAuthState();
+  }
+
+  window.addEventListener("message", (event) => {
+    if (event.source !== window || event.origin !== window.location.origin ||
+        event.data?.type !== "RG_CAPTURE_AUTH_REQUEST") return;
+    publishExtensionAuthState();
+  });
 
   function decodeDomainFromPublishableKey(publishableKey) {
     try {
@@ -94,6 +118,7 @@
 
     state = { ...state, ...nextConfig, configured: true };
     if (window.Clerk && window.Clerk.loaded) {
+      watchExtensionAuthState();
       return {
         configured: true,
         isSignedIn: Boolean(window.Clerk.isSignedIn),
@@ -128,6 +153,7 @@
           signInUrl: state.signInUrl,
           signUpUrl: state.signUpUrl,
         });
+        watchExtensionAuthState();
       })();
     }
 

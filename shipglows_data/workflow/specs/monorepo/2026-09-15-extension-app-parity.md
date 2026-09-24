@@ -1,10 +1,10 @@
 ---
 artifact: implementation_spec
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.0.1"
 project: replayglows
 created: "2026-09-15"
-updated: "2026-09-16"
+updated: "2026-09-24"
 created_at: "2026-09-15"
 updated_at: "2026-09-16"
 source_model: kimi-k3
@@ -72,7 +72,7 @@ Add a full-page extension surface reusing the Convex JS client against the exist
 Android/FCM push, microphone audio feedback recording, feedback admin, moving or modifying the Vercel OAuth handlers, Web Store publication, side panel or tab-override hosts, telemetry. Saved segments and advanced media effects remain research candidates.
 
 ## Constraints
-- Existing popup, options, YouTube content bundle (`contentscript.js`) and playback bundle (`media.ts`) remain untouched in behavior; content bundles stay classic self-contained scripts with no shared runtime imports.
+- Existing popup, options, YouTube content bundle (`contentscript.js`) and playback bundle (`media.ts`) remain otherwise unchanged; content bundles stay self-contained. **Operator-authorized exception (2026-09-24):** the separately scoped YouTube frame-capture feature in `2026-09-23-extension-youtube-frame-capture.md` may add a shared icon dropdown with clipboard/local download beside the bookmark control, authenticated cloud note attachment, app-to-extension boolean auth-state relay, automatic cloud/local routing, and the channel/video local image archive with generated Markdown index. This follows checkpoint commit `c6fc159`. All other parity behavior remains frozen; this exception does not close BUG-2026-09-18-003 or authorize broader YouTube-control changes.
 - MV3 service worker discipline: no worker-lifetime source of truth; realtime subscriptions live in the full page, worker and popup stay request/response.
 - No destructive storage migration; local bookmark schema compatibility preserved; normalize-on-read rules unchanged.
 - Hosted auth verification keeps the recorded `vercel-preview-push` mode; local packaging proof never substitutes for hosted OAuth/cookie/Convex verification.

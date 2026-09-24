@@ -10,6 +10,8 @@
 
 ## Extension Playback
 
+🟠 [replayglows] task: Save YouTube frame captures automatically to ReplayGlows cloud when signed in, or to a channel/video Downloads archive with one generated Markdown index per video | status: in_progress | area: ext-app-notes | spec: shipglows_data/workflow/specs/monorepo/2026-09-23-extension-youtube-frame-capture.md | evidence: cached auth relay and local folder/Markdown generation implemented; Doppler extension typecheck and package build pass | next: verify actual Chrome download permission, dated image paths, Notes.md replacement and authenticated cloud fallback in packaged browser.
+
 🟠 [replayglows] task: Repair recent extension app-opening, local draft, menu/fullscreen and Alt-scrubbing state regressions | status: in_progress | area: ext | ref: shipglows_data/workflow/bugs/BUG-2026-09-18-001.md, shipglows_data/workflow/bugs/BUG-2026-09-18-002.md, shipglows_data/workflow/bugs/BUG-2026-09-18-003.md | evidence: local-library repair and focused state tests passed; operator manually validated draft retention, rapid updates, independent records, delete/cancel and reload on 2026-09-23; BUG-2026-09-18-002 closed | next: Validate the remaining app-opening and YouTube menu/fullscreen/Alt-scrubbing fixes in the browser
 
 🟢 [replayglows] task: Guide discovery inside the Chrome extension with confirmed milestones, local resume/skip, effective shortcuts and recovery help | status: done | area: ext | ref: shipglows_data/workflow/specs/monorepo/2026-09-05-extension-onboarding.md | evidence: Discovery and playback tests, typecheck/build, packaged failure/recovery scenarios and native popup at 432x510 passed on 2026-09-05 | next: Reload unpacked extension to review; no Web Store publication implied

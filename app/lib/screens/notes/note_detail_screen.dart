@@ -5,6 +5,8 @@ import 'package:shimmer/shimmer.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:replayglows_app/app/router.dart';
+import 'package:replayglows_app/app/build_info.dart' show convexUrl;
+import 'package:replayglows_app/auth/auth_service.dart';
 import 'package:replayglows_app/i18n/translations.dart';
 import 'package:replayglows_app/models/models.dart';
 import 'package:replayglows_app/providers/mutations.dart';
@@ -198,6 +200,11 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
               const SizedBox(height: AppSpacing.md),
             ],
 
+            if (note.hasImage) ...[
+              _buildCaptureImage(note),
+              const SizedBox(height: AppSpacing.md),
+            ],
+
             // Note content
             _isEditing
                 ? TextField(
@@ -222,6 +229,31 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCaptureImage(Note note) {
+    final siteUrl = convexUrl.replaceFirst('.convex.cloud', '.convex.site');
+    final uri = Uri.parse('$siteUrl/note-image').replace(
+      queryParameters: {'noteId': note.id},
+    );
+    return FutureBuilder<String?>(
+      future: ref.read(authServiceProvider).getConvexToken(),
+      builder: (context, snapshot) {
+        final token = snapshot.data;
+        if (token == null || token.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadii.sm),
+          child: Image.network(
+            uri.toString(),
+            headers: {'Authorization': 'Bearer $token'},
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+          ),
+        );
+      },
     );
   }
 

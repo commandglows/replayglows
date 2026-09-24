@@ -11,8 +11,8 @@
  * to provide a seamless bookmarking experience directly on the video player.
  */
 const YOUTUBE_MESSAGES = {
-  fr: { add: 'Ajouter un marque-page', notePlaceholder: 'Ajouter une note pour ce marque-page', noteLabel: 'Note du marque-page', saved: 'Marque-page enregistré !', missingPlayer: 'Impossible ! La barre de progression ou la vidéo actuelle sont manquantes.', playAt: 'Lire le marque-page à {time}', deleteOne: 'Supprimer ce marque-page', listLabel: 'Marque-pages de cette vidéo', listTitle: 'Marque-pages pour cette vidéo', listEmpty: 'Aucun marque-page pour cette vidéo', deleteVideo: 'Supprimer les marque-pages de cette vidéo', seekAt: 'Lire à {time}', edit: 'Modifier', editNote: 'Modifier la note', save: 'Enregistrer', cancel: 'Annuler', delete: 'Supprimer', videoDeleted: 'Marque-pages de cette vidéo supprimés', openLocal: 'Ouvrir dans l’app locale', openCloud: 'Ouvrir dans le cloud', openError: 'Impossible d’ouvrir l’app. Réessayez.', showSpeed: 'Montrer la barre de vitesse', hideSpeed: 'Masquer la barre de vitesse', speed: 'Vitesse de lecture', favoriteSpeed: 'Vitesse favorite', speedError: 'Impossible de modifier la vitesse. Réessayez.', speedSuspended: 'Contrôle de vitesse suspendu' },
-  en: { add: 'Add a bookmark', notePlaceholder: 'Add a note for this bookmark', noteLabel: 'Bookmark note', saved: 'Bookmark saved!', missingPlayer: 'The progress bar or current video is unavailable.', playAt: 'Play bookmark at {time}', deleteOne: 'Delete this bookmark', listLabel: 'Bookmarks for this video', listTitle: 'Bookmarks for this video', listEmpty: 'No bookmarks for this video', deleteVideo: 'Delete bookmarks for this video', seekAt: 'Play at {time}', edit: 'Edit', editNote: 'Edit note', save: 'Save', cancel: 'Cancel', delete: 'Delete', videoDeleted: 'Bookmarks for this video deleted', openLocal: 'Open in the local app', openCloud: 'Open in the cloud', openError: 'Unable to open the app. Try again.', showSpeed: 'Show speed bar', hideSpeed: 'Hide speed bar', speed: 'Playback speed', favoriteSpeed: 'Favorite speed', speedError: 'Unable to change speed. Try again.', speedSuspended: 'Speed control suspended' }
+  fr: { add: 'Ajouter un marque-page', captureFrame: 'Capture d’écran', captureCopy: 'Copier dans le presse-papiers', captureDownload: 'Télécharger l’image', captureCloud: 'Envoyer dans ReplayGlows', captureCopied: 'Image copiée dans le presse-papiers.', captureLocalSaved: 'Capture enregistrée dans Téléchargements/ReplayGlows.', captureCloudSaved: 'Capture ajoutée à vos notes ReplayGlows.', captureCloudFallback: 'Le cloud est indisponible. La capture a été enregistrée sur cet appareil.', captureFirstLocal: 'Capture enregistrée dans Téléchargements/ReplayGlows. Connectez-vous à ReplayGlows pour la retrouver sur vos autres appareils.', captureConnect: 'Se connecter', captureLocalError: 'Impossible d’enregistrer les fichiers ReplayGlows. Autorisez les téléchargements puis réessayez.', captureError: 'Impossible d’enregistrer cette image. Réessayez quand la vidéo est prête.', captureCopyError: 'Impossible de copier l’image.', notePlaceholder: 'Ajouter une note pour ce marque-page', noteLabel: 'Note du marque-page', saved: 'Marque-page enregistré !', missingPlayer: 'Impossible ! La barre de progression ou la vidéo actuelle sont manquantes.', playAt: 'Lire le marque-page à {time}', deleteOne: 'Supprimer ce marque-page', listLabel: 'Marque-pages de cette vidéo', listTitle: 'Marque-pages pour cette vidéo', listEmpty: 'Aucun marque-page pour cette vidéo', deleteVideo: 'Supprimer les marque-pages de cette vidéo', seekAt: 'Lire à {time}', edit: 'Modifier', editNote: 'Modifier la note', save: 'Enregistrer', cancel: 'Annuler', delete: 'Supprimer', videoDeleted: 'Marque-pages de cette vidéo supprimés', openLocal: 'Ouvrir dans l’app locale', openCloud: 'Ouvrir dans le cloud', openError: 'Impossible d’ouvrir l’app. Réessayez.', showSpeed: 'Montrer la barre de vitesse', hideSpeed: 'Masquer la barre de vitesse', speed: 'Vitesse de lecture', favoriteSpeed: 'Vitesse favorite', speedError: 'Impossible de modifier la vitesse. Réessayez.', speedSuspended: 'Contrôle de vitesse suspendu' },
+  en: { add: 'Add a bookmark', captureFrame: 'Screenshot', captureCopy: 'Copy to clipboard', captureDownload: 'Download image', captureCloud: 'Send to ReplayGlows', captureCopied: 'Image copied to clipboard.', captureLocalSaved: 'Capture saved in Downloads/ReplayGlows.', captureCloudSaved: 'Capture added to your ReplayGlows notes.', captureCloudFallback: 'Cloud saving failed. The capture was saved on this device.', captureFirstLocal: 'Capture saved in Downloads/ReplayGlows. Sign in to ReplayGlows to find it on your other devices.', captureConnect: 'Sign in', captureLocalError: 'Unable to save ReplayGlows files. Allow downloads and try again.', captureError: 'Unable to save this frame. Try again when the video is ready.', captureCopyError: 'Unable to copy the image.', notePlaceholder: 'Add a note for this bookmark', noteLabel: 'Bookmark note', saved: 'Bookmark saved!', missingPlayer: 'The progress bar or current video is unavailable.', playAt: 'Play bookmark at {time}', deleteOne: 'Delete this bookmark', listLabel: 'Bookmarks for this video', listTitle: 'Bookmarks for this video', listEmpty: 'No bookmarks for this video', deleteVideo: 'Delete bookmarks for this video', seekAt: 'Play at {time}', edit: 'Edit', editNote: 'Edit note', save: 'Save', cancel: 'Cancel', delete: 'Delete', videoDeleted: 'Bookmarks for this video deleted', openLocal: 'Open in the local app', openCloud: 'Open in the cloud', openError: 'Unable to open the app. Try again.', showSpeed: 'Show speed bar', hideSpeed: 'Hide speed bar', speed: 'Playback speed', favoriteSpeed: 'Favorite speed', speedError: 'Unable to change speed. Try again.', speedSuspended: 'Speed control suspended' }
 };
 
 const YouTubeBookmarker = {
@@ -33,6 +33,7 @@ const YouTubeBookmarker = {
     bookmarks: [],                // All bookmarks from storage
     groupedBookmarks: {},         // Bookmarks grouped by video URL
     bookmarkButton: null,         // Custom bookmark button added to player controls
+    captureButton: null,
     timeDisplay: null,            // YouTube's time display element (used for button placement)
     progressBar: null,            // Video progress bar (where bookmark icons are displayed)
     bookmarkContainerVisible: false, // Whether the note input container is visible
@@ -112,9 +113,11 @@ const YouTubeBookmarker = {
     this.hotkeyEvents?.abort();
     this.events = new AbortController();
     const visibilityRevision = this.speedBarVisibilityRevision || 0;
-    const { language = 'auto', speedBarVisible = false } = await chrome.storage.local.get(['language', 'speedBarVisible']);
+    const { language = 'auto', speedBarVisible = false, captureAuthState = null, captureLocalIntroShown = false } = await chrome.storage.local.get(['language', 'speedBarVisible', 'captureAuthState', 'captureLocalIntroShown']);
     if (generation !== this.generation || videoUrl !== this.currentUrl) return;
     if (visibilityRevision === (this.speedBarVisibilityRevision || 0)) this.speedBarVisible = speedBarVisible === true;
+    this.captureAuthState = captureAuthState;
+    this.captureLocalIntroShown = captureLocalIntroShown === true;
     this.locale = language === 'fr' || (language === 'auto' && navigator.languages.some(item => item.toLowerCase().startsWith('fr'))) ? 'fr' : 'en';
     this.state.bookmarkInputContainer?.remove();
     document.querySelectorAll('.bookmarks-list, .custom-bookmark-icon-container, .rg-yt-menu').forEach(el => el.remove());
@@ -130,6 +133,7 @@ const YouTubeBookmarker = {
       this.setupSpeedBar();
       this.setupVideoSplits();
       this.setupOverflowMenu();
+      this.setupCaptureMenu();
       await this.setupHotkeys();
       if (generation !== this.generation || videoUrl !== this.currentUrl) return;
       await this.updateUIElements();
@@ -160,6 +164,7 @@ const YouTubeBookmarker = {
       currentVideo: video,
       player,
       bookmarkButton: player.querySelector(`#${this.CONSTANTS.BOOKMARK_BUTTON_ID}`),
+      captureButton: player.querySelector('#rg-capture-frame-button'),
       timeDisplay: player.querySelector('.ytp-time-display'),
       progressBar: player.querySelector('.ytp-progress-bar'),
       parentContainer: document.querySelector('ytd-watch-next-secondary-results-renderer'),
@@ -206,9 +211,15 @@ const YouTubeBookmarker = {
    * Sets up event listeners for YouTube navigation and user interactions.
    * The 'yt-navigate-finish' event handles YouTube's SPA navigation between videos.
    */
-  setupEventListeners() { 
+  setupEventListeners() {
+    const authStorageListener = (changes, areaName) => {
+      if (areaName === 'local' && changes.captureAuthState) this.captureAuthState = changes.captureAuthState.newValue || null;
+    };
+    chrome.storage.onChanged.addListener(authStorageListener);
+    this.events.signal.addEventListener('abort', () => chrome.storage.onChanged.removeListener(authStorageListener), { once: true });
 
     this.state.bookmarkButton?.addEventListener('click', (e) => { e.stopPropagation(); this.handleAddBookmark(e, this.state.bookmarkButton); }, { signal: this.events.signal });
+    this.state.captureButton?.addEventListener('click', (e) => { e.stopPropagation(); void this.handleCaptureClick(); }, { signal: this.events.signal });
     this.state.progressBar?.addEventListener('click', (e) => {
       if (!e.target.closest('.custom-bookmark-icon-container')) this.handleAddBookmark(e, this.state.progressBar);
     }, { signal: this.events.signal });
@@ -330,6 +341,44 @@ const YouTubeBookmarker = {
       if (this.state.timeDisplay) {
         this.state.timeDisplay.parentNode.insertBefore(button, this.state.timeDisplay.nextSibling);
         this.state.bookmarkButton = button;
+        const captureButton = document.createElement('button');
+        captureButton.id = 'rg-capture-frame-button';
+        captureButton.type = 'button';
+        captureButton.className = 'rg-capture-frame-button';
+        captureButton.setAttribute('aria-label', this.t('captureFrame'));
+        captureButton.setAttribute('aria-haspopup', 'menu');
+        captureButton.setAttribute('aria-expanded', 'false');
+        captureButton.title = this.t('captureFrame');
+        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        icon.setAttribute('viewBox', '0 0 24 24');
+        icon.setAttribute('width', '26');
+        icon.setAttribute('height', '24');
+        icon.setAttribute('aria-hidden', 'true');
+        const body = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        body.setAttribute('d', 'M8.2 5.6 9.6 3.8h4.8l1.4 1.8H19a2 2 0 0 1 2 2v9.6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.6a2 2 0 0 1 2-2h3.2Z');
+        body.setAttribute('fill', 'none');
+        body.setAttribute('stroke', 'currentColor');
+        body.setAttribute('stroke-width', '1.8');
+        body.setAttribute('stroke-linecap', 'round');
+        body.setAttribute('stroke-linejoin', 'round');
+        icon.appendChild(body);
+        for (const [radius, strokeWidth] of [[4.5, 1.8], [3.1, 1.25]]) {
+          const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          ring.setAttribute('cx', '12');
+          ring.setAttribute('cy', '12.4');
+          ring.setAttribute('r', String(radius));
+          ring.setAttribute('fill', 'none');
+          ring.setAttribute('stroke', 'currentColor');
+          ring.setAttribute('stroke-width', String(strokeWidth));
+          icon.appendChild(ring);
+        }
+        const shutter = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        shutter.setAttribute('d', 'm12 10.7 1.45.85-.13 1.7-1.32.78-1.45-.85.13-1.7L12 10.7Z');
+        shutter.setAttribute('fill', 'currentColor');
+        icon.appendChild(shutter);
+        captureButton.appendChild(icon);
+        button.after(captureButton);
+        this.state.captureButton = captureButton;
 
       } else {
         console.info("timeDisplay est introuvable, le bouton ne peut pas être ajouté.");
@@ -338,40 +387,48 @@ const YouTubeBookmarker = {
   },
 
   /**
-   * Adds a viewport-bounded menu to the bookmark button, inside the fullscreen
-   * element when needed. It closes when the hover stops or the viewport changes.
+   * Creates the shared, viewport-bounded dropdown used by YouTube controls.
    */
-  setupOverflowMenu() {
-    const button = this.state.bookmarkButton;
-    if (!button) return;
+  createSharedDropdown(button, label, items, className = '') {
+    if (!button) return null;
     const menu = document.createElement('div');
-    menu.className = this.CONSTANTS.RG_MENU_CLASS;
+    menu.className = `${this.CONSTANTS.RG_MENU_CLASS} ${className}`.trim();
     menu.setAttribute('role', 'menu');
-    menu.setAttribute('aria-label', 'ReplayGlows');
-    const items = [
-      { key: 'openLocal', run: () => this.openInApp('watch') },
-      { key: 'openCloud', run: () => this.openInApp('play') },
-      { key: 'showSpeed', run: () => this.toggleSpeedBar() },
-    ];
+    menu.setAttribute('aria-label', label);
+    const entries = new Map();
     for (const item of items) {
       const entry = document.createElement('button');
       entry.type = 'button';
       entry.className = 'rg-yt-menu__item';
-      entry.setAttribute('role', 'menuitem');
-      entry.textContent = this.t(item.key);
-      if (item.key === 'showSpeed') {
-        this.speedMenuEntry = entry;
-        entry.setAttribute('role', 'menuitemcheckbox');
-        entry.setAttribute('aria-controls', 'rg-yt-speedbar');
-        entry.setAttribute('aria-checked', String(!!this.speedBarVisible));
-        entry.textContent = this.t(this.speedBarVisible ? 'hideSpeed' : 'showSpeed');
+      entry.setAttribute('role', item.role || 'menuitem');
+      entry.setAttribute('aria-label', item.label);
+      entry.title = item.label;
+      if (item.icon) {
+        entry.classList.add('rg-yt-menu__icon-item');
+        entry.dataset.label = item.label;
+        entry.setAttribute('aria-pressed', String(item.selected === true));
+        if (item.selected) entry.classList.add('rg-yt-menu__item--selected');
+        if (item.icon === 'copy') this.appendMenuIcon(entry, 'M8 7V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3Zm2 0h4a2 2 0 0 1 2 2v7h3V4h-9v3Zm4 2H5v11h9V9Z');
+        else if (item.icon === 'download') this.appendMenuIcon(entry, 'M11 3h2v9l3.5-3.5 1.4 1.4L12 16.8l-5.9-5.9 1.4-1.4L11 12V3Zm-6 14v3h14v-3h2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3h2Z');
+        else if (item.icon === 'cloud') this.appendMenuIcon(entry, 'M19.4 10.4A7.5 7.5 0 0 0 5 8.5 5.5 5.5 0 0 0 5.5 19H11v-2H5.5a3.5 3.5 0 0 1-.2-7 1 1 0 0 0 1-.8 5.5 5.5 0 0 1 10.8.8 1 1 0 0 0 .9.9 3 3 0 0 1-.3 6H13v2h4.7a5 5 0 0 0 1.7-9.6ZM12 11l-4 4h3v5h2v-5h3l-4-4Z');
+      } else {
+        entry.textContent = item.label;
       }
-      entry.addEventListener('click', (e) => {
-        e.stopPropagation();
+      if (item.disabled) {
+        entry.disabled = true;
+        entry.title = item.disabledLabel || item.label;
+      }
+      if (item.role === 'menuitemcheckbox') {
+        entry.setAttribute('role', 'menuitemcheckbox');
+        entry.setAttribute('aria-checked', String(item.checked === true));
+      }
+      if (!item.disabled) entry.addEventListener('click', event => {
+        event.stopPropagation();
         close();
-        item.run();
+        item.run?.(entry);
       }, { signal: this.events.signal });
       menu.appendChild(entry);
+      entries.set(item.key, entry);
     }
     const mountMenu = () => (document.fullscreenElement || document.body).appendChild(menu);
     mountMenu();
@@ -379,25 +436,29 @@ const YouTubeBookmarker = {
     let leaveTimer = null;
     const positionMenu = () => {
       const rect = button.getBoundingClientRect();
+      const isCaptureMenu = className.includes('capture');
       const margin = 8;
       const width = Math.max(0, window.innerWidth - margin * 2);
       const height = Math.max(0, window.innerHeight - margin * 2);
       menu.style.boxSizing = 'border-box';
-      menu.style.minWidth = `${Math.min(220, width)}px`;
-      menu.style.maxWidth = `${width}px`;
-      menu.style.maxHeight = `${height}px`;
-      menu.style.overflowY = 'auto';
+      menu.style.minWidth = isCaptureMenu ? '0px' : `${Math.min(220, width)}px`;
+      menu.style.width = isCaptureMenu ? '56px' : '';
+      menu.style.maxWidth = isCaptureMenu ? 'none' : `${width}px`;
+      menu.style.maxHeight = isCaptureMenu ? 'none' : `${height}px`;
+      menu.style.overflow = isCaptureMenu ? 'visible' : 'auto';
       const menuWidth = menu.offsetWidth;
       const menuHeight = menu.offsetHeight;
       const below = rect.bottom + margin;
-      const top = below + menuHeight <= window.innerHeight - margin
+      const top = isCaptureMenu || below + menuHeight <= window.innerHeight - margin
         ? below : rect.top - menuHeight - margin;
-      menu.style.left = `${Math.max(margin, Math.min(rect.left, window.innerWidth - menuWidth - margin))}px`;
+      const left = isCaptureMenu ? rect.left + rect.width / 2 - menuWidth / 2 : rect.left;
+      menu.style.left = `${Math.max(margin, Math.min(left, window.innerWidth - menuWidth - margin))}px`;
       menu.style.top = `${Math.max(margin, Math.min(top, window.innerHeight - menuHeight - margin))}px`;
     };
     const openMenu = () => {
       if (open) return;
       open = true;
+      button.setAttribute('aria-expanded', 'true');
       mountMenu();
       positionMenu();
       menu.classList.add('rg-yt-menu--open');
@@ -405,6 +466,7 @@ const YouTubeBookmarker = {
     const close = () => {
       clearTimeout(leaveTimer);
       open = false;
+      button.setAttribute('aria-expanded', 'false');
       menu.classList.remove('rg-yt-menu--open');
     };
     const enter = () => {
@@ -417,6 +479,8 @@ const YouTubeBookmarker = {
     };
     button.addEventListener('mouseenter', enter, { signal: this.events.signal });
     button.addEventListener('mouseleave', leave, { signal: this.events.signal });
+    button.addEventListener('focus', enter, { signal: this.events.signal });
+    button.addEventListener('blur', leave, { signal: this.events.signal });
     menu.addEventListener('mouseenter', enter, { signal: this.events.signal });
     menu.addEventListener('mouseleave', leave, { signal: this.events.signal });
     document.addEventListener('fullscreenchange', () => {
@@ -428,10 +492,140 @@ const YouTubeBookmarker = {
       if (!menu.contains(event.target)) close();
     }, { signal: this.events.signal, capture: true });
     document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') close();
+      if (event.key === 'Escape' && open) { close(); button.focus(); }
     }, { signal: this.events.signal });
     this.events.signal.addEventListener('abort', close, { once: true });
-    this.state.overlayMenu = menu;
+    return { menu, entries, close };
+  },
+
+  appendMenuIcon(button, pathData) {
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('viewBox', '0 0 24 24');
+    icon.setAttribute('width', '22');
+    icon.setAttribute('height', '22');
+    icon.setAttribute('aria-hidden', 'true');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathData);
+    path.setAttribute('fill', 'currentColor');
+    icon.appendChild(path);
+    button.appendChild(icon);
+  },
+
+  setupOverflowMenu() {
+    const menu = this.createSharedDropdown(this.state.bookmarkButton, 'ReplayGlows', [
+      { key: 'openLocal', label: this.t('openLocal'), run: () => this.openInApp('watch') },
+      { key: 'openCloud', label: this.t('openCloud'), run: () => this.openInApp('play') },
+      { key: 'showSpeed', label: this.t(this.speedBarVisible ? 'hideSpeed' : 'showSpeed'), role: 'menuitemcheckbox', checked: !!this.speedBarVisible, run: () => this.toggleSpeedBar() },
+    ]);
+    this.speedMenuEntry = menu?.entries.get('showSpeed') || null;
+    this.state.overlayMenu = menu?.menu || null;
+  },
+
+  setupCaptureMenu() {
+    const items = [
+      { key: 'copy', icon: 'copy', label: this.t('captureCopy'), run: () => this.runCapture('copy') },
+      { key: 'download', icon: 'download', label: this.t('captureDownload'), run: () => this.runCapture('download') },
+    ];
+    const dropdown = this.createSharedDropdown(this.state.captureButton, this.t('captureFrame'), items, 'rg-yt-menu--capture');
+    this.captureMenuEntries = dropdown?.entries || new Map();
+    this.state.captureMenu = dropdown?.menu || null;
+  },
+
+  async handleCaptureClick() {
+    return this.runCapture('automatic');
+  },
+
+  async runCapture(action) {
+    if (this.captureBusy) return false;
+    this.captureBusy = true;
+    if (this.state.captureButton) this.state.captureButton.disabled = true;
+    try {
+      if (action === 'automatic') {
+        if (this.captureAuthState?.authenticated === true) return await this.startCloudCapture();
+        return await this.completeLocalCapture();
+      }
+      return await this.captureCurrentFrame(action, null, true);
+    } finally {
+      this.captureBusy = false;
+      if (this.state.captureButton) this.state.captureButton.disabled = false;
+    }
+  },
+
+  async completeLocalCapture() {
+    const saved = await this.captureCurrentFrame('download', null, true);
+    if (saved) await this.showLocalCaptureIntro();
+    return saved;
+  },
+
+  async showLocalCaptureIntro() {
+    if (this.captureLocalIntroShown) return;
+    this.captureLocalIntroShown = true;
+    await chrome.storage.local.set({ captureLocalIntroShown: true });
+    this.afficherMessageWithAction(this.t('captureFirstLocal'), this.t('captureConnect'), () => {
+      window.open('https://app.replayglows.com/sign-in', '_blank', 'noopener');
+    });
+  },
+
+  afficherMessageWithAction(message, actionLabel, run) {
+    const container = document.createElement('div');
+    container.className = 'msg info rg-capture-message';
+    const text = document.createElement('span');
+    text.textContent = message;
+    const action = document.createElement('button');
+    action.type = 'button';
+    action.textContent = actionLabel;
+    action.addEventListener('click', () => { run(); container.remove(); }, { once: true });
+    container.append(text, action);
+    document.body.appendChild(container);
+    setTimeout(() => container.remove(), 8000);
+  },
+
+  async startCloudCapture() {
+    const video = this.state.currentVideo;
+    if (!video || !video.isConnected || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA ||
+        video.videoWidth <= 0 || video.videoHeight <= 0 || this.state.player?.classList.contains('ad-showing')) {
+      return this.captureCurrentFrame('download', null, true);
+    }
+    const target = window.open('about:blank', 'ReplayGlowsCapture');
+    if (!target) {
+      const saved = await this.captureCurrentFrame('download', null, true);
+      this.afficherMessage(this.t(saved ? 'captureCloudFallback' : 'captureError'), saved ? 'info' : 'error');
+      if (saved) await this.showLocalCaptureIntro();
+      return saved;
+    }
+    const nonce = crypto.randomUUID();
+    let resolveReady;
+    let resolveDone;
+    const readyPromise = new Promise(resolve => { resolveReady = resolve; });
+    const donePromise = new Promise((resolve, reject) => { resolveDone = { resolve, reject }; });
+    donePromise.catch(() => {});
+    const onMessage = event => {
+      if (event.source !== target || event.origin !== 'https://app.replayglows.com' || event.data?.nonce !== nonce) return;
+      if (event.data.type === 'RG_CAPTURE_READY') {
+        resolveReady(true);
+      }
+      if (event.data.type === 'RG_CAPTURE_AUTH_REQUIRED') {
+        void chrome.storage.local.set({ captureAuthState: { authenticated: false, updatedAt: Date.now() } });
+        resolveReady(false);
+        resolveDone.reject(new Error('ReplayGlows sign-in required'));
+        window.removeEventListener('message', onMessage);
+      }
+      if (event.data.type === 'RG_CAPTURE_DONE') {
+        resolveDone.resolve(true);
+        window.removeEventListener('message', onMessage);
+      }
+      if (event.data.type === 'RG_CAPTURE_ERROR') {
+        resolveReady(false);
+        resolveDone.reject(new Error('Cloud capture failed'));
+        window.removeEventListener('message', onMessage);
+      }
+    };
+    window.addEventListener('message', onMessage);
+    target.location = `https://app.replayglows.com/?rg_capture=${encodeURIComponent(nonce)}`;
+    await this.captureCurrentFrame('cloud', { target, nonce, readyPromise, donePromise }, true);
+    setTimeout(() => {
+      if (target.closed) window.removeEventListener('message', onMessage);
+    }, 120000);
   },
 
   async toggleSpeedBar() {
@@ -454,6 +648,115 @@ const YouTubeBookmarker = {
     if (this.speedMenuEntry) this.speedMenuEntry.textContent = this.t(this.speedBarVisible ? 'hideSpeed' : 'showSpeed');
     this.updateSpeedBarLayout?.();
     if (this.speedBarVisible) this.refreshSpeedContext?.();
+  },
+
+  async captureCurrentFrame(action = 'download', cloud = null, managed = false) {
+    if (!managed) {
+      if (this.captureBusy) return false;
+      this.captureBusy = true;
+      if (this.state.captureButton) this.state.captureButton.disabled = true;
+    }
+    const video = this.state.currentVideo;
+    const videoUrl = this.currentUrl;
+    const generation = this.generation;
+    const videoId = new URL(videoUrl).searchParams.get('v') || '';
+    let fallbackPng = null;
+    try {
+      if (!video || !video.isConnected || !this.state.player?.contains(video) ||
+          window.location.pathname !== '/watch' || !/^[A-Za-z0-9_-]{11}$/.test(videoId) ||
+          this.state.player.classList.contains('ad-showing') ||
+          this.state.player.querySelector('.ytp-ad-player-overlay') ||
+          video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA ||
+          !Number.isFinite(video.currentTime) || video.videoWidth <= 0 || video.videoHeight <= 0) throw new Error('Frame unavailable');
+      const time = Math.round(video.currentTime);
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+      this.flashCapture(video);
+      if (action === 'cloud') fallbackPng = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('Frame encoding failed')), 'image/png'));
+      const blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('Frame encoding failed')), action === 'cloud' ? 'image/jpeg' : 'image/png', 0.88));
+      if (generation !== this.generation || video !== this.state.currentVideo || videoUrl !== this.currentUrl || blob.type !== (action === 'cloud' ? 'image/jpeg' : 'image/png') || blob.size === 0) throw new Error('Frame became stale');
+      if (action === 'copy') {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        this.afficherMessage(this.t('captureCopied'), 'info');
+        return true;
+      } else if (action === 'download') {
+        const saved = await this.saveLocalCapture(blob, videoId, time, videoUrl);
+        if (saved) this.afficherMessage(this.t('captureLocalSaved'), 'info');
+        return saved;
+      } else if (action === 'cloud' && cloud) {
+        const isReady = await Promise.race([cloud.readyPromise, new Promise(resolve => setTimeout(() => resolve(false), 120000))]);
+        if (!isReady || cloud.target.closed) throw new Error('ReplayGlows did not become ready');
+        cloud.target.postMessage({
+          type: 'RG_FRAME_CAPTURE',
+          nonce: cloud.nonce,
+          youtubeVideoId: videoId,
+          timestamp: time,
+          image: blob,
+        }, 'https://app.replayglows.com');
+        const done = await Promise.race([cloud.donePromise, new Promise((_, reject) => setTimeout(() => reject(new Error('Cloud capture timed out')), 120000))]);
+        if (!done) throw new Error('Cloud capture failed');
+        this.afficherMessage(this.t('captureCloudSaved'), 'info');
+        return true;
+      }
+    } catch (error) {
+      if (action === 'cloud' && fallbackPng && generation === this.generation && video === this.state.currentVideo) {
+        const saved = await this.saveLocalCapture(fallbackPng, videoId, time, videoUrl).catch(() => false);
+        await chrome.storage.local.set({ captureAuthState: { authenticated: false, updatedAt: Date.now() } }).catch(() => {});
+        this.afficherMessage(this.t(saved ? 'captureCloudFallback' : 'captureError'), saved ? 'info' : 'error');
+        if (saved) await this.showLocalCaptureIntro();
+        return saved;
+      }
+      this.afficherMessage(action === 'copy' ? this.t('captureCopyError') : action === 'download' ? this.t('captureLocalError') : this.t('captureError'), 'error');
+      return false;
+    } finally {
+      if (!managed) {
+        this.captureBusy = false;
+        if (this.state.captureButton) this.state.captureButton.disabled = false;
+      }
+    }
+  },
+
+  async saveLocalCapture(blob, videoId, playbackTime, videoUrl) {
+    const title = document.querySelector('meta[name="title"]')?.content?.trim() || document.title.replace(/\s+- YouTube$/, '').trim() || videoId;
+    const channel = document.querySelector('meta[itemprop="author"]')?.content?.trim() || document.querySelector('ytd-channel-name yt-formatted-string')?.textContent?.trim() || 'YouTube';
+    const imageDataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Capture encoding failed'));
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+    const result = await chrome.runtime.sendMessage({
+      action: 'rg:captureLocal',
+      capture: {
+        videoId,
+        title,
+        channel,
+        videoUrl: `https://www.youtube.com/watch?v=${videoId}`,
+        playbackTime,
+        capturedAt: new Date().toISOString(),
+        imageDataUrl,
+      },
+    });
+    if (!result?.success) throw new Error(result?.error || 'Local capture download failed');
+    return true;
+  },
+
+  flashCapture(video) {
+    const rect = video.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const flash = document.createElement('div');
+    flash.className = 'rg-capture-flash';
+    flash.setAttribute('aria-hidden', 'true');
+    flash.style.left = `${rect.left}px`;
+    flash.style.top = `${rect.top}px`;
+    flash.style.width = `${rect.width}px`;
+    flash.style.height = `${rect.height}px`;
+    const remove = () => flash.remove();
+    flash.addEventListener('animationend', remove, { once: true });
+    (document.fullscreenElement || document.body).appendChild(flash);
+    setTimeout(remove, 900);
   },
 
   seekVideo(time, video = this.state.currentVideo) {
@@ -1336,7 +1639,8 @@ const YouTubeBookmarker = {
     const bookmark = {
       time: this.state.bookmarkTime ?? Math.round(this.currentVideoTime),
       url: this.currentUrl, note,
-      title: document.querySelector('ytd-watch-metadata h1')?.textContent?.trim() || document.title.replace(/ - YouTube$/, '')
+      title: document.querySelector('ytd-watch-metadata h1')?.textContent?.trim() || document.title.replace(/ - YouTube$/, ''),
+      channel: document.querySelector('#owner #channel-name a, ytd-channel-name a')?.textContent?.trim() || 'YouTube'
     };
     try {
       const response = await chrome.runtime.sendMessage({ action: 'addBookmark', bookmark });

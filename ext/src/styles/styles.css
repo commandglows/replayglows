@@ -1106,7 +1106,11 @@ body:has(> #app > .sg-popup) {
 .sg-brand-row { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: var(--rg-space-1); }
 .sg-brand-info { display: flex; align-items: center; gap: var(--rg-space-2); min-width: 0; }
 .sg-brand-copy { min-width: 0; }
-.sg-local-indicator { display: flex; align-items: center; gap: var(--rg-space-1); min-width: 0; margin: var(--rg-space-1) 0 0; color: var(--rg-color-muted); font-size: var(--rg-text-small); }
+.sg-storage-indicator { position: relative; width: fit-content; padding-bottom: 0.5rem; margin-bottom: -0.5rem; }
+.sg-local-indicator { display: flex; align-items: center; gap: var(--rg-space-1); min-width: 0; margin: var(--rg-space-1) 0 0; padding: 0; border: 0; background: transparent; color: var(--rg-color-muted); font-size: var(--rg-text-small); cursor: help; }
+.sg-storage-popover { position: absolute; z-index: 20; top: 100%; left: 0; width: min(18rem, calc(100vw - 2rem)); padding: var(--rg-space-3); border: 1px solid var(--rg-color-border); border-radius: var(--rg-radius-sm); background: var(--rg-color-surface); color: var(--rg-color-foreground); box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 28%); font-size: var(--rg-text-small); line-height: 1.45; }
+.sg-storage-popover p { margin: 0 0 var(--rg-space-2); }
+.sg-storage-popover a { color: var(--rg-color-warning); text-decoration: underline; text-underline-offset: 0.15em; }
 .sg-popup-actions { display: flex; flex: 0 0 auto; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: var(--rg-space-1); }
 .sg-popup-actions > .sg-button { padding-inline: var(--rg-space-1); }
 .sg-help-entry { margin-inline-start: 0; }
@@ -1265,7 +1269,7 @@ body:has(> #app > .sg-popup) {
 .sg-button--primary:hover { background: var(--rg-color-primary-hover); }
 .sg-button--secondary { border-color: var(--rg-color-border); background: var(--rg-color-surface-raised); color: var(--rg-color-foreground); }
 
-.sg-status-dot { width: 0.375rem; height: 0.375rem; border-radius: 50%; background: var(--rg-color-success); box-shadow: 0 0 0.5rem var(--rg-color-success); }
+.sg-status-dot { width: 0.375rem; height: 0.375rem; flex: 0 0 auto; border-radius: 50%; background: var(--rg-color-warning); box-shadow: 0 0 0.5rem var(--rg-color-warning); }
 
 .sg-options-shell {
   min-height: 100vh;

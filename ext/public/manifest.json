@@ -4,7 +4,7 @@
   "default_locale": "en",
   "version": "1.0.0",
   "description": "__MSG_extensionDescription__",
-  "permissions": ["storage", "tabs", "commands", "notifications", "declarativeNetRequestWithHostAccess"],
+  "permissions": ["storage", "tabs", "commands", "notifications", "declarativeNetRequestWithHostAccess", "clipboardWrite", "downloads"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_popup": "src/popup/index.html",

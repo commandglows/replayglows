@@ -243,6 +243,7 @@ export default defineSchema({
     // YouTube video notes support
     youtubeVideoId: v.optional(v.string()),
     timestamp: v.optional(v.number()),
+    imageStorageId: v.optional(v.id("_storage")),
     createdAt: v.optional(v.number()),
   })
     .index("by_user_id", ["userId"])

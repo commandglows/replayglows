@@ -1,10 +1,10 @@
 ---
 artifact: architecture_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.8"
+artifact_version: "0.1.9"
 project: "replayglows"
 created: "2026-05-10"
-updated: "2026-09-05"
+updated: "2026-09-24"
 status: "draft"
 source_skill: "sf-docs"
 scope: "architecture"
@@ -92,7 +92,13 @@ Backend overrides are restricted to `gaxios@6.7.1 -> uuid@11.1.1` and `teeny-req
 
 `ext/src/content/content.ts` bundles `ext/contentscript.js` as a classic content script. `ext/src/background/background.ts` serializes validated storage operations across tabs and extension pages, with no worker-lifetime data cache. `ext/src/main.ts` mounts the functional Vue popup; options own configurable shortcuts and confirmed JSON replacement/import plus JSON/Markdown export.
 
-The canonical local schema remains a flat `bookmarks` array (`url`, `time`, `formattedTime`, `note`, optional `title`) and derived `groupedBookmarks`. `ext/src/bookmarks.ts` also reads historical options `videoId`/`timestamp` records. Imports validate before mutation; duplicate adds preserve the existing record and show an error. No backend connection, dependency migration or expanded permission grant is introduced. The content match covers the existing YouTube host permission to handle homepage-to-watch SPA navigation.
+The canonical local schema remains a flat `bookmarks` array (`url`, `time`, `formattedTime`, `note`, optional `title` and `channel`) and derived `groupedBookmarks`. `ext/src/bookmarks.ts` also reads historical options `videoId`/`timestamp` records. Imports validate before mutation; duplicate adds preserve the existing record and show an error. No backend connection or dependency migration is introduced. The content match covers the existing YouTube host permission to handle homepage-to-watch SPA navigation.
+
+## YouTube Frame Capture (2026-09-24)
+
+The YouTube capture control reads a boolean Clerk sign-in snapshot from extension-local storage. The authenticated app publishes state changes through a same-origin page event; the app-host `media.js` content script validates the origin and relays only the boolean to the MV3 worker. No auth token or cookie is stored by the extension. Signed-in capture uses the existing nonce-checked app bridge and owner-authorized Convex attachment path; missing/revoked auth or upload failure falls back to local PNG capture.
+
+Local captures use `chrome.downloads` to create `ReplayGlows/<sanitized channel>/<sanitized title> [video ID]/captures/YYMMDD_HHmmss_HH-MM-SS.png`. The worker stores capture metadata (not image bytes) in `chrome.storage.local` and regenerates one `Notes.md` index per video after captures and local bookmark note mutations. The file combines relative image links with timestamped bookmark notes ordered by playback position. `Notes.md` is generated output; downloaded images remain in the user's Downloads directory. The feature adds Chrome `downloads` permission alongside `clipboardWrite`; packaged browser proof remains necessary for permission acceptance and actual file paths.
 
 ## Universal Extension Playback (2026-09-05)
 

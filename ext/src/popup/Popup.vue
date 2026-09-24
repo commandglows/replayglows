@@ -6,13 +6,28 @@ import DiscoveryGuide from '../discovery/DiscoveryGuide.vue'
 import { recordAchievement, type Milestone } from '../discovery/state'
 import type { PlaybackView } from '../playback/protocol'
 import { useI18n } from '../i18n'
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const guide = ref<InstanceType<typeof DiscoveryGuide>>()
 const playback = ref<InstanceType<typeof PlaybackCard>>()
 const playbackView = ref<PlaybackView | null>(null)
 const guideVisible = ref(false)
 const bookmarkSection = ref<HTMLElement>()
 const helpButton = ref<HTMLButtonElement>()
+const storageInfoVisible = ref(false)
+const storageInfoId = 'storage-info'
+let storageInfoCloseTimer: ReturnType<typeof setTimeout> | undefined
+const storageInfoUrl = () => `https://replayglows.com${locale.value === 'fr' ? '/fr' : ''}/extension#bookmark-storage`
+const keepStorageInfoOpen = () => {
+  clearTimeout(storageInfoCloseTimer)
+  storageInfoVisible.value = true
+}
+const scheduleStorageInfoClose = () => {
+  clearTimeout(storageInfoCloseTimer)
+  storageInfoCloseTimer = setTimeout(() => { storageInfoVisible.value = false }, 180)
+}
+const closeStorageInfo = (event: FocusEvent) => {
+  if (!((event.currentTarget as HTMLElement).contains(event.relatedTarget as Node | null))) scheduleStorageInfoClose()
+}
 const practice = async (topic: Milestone) => {
   if (topic === 'note' || topic === 'opened') {
     guideVisible.value = false
@@ -65,9 +80,15 @@ const visit = async (bookmark: Bookmark) => {
         <div class="sg-brand-copy">
           <p class="sg-eyebrow">{{ t('playbackBookmarks') }}</p>
           <h1 class="sg-title">ReplayGlows</h1>
-          <p class="sg-local-indicator" :title="t('localFooter')">
-            <span class="sg-status-dot" aria-hidden="true" />{{ t('localFooter') }}
-          </p>
+          <div class="sg-storage-indicator" @mouseenter="keepStorageInfoOpen" @mouseleave="scheduleStorageInfoClose" @focusin="keepStorageInfoOpen" @focusout="closeStorageInfo">
+            <button class="sg-local-indicator" type="button" :aria-controls="storageInfoId" :aria-expanded="storageInfoVisible" @click="storageInfoVisible ? scheduleStorageInfoClose() : keepStorageInfoOpen()">
+              <span class="sg-status-dot" aria-hidden="true" />{{ t('localLabel') }}
+            </button>
+            <div :id="storageInfoId" v-show="storageInfoVisible" class="sg-storage-popover" @mouseenter="keepStorageInfoOpen" @mouseleave="scheduleStorageInfoClose">
+              <p>{{ t('localInfo') }}</p>
+              <a :href="storageInfoUrl()" target="_blank" rel="noopener noreferrer">{{ t('localLearnMore') }}</a>
+            </div>
+          </div>
         </div>
       </div>
       <div class="sg-popup-actions">

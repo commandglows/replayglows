@@ -2,6 +2,22 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
 
 // This entry must stay self-contained: manifest content scripts are classic scripts.
 (() => {
+  if (location.origin === 'https://app.replayglows.com') {
+    let authStateReceived = false
+    window.addEventListener('message', event => {
+      if (event.source !== window || event.origin !== 'https://app.replayglows.com' ||
+          event.data?.type !== 'RG_CAPTURE_AUTH_STATE' || typeof event.data.authenticated !== 'boolean') return
+      authStateReceived = true
+      void chrome.runtime.sendMessage({ action: 'rg:captureAuthState', authenticated: event.data.authenticated })
+    })
+    let attempts = 0
+    const requestAuthState = () => {
+      if (authStateReceived || attempts++ >= 40) return
+      window.postMessage({ type: 'RG_CAPTURE_AUTH_REQUEST' }, 'https://app.replayglows.com')
+      setTimeout(requestAuthState, 500)
+    }
+    requestAuthState()
+  }
   let context: PlaybackContext | null = null
   let selected: HTMLMediaElement | null = null
   let loop: { a: number; b: number | null } | null = null
