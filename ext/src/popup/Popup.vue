@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { type Bookmark, normalizeBookmarks } from '../bookmarks'
 import PlaybackCard from '../playback/PlaybackCard.vue'
 import DiscoveryGuide from '../discovery/DiscoveryGuide.vue'
@@ -37,6 +37,26 @@ const practice = async (topic: Milestone) => {
   } else playback.value?.focusControls(topic === 'loop')
 }
 const bookmarks = ref<Bookmark[]>([])
+const groups = computed(() => {
+  const videos = new Map<string, { url: string; title: string; thumbnail: string; notes: Bookmark[] }>()
+  for (const bookmark of bookmarks.value) {
+    let video = videos.get(bookmark.url)
+    if (!video) {
+      video = { url: bookmark.url, title: bookmark.title || '', thumbnail: `https://img.youtube.com/vi/${new URL(bookmark.url).searchParams.get('v')}/mqdefault.jpg`, notes: [] }
+      videos.set(bookmark.url, video)
+    }
+    if (!video.title && bookmark.title) video.title = bookmark.title
+    video.notes.push(bookmark)
+  }
+  return [...videos.values()]
+})
+const failedThumbnails = ref(new Set<string>())
+const startEditing = async (bookmark: Bookmark) => {
+  editing.value = bookmark
+  note.value = bookmark.note
+  await nextTick()
+  bookmarkSection.value?.querySelector<HTMLInputElement>('.sg-inline-note')?.focus()
+}
 const error = ref('')
 const editing = ref<Bookmark | null>(null)
 const note = ref('')
@@ -152,65 +172,42 @@ const visit = async (bookmark: Bookmark) => {
           <h2 class="sg-section-title">
             {{ t('yourBookmarks') }} ({{ bookmarks.length }})
           </h2>
-          <article
-            v-for="bookmark in bookmarks"
-            :key="`${bookmark.url}:${bookmark.time}`"
-            class="sct"
-          >
-            <button
-              type="button"
-              class="sg-button"
-              @click="visit(bookmark)"
-            >
-              {{ bookmark.title || t('youtubeVideo') }} · {{ bookmark.formattedTime }}
-            </button>
-            <input
-              v-if="editing === bookmark"
-              v-model="note"
-              class="inp sg-inline-note"
-              :aria-label="t('editNote')"
-              @keyup.enter="mutate('updateBookmark', { ...bookmark, note })"
-              @keyup.esc="editing = null"
-            >
-            <p
-              v-else
-              class="sg-muted"
-            >
-                {{ bookmark.note || t('noNote') }}
-            </p>
-            <template v-if="editing === bookmark">
-              <button
-                class="sg-button sg-button--primary"
-                type="button"
-                @click="mutate('updateBookmark', { ...bookmark, note })"
-              >
-                {{ t('save') }}
-              </button>
-              <button
-                class="sg-button"
-                type="button"
-                @click="editing = null"
-              >
-                {{ t('cancel') }}
-              </button>
-            </template>
-            <template v-else>
-              <button
-                class="sg-button"
-                type="button"
-                @click="editing = bookmark; note = bookmark.note"
-              >
-                {{ t('edit') }}
-              </button>
-              <button
-                class="sg-button"
-                type="button"
-                @click="mutate('deleteBookmark', bookmark)"
-              >
-                {{ t('delete') }}
-              </button>
-            </template>
-          </article>
+          <details v-for="group in groups" :key="group.url" class="sg-video-group">
+            <summary class="sg-video-summary">
+              <a class="sg-video-thumbnail" :href="group.url" target="_blank" rel="noopener noreferrer" :aria-label="group.title || t('youtubeVideo')" @click.stop>
+                <img v-if="!failedThumbnails.has(group.url)" :src="group.thumbnail" alt="" loading="lazy" @error="failedThumbnails.add(group.url)">
+                <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7Z" /></svg>
+              </a>
+              <span class="sg-video-heading">
+                <span class="sg-video-title">{{ group.title || t('youtubeVideo') }}</span>
+                <span class="sg-muted">{{ t('yourBookmarks') }} · {{ group.notes.length }}</span>
+              </span>
+              <svg class="sg-video-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </summary>
+            <ul class="sg-note-list">
+              <li v-for="bookmark in group.notes" :key="`${bookmark.url}:${bookmark.time}`" class="sg-note-row">
+                <button type="button" class="sg-note-time" :aria-label="`${group.title || t('youtubeVideo')} · ${bookmark.formattedTime}`" @click="visit(bookmark)">
+                  {{ bookmark.formattedTime }}
+                </button>
+                <template v-if="editing === bookmark">
+                  <form class="sg-note-editor" @submit.prevent="mutate('updateBookmark', { ...bookmark, note })">
+                    <input v-model="note" class="inp sg-inline-note" :aria-label="t('editNote')" @keyup.esc="editing = null">
+                    <button class="sg-button sg-button--primary" type="submit">{{ t('save') }}</button>
+                    <button class="sg-button" type="button" @click="editing = null">{{ t('cancel') }}</button>
+                  </form>
+                </template>
+                <template v-else>
+                  <p class="sg-note-text">{{ bookmark.note || t('noNote') }}</p>
+                  <button class="sg-playback-icon-button" type="button" :aria-label="`${t('editNote')} · ${bookmark.formattedTime}`" :title="t('editNote')" @click="startEditing(bookmark)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 4 5 5M4 20l4-1L20 7a2 2 0 0 0-4-4L4 15Z" /></svg>
+                  </button>
+                  <button class="sg-playback-icon-button sg-note-delete" type="button" :aria-label="`${t('delete')} · ${bookmark.formattedTime}`" :title="t('delete')" @click="mutate('deleteBookmark', bookmark)">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 10v7m4-7v7" /></svg>
+                  </button>
+                </template>
+              </li>
+            </ul>
+          </details>
         </section>
       </div>
     </div>
