@@ -539,17 +539,42 @@ const YouTubeBookmarker = {
     const video = this.state.currentVideo;
     const player = this.state.player;
     if (!this.ambilightEnabled || !video || !player) return;
-    const canvas = document.createElement('canvas');
-    canvas.width = 192;
-    canvas.height = 108;
-    const context = canvas.getContext('2d', { willReadFrequently: true });
-    if (!context) return;
-    const originalShadow = player.style.getPropertyValue('box-shadow');
-    const originalPriority = player.style.getPropertyPriority('box-shadow');
+    const sourceCanvas = document.createElement('canvas');
+    sourceCanvas.width = 96;
+    sourceCanvas.height = 54;
+    const sourceContext = sourceCanvas.getContext('2d', { alpha: false });
+    if (!sourceContext) return;
     const videoContainer = video.closest('.html5-video-container');
+    const glowHost = player.closest('#player-container') || player.parentElement;
+    if (!glowHost) return;
+    const glowPositions = {
+      top: 'left:0;top:-36px;width:100%;height:72px;',
+      bottom: 'left:0;bottom:-36px;width:100%;height:72px;',
+      left: 'left:-36px;top:0;width:72px;height:100%;',
+      right: 'right:-36px;top:0;width:72px;height:100%;',
+    };
+    const glowSamples = Object.fromEntries(Object.entries(glowPositions).map(([side, position]) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = side === 'top' || side === 'bottom' ? 96 : 5;
+      canvas.height = side === 'left' || side === 'right' ? 54 : 4;
+      canvas.className = `rg-ambilight-glow rg-ambilight-glow-${side}`;
+      canvas.setAttribute('aria-hidden', 'true');
+      canvas.style.cssText = `position:absolute;display:none;pointer-events:none;z-index:0;filter:blur(26px) saturate(1.3);opacity:0.82;${position}`;
+      return [side, { canvas, context: canvas.getContext('2d', { willReadFrequently: true }) }];
+    }));
+    if (Object.values(glowSamples).some(sample => !sample.context)) return;
+    Object.values(glowSamples).forEach(({ canvas }) => glowHost.insertBefore(canvas, glowHost.firstChild));
     const masthead = document.querySelector('ytd-masthead #container');
     const mastheadImage = masthead?.style.getPropertyValue('background-image') || '';
     const mastheadPriority = masthead?.style.getPropertyPriority('background-image') || '';
+    const mastheadSize = masthead?.style.getPropertyValue('background-size') || '';
+    const mastheadSizePriority = masthead?.style.getPropertyPriority('background-size') || '';
+    const mastheadRepeat = masthead?.style.getPropertyValue('background-repeat') || '';
+    const mastheadRepeatPriority = masthead?.style.getPropertyPriority('background-repeat') || '';
+    const mastheadCanvas = document.createElement('canvas');
+    mastheadCanvas.width = sourceCanvas.width;
+    mastheadCanvas.height = 32;
+    const mastheadContext = mastheadCanvas.getContext('2d');
     let appliedMastheadImage = '';
     const edges = Object.fromEntries(['top', 'bottom', 'left', 'right'].map(side => {
       const element = document.createElement('canvas');
@@ -567,10 +592,9 @@ const YouTubeBookmarker = {
       originalPriority: element.style.getPropertyPriority('background-image'),
       appliedImage: '',
     }));
-    let appliedShadow = '';
     let unavailable = false;
     let videoFit = null;
-    const fitProperties = ['width', 'height', 'left', 'top', 'object-fit'];
+    const fitProperties = ['transform', 'transform-origin', 'transition'];
     const restoreVideoFit = () => {
       if (!videoFit) return;
       for (const property of fitProperties) {
@@ -584,36 +608,39 @@ const YouTubeBookmarker = {
     };
     const fitSmallVideoGap = () => {
       const playerRect = player.getBoundingClientRect();
-      if (videoFit) {
-        const samePlayer = Math.abs(playerRect.width - videoFit.width) < 0.5 &&
-          Math.abs(playerRect.height - videoFit.height) < 0.5;
-        const stillApplied = fitProperties.every(property =>
-          video.style.getPropertyValue(property) === videoFit.properties[property].applied &&
-          video.style.getPropertyPriority(property) === 'important');
-        if (samePlayer && stillApplied) return;
-        restoreVideoFit();
-      }
-      const videoRect = video.getBoundingClientRect();
-      const topGap = videoRect.top - playerRect.top;
-      const bottomGap = playerRect.bottom - videoRect.bottom;
-      const leftGap = videoRect.left - playerRect.left;
-      const rightGap = playerRect.right - videoRect.right;
+      const containerRect = videoContainer?.getBoundingClientRect();
+      // Offset dimensions are unaffected by transforms, so measuring them cannot
+      // feed our own enlargement back into the next Ambilight sample.
+      const videoWidth = video.offsetWidth;
+      const videoHeight = video.offsetHeight;
+      const leftGap = containerRect ? containerRect.left + video.offsetLeft - playerRect.left : 0;
+      const topGap = containerRect ? containerRect.top + video.offsetTop - playerRect.top : 0;
+      const rightGap = playerRect.width - leftGap - videoWidth;
+      const bottomGap = playerRect.height - topGap - videoHeight;
       const verticalGap = topGap + bottomGap;
-      // YouTube sometimes leaves only a few pixels of its black player visible.
-      // Fill that case without cropping portrait videos or intentional letterboxing.
-      if (playerRect.width <= 0 || playerRect.height <= 0 || verticalGap <= 1 ||
-          topGap < -1 || bottomGap < -1 || verticalGap > playerRect.height * 0.03 ||
+      // YouTube owns the video's width/height/top/left and rewrites them during
+      // playback. A transform covers its small player gap without fighting it.
+      if (!containerRect || playerRect.width <= 0 || playerRect.height <= 0 ||
+          videoWidth <= 0 || videoHeight <= 0 || verticalGap <= 1 ||
+          topGap < -2 || bottomGap < -2 || verticalGap > playerRect.height * 0.03 ||
           Math.abs(leftGap) > 2 || Math.abs(rightGap) > 2 ||
           getComputedStyle(video).objectFit === 'contain' ||
-          (video.videoWidth && video.videoHeight && video.videoWidth < video.videoHeight)) return;
+          (video.videoWidth && video.videoHeight && video.videoWidth < video.videoHeight)) {
+        restoreVideoFit();
+        return;
+      }
+      const round = value => Math.round(value * 1000) / 1000;
       const target = {
-        width: `${Math.ceil(playerRect.width + 2)}px`,
-        height: `${Math.ceil(playerRect.height + 2)}px`,
-        left: `${video.offsetLeft - leftGap - 1}px`,
-        top: `${video.offsetTop - topGap - 1}px`,
-        'object-fit': 'cover',
+        transform: `translate(${round(-leftGap - 1)}px, ${round(-topGap - 1)}px) scale(${round((playerRect.width + 2) / videoWidth)}, ${round((playerRect.height + 2) / videoHeight)})`,
+        'transform-origin': '0 0',
+        transition: 'none',
       };
-      videoFit = { width: playerRect.width, height: playerRect.height, properties: {} };
+      if (videoFit && fitProperties.every(property =>
+        video.style.getPropertyValue(property) === target[property] &&
+        video.style.getPropertyPriority(property) === 'important')) return;
+      restoreVideoFit();
+      if (getComputedStyle(video).transform !== 'none') return;
+      videoFit = { properties: {} };
       for (const property of fitProperties) {
         videoFit.properties[property] = {
           value: video.style.getPropertyValue(property),
@@ -665,6 +692,7 @@ const YouTubeBookmarker = {
         if (element.style.display === 'none') continue;
         const edgeContext = element.getContext('2d');
         if (!edgeContext) continue;
+        const source = glowSamples[side].canvas;
         const horizontal = side === 'top' || side === 'bottom';
         const offset = horizontal ? geometry.left : geometry.top;
         const painted = horizontal ? geometry.paintedWidth : geometry.paintedHeight;
@@ -672,38 +700,36 @@ const YouTubeBookmarker = {
         const length = horizontal ? element.width : element.height;
         const start = Math.max(0, Math.min(length, Math.round(offset / total * length)));
         const end = Math.max(start, Math.min(length, Math.round((offset + painted) / total * length)));
-        const sourceLength = horizontal ? canvas.width : canvas.height;
-        const sourceOffset = side === 'top' || side === 'left' ? 1 : sourceLength - 3;
-        const sourceX = horizontal ? 0 : sourceOffset;
-        const sourceY = horizontal ? sourceOffset : 0;
-        const sourceWidth = horizontal ? canvas.width : 2;
-        const sourceHeight = horizontal ? 2 : canvas.height;
         const targetWidth = horizontal ? end - start : element.width;
         const targetHeight = horizontal ? element.height : end - start;
         edgeContext.clearRect(0, 0, element.width, element.height);
-        if (end > start) edgeContext.drawImage(canvas, sourceX, sourceY, sourceWidth, sourceHeight,
+        if (end > start) edgeContext.drawImage(source, 0, 0, source.width, source.height,
           horizontal ? start : 0, horizontal ? 0 : start, targetWidth, targetHeight);
         // Extend the video corner pixels into the small areas outside its bounds.
-        if (start > 0) edgeContext.drawImage(canvas, sourceX, sourceY, horizontal ? 1 : 2, horizontal ? 2 : 1,
+        if (start > 0) edgeContext.drawImage(source, 0, 0, horizontal ? 1 : source.width, horizontal ? source.height : 1,
           0, 0, horizontal ? start : element.width, horizontal ? element.height : start);
-        if (end < length) edgeContext.drawImage(canvas,
-          horizontal ? canvas.width - 1 : sourceX, horizontal ? sourceY : canvas.height - 1,
-          horizontal ? 1 : 2, horizontal ? 2 : 1,
+        if (end < length) edgeContext.drawImage(source,
+          horizontal ? source.width - 1 : 0, horizontal ? 0 : source.height - 1,
+          horizontal ? 1 : source.width, horizontal ? source.height : 1,
           horizontal ? end : 0, horizontal ? 0 : end,
           horizontal ? length - end : element.width, horizontal ? element.height : length - end);
       }
     };
+    let lastSampledTime = NaN;
+    let lastColorUpdate = 0;
     const clearGlow = () => {
       restoreVideoFit();
-      if (appliedShadow && player.style.getPropertyValue('box-shadow') === appliedShadow) {
-        if (originalShadow) player.style.setProperty('box-shadow', originalShadow, originalPriority);
-        else player.style.removeProperty('box-shadow');
-      }
-      appliedShadow = '';
+      lastSampledTime = NaN;
+      lastColorUpdate = 0;
+      Object.values(glowSamples).forEach(({ canvas }) => { canvas.style.display = 'none'; });
       hideEdges();
       if (masthead && appliedMastheadImage && masthead.style.getPropertyValue('background-image') === appliedMastheadImage) {
         if (mastheadImage) masthead.style.setProperty('background-image', mastheadImage, mastheadPriority);
         else masthead.style.removeProperty('background-image');
+        if (mastheadSize) masthead.style.setProperty('background-size', mastheadSize, mastheadSizePriority);
+        else masthead.style.removeProperty('background-size');
+        if (mastheadRepeat) masthead.style.setProperty('background-repeat', mastheadRepeat, mastheadRepeatPriority);
+        else masthead.style.removeProperty('background-repeat');
       }
       appliedMastheadImage = '';
       for (const backdrop of backdrops) {
@@ -713,7 +739,7 @@ const YouTubeBookmarker = {
         backdrop.appliedImage = '';
       }
     };
-    const sample = () => {
+    const sample = (forceColors = false) => {
       if (!player.isConnected || !video.isConnected || this.state.currentVideo !== video ||
           document.hidden || document.fullscreenElement || document.pictureInPictureElement ||
           player.classList.contains('ad-showing') || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || unavailable) {
@@ -721,41 +747,68 @@ const YouTubeBookmarker = {
         return;
       }
       try {
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
+        if (!forceColors && video.paused && video.currentTime === lastSampledTime) {
+          paintEdges(positionEdges());
+          return;
+        }
+        if (!video.videoWidth || !video.videoHeight) return;
+        sourceContext.drawImage(video, 0, 0, sourceCanvas.width, sourceCanvas.height);
+        const sourceWidth = sourceCanvas.width;
+        const sourceHeight = sourceCanvas.height;
+        const stripWidth = 5;
+        const stripHeight = 4;
+        const sourceRegions = {
+          top: [0, 0, sourceWidth, stripHeight],
+          bottom: [0, sourceHeight - stripHeight, sourceWidth, stripHeight],
+          left: [0, 0, stripWidth, sourceHeight],
+          right: [sourceWidth - stripWidth, 0, stripWidth, sourceHeight],
+        };
+        for (const [side, { canvas, context }] of Object.entries(glowSamples)) {
+          context.drawImage(sourceCanvas, ...sourceRegions[side], 0, 0, canvas.width, canvas.height);
+          canvas.style.display = 'block';
+        }
+        lastSampledTime = video.currentTime;
+        paintEdges(positionEdges());
+        const now = performance.now();
+        if (!forceColors && now - lastColorUpdate < 100) return;
+        lastColorUpdate = now;
+        const sampled = Object.fromEntries(Object.entries(glowSamples).map(([side, { canvas, context }]) =>
+          [side, context.getImageData(0, 0, canvas.width, canvas.height).data]));
         const edgeColor = (side, alpha = 0.7) => {
+          const canvas = glowSamples[side].canvas;
+          const data = sampled[side];
+          const horizontal = side === 'top' || side === 'bottom';
           let red = 0, green = 0, blue = 0, count = 0;
           for (let i = 1; i <= 6; i++) {
-            const x = side === 'left' ? 2 : side === 'right' ? canvas.width - 3 : Math.round(i * (canvas.width - 1) / 7);
-            const y = side === 'top' ? 2 : side === 'bottom' ? canvas.height - 3 : Math.round(i * (canvas.height - 1) / 7);
+            const x = horizontal ? Math.round(i * (canvas.width - 1) / 7) : Math.floor(canvas.width / 2);
+            const y = horizontal ? Math.floor(canvas.height / 2) : Math.round(i * (canvas.height - 1) / 7);
             const index = (y * canvas.width + x) * 4;
             red += data[index]; green += data[index + 1]; blue += data[index + 2]; count++;
           }
           return `rgba(${Math.round(red / count)}, ${Math.round(green / count)}, ${Math.round(blue / count)}, ${alpha})`;
         };
-        appliedShadow = [
-          `-24px 0 55px 16px ${edgeColor('left')}`,
-          `24px 0 55px 16px ${edgeColor('right')}`,
-          `0 -24px 55px 16px ${edgeColor('top')}`,
-          `0 24px 55px 16px ${edgeColor('bottom')}`,
-        ].join(', ');
-        player.style.setProperty('box-shadow', appliedShadow, 'important');
-        // The shadow sits outside the player; tint the native letterbox inside it too.
+        // Tint native letterboxing when the video does not cover the player.
         const backgroundImage = `linear-gradient(to bottom, ${edgeColor('top', 1)}, ${edgeColor('bottom', 1)})`;
         for (const backdrop of backdrops) {
           backdrop.element.style.setProperty('background-image', backgroundImage, 'important');
           backdrop.appliedImage = backgroundImage;
         }
-        paintEdges(positionEdges());
-        if (masthead) {
-          if (!document.documentElement.hasAttribute('dark') && !document.querySelector('ytd-app')?.hasAttribute('dark')) {
-            appliedMastheadImage = `linear-gradient(90deg, ${edgeColor('left', 0.28)}, ${edgeColor('top', 0.2)}, ${edgeColor('right', 0.28)})`;
-            masthead.style.setProperty('background-image', appliedMastheadImage, 'important');
-          } else if (appliedMastheadImage && masthead.style.getPropertyValue('background-image') === appliedMastheadImage) {
-            if (mastheadImage) masthead.style.setProperty('background-image', mastheadImage, mastheadPriority);
-            else masthead.style.removeProperty('background-image');
-            appliedMastheadImage = '';
-          }
+        if (masthead && mastheadContext) {
+          const dark = document.documentElement.hasAttribute('dark') || document.querySelector('ytd-app')?.hasAttribute('dark');
+          const alpha = dark ? 0.28 : 0.48;
+          mastheadContext.clearRect(0, 0, mastheadCanvas.width, mastheadCanvas.height);
+          mastheadContext.drawImage(glowSamples.top.canvas, 0, 0, mastheadCanvas.width, mastheadCanvas.height);
+          mastheadContext.globalCompositeOperation = 'destination-in';
+          const fade = mastheadContext.createLinearGradient(0, 0, 0, mastheadCanvas.height);
+          fade.addColorStop(0, 'rgba(0, 0, 0, 0)');
+          fade.addColorStop(1, `rgba(0, 0, 0, ${alpha})`);
+          mastheadContext.fillStyle = fade;
+          mastheadContext.fillRect(0, 0, mastheadCanvas.width, mastheadCanvas.height);
+          mastheadContext.globalCompositeOperation = 'source-over';
+          appliedMastheadImage = `url("${mastheadCanvas.toDataURL()}")`;
+          masthead.style.setProperty('background-image', appliedMastheadImage, 'important');
+          masthead.style.setProperty('background-size', '100% 100%', 'important');
+          masthead.style.setProperty('background-repeat', 'no-repeat', 'important');
         }
       } catch {
         // Some streams forbid canvas reads. Leave playback unaffected.
@@ -763,26 +816,79 @@ const YouTubeBookmarker = {
         clearGlow();
       }
     };
-    const timer = setInterval(sample, 300);
-    video.addEventListener('loadeddata', sample);
-    video.addEventListener('seeked', sample);
-    document.addEventListener('visibilitychange', sample);
-    document.addEventListener('fullscreenchange', sample);
-    video.addEventListener('enterpictureinpicture', sample);
-    video.addEventListener('leavepictureinpicture', sample);
+    let running = false;
+    let frameCallbackId = null;
+    let animationFrameId = null;
+    let lastGlowUpdate = 0;
+    const stopLoop = () => {
+      running = false;
+      if (frameCallbackId !== null && video.cancelVideoFrameCallback) video.cancelVideoFrameCallback(frameCallbackId);
+      if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
+      frameCallbackId = null;
+      animationFrameId = null;
+    };
+    const onVideoFrame = now => {
+      frameCallbackId = null;
+      if (!running) return;
+      if (now - lastGlowUpdate >= 1000 / 30 - 2) {
+        sample();
+        lastGlowUpdate = now;
+      }
+      if (unavailable) { stopLoop(); return; }
+      if (running) frameCallbackId = video.requestVideoFrameCallback(onVideoFrame);
+    };
+    const onAnimationFrame = now => {
+      animationFrameId = null;
+      if (!running) return;
+      if (now - lastGlowUpdate >= 1000 / 30 - 2 && video.currentTime !== lastSampledTime) {
+        sample();
+        lastGlowUpdate = now;
+      }
+      if (unavailable) { stopLoop(); return; }
+      if (running) animationFrameId = requestAnimationFrame(onAnimationFrame);
+    };
+    const startLoop = () => {
+      if (running || unavailable || video.paused || video.ended || document.hidden ||
+          document.fullscreenElement || document.pictureInPictureElement || !player.isConnected) return;
+      running = true;
+      lastGlowUpdate = 0;
+      if (video.requestVideoFrameCallback) frameCallbackId = video.requestVideoFrameCallback(onVideoFrame);
+      else animationFrameId = requestAnimationFrame(onAnimationFrame);
+    };
+    const refreshSample = () => { lastSampledTime = NaN; sample(true); startLoop(); };
+    const onPlaybackStop = () => { stopLoop(); sample(true); };
+    const onStateChange = () => {
+      if (document.hidden || document.fullscreenElement || document.pictureInPictureElement) stopLoop();
+      sample(true);
+      startLoop();
+    };
+    video.addEventListener('loadeddata', refreshSample);
+    video.addEventListener('seeked', refreshSample);
+    video.addEventListener('play', startLoop);
+    video.addEventListener('pause', onPlaybackStop);
+    video.addEventListener('ended', onPlaybackStop);
+    document.addEventListener('visibilitychange', onStateChange);
+    document.addEventListener('fullscreenchange', onStateChange);
+    video.addEventListener('enterpictureinpicture', onStateChange);
+    video.addEventListener('leavepictureinpicture', onStateChange);
     this.ambilightCleanup = () => {
-      clearInterval(timer);
-      video.removeEventListener('loadeddata', sample);
-      video.removeEventListener('seeked', sample);
-      document.removeEventListener('visibilitychange', sample);
-      document.removeEventListener('fullscreenchange', sample);
-      video.removeEventListener('enterpictureinpicture', sample);
-      video.removeEventListener('leavepictureinpicture', sample);
+      stopLoop();
+      video.removeEventListener('loadeddata', refreshSample);
+      video.removeEventListener('seeked', refreshSample);
+      video.removeEventListener('play', startLoop);
+      video.removeEventListener('pause', onPlaybackStop);
+      video.removeEventListener('ended', onPlaybackStop);
+      document.removeEventListener('visibilitychange', onStateChange);
+      document.removeEventListener('fullscreenchange', onStateChange);
+      video.removeEventListener('enterpictureinpicture', onStateChange);
+      video.removeEventListener('leavepictureinpicture', onStateChange);
       clearGlow();
       Object.values(edges).forEach(element => element.remove());
+      Object.values(glowSamples).forEach(({ canvas }) => canvas.remove());
       this.ambilightCleanup = null;
     };
-    sample();
+    sample(true);
+    startLoop();
   },
 
   setupCaptureMenu() {
