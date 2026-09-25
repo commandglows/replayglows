@@ -114,12 +114,11 @@ const appUrlValue = appSignInRedirectUrl('/videos')
           <h2 class="text-3xl sm:text-4xl font-bold text-foreground mb-4" style="font-family: var(--font-instrument-sans);">{t.pricing.title}</h2>
           <p class="text-muted-foreground max-w-2xl mx-auto mb-8">{t.pricing.subtitle}</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           {t.pricing.plans.map(plan => (
-            <div class={`relative marketing-card ${plan.highlighted ? 'bg-card border-foreground/30' : 'bg-card/70 border-border marketing-card--hover-border'}`}>
-              {plan.highlighted && <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-foreground text-background text-xs font-medium rounded-full">{t.pricing.mostPopular}</div>}
+            <div class="relative marketing-card bg-card/70 border-border marketing-card--hover-border">
               <div class="mb-6"><h3 class="text-xl font-semibold text-foreground mb-2">{plan.name}</h3><p class="text-muted-foreground text-sm">{plan.desc}</p></div>
-              <div class="mb-6"><div class="flex items-baseline gap-1"><span class="text-4xl font-bold text-foreground">${plan.monthly}</span>{plan.monthly > 0 && <span class="text-muted-foreground text-sm">{t.pricing.perMonth}</span>}</div></div>
+              <div class="mb-6"><span class={plan.available ? 'text-4xl font-bold text-foreground' : 'text-lg font-semibold text-foreground'}>{plan.priceLabel}</span></div>
               <ul class="space-y-3 mb-8">
                 {plan.features.map(f => (
                   <li class="flex items-center gap-3 text-sm text-foreground/85">
@@ -128,7 +127,7 @@ const appUrlValue = appSignInRedirectUrl('/videos')
                   </li>
                 ))}
               </ul>
-              <a href={appUrlValue} class={`block w-full text-center rounded-full py-3 text-sm font-medium transition-colors ${plan.highlighted ? 'shimmer-btn marketing-cta-solid' : 'bg-card text-foreground hover:bg-muted border border-border'}`}>{plan.cta}</a>
+              {plan.available ? <a href={appUrlValue} class="block w-full text-center rounded-full py-3 text-sm font-medium transition-colors shimmer-btn marketing-cta-solid">{plan.cta}</a> : <span class="block w-full text-center rounded-full py-3 text-sm font-medium border border-border text-muted-foreground">{plan.cta}</span>}
             </div>
           ))}
         </div>

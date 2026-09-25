@@ -93,17 +93,11 @@ export default {
     ],
   },
   pricing: {
-    title: 'Simple, Transparent Pricing',
-    subtitle: 'Start free, upgrade when you need more. No hidden fees.',
-    monthly: 'Monthly',
-    yearly: 'Yearly',
-    yearlyDiscount: '-20%',
-    perMonth: '/month',
-    mostPopular: 'Most Popular',
+    title: 'Free now, Pro coming soon',
+    subtitle: 'Start with Free. We’ll announce Pro pricing when it’s ready.',
     plans: [
-      { name: 'Free', desc: 'Perfect for getting started', monthly: 0, yearly: 0, features: ['3 playlists', '50 saved videos', 'Native YouTube captions', 'Basic notes', 'Community support', '1 device'], cta: 'Get Started' },
-      { name: 'Pro', desc: 'For serious learners', monthly: 7, yearly: 56, features: ['AI transcription (50 videos/mo)', 'Unlimited playlists & videos', 'AI-powered summaries', 'Export to Obsidian & Notion', 'Cross-device sync', 'Advanced search', 'Priority support'], cta: 'Start Free Trial', highlighted: true },
-      { name: 'Power', desc: 'For heavy users', monthly: 15, yearly: 120, features: ['AI transcription (200 videos/mo)', 'Everything in Pro', 'Early access to new features', 'Priority support'], cta: 'Get Power' },
+      { name: 'Free', desc: 'Perfect for getting started', priceLabel: '$0', available: true, features: ['Up to 10 videos', '50 notes per video', '3 playlists'], cta: 'Get Started' },
+      { name: 'Pro', desc: 'For serious learners', priceLabel: 'Pricing to be announced', available: false, features: ['Up to 100 videos', '500 notes per video', '20 playlists', 'AI summaries', 'Note export'], cta: 'Coming soon' },
     ],
   },
   finalCta: {

@@ -93,17 +93,11 @@ export default {
     ],
   },
   pricing: {
-    title: 'Tarifs simples et transparents',
-    subtitle: 'Commence gratuitement, évolue selon tes besoins. Sans frais cachés.',
-    monthly: 'Mensuel',
-    yearly: 'Annuel',
-    yearlyDiscount: '-20%',
-    perMonth: '/mois',
-    mostPopular: 'Le plus populaire',
+    title: 'Gratuit maintenant, Pro bientôt',
+    subtitle: 'Commence gratuitement. Le tarif Pro sera annoncé quand il sera prêt.',
     plans: [
-      { name: 'Gratuit', desc: 'Parfait pour débuter', monthly: 0, yearly: 0, features: ['3 playlists', '50 vidéos sauvegardées', 'Sous-titres YouTube natifs', 'Notes basiques', 'Support communautaire', '1 appareil'], cta: 'Commencer' },
-      { name: 'Pro', desc: 'Pour les apprenants sérieux', monthly: 7, yearly: 56, features: ['Transcription IA (50 vidéos/mois)', 'Playlists & vidéos illimitées', 'Résumés par IA', 'Export vers Obsidian & Notion', 'Sync multi-appareils', 'Recherche avancée', 'Support prioritaire'], cta: 'Essai gratuit', highlighted: true },
-      { name: 'Power', desc: 'Pour les gros utilisateurs', monthly: 15, yearly: 120, features: ['Transcription IA (200 vidéos/mois)', 'Tout ce qui est inclus dans Pro', 'Accès anticipé aux nouveautés', 'Support prioritaire'], cta: 'Obtenir Power' },
+      { name: 'Gratuit', desc: 'Parfait pour débuter', priceLabel: '0 $', available: true, features: ['Jusqu’à 10 vidéos', '50 notes par vidéo', '3 playlists'], cta: 'Commencer' },
+      { name: 'Pro', desc: 'Pour les apprenants sérieux', priceLabel: 'Tarif à venir', available: false, features: ['Jusqu’à 100 vidéos', '500 notes par vidéo', '20 playlists', 'Résumés IA', 'Export des notes'], cta: 'Bientôt disponible' },
     ],
   },
   finalCta: {
