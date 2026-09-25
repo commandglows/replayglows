@@ -1,10 +1,10 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.2.1"
 project: replayglows
 created: "2026-09-05"
-updated: "2026-09-24"
+updated: "2026-09-25"
 status: active
 source_skill: sg-docs
 scope: extension-product
@@ -16,7 +16,7 @@ docs_impact: yes
 target_user: "Video learners using browser media and YouTube timestamped notes."
 user_problem: "Playback pace and passage review are disconnected from saved learning moments."
 desired_outcomes: "Set one listening pace, isolate a tab and repeat a passage connected to existing bookmarks."
-non_goals: "Cloud sync, saved segment records, advanced media effects or guaranteed compatibility with every player."
+non_goals: "Cloud sync, saved segment records, advanced video processing or guaranteed compatibility with every player."
 linked_systems: [ext]
 depends_on:
   - "shipglows_data/technical/architecture.md"
@@ -52,6 +52,7 @@ One shared base speed is the default context for every supported unpinned tab. P
 | Media discovery | Video/audio, dynamic elements, accessible embedded frames and open shadow roots. Commands choose a media target automatically; there is no manual target picker. |
 | Existing learning records | YouTube bookmarks/notes and JSON/Markdown export plus validated JSON import retain their existing contract. Speed preferences and transient tab IDs are not portable note records. |
 | YouTube frame capture | A player capture automatically creates a cloud note when the cached ReplayGlows sign-in state is active; otherwise it saves a PNG under `Downloads/ReplayGlows/<channel>/<video> [ID]/captures/`. The per-video generated `Notes.md` combines relative capture links with timestamped local extension notes and refreshes after capture or bookmark note changes. The first local save explains its location and offers sign-in. Explicit copy and local download remain available in the capture menu; cloud failure falls back to the local archive. |
+| YouTube Ambilight | Optional, off by default in the ReplayGlows player menu. A small canvas samples the visible video's edges every 300 ms and colors a shadow around the YouTube player. For a narrow horizontal gap, the video slightly covers the player with its aspect ratio preserved; larger gaps use sampled edge pixels. The light-theme header receives a subtle tint. The choice persists locally; the effect stops on ads, hidden tabs, fullscreen, Picture-in-Picture and unreadable streams. Packaged Chrome visual behavior remains to be checked after reloading the extension. |
 
 ## Boundaries and Availability
 

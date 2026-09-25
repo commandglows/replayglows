@@ -107,15 +107,17 @@ const YouTubeBookmarker = {
     this.clickGesture = null;
     this.videoSplitsCleanup?.();
     this.speedBarCleanup?.();
+    this.ambilightCleanup?.();
     this.dragCleanup?.();
     this.restoreBookmarkPlayback?.();
     this.events?.abort();
     this.hotkeyEvents?.abort();
     this.events = new AbortController();
     const visibilityRevision = this.speedBarVisibilityRevision || 0;
-    const { language = 'auto', speedBarVisible = false, captureAuthState = null, captureLocalIntroShown = false } = await chrome.storage.local.get(['language', 'speedBarVisible', 'captureAuthState', 'captureLocalIntroShown']);
+    const { language = 'auto', speedBarVisible = false, ambilightEnabled = false, captureAuthState = null, captureLocalIntroShown = false } = await chrome.storage.local.get(['language', 'speedBarVisible', 'ambilightEnabled', 'captureAuthState', 'captureLocalIntroShown']);
     if (generation !== this.generation || videoUrl !== this.currentUrl) return;
     if (visibilityRevision === (this.speedBarVisibilityRevision || 0)) this.speedBarVisible = speedBarVisible === true;
+    this.ambilightEnabled = ambilightEnabled === true;
     this.captureAuthState = captureAuthState;
     this.captureLocalIntroShown = captureLocalIntroShown === true;
     this.locale = language === 'fr' || (language === 'auto' && navigator.languages.some(item => item.toLowerCase().startsWith('fr'))) ? 'fr' : 'en';
@@ -132,6 +134,7 @@ const YouTubeBookmarker = {
       if (generation !== this.generation || videoUrl !== this.currentUrl) return;
       this.setupSpeedBar();
       this.setupVideoSplits();
+      this.setupAmbilight();
       this.setupOverflowMenu();
       this.setupCaptureMenu();
       await this.setupHotkeys();
@@ -516,9 +519,270 @@ const YouTubeBookmarker = {
       { key: 'openLocal', label: this.t('openLocal'), run: () => this.openInApp('watch') },
       { key: 'openCloud', label: this.t('openCloud'), run: () => this.openInApp('play') },
       { key: 'showSpeed', label: this.t(this.speedBarVisible ? 'hideSpeed' : 'showSpeed'), role: 'menuitemcheckbox', checked: !!this.speedBarVisible, run: () => this.toggleSpeedBar() },
+      { key: 'ambilight', label: 'Ambilight', role: 'menuitemcheckbox', checked: !!this.ambilightEnabled, run: () => this.toggleAmbilight() },
     ]);
     this.speedMenuEntry = menu?.entries.get('showSpeed') || null;
+    this.ambilightMenuEntry = menu?.entries.get('ambilight') || null;
     this.state.overlayMenu = menu?.menu || null;
+  },
+
+  toggleAmbilight() {
+    this.ambilightEnabled = !this.ambilightEnabled;
+    const entry = this.ambilightMenuEntry;
+    entry?.setAttribute('aria-checked', String(this.ambilightEnabled));
+    this.ambilightCleanup?.();
+    this.setupAmbilight();
+    void chrome.storage.local.set({ ambilightEnabled: this.ambilightEnabled });
+  },
+
+  setupAmbilight() {
+    const video = this.state.currentVideo;
+    const player = this.state.player;
+    if (!this.ambilightEnabled || !video || !player) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = 192;
+    canvas.height = 108;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) return;
+    const originalShadow = player.style.getPropertyValue('box-shadow');
+    const originalPriority = player.style.getPropertyPriority('box-shadow');
+    const videoContainer = video.closest('.html5-video-container');
+    const masthead = document.querySelector('ytd-masthead #container');
+    const mastheadImage = masthead?.style.getPropertyValue('background-image') || '';
+    const mastheadPriority = masthead?.style.getPropertyPriority('background-image') || '';
+    let appliedMastheadImage = '';
+    const edges = Object.fromEntries(['top', 'bottom', 'left', 'right'].map(side => {
+      const element = document.createElement('canvas');
+      element.className = `rg-ambilight-edge rg-ambilight-edge-${side}`;
+      element.setAttribute('aria-hidden', 'true');
+      element.style.cssText = 'position:absolute;display:none;pointer-events:none;z-index:61;';
+      element.width = side === 'top' || side === 'bottom' ? 384 : 2;
+      element.height = side === 'left' || side === 'right' ? 216 : 2;
+      player.appendChild(element);
+      return [side, element];
+    }));
+    const backdrops = [...new Set([player, videoContainer, video].filter(Boolean))].map(element => ({
+      element,
+      originalImage: element.style.getPropertyValue('background-image'),
+      originalPriority: element.style.getPropertyPriority('background-image'),
+      appliedImage: '',
+    }));
+    let appliedShadow = '';
+    let unavailable = false;
+    let videoFit = null;
+    const fitProperties = ['width', 'height', 'left', 'top', 'object-fit'];
+    const restoreVideoFit = () => {
+      if (!videoFit) return;
+      for (const property of fitProperties) {
+        const saved = videoFit.properties[property];
+        if (video.style.getPropertyValue(property) !== saved.applied ||
+            video.style.getPropertyPriority(property) !== 'important') continue;
+        if (saved.value) video.style.setProperty(property, saved.value, saved.priority);
+        else video.style.removeProperty(property);
+      }
+      videoFit = null;
+    };
+    const fitSmallVideoGap = () => {
+      const playerRect = player.getBoundingClientRect();
+      if (videoFit) {
+        const samePlayer = Math.abs(playerRect.width - videoFit.width) < 0.5 &&
+          Math.abs(playerRect.height - videoFit.height) < 0.5;
+        const stillApplied = fitProperties.every(property =>
+          video.style.getPropertyValue(property) === videoFit.properties[property].applied &&
+          video.style.getPropertyPriority(property) === 'important');
+        if (samePlayer && stillApplied) return;
+        restoreVideoFit();
+      }
+      const videoRect = video.getBoundingClientRect();
+      const topGap = videoRect.top - playerRect.top;
+      const bottomGap = playerRect.bottom - videoRect.bottom;
+      const leftGap = videoRect.left - playerRect.left;
+      const rightGap = playerRect.right - videoRect.right;
+      const verticalGap = topGap + bottomGap;
+      // YouTube sometimes leaves only a few pixels of its black player visible.
+      // Fill that case without cropping portrait videos or intentional letterboxing.
+      if (playerRect.width <= 0 || playerRect.height <= 0 || verticalGap <= 1 ||
+          topGap < -1 || bottomGap < -1 || verticalGap > playerRect.height * 0.03 ||
+          Math.abs(leftGap) > 2 || Math.abs(rightGap) > 2 ||
+          getComputedStyle(video).objectFit === 'contain' ||
+          (video.videoWidth && video.videoHeight && video.videoWidth < video.videoHeight)) return;
+      const target = {
+        width: `${Math.ceil(playerRect.width + 2)}px`,
+        height: `${Math.ceil(playerRect.height + 2)}px`,
+        left: `${video.offsetLeft - leftGap - 1}px`,
+        top: `${video.offsetTop - topGap - 1}px`,
+        'object-fit': 'cover',
+      };
+      videoFit = { width: playerRect.width, height: playerRect.height, properties: {} };
+      for (const property of fitProperties) {
+        videoFit.properties[property] = {
+          value: video.style.getPropertyValue(property),
+          priority: video.style.getPropertyPriority(property),
+          applied: target[property],
+        };
+        video.style.setProperty(property, target[property], 'important');
+      }
+    };
+    const hideEdges = () => Object.values(edges).forEach(element => { element.style.display = 'none'; });
+    const positionEdges = () => {
+      fitSmallVideoGap();
+      const playerRect = player.getBoundingClientRect();
+      const videoRect = video.getBoundingClientRect();
+      if (!playerRect.width || !playerRect.height || !videoRect.width || !videoRect.height) {
+        hideEdges();
+        return null;
+      }
+      let paintedWidth = videoRect.width;
+      let paintedHeight = videoRect.height;
+      if (getComputedStyle(video).objectFit === 'contain' && video.videoWidth && video.videoHeight) {
+        const scale = Math.min(videoRect.width / video.videoWidth, videoRect.height / video.videoHeight);
+        paintedWidth = video.videoWidth * scale;
+        paintedHeight = video.videoHeight * scale;
+      }
+      const left = videoRect.left - playerRect.left + (videoRect.width - paintedWidth) / 2;
+      const top = videoRect.top - playerRect.top + (videoRect.height - paintedHeight) / 2;
+      const right = left + paintedWidth;
+      const bottom = top + paintedHeight;
+      const gaps = {
+        top: [0, 0, playerRect.width, Math.max(0, top)],
+        bottom: [0, bottom, playerRect.width, Math.max(0, playerRect.height - bottom)],
+        left: [0, top, Math.max(0, left), paintedHeight],
+        right: [right, top, Math.max(0, playerRect.width - right), paintedHeight],
+      };
+      for (const [side, element] of Object.entries(edges)) {
+        const [x, y, width, height] = gaps[side];
+        element.style.display = width > 1 && height > 1 ? 'block' : 'none';
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+        element.style.width = `${width}px`;
+        element.style.height = `${height}px`;
+      }
+      return { left, top, paintedWidth, paintedHeight, playerWidth: playerRect.width, playerHeight: playerRect.height };
+    };
+    const paintEdges = geometry => {
+      if (!geometry) return;
+      for (const [side, element] of Object.entries(edges)) {
+        if (element.style.display === 'none') continue;
+        const edgeContext = element.getContext('2d');
+        if (!edgeContext) continue;
+        const horizontal = side === 'top' || side === 'bottom';
+        const offset = horizontal ? geometry.left : geometry.top;
+        const painted = horizontal ? geometry.paintedWidth : geometry.paintedHeight;
+        const total = horizontal ? geometry.playerWidth : geometry.playerHeight;
+        const length = horizontal ? element.width : element.height;
+        const start = Math.max(0, Math.min(length, Math.round(offset / total * length)));
+        const end = Math.max(start, Math.min(length, Math.round((offset + painted) / total * length)));
+        const sourceLength = horizontal ? canvas.width : canvas.height;
+        const sourceOffset = side === 'top' || side === 'left' ? 1 : sourceLength - 3;
+        const sourceX = horizontal ? 0 : sourceOffset;
+        const sourceY = horizontal ? sourceOffset : 0;
+        const sourceWidth = horizontal ? canvas.width : 2;
+        const sourceHeight = horizontal ? 2 : canvas.height;
+        const targetWidth = horizontal ? end - start : element.width;
+        const targetHeight = horizontal ? element.height : end - start;
+        edgeContext.clearRect(0, 0, element.width, element.height);
+        if (end > start) edgeContext.drawImage(canvas, sourceX, sourceY, sourceWidth, sourceHeight,
+          horizontal ? start : 0, horizontal ? 0 : start, targetWidth, targetHeight);
+        // Extend the video corner pixels into the small areas outside its bounds.
+        if (start > 0) edgeContext.drawImage(canvas, sourceX, sourceY, horizontal ? 1 : 2, horizontal ? 2 : 1,
+          0, 0, horizontal ? start : element.width, horizontal ? element.height : start);
+        if (end < length) edgeContext.drawImage(canvas,
+          horizontal ? canvas.width - 1 : sourceX, horizontal ? sourceY : canvas.height - 1,
+          horizontal ? 1 : 2, horizontal ? 2 : 1,
+          horizontal ? end : 0, horizontal ? 0 : end,
+          horizontal ? length - end : element.width, horizontal ? element.height : length - end);
+      }
+    };
+    const clearGlow = () => {
+      restoreVideoFit();
+      if (appliedShadow && player.style.getPropertyValue('box-shadow') === appliedShadow) {
+        if (originalShadow) player.style.setProperty('box-shadow', originalShadow, originalPriority);
+        else player.style.removeProperty('box-shadow');
+      }
+      appliedShadow = '';
+      hideEdges();
+      if (masthead && appliedMastheadImage && masthead.style.getPropertyValue('background-image') === appliedMastheadImage) {
+        if (mastheadImage) masthead.style.setProperty('background-image', mastheadImage, mastheadPriority);
+        else masthead.style.removeProperty('background-image');
+      }
+      appliedMastheadImage = '';
+      for (const backdrop of backdrops) {
+        if (!backdrop.appliedImage || backdrop.element.style.getPropertyValue('background-image') !== backdrop.appliedImage) continue;
+        if (backdrop.originalImage) backdrop.element.style.setProperty('background-image', backdrop.originalImage, backdrop.originalPriority);
+        else backdrop.element.style.removeProperty('background-image');
+        backdrop.appliedImage = '';
+      }
+    };
+    const sample = () => {
+      if (!player.isConnected || !video.isConnected || this.state.currentVideo !== video ||
+          document.hidden || document.fullscreenElement || document.pictureInPictureElement ||
+          player.classList.contains('ad-showing') || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || unavailable) {
+        clearGlow();
+        return;
+      }
+      try {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
+        const edgeColor = (side, alpha = 0.7) => {
+          let red = 0, green = 0, blue = 0, count = 0;
+          for (let i = 1; i <= 6; i++) {
+            const x = side === 'left' ? 2 : side === 'right' ? canvas.width - 3 : Math.round(i * (canvas.width - 1) / 7);
+            const y = side === 'top' ? 2 : side === 'bottom' ? canvas.height - 3 : Math.round(i * (canvas.height - 1) / 7);
+            const index = (y * canvas.width + x) * 4;
+            red += data[index]; green += data[index + 1]; blue += data[index + 2]; count++;
+          }
+          return `rgba(${Math.round(red / count)}, ${Math.round(green / count)}, ${Math.round(blue / count)}, ${alpha})`;
+        };
+        appliedShadow = [
+          `-24px 0 55px 16px ${edgeColor('left')}`,
+          `24px 0 55px 16px ${edgeColor('right')}`,
+          `0 -24px 55px 16px ${edgeColor('top')}`,
+          `0 24px 55px 16px ${edgeColor('bottom')}`,
+        ].join(', ');
+        player.style.setProperty('box-shadow', appliedShadow, 'important');
+        // The shadow sits outside the player; tint the native letterbox inside it too.
+        const backgroundImage = `linear-gradient(to bottom, ${edgeColor('top', 1)}, ${edgeColor('bottom', 1)})`;
+        for (const backdrop of backdrops) {
+          backdrop.element.style.setProperty('background-image', backgroundImage, 'important');
+          backdrop.appliedImage = backgroundImage;
+        }
+        paintEdges(positionEdges());
+        if (masthead) {
+          if (!document.documentElement.hasAttribute('dark') && !document.querySelector('ytd-app')?.hasAttribute('dark')) {
+            appliedMastheadImage = `linear-gradient(90deg, ${edgeColor('left', 0.28)}, ${edgeColor('top', 0.2)}, ${edgeColor('right', 0.28)})`;
+            masthead.style.setProperty('background-image', appliedMastheadImage, 'important');
+          } else if (appliedMastheadImage && masthead.style.getPropertyValue('background-image') === appliedMastheadImage) {
+            if (mastheadImage) masthead.style.setProperty('background-image', mastheadImage, mastheadPriority);
+            else masthead.style.removeProperty('background-image');
+            appliedMastheadImage = '';
+          }
+        }
+      } catch {
+        // Some streams forbid canvas reads. Leave playback unaffected.
+        unavailable = true;
+        clearGlow();
+      }
+    };
+    const timer = setInterval(sample, 300);
+    video.addEventListener('loadeddata', sample);
+    video.addEventListener('seeked', sample);
+    document.addEventListener('visibilitychange', sample);
+    document.addEventListener('fullscreenchange', sample);
+    video.addEventListener('enterpictureinpicture', sample);
+    video.addEventListener('leavepictureinpicture', sample);
+    this.ambilightCleanup = () => {
+      clearInterval(timer);
+      video.removeEventListener('loadeddata', sample);
+      video.removeEventListener('seeked', sample);
+      document.removeEventListener('visibilitychange', sample);
+      document.removeEventListener('fullscreenchange', sample);
+      video.removeEventListener('enterpictureinpicture', sample);
+      video.removeEventListener('leavepictureinpicture', sample);
+      clearGlow();
+      Object.values(edges).forEach(element => element.remove());
+      this.ambilightCleanup = null;
+    };
+    sample();
   },
 
   setupCaptureMenu() {
