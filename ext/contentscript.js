@@ -569,6 +569,8 @@ const YouTubeBookmarker = {
     const mastheadPriority = masthead?.style.getPropertyPriority('background-image') || '';
     const mastheadSize = masthead?.style.getPropertyValue('background-size') || '';
     const mastheadSizePriority = masthead?.style.getPropertyPriority('background-size') || '';
+    const mastheadPosition = masthead?.style.getPropertyValue('background-position') || '';
+    const mastheadPositionPriority = masthead?.style.getPropertyPriority('background-position') || '';
     const mastheadRepeat = masthead?.style.getPropertyValue('background-repeat') || '';
     const mastheadRepeatPriority = masthead?.style.getPropertyPriority('background-repeat') || '';
     const mastheadCanvas = document.createElement('canvas');
@@ -728,6 +730,8 @@ const YouTubeBookmarker = {
         else masthead.style.removeProperty('background-image');
         if (mastheadSize) masthead.style.setProperty('background-size', mastheadSize, mastheadSizePriority);
         else masthead.style.removeProperty('background-size');
+        if (mastheadPosition) masthead.style.setProperty('background-position', mastheadPosition, mastheadPositionPriority);
+        else masthead.style.removeProperty('background-position');
         if (mastheadRepeat) masthead.style.setProperty('background-repeat', mastheadRepeat, mastheadRepeatPriority);
         else masthead.style.removeProperty('background-repeat');
       }
@@ -804,10 +808,20 @@ const YouTubeBookmarker = {
           fade.addColorStop(1, `rgba(0, 0, 0, ${alpha})`);
           mastheadContext.fillStyle = fade;
           mastheadContext.fillRect(0, 0, mastheadCanvas.width, mastheadCanvas.height);
+          const rightFade = mastheadContext.createLinearGradient(0, 0, mastheadCanvas.width, 0);
+          rightFade.addColorStop(0, 'black');
+          rightFade.addColorStop(0.88, 'black');
+          rightFade.addColorStop(1, 'transparent');
+          mastheadContext.fillStyle = rightFade;
+          mastheadContext.fillRect(0, 0, mastheadCanvas.width, mastheadCanvas.height);
           mastheadContext.globalCompositeOperation = 'source-over';
+          const playerRect = player.getBoundingClientRect();
+          const mastheadRect = masthead.getBoundingClientRect();
           appliedMastheadImage = `url("${mastheadCanvas.toDataURL()}")`;
           masthead.style.setProperty('background-image', appliedMastheadImage, 'important');
-          masthead.style.setProperty('background-size', '100% 100%', 'important');
+          // Cover YouTube's left gutter as well as the player, but stop at its right edge.
+          masthead.style.setProperty('background-size', `${Math.round(playerRect.right - mastheadRect.left)}px 100%`, 'important');
+          masthead.style.setProperty('background-position', '0 0', 'important');
           masthead.style.setProperty('background-repeat', 'no-repeat', 'important');
         }
       } catch {
@@ -869,6 +883,7 @@ const YouTubeBookmarker = {
     video.addEventListener('ended', onPlaybackStop);
     document.addEventListener('visibilitychange', onStateChange);
     document.addEventListener('fullscreenchange', onStateChange);
+    window.addEventListener('resize', refreshSample);
     video.addEventListener('enterpictureinpicture', onStateChange);
     video.addEventListener('leavepictureinpicture', onStateChange);
     this.ambilightCleanup = () => {
@@ -880,6 +895,7 @@ const YouTubeBookmarker = {
       video.removeEventListener('ended', onPlaybackStop);
       document.removeEventListener('visibilitychange', onStateChange);
       document.removeEventListener('fullscreenchange', onStateChange);
+      window.removeEventListener('resize', refreshSample);
       video.removeEventListener('enterpictureinpicture', onStateChange);
       video.removeEventListener('leavepictureinpicture', onStateChange);
       clearGlow();
