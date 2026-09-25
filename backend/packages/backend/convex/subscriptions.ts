@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { query, internalMutation } from "./_generated/server";
 import { requireReplayGlowsAccess } from "./access";
 
 // Plan types and their features
@@ -156,12 +156,13 @@ export const checkLimit = query({
   },
 });
 
-// Upsert subscription from Polar webhook
+// Project a provider subscription into local feature limits.
 export const upsertSubscription = internalMutation({
   args: {
-    polarCustomerId: v.string(),
-    polarSubscriptionId: v.string(),
-    polarProductId: v.string(),
+    provider: v.union(v.literal("polar"), v.literal("stripe")),
+    providerCustomerId: v.string(),
+    providerSubscriptionId: v.string(),
+    providerProductId: v.string(),
     customerEmail: v.string(),
     plan: v.union(v.literal("free"), v.literal("pro"), v.literal("team")),
     status: v.union(
@@ -178,20 +179,20 @@ export const upsertSubscription = internalMutation({
   handler: async (ctx, args) => {
     const now = Date.now();
 
-    // Try to find existing subscription by Polar subscription ID
+    // A provider subscription ID is only meaningful within its provider.
     let existingSubscription = await ctx.db
       .query("subscriptions")
-      .withIndex("by_polar_subscription_id", (q) =>
-        q.eq("polarSubscriptionId", args.polarSubscriptionId)
+      .withIndex("by_provider_subscription_id", (q) =>
+        q.eq("provider", args.provider).eq("providerSubscriptionId", args.providerSubscriptionId)
       )
       .first();
 
-    // If not found, try by Polar customer ID
+    // A customer may replace a subscription within the same provider.
     if (!existingSubscription) {
       existingSubscription = await ctx.db
         .query("subscriptions")
-        .withIndex("by_polar_customer_id", (q) =>
-          q.eq("polarCustomerId", args.polarCustomerId)
+        .withIndex("by_provider_customer_id", (q) =>
+          q.eq("provider", args.provider).eq("providerCustomerId", args.providerCustomerId)
         )
         .first();
     }
@@ -213,12 +214,16 @@ export const upsertSubscription = internalMutation({
     }
 
     if (existingSubscription) {
+      if (existingSubscription.provider && existingSubscription.provider !== args.provider) {
+        throw new Error("Another payment provider already owns this local subscription");
+      }
       await ctx.db.patch(existingSubscription._id, {
         plan: args.plan,
         status: args.status,
-        polarCustomerId: args.polarCustomerId,
-        polarSubscriptionId: args.polarSubscriptionId,
-        polarProductId: args.polarProductId,
+        provider: args.provider,
+        providerCustomerId: args.providerCustomerId,
+        providerSubscriptionId: args.providerSubscriptionId,
+        providerProductId: args.providerProductId,
         currentPeriodStart: args.currentPeriodStart,
         currentPeriodEnd: args.currentPeriodEnd,
         cancelAtPeriodEnd: args.cancelAtPeriodEnd,
@@ -242,9 +247,10 @@ export const upsertSubscription = internalMutation({
       userId: user.clerkId,
       plan: args.plan,
       status: args.status,
-      polarCustomerId: args.polarCustomerId,
-      polarSubscriptionId: args.polarSubscriptionId,
-      polarProductId: args.polarProductId,
+      provider: args.provider,
+      providerCustomerId: args.providerCustomerId,
+      providerSubscriptionId: args.providerSubscriptionId,
+      providerProductId: args.providerProductId,
       currentPeriodStart: args.currentPeriodStart,
       currentPeriodEnd: args.currentPeriodEnd,
       cancelAtPeriodEnd: args.cancelAtPeriodEnd,
@@ -254,10 +260,11 @@ export const upsertSubscription = internalMutation({
   },
 });
 
-// Update subscription status from Polar webhook
+// Update the local projection from a verified provider event.
 export const updateSubscriptionStatus = internalMutation({
   args: {
-    polarSubscriptionId: v.string(),
+    provider: v.union(v.literal("polar"), v.literal("stripe")),
+    providerSubscriptionId: v.string(),
     status: v.union(
       v.literal("active"),
       v.literal("canceled"),
@@ -270,13 +277,13 @@ export const updateSubscriptionStatus = internalMutation({
   handler: async (ctx, args) => {
     const subscription = await ctx.db
       .query("subscriptions")
-      .withIndex("by_polar_subscription_id", (q) =>
-        q.eq("polarSubscriptionId", args.polarSubscriptionId)
+      .withIndex("by_provider_subscription_id", (q) =>
+        q.eq("provider", args.provider).eq("providerSubscriptionId", args.providerSubscriptionId)
       )
       .first();
 
     if (!subscription) {
-      console.error(`Subscription not found: ${args.polarSubscriptionId}`);
+      console.error(`Subscription not found: ${args.provider}:${args.providerSubscriptionId}`);
       return;
     }
 
@@ -295,62 +302,6 @@ export const updateSubscriptionStatus = internalMutation({
   },
 });
 
-// Link Polar customer to existing user by email
-export const linkCustomerToUser = internalMutation({
-  args: {
-    polarCustomerId: v.string(),
-    customerEmail: v.string(),
-  },
-  handler: async (ctx, args) => {
-    // Find user by email
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_email", (q) => q.eq("email", args.customerEmail))
-      .first();
-
-    if (!user) {
-      console.log(`No user found for email: ${args.customerEmail}, will link when subscription created`);
-      return;
-    }
-
-    // Check if user already has a subscription
-    const existingSubscription = await ctx.db
-      .query("subscriptions")
-      .withIndex("by_user_id", (q) => q.eq("userId", user.clerkId))
-      .first();
-
-    if (existingSubscription) {
-      // Update with Polar customer ID
-      await ctx.db.patch(existingSubscription._id, {
-        polarCustomerId: args.polarCustomerId,
-        updatedAt: Date.now(),
-      });
-    }
-    // If no subscription exists, it will be created when subscription.created fires
-  },
-});
-
-// Cancel subscription (user-initiated via Polar portal)
-export const cancelSubscription = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await requireReplayGlowsAccess(ctx);
-
-    const subscription = await ctx.db
-      .query("subscriptions")
-      .withIndex("by_user_id", (q) => q.eq("userId", userId))
-      .first();
-
-    if (subscription) {
-      // Note: This just marks it locally. Real cancellation should go through Polar
-      await ctx.db.patch(subscription._id, {
-        cancelAtPeriodEnd: true,
-        updatedAt: Date.now(),
-      });
-    }
-  },
-});
-
 // Get all plan options for pricing page
 export const getPlans = query({
   args: {},
@@ -359,25 +310,5 @@ export const getPlans = query({
       id: key,
       ...value,
     }));
-  },
-});
-
-// Get Polar checkout URL (to be used with Polar SDK on frontend)
-export const getPolarCheckoutInfo = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await requireReplayGlowsAccess(ctx);
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_clerk_id", (q) => q.eq("clerkId", userId))
-      .first();
-
-    if (!user) return null;
-
-    return {
-      email: user.email,
-      userId: userId,
-    };
   },
 });

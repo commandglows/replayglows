@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "0.1.9"
 project: "replayglows"
 created: "2026-05-10"
-updated: "2026-09-24"
+updated: "2026-09-25"
 status: "draft"
 source_skill: "sf-docs"
 scope: "architecture"
@@ -114,3 +114,9 @@ Canary proof is local to a dedicated profile and selected public YouTube scenari
 ## Extension localization (2026-09-05)
 
 `ext/src/i18n.ts` owns typed French/English Vue copy and the persisted `auto`/`fr`/`en` preference. The classic YouTube content script mirrors its injected-control vocabulary, while Chrome `_locales` owns localized package metadata.
+
+## Payment adapters (2026-09-25)
+
+The Convex backend keeps the Polar subscription webhook in `convex/billing/polarWebhook.ts`, using `polarAdapter.ts` for signature and explicit product mapping. Unknown products are rejected. Its local subscription projection uses provider-neutral IDs. With no customer history to retain, the old Polar-only fields, hardcoded product ID and unscoped webhook ID fallback have been removed. The webhook records completion after the subscription mutation succeeds. The existing free access snapshot on account creation is independent of payment history and remains in place until the suite entitlement synchronization replaces it.
+
+`convex/billing/stripeAdapter.ts` verifies exact-body Stripe signatures and confirms that its API key belongs to `STRIPE_REPLAYGLOWS_ACCOUNT_ID`. `/stripe-webhook` then relays the original signed body to the ReplayGlows route of the central commerce service. The central route verifies the same business signing secret and account again and remains the only entitlement writer. The account ID and central destination are stored in Doppler `replayglows` (`dev` and `prd`); `dev` uses test mode in the ReplayGlows business account. Stripe currently requires business verification before ReplayGlows can enter production mode, so `prd` has no live API key. No payment configuration is kept in a local env example. The current `dev` Stripe endpoint delivers directly to the central ReplayGlows route; a product route can replace it when the ReplayGlows backend is deployed with the same signing secret. Missing key, signing secret, or approved offer keeps new Stripe sales unavailable. No Polar-to-Stripe subscription migration or offer mapping is implied by this adapter.
