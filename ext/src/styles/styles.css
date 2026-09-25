@@ -31,9 +31,14 @@
   --rg-hotkey-label-width: 9rem;
   --rg-hotkey-controls-width: 11rem;
   --rg-icon-size: 1.125rem;
-  --rg-popup-width: 27rem;
+  --rg-popup-width: 35rem;
   --rg-popup-height: 37.5rem;
   --rg-popup-loop-max-height: 10rem;
+  --rg-popup-control-height: 2rem;
+  --rg-popup-rate-width: 3.5rem;
+  --rg-popup-rate-text: 1.25rem;
+  --rg-popup-slider-basis: 11rem;
+  --rg-popup-presets-basis: 17rem;
   --rg-border-width: 1px;
   --rg-control-height: 2.75rem;
   --rg-text-small: 0.75rem;
@@ -1147,6 +1152,14 @@ body:has(> #app > .sg-popup) {
 @keyframes sg-playback-spin { to { transform: rotate(360deg); } }
 .sg-scope-label { font-size: var(--rg-text-small); color: var(--rg-color-muted); }
 .sg-speed-control { display: flex; align-items: center; gap: var(--rg-space-2); }
+.sg-popup .sg-speed-adjustments { display: flex; flex-wrap: wrap; align-items: center; gap: var(--rg-space-1); }
+.sg-popup .sg-speed-adjustments > .sg-speed-control { flex: 1 1 var(--rg-popup-slider-basis); gap: var(--rg-space-1); }
+.sg-popup .sg-speed-adjustments > .sg-speed-presets { flex: 1 1 var(--rg-popup-presets-basis); }
+.sg-popup .sg-speed-value { flex-basis: var(--rg-popup-rate-width); font-size: var(--rg-popup-rate-text); }
+.sg-popup .sg-speed-slider,
+.sg-popup .sg-speed-presets .sg-button,
+.sg-popup .sg-review-controls summary { min-height: var(--rg-popup-control-height); height: auto; }
+.sg-popup .sg-speed-presets .sg-button { padding-block: 0; }
 .sg-speed-value { flex: 0 0 4.5rem; margin: 0; text-align: center; font-size: var(--rg-text-rate); font-weight: var(--rg-text-weight-strong); font-variant-numeric: tabular-nums; }
 .sg-speed-slider { -webkit-appearance: none; appearance: none; flex: 1; min-width: 0; width: 100%; height: var(--rg-control-height); margin: 0; padding: 0; background: transparent; cursor: pointer; }
 .sg-speed-slider::-webkit-slider-runnable-track { height: 0.3rem; border-radius: 999px; background: var(--rg-color-border); }

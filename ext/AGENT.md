@@ -70,7 +70,7 @@ ext/
 │   ├── content/
 │   │   └── content.ts       # Content script entry point (TypeScript)
 │   ├── popup/
-│   │   ├── index.html       # Extension popup UI (CSS preferred size 432x600)
+│   │   ├── index.html       # Extension popup UI (CSS preferred size 560x600)
 │   │   └── Popup.vue        # Popup Vue component
 │   ├── options/
 │   │   ├── options.html     # Options page
@@ -116,7 +116,7 @@ ext/
    - Communicates with service worker
 
 3. **Popup** (`src/popup/Popup.vue`)
-   - CSS-sized popup (preferred 432x600px, constrained by Chrome's available viewport)
+   - CSS-sized popup (preferred 560x600px, constrained by Chrome's available viewport)
    - Lists saved bookmarks across videos with timestamp links, editing and deletion
    - Provides bookmark management interface
 
@@ -217,7 +217,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 **Permissions**: storage, tabs, commands, notifications  
 **Host Permissions**: HTTP and HTTPS sites for HTML5 playback (operator-approved 2026-09-05); bookmark injection remains YouTube-only.
-**Action**: Popup at `src/popup/index.html`; CSS owns the preferred 432x600px size and native viewport adaptation.
+**Action**: Popup at `src/popup/index.html`; CSS owns the preferred 560x600px size and native viewport adaptation.
 **Content Scripts**: `media.js` on HTTP/HTTPS pages and permitted frames; `content.js` plus `output-ytb.css` only on YouTube.
 **Options**: Available at `src/options/options.html`
 

@@ -182,7 +182,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
       :aria-label="t('checkPlayer')"
     />
     <template v-if="view">
-      <template v-if="media?.available">
+      <div v-if="media?.available" class="sg-speed-adjustments">
         <div class="sg-speed-control">
           <p class="sg-speed-value">
             <output :aria-label="t('currentSpeed')">{{ media.rate.toFixed(2) }}×</output>
@@ -226,7 +226,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer) })
             {{ t('favorite') }}
           </button>
         </div>
-      </template>
+      </div>
       <div v-else class="sg-speed-status">
         <p class="sg-muted" role="status">{{ t('noMedia') }}</p>
         <button

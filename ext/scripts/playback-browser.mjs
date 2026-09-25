@@ -104,8 +104,8 @@ try {
     const dimensions=await popup.locator('main').boundingBox()
     assert.ok(dimensions.width<=800 && dimensions.height<=600)
     assert.ok(await popup.getByText('Ouvrez une vidéo YouTube pour ajouter un marque-page à un moment précis.').isVisible())
-    const emptyBox=await popup.locator('.sg-empty-state').boundingBox()
-    assert.ok(emptyBox.height >= 100, 'speed card must leave useful space for bookmarks')
+    const bookmarkBox=await popup.locator('.sg-bookmark-scroll').boundingBox()
+    assert.ok(bookmarkBox.height >= 200, 'speed card must leave useful space for bookmarks')
     await popup.close()
   })
   await check('options load/save and suspension', async () => {
