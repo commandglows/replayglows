@@ -1,12 +1,12 @@
 ---
 artifact: implementation_spec
 metadata_schema_version: "1.0"
-artifact_version: "1.1.1"
+artifact_version: "1.1.3"
 project: replayglows
 created: "2026-09-23"
-updated: "2026-09-24"
+updated: "2026-09-28"
 created_at: "2026-09-23T00:23:15Z"
-updated_at: "2026-09-24T16:17:14Z"
+updated_at: "2026-09-27T21:18:30Z"
 source_model: GPT-6
 status: active
 chantier_status: in_progress
@@ -45,7 +45,9 @@ As a video learner watching a YouTube lesson, I capture a frame once and ReplayG
 ## Minimal Behavior Contract
 On a supported YouTube watch page, one click on the ReplayGlows capture control automatically saves a frame to ReplayGlows cloud when the cached ReplayGlows sign-in state is authenticated; otherwise it saves locally. The app publishes sign-in changes to the extension, which persists only the boolean state and update time; capture reads this state without reopening or rechecking the app. If cloud handoff/upload fails, save the same captured frame locally and explain that cloud saving failed. The first local capture explains the download location and offers sign-in. A shared icon dropdown retains explicit copy and local-download actions. A cloud capture creates a timestamped YouTube note with the JPEG attached in Convex. Capture never changes playback state.
 
-Local saves use Chrome's Downloads API to create `Téléchargements/ReplayGlows/<channel>/<video title [video ID]>/`. Each PNG filename contains the local capture date/time (`YYMMDD_HHmmss`) and playback position (`HH-MM-SS`). The same video folder has one generated `Notes.md` combining timestamped extension bookmark notes and dated capture entries with relative image links, sorted by playback position. ReplayGlows retains capture metadata in extension-local storage and regenerates the Markdown file after a capture or bookmark add/edit/delete/import. The Markdown is a generated index, not an editable source file. Capture names include the local date/time and video position; Chrome uniquifies collisions with existing files.
+Local saves currently use Chrome's Downloads API to create `Téléchargements/ReplayGlows/<channel>/<video title [video ID]>/`. Each PNG filename contains the local capture date/time (`YYMMDD_HHmmss`) and playback position (`HH-MM-SS`). The same video folder has one generated `Notes.md` combining timestamped extension bookmark notes and dated capture entries with relative image links, sorted by playback position. ReplayGlows retains capture metadata in extension-local storage and regenerates the Markdown file on an explicit local capture. Bookmark add/edit/delete/import persists silently in extension-local storage; these actions do not download a file. The Markdown is a generated snapshot, not an editable source file. Capture names include the local date/time and video position; Chrome uniquifies collisions with existing files.
+
+The 2026-09-28 chosen-folder follow-up changes local archive routing where the browser supports a writable directory handle. Its owning contract is `2026-09-28-extension-chosen-folder-archive.md`: extension storage remains authoritative; the selected folder receives silent note-index updates and local PNGs; browsers without that capability retain explicit exports and capture downloads. The account-backed capture path in this spec does not synchronize extension bookmark notes to the cloud. Treat folder routing as pending until packaged Chrome and Brave checks prove it.
 
 ## Success Behavior
 Copy action places the valid PNG on the clipboard. Local save creates a PNG and refreshes that video's generated Markdown index in the ReplayGlows download tree. Automatic cloud save uploads a JPEG (maximum 10 MB), creates a new note at the captured timestamp, and serves its image through an authenticated owner-checked Convex HTTP action. Completion is announced only after the selected destination succeeds. Playback state and existing notes/bookmarks remain unchanged.
@@ -63,7 +65,7 @@ Add one localized, keyboard-accessible capture control beside the existing Repla
 - YouTube watch pages matched by the existing content script; the main active video only.
 - One capture per explicit button activation; the video may be playing or paused.
 - Clipboard/download use PNG; cloud uses JPEG quality 0.88 at the decoded video dimensions, without browser chrome, YouTube controls, DOM overlays or external captions.
-- Download folder grouped by sanitized channel name then sanitized video title plus validated YouTube video ID. PNGs use capture date/time and playback position; `Notes.md` combines the video's extension bookmark notes and capture links in playback-position order and is regenerated after either changes.
+- Download folder grouped by sanitized channel name then sanitized video title plus validated YouTube video ID. PNGs use capture date/time and playback position; `Notes.md` combines the video's extension bookmark notes and capture links in playback-position order when a local capture is requested.
 - French and English accessible button name, focus state and success/error feedback, using the existing YouTube control styles and localization conventions.
 - Add Chrome `downloads` permission for deterministic subfolder paths and Markdown replacement, alongside the already approved `clipboardWrite` permission. Chrome displays its permission warning on install/update; first local-save guidance explains the destination and sign-in option.
 - Cloud target is a new timestamped YouTube note, selected automatically when the cached signed-in state is active. Use the existing app's Clerk/Convex session; fail closed if authentication/product access is missing. Store images in Convex and serve them only after owner authorization; do not expose permanent bearer URLs. The extension-to-app transfer uses a nonce-bearing `window.opener` message between the YouTube page and its ReplayGlows capture tab; image bytes never enter the URL.
@@ -128,7 +130,7 @@ Add one localized, keyboard-accessible capture control beside the existing Repla
 
 ## Acceptance Criteria
 - A click on a ready, non-ad YouTube watch video creates a cloud note when cached sign-in is active, or downloads a PNG and refreshes the video's single generated Markdown index when not connected.
-- Adding, editing, deleting or importing a local extension bookmark note regenerates the same `Notes.md`; its note and capture entries are ordered by video position and image links stay relative to the video folder.
+- Adding, editing, deleting or importing a local extension bookmark note updates extension-local storage without a download. The next explicit local capture regenerates `Notes.md`; its note and capture entries are ordered by video position and image links stay relative to the video folder.
 - The button works by mouse and keyboard, has FR/EN accessible naming and feedback, remains unique after player/SPA reinitialization, and behaves in fullscreen.
 - Missing, stale, cross-origin/tainted, unready or rejected output never yields a blank PNG or success claim; the UI offers a retry after recovery.
 - Playback state and all existing bookmark/storage records are byte-equivalent before and after capture.
@@ -153,7 +155,7 @@ Top 10:2025 considered A01 (Chrome user gesture and Convex owner authorization),
 Read the extension, app and backend contracts before changing their scoped surfaces. Keep captured bytes out of URLs/logs, and preserve the owner-checked Convex image path. Use an isolated packaged Chromium profile and public YouTube video for runtime checks. Build/run commands must use Doppler. Separate build success from authenticated browser proof.
 
 ## Open Questions
-The operator selected automatic cloud saving for cached signed-in sessions and a local PNG archive otherwise, with first-use sign-in guidance and local fallback on cloud failure. The archive is grouped by channel and video ID, with dated playback-position images and one generated `Notes.md` per video. On 2026-09-24 the operator confirmed that this Markdown combines image links and local extension bookmark notes in playback-position order; bookmark add/edit/delete/import also refresh it. Chrome `downloads` permission and packaged path/overwrite behavior require verification.
+The operator selected automatic cloud saving for cached signed-in sessions and a local PNG archive otherwise, with first-use sign-in guidance and local fallback on cloud failure. The archive is grouped by channel and video ID, with dated playback-position images and one generated `Notes.md` per video. On 2026-09-24 the operator confirmed that this Markdown combines image links and local extension bookmark notes in playback-position order. On 2026-09-27, the operator reported browser download prompts during note saves and required silent background persistence; bookmark changes now update extension-local storage, while an explicit local capture regenerates `Notes.md`. Chrome `downloads` permission and packaged path/overwrite behavior require verification.
 
 ## Skill Run History
 | Date UTC | Skill | Model | Action | Result | Next step |

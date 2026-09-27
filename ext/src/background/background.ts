@@ -1,9 +1,12 @@
-import { canonicalUrl, groupBookmarks, normalizeBookmark, normalizeBookmarks, type Bookmark } from '../bookmarks'
+import { canonicalUrl, formatTime, groupBookmarks, normalizeBookmark, normalizeBookmarks, type Bookmark } from '../bookmarks'
+import { normalizeResumeVideos } from '../resume-export'
 import { localizeRuntimeError } from '../runtime-i18n'
+import { archiveFolderId, getArchiveFolderStatus, hasArchiveFolder, setArchiveFolderStatus, writableArchiveFolder, writeArchiveFile } from '../archive/folder'
 // Serialize read/modify/write across tabs; do not cache MV3 worker state.
 let pending: Promise<unknown> = Promise.resolve()
 let captureSaveQueue: Promise<unknown> = Promise.resolve()
 let resumePending: Promise<unknown> = Promise.resolve()
+let archivePending: Promise<unknown> = Promise.resolve()
 type ResumeVideo = { url: string; title: string; position: number; duration: number; lastAccess: number; completed: boolean; dismissed?: boolean }
 async function handleResume(request: Record<string, unknown>, sender: chrome.runtime.MessageSender) {
   const action = String(request.action)
@@ -72,20 +75,25 @@ async function handle(request: Record<string, unknown>) {
     next = bookmarks.filter(b => b.url !== url)
   } else if (request.action === 'importBookmarks') next = normalizeBookmarks(request.bookmarks)
   else throw new Error('Action non reconnue')
-  await chrome.storage.local.set({ bookmarks: next, groupedBookmarks: groupBookmarks(next) })
+  const importedProgress = request.action === 'importBookmarks' && Object.hasOwn(request, 'resumeVideos')
+    ? normalizeResumeVideos(request.resumeVideos)
+    : undefined
+  await chrome.storage.local.set({
+    bookmarks: next,
+    groupedBookmarks: groupBookmarks(next),
+    ...(importedProgress === undefined ? {} : { resumeVideos: Object.fromEntries(importedProgress.map(video => [video.url, video])) }),
+  })
   const changedUrls = new Set<string>()
-  if (request.action === 'addBookmark') changedUrls.add(normalizeBookmark(request.bookmark).url)
-  else if (request.action === 'deleteBookmark' || request.action === 'updateBookmark') {
-    const changed = normalizeBookmark(request.bookmark)
-    changedUrls.add(changed.url)
-    if (request.action === 'updateBookmark' && request.originalTime !== undefined) changedUrls.add(changed.url)
+  if (request.action === 'addBookmark' || request.action === 'updateBookmark' || request.action === 'deleteBookmark') {
+    changedUrls.add(normalizeBookmark(request.bookmark).url)
   } else if (request.action === 'deleteVideo') changedUrls.add(canonicalUrl(String(request.url)))
   else if (request.action === 'importBookmarks') {
     for (const item of [...bookmarks, ...next]) changedUrls.add(item.url)
   }
-  for (const url of changedUrls) {
-    try { await queueMarkdownRefresh(url) } catch { /* Bookmark storage remains authoritative if a file download is unavailable. */ }
-  }
+  // The browser profile is authoritative. A failed archive mirror must not fail a saved note.
+  await queueArchive(async () => {
+    for (const url of changedUrls) await mirrorVideo(url, bookmarks.find(item => item.url === url))
+  }).catch(() => undefined)
   return { success: true, bookmarks: next }
 }
 
@@ -104,11 +112,11 @@ function markdownText(value: unknown): string {
   return String(value ?? '').replace(/[\\`*_{}\[\]()#+.!|>~-]/g, '\\$&').replace(/[\r\n]+/g, ' ').trim()
 }
 
-function captureMarkdown(video: Record<string, unknown>, captures: Array<Record<string, unknown>>, bookmarks: Bookmark[]): string {
+function captureMarkdown(video: Record<string, unknown>, captures: Array<Record<string, unknown>>, bookmarks: Bookmark[], destination: string, progress?: { position: number; duration: number }): string {
   const title = markdownText(video.title || video.videoId)
   const videoUrl = String(video.videoUrl)
   const entries = [
-    ...captures.map(item => {
+    ...captures.filter(item => item.destination === destination || (destination === 'downloads' && item.destination === undefined)).map(item => {
     const date = new Date(String(item.capturedAt))
     const captured = Number.isNaN(date.getTime()) ? String(item.capturedAt) : date.toLocaleString('fr-FR')
     const position = String(item.playbackLabel)
@@ -120,33 +128,74 @@ function captureMarkdown(video: Record<string, unknown>, captures: Array<Record<
       html: `### ${markdownText(item.formattedTime)}\n\n${markdownText(item.note)}`,
     })),
   ].sort((a, b) => a.time - b.time)
-  return `# ${title}\n\nChaîne : ${markdownText(video.channel || 'YouTube')}  \nVidéo : ${videoUrl}\n\n${entries.map(item => item.html).join('\n\n')}${entries.length ? '\n' : ''}`
+  const progressSection = progress && progress.duration > 0
+    ? `\n\n## Vidéo en cours\n\n[Reprendre à ${formatTime(progress.position)} / ${formatTime(progress.duration)}](${videoUrl}&t=${Math.floor(progress.position)}s)`
+    : ''
+  return `# ${title}\n\nChaîne : ${markdownText(video.channel || 'YouTube')}  \nVidéo : ${videoUrl}${progressSection}\n\n${entries.map(item => item.html).join('\n\n')}${entries.length ? '\n' : ''}`
 }
 
-async function queueMarkdownRefresh(url: string): Promise<void> {
-  const task = captureSaveQueue.then(() => refreshMarkdownForVideo(url))
-  captureSaveQueue = task.catch(() => undefined)
-  await task
+function queueArchive<T>(task: () => Promise<T>): Promise<T> {
+  const next = archivePending.then(task)
+  archivePending = next.catch(() => undefined)
+  return next
 }
 
-async function refreshMarkdownForVideo(url: string): Promise<void> {
-  const videoUrl = canonicalUrl(url)
-  const videoId = new URL(videoUrl).searchParams.get('v')!
-  const storage = await chrome.storage.local.get(['captureNotesByVideo', 'bookmarks'])
+function archiveVideoPath(videoId: string, channel: unknown, title: unknown): string[] {
+  return [safeCaptureSegment(channel, 'YouTube'), `${safeCaptureSegment(title, videoId)} [${videoId}]`]
+}
+
+async function mirrorVideo(url: string, oldBookmark?: Bookmark): Promise<boolean> {
+  let folder: FileSystemDirectoryHandle | undefined
+  try { folder = await writableArchiveFolder() }
+  catch (error) {
+    await setArchiveFolderStatus({ state: 'paused', error: error instanceof Error ? error.message : 'Archive unavailable.' })
+    return false
+  }
+  if (!folder) return false
+  try {
+    const videoUrl = canonicalUrl(url)
+    const videoId = new URL(videoUrl).searchParams.get('v')!
+    const storage = await chrome.storage.local.get(['captureNotesByVideo', 'bookmarks', 'resumeVideos'])
+    const indexes = storage.captureNotesByVideo && typeof storage.captureNotesByVideo === 'object' ? storage.captureNotesByVideo as Record<string, Record<string, unknown>> : {}
+    const previous = indexes[videoId]
+    const matching = (Array.isArray(storage.bookmarks) ? normalizeBookmarks(storage.bookmarks) : []).filter(item => item.url === videoUrl)
+    const sample = matching[0] ?? oldBookmark
+    if (!sample && !previous) return true
+    const channel = previous?.channel || sample?.channel || 'YouTube'
+    const title = previous?.title || sample?.title || videoId
+    const path = archiveVideoPath(videoId, channel, title)
+    const video: Record<string, unknown> = { ...(previous ?? {}), channel, title, videoId, videoUrl }
+    if (!previous) {
+      indexes[videoId] = video
+      await chrome.storage.local.set({ captureNotesByVideo: indexes })
+    }
+    const captures = Array.isArray(video.captures) ? video.captures as Array<Record<string, unknown>> : []
+    const progress = (storage.resumeVideos as Record<string, { position?: number; duration?: number; completed?: boolean }> | undefined)?.[videoUrl]
+    const progressPosition = progress && !progress.completed && typeof progress.position === 'number' && typeof progress.duration === 'number'
+      ? { position: progress.position, duration: progress.duration }
+      : undefined
+    const destination = `folder:${await archiveFolderId() ?? 'legacy-folder'}`
+    await writeArchiveFile(folder, [...path, 'Notes.md'], captureMarkdown(video, captures, matching, destination, progressPosition))
+    await setArchiveFolderStatus({ state: 'ready', folderName: folder.name })
+    return true
+  } catch (error) {
+    await setArchiveFolderStatus({ state: 'paused', folderName: folder.name, error: error instanceof Error ? error.message : 'Archive write failed.' })
+    return false
+  }
+}
+
+async function refreshArchive(): Promise<{ success: boolean; status: Awaited<ReturnType<typeof getArchiveFolderStatus>> }> {
+  const storage = await chrome.storage.local.get(['bookmarks', 'captureNotesByVideo'])
+  const urls = new Set<string>((Array.isArray(storage.bookmarks) ? normalizeBookmarks(storage.bookmarks) : []).map(item => item.url))
   const indexes = storage.captureNotesByVideo && typeof storage.captureNotesByVideo === 'object' ? storage.captureNotesByVideo as Record<string, Record<string, unknown>> : {}
-  const matching = (Array.isArray(storage.bookmarks) ? normalizeBookmarks(storage.bookmarks) : []).filter(item => item.url === videoUrl)
-  const previous = indexes[videoId]
-  if (!previous && !matching.length) return
-  const title = safeCaptureSegment(matching.find(item => item.title)?.title || previous?.title || videoId, videoId)
-  const channel = safeCaptureSegment(matching.find(item => item.channel)?.channel || previous?.channel || 'YouTube', 'YouTube')
-  const root = String(previous?.root || `ReplayGlows/${channel}/${title} [${videoId}]`)
-  const video: Record<string, unknown> = { ...(previous || {}), root, title, channel, videoId, videoUrl }
-  indexes[videoId] = video
-  await chrome.storage.local.set({ captureNotesByVideo: indexes })
-  const captures = Array.isArray(video.captures) ? video.captures as Array<Record<string, unknown>> : []
-  const markdown = captureMarkdown(video, captures, matching)
-  const id = await chrome.downloads.download({ url: toDataUrl(markdown), filename: `${root}/Notes.md`, conflictAction: 'overwrite', saveAs: false })
-  await waitForDownload(id)
+  for (const [videoId, video] of Object.entries(indexes)) {
+    if (/^[A-Za-z0-9_-]{11}$/.test(videoId)) urls.add(`https://www.youtube.com/watch?v=${videoId}`)
+  }
+  for (const url of urls) {
+    if (!await mirrorVideo(url)) break
+  }
+  const status = await getArchiveFolderStatus()
+  return { success: status.state === 'ready', status }
 }
 
 function toDataUrl(text: string): string {
@@ -202,11 +251,10 @@ async function saveLocalCapture(capture: Record<string, unknown>) {
   const storage = await chrome.storage.local.get('captureNotesByVideo')
   const indexes = storage.captureNotesByVideo && typeof storage.captureNotesByVideo === 'object' ? storage.captureNotesByVideo as Record<string, Record<string, unknown>> : {}
   const previous = indexes[videoId]
-  const root = typeof previous?.root === 'string' && previous.root.startsWith('ReplayGlows/')
-    ? previous.root
-    : `ReplayGlows/${captureChannel}/${captureTitle} [${videoId}]`
   const channel = typeof previous?.channel === 'string' ? previous.channel : captureChannel
   const title = typeof previous?.title === 'string' ? previous.title : captureTitle
+  const path = archiveVideoPath(videoId, channel, title)
+  const root = `ReplayGlows/${path.join('/')}`
   const existing = previous ? { ...previous, root, channel, title, videoUrl: capture.videoUrl } : { root, channel, title, videoUrl: capture.videoUrl, captures: [] }
   const captures = Array.isArray(existing.captures) ? existing.captures as Array<Record<string, unknown>> : []
   const base = `${dateStamp}_${playbackLabel}`
@@ -214,24 +262,66 @@ async function saveLocalCapture(capture: Record<string, unknown>) {
   let suffix = 2
   while (captures.some(item => item.filename === filename)) filename = `${base}_${String(suffix++).padStart(2, '0')}.png`
   const requestedImagePath = `${root}/captures/${filename}`
-  const imageDownload = await chrome.downloads.download({ url: imageDataUrl, filename: requestedImagePath, conflictAction: 'uniquify', saveAs: false })
-  const completedImagePath = await waitForDownload(imageDownload)
-  const actualFilename = completedImagePath.split(/[\\/]/).at(-1) || filename
+  let folder: FileSystemDirectoryHandle | undefined
+  try { folder = await writableArchiveFolder() }
+  catch (error) {
+    await setArchiveFolderStatus({ state: 'paused', error: error instanceof Error ? error.message : 'Folder access unavailable.' })
+    throw new Error('Archive folder unavailable. Reconnect it in extension settings.')
+  }
+  if (!folder && await hasArchiveFolder()) throw new Error('Archive folder access was removed. Reconnect it in extension settings before saving a capture.')
+  const destination = folder ? `folder:${await archiveFolderId() ?? 'legacy-folder'}` : 'downloads'
+  let actualFilename = filename
+  if (folder) {
+    try {
+      const imageBlob = await (await fetch(imageDataUrl)).blob()
+      await writeArchiveFile(folder, [...path, 'captures', filename], imageBlob)
+    } catch (error) {
+      await setArchiveFolderStatus({ state: 'paused', folderName: folder.name, error: error instanceof Error ? error.message : 'Capture archive failed.' })
+      throw error
+    }
+  } else {
+    const imageDownload = await chrome.downloads.download({ url: imageDataUrl, filename: requestedImagePath, conflictAction: 'uniquify', saveAs: false })
+    const completedImagePath = await waitForDownload(imageDownload)
+    actualFilename = completedImagePath.split(/[\\/]/).at(-1) || filename
+  }
   const imagePath = `${root}/captures/${actualFilename}`
-  const nextCaptures = [...captures, { capturedAt, playbackTime, playbackLabel, filename: actualFilename, imagePath }]
+  const nextCaptures = [...captures, { capturedAt, playbackTime, playbackLabel, filename: actualFilename, imagePath, destination }]
   const nextVideo = { ...existing, root, channel, title, videoUrl: capture.videoUrl, captures: nextCaptures }
   indexes[videoId] = nextVideo
   await chrome.storage.local.set({ captureNotesByVideo: indexes })
-  const storedBookmarks = await chrome.storage.local.get('bookmarks')
+  const storedBookmarks = await chrome.storage.local.get(['bookmarks', 'resumeVideos'])
   const videoBookmarks = (Array.isArray(storedBookmarks.bookmarks) ? normalizeBookmarks(storedBookmarks.bookmarks) : []).filter(item => item.url === capture.videoUrl)
-  const markdown = captureMarkdown(nextVideo, nextCaptures, videoBookmarks)
-  const markdownDownload = await chrome.downloads.download({ url: toDataUrl(markdown), filename: `${root}/Notes.md`, conflictAction: 'overwrite', saveAs: false })
-  await waitForDownload(markdownDownload)
+  const resumeVideos = storedBookmarks.resumeVideos && typeof storedBookmarks.resumeVideos === 'object' ? storedBookmarks.resumeVideos as Record<string, { position?: number; duration?: number; completed?: boolean }> : {}
+  const progress = resumeVideos[canonicalUrl(capture.videoUrl)]
+  const progressPosition = progress && !progress.completed && typeof progress.position === 'number' && typeof progress.duration === 'number'
+    ? { position: progress.position, duration: progress.duration }
+    : undefined
+  const markdown = captureMarkdown(nextVideo, nextCaptures, videoBookmarks, destination, progressPosition)
+  if (folder) {
+    try {
+      await writeArchiveFile(folder, [...path, 'Notes.md'], markdown)
+      await setArchiveFolderStatus({ state: 'ready', folderName: folder.name })
+    } catch (error) {
+      await setArchiveFolderStatus({ state: 'paused', folderName: folder.name, error: error instanceof Error ? error.message : 'Capture index failed.' })
+      throw error
+    }
+  } else {
+    const markdownDownload = await chrome.downloads.download({ url: toDataUrl(markdown), filename: `${root}/Notes.md`, conflictAction: 'overwrite', saveAs: false })
+    await waitForDownload(markdownDownload)
+  }
   return { success: true, imagePath, markdownPath: `${root}/Notes.md` }
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (sender.id !== chrome.runtime.id) return false
+  if (request?.action === 'archive:status' || request?.action === 'archive:refresh') {
+    if (!sender.url?.startsWith(chrome.runtime.getURL('')) || sender.tab?.incognito) return false
+    const task = request.action === 'archive:status'
+      ? getArchiveFolderStatus().then(status => ({ success: true, status }))
+      : queueArchive(refreshArchive)
+    void task.then(sendResponse, error => sendResponse({ success: false, error: error instanceof Error ? error.message : 'Archive unavailable.' }))
+    return true
+  }
   if (typeof request?.action === 'string' && request.action.startsWith('resume:')) {
     const operation = resumePending.then(() => handleResume(request, sender))
     resumePending = operation.catch(() => undefined)
@@ -240,7 +330,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   if (request?.action === 'rg:captureLocal') {
     if (!sender.url || new URL(sender.url).origin !== 'https://www.youtube.com') return false
-    const task = captureSaveQueue.then(() => saveLocalCapture(request.capture as Record<string, unknown>))
+    const task = captureSaveQueue.then(() => queueArchive(() => saveLocalCapture(request.capture as Record<string, unknown>)))
     captureSaveQueue = task.catch(() => undefined)
     void task.then(sendResponse, error => sendResponse({ success: false, error: error instanceof Error ? error.message : 'Local capture download failed' }))
     return true

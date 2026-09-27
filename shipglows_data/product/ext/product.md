@@ -1,10 +1,10 @@
 ---
 artifact: product_context
 metadata_schema_version: "1.0"
-artifact_version: "1.2.1"
+artifact_version: "1.2.3"
 project: replayglows
 created: "2026-09-05"
-updated: "2026-09-25"
+updated: "2026-09-28"
 status: active
 source_skill: sg-docs
 scope: extension-product
@@ -16,7 +16,7 @@ docs_impact: yes
 target_user: "Video learners using browser media and YouTube timestamped notes."
 user_problem: "Playback pace and passage review are disconnected from saved learning moments."
 desired_outcomes: "Set one listening pace, isolate a tab and repeat a passage connected to existing bookmarks."
-non_goals: "Cloud sync, saved segment records, advanced video processing or guaranteed compatibility with every player."
+non_goals: "Cloud sync of extension bookmarks, saved segment records, advanced video processing or guaranteed compatibility with every player."
 linked_systems: [ext]
 depends_on:
   - "shipglows_data/technical/architecture.md"
@@ -27,6 +27,7 @@ evidence:
   - "ext/src/playback/media.ts"
   - "ext/public/manifest.json"
   - "shipglows_data/workflow/specs/monorepo/2026-09-05-extension-universal-playback.md"
+  - "shipglows_data/workflow/specs/monorepo/2026-09-28-extension-chosen-folder-archive.md"
 next_review: "2026-10-05"
 next_step: "Review on playback, permissions, persistence or bookmark contract changes."
 ---
@@ -51,14 +52,16 @@ One shared base speed is the default context for every supported unpinned tab. P
 | A–B review | Temporary loop from current positions or two existing bookmarks on the current YouTube video. Navigation/media replacement, seeking outside the segment or explicit clearing ends the loop. No saved-segment schema is introduced. |
 | Media discovery | Video/audio, dynamic elements, accessible embedded frames and open shadow roots. Commands choose a media target automatically; there is no manual target picker. |
 | Existing learning records | YouTube bookmarks/notes and JSON/Markdown export plus validated JSON import retain their existing contract. Speed preferences and transient tab IDs are not portable note records. |
-| YouTube frame capture | A player capture automatically creates a cloud note when the cached ReplayGlows sign-in state is active; otherwise it saves a PNG under `Downloads/ReplayGlows/<channel>/<video> [ID]/captures/`. The per-video generated `Notes.md` combines relative capture links with timestamped local extension notes and refreshes after capture or bookmark note changes. The first local save explains its location and offers sign-in. Explicit copy and local download remain available in the capture menu; cloud failure falls back to the local archive. |
+| YouTube frame capture | A player capture automatically creates a cloud note when the cached ReplayGlows sign-in state is active; otherwise it saves a PNG under `Downloads/ReplayGlows/<channel>/<video> [ID]/captures/`. This explicit local capture also generates `Notes.md` with relative capture links and timestamped local extension notes as they exist when captured. Bookmark changes persist silently in extension-local storage and do not download a file. The first local save explains its location and offers sign-in. Explicit copy and local download remain available in the capture menu; cloud failure falls back to the local archive. A user-chosen folder is the active next archive contract, not yet verified as delivered. |
 | YouTube Ambilight | Optional, off by default in the ReplayGlows player menu. A 96 × 54 preview supplies four narrow video-edge strips when Chrome presents a new frame, capped at about 30 fps; the strips are blurred behind the player and the less frequently updated header tint covers YouTube's left gutter but stops at the player's right edge. Repeated capture stops while paused. For a narrow horizontal gap, a visual transform covers the player without changing YouTube's video dimensions; larger gaps use sampled edge pixels. The choice persists locally; the effect stops on ads, hidden tabs, fullscreen, Picture-in-Picture and unreadable streams. The frame-synced glow still needs visual review after reloading the extension. |
 
 ## Boundaries and Availability
 
 HTTP/HTTPS host access enables the wider playback scope and changes the permission boundary. Browser-protected pages and file URLs are outside this scope. Closed shadow roots, inaccessible frames and players that enforce their own rate can limit behavior. Do not promise compatibility with every site, proprietary player or DRM service. Missing media and disconnected content scripts have explicit popup states.
 
-Playback settings and session contexts are extension-local. Frame captures are the bounded exception that synchronize a sign-in boolean from the authenticated ReplayGlows app and can create an attached YouTube note in the existing app/backend. The local Markdown index combines local extension notes and capture metadata with relative image links; frame bytes stay local unless the authenticated cloud capture succeeds. Notes remain YouTube-specific. Reload the unpacked extension and refresh existing tabs to activate its new content bundle.
+Playback settings and session contexts are extension-local. Frame captures are the bounded exception that synchronize a sign-in boolean from the authenticated ReplayGlows app and can create an attached YouTube note in the existing app/backend. An account does not currently upload extension bookmark notes. The local Markdown index combines local extension notes and capture metadata with relative image links; frame bytes stay local unless the authenticated cloud capture succeeds. Notes remain YouTube-specific. Reload the unpacked extension and refresh existing tabs to activate its new content bundle.
+
+The active chosen-folder archive contract keeps `chrome.storage.local` authoritative and uses a user-selected folder as a derived archive where browser support and write permission allow it. Bookmark changes refresh that folder's `Notes.md` silently; local captures add PNGs there. Brave's default fallback keeps browser-local notes and explicit JSON/Markdown export and import, while local captures retain the browser download path and may prompt for a destination. Setup must explain these paths and folder recovery. Implementation and packaged Chrome/Brave proof are tracked in `shipglows_data/workflow/specs/monorepo/2026-09-28-extension-chosen-folder-archive.md`; this paragraph is a target contract, not a delivered-feature claim.
 
 Implementation was delivered in commit `e9b4ad3813d697aa0f4e6c28dd22019581be8dec` on `main`. Verification on 2026-09-05 covered 22 automated tests, typecheck/lint/build, packaged Chromium fixtures, public YouTube/W3Schools playback and the real action-popup target. This is unpacked-extension proof, not Web Store publication or installation in the user's personal browser profile. Detailed evidence and limitations remain in the owning implementation spec.
 

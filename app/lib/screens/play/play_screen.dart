@@ -253,6 +253,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   String _loadedVideoId = '';
   bool _isPlayerReady = false;
   bool _isPlaying = false;
+  bool _hasStartedPlayback = false;
   bool _progressRestored = false;
   bool _isGeneratingTranscript = false;
   int _lastSyncedSecond = -1;
@@ -343,6 +344,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _lastSavedProgressSecond = -1;
     _webPlayerSnapshot = const WebYoutubePlayerSnapshot();
     _isPlaying = false;
+    _hasStartedPlayback = false;
     ref
         .read(appPlaybackControllerProvider.notifier)
         .setPlaybackPosition(currentSeconds: 0, durationSeconds: 0);
@@ -481,10 +483,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   /// Save playback progress periodically and at playback boundaries.
   Future<void> _saveProgress({bool force = true}) async {
     final currentSecond = _currentTimestamp.floor();
-    if (_currentTimestamp <= 0 || widget.videoId.isEmpty || _savingProgress) {
+    if (!_hasStartedPlayback || widget.videoId.isEmpty || _savingProgress) {
       return;
     }
-    if (!force && currentSecond - _lastSavedProgressSecond < 5) return;
+    if (!force && currentSecond - _lastSavedProgressSecond < 15) return;
 
     _savingProgress = true;
     try {
@@ -542,9 +544,10 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     setState(() {
       _isPlaying = playing;
     });
+    if (playing) _hasStartedPlayback = true;
     _syncAppPlaybackState(playing);
     if (playing) {
-      unawaited(_saveProgress(force: false));
+      unawaited(_saveProgress());
     } else {
       unawaited(_saveProgress());
     }
@@ -2332,13 +2335,14 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
         _showWebPosterOverlay = false;
       }
     });
+    if (snapshot.isPlaying) _hasStartedPlayback = true;
     _syncAppPlaybackState(snapshot.isPlaying);
     _syncAppPlaybackPosition(currentSeconds: currentSeconds);
     ref
         .read(appPlaybackControllerProvider.notifier)
         .setPlaybackRate(snapshot.playbackRate);
     if (snapshot.isPlaying) {
-      unawaited(_saveProgress(force: false));
+      unawaited(_saveProgress(force: _lastSavedProgressSecond < 0));
     } else if (wasPlaying) {
       unawaited(_saveProgress());
     }

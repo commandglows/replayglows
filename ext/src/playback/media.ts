@@ -2,6 +2,7 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
 
 // This entry must stay self-contained: manifest content scripts are classic scripts.
 (() => {
+  const RESUME_SAVE_INTERVAL_MS = 15_000
   if (location.origin === 'https://app.replayglows.com') {
     let authStateReceived = false
     window.addEventListener('message', event => {
@@ -121,7 +122,7 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
     const url = `${location.origin}${location.pathname}?v=${new URL(location.href).searchParams.get('v') || ''}`
     if (url === 'https://www.youtube.com/watch?v=') return
     const now = Date.now()
-    if (!force && url === resumeUrl && now - resumeLastWrite < 30000) return
+    if (!force && url === resumeUrl && now - resumeLastWrite < RESUME_SAVE_INTERVAL_MS) return
     resumeUrl = url
     resumeLastWrite = now
     void send({ action: 'resume:progress', url, title: document.title.replace(/\s*-\s*YouTube\s*$/i, ''), position: completed ? duration : position, duration, completed, started })
