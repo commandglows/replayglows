@@ -98,7 +98,6 @@ const visit = async (bookmark: Bookmark) => {
       <div class="sg-brand-info">
         <div class="sg-brand-mark" aria-hidden="true">R</div>
         <div class="sg-brand-copy">
-          <p class="sg-eyebrow">{{ t('playbackBookmarks') }}</p>
           <h1 class="sg-title">ReplayGlows</h1>
           <div class="sg-storage-indicator" @mouseenter="keepStorageInfoOpen" @mouseleave="scheduleStorageInfoClose" @focusin="keepStorageInfoOpen" @focusout="closeStorageInfo">
             <button class="sg-local-indicator" type="button" :aria-controls="storageInfoId" :aria-expanded="storageInfoVisible" @click="storageInfoVisible ? scheduleStorageInfoClose() : keepStorageInfoOpen()">
@@ -169,9 +168,6 @@ const visit = async (bookmark: Bookmark) => {
           v-else
           :aria-label="t('yourBookmarks')"
         >
-          <h2 class="sg-section-title">
-            {{ t('yourBookmarks') }} ({{ bookmarks.length }})
-          </h2>
           <details v-for="group in groups" :key="group.url" class="sg-video-group">
             <summary class="sg-video-summary">
               <a class="sg-video-thumbnail" :href="group.url" target="_blank" rel="noopener noreferrer" :aria-label="group.title || t('youtubeVideo')" @click.stop>
