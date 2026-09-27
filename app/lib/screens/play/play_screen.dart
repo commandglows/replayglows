@@ -256,6 +256,8 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   bool _progressRestored = false;
   bool _isGeneratingTranscript = false;
   int _lastSyncedSecond = -1;
+  int _lastSavedProgressSecond = -1;
+  bool _savingProgress = false;
   double _currentTimestamp = 0.0;
   double? _pendingSeekSeconds;
   double? _pendingPlaybackRate;
@@ -338,6 +340,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _pendingSeekSeconds = null;
     _pendingPlaybackRate = null;
     _lastSyncedSecond = -1;
+    _lastSavedProgressSecond = -1;
     _webPlayerSnapshot = const WebYoutubePlayerSnapshot();
     _isPlaying = false;
     ref
@@ -449,6 +452,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     _wasPlayingBeforeBackground = _isPlaying;
     _playerPausedDuringBackground = false;
     _backgroundedAt = DateTime.now();
+    unawaited(_saveProgress());
   }
 
   void _handleAppResumed() {
@@ -474,15 +478,27 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       ? AppLocale.fr
       : AppLocale.en;
 
-  /// Save playback progress to Convex on dispose / pause.
-  Future<void> _saveProgress() async {
-    if (_currentTimestamp <= 0 || widget.videoId.isEmpty) {
+  /// Save playback progress periodically and at playback boundaries.
+  Future<void> _saveProgress({bool force = true}) async {
+    final currentSecond = _currentTimestamp.floor();
+    if (_currentTimestamp <= 0 || widget.videoId.isEmpty || _savingProgress) {
       return;
     }
+    if (!force && currentSecond - _lastSavedProgressSecond < 5) return;
+
+    _savingProgress = true;
     try {
-      await upsertProgress(ref, widget.videoId, _currentTimestamp);
+      final duration = _resolvedDurationSeconds(_latestCurrentVideo).toDouble();
+      if (duration > 0) {
+        await saveProgress(ref, widget.videoId, _currentTimestamp, duration);
+      } else {
+        await upsertProgress(ref, widget.videoId, _currentTimestamp);
+      }
+      _lastSavedProgressSecond = currentSecond;
     } catch (_) {
       // Best-effort save; don't crash on dispose.
+    } finally {
+      _savingProgress = false;
     }
   }
 
@@ -527,6 +543,11 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       _isPlaying = playing;
     });
     _syncAppPlaybackState(playing);
+    if (playing) {
+      unawaited(_saveProgress(force: false));
+    } else {
+      unawaited(_saveProgress());
+    }
   }
 
   void _syncVideoState(YoutubeVideoState state) {
@@ -544,6 +565,7 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
       _currentTimestamp = state.position.inMilliseconds / 1000;
     });
     _syncAppPlaybackPosition(currentSeconds: _currentTimestamp);
+    if (_isPlaying) unawaited(_saveProgress(force: false));
   }
 
   String _playbackMenuActionLabel(_PlaybackMenuAction action) {
@@ -2315,6 +2337,11 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     ref
         .read(appPlaybackControllerProvider.notifier)
         .setPlaybackRate(snapshot.playbackRate);
+    if (snapshot.isPlaying) {
+      unawaited(_saveProgress(force: false));
+    } else if (wasPlaying) {
+      unawaited(_saveProgress());
+    }
 
     if (endedTransition) {
       _handlePlaybackEnded();
@@ -2322,6 +2349,8 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
   }
 
   void _handlePlaybackEnded() {
+    _saveProgress();
+    unawaited(_markCurrentVideoWatched());
     final loopEnabled = ref.read(appPlaybackControllerProvider).loopEnabled;
     if (loopEnabled) {
       _seekToSeconds(0);
@@ -2338,6 +2367,17 @@ class _PlayScreenState extends ConsumerState<PlayScreen>
     }
 
     _playNextFeedVideo();
+  }
+
+  Future<void> _markCurrentVideoWatched() async {
+    final videoId = widget.videoId;
+    if (videoId.isEmpty) return;
+    try {
+      await markWatched(ref, videoId);
+      if (mounted) ref.invalidate(watchedVideosProvider);
+    } catch (_) {
+      // A watch completion should not interrupt playback navigation.
+    }
   }
 
   void _playPreviousFeedVideo() {

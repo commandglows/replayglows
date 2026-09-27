@@ -3,6 +3,50 @@ import { localizeRuntimeError } from '../runtime-i18n'
 // Serialize read/modify/write across tabs; do not cache MV3 worker state.
 let pending: Promise<unknown> = Promise.resolve()
 let captureSaveQueue: Promise<unknown> = Promise.resolve()
+let resumePending: Promise<unknown> = Promise.resolve()
+type ResumeVideo = { url: string; title: string; position: number; duration: number; lastAccess: number; completed: boolean; dismissed?: boolean }
+async function handleResume(request: Record<string, unknown>, sender: chrome.runtime.MessageSender) {
+  const action = String(request.action)
+  const ui = sender.url?.startsWith(chrome.runtime.getURL('')) === true
+  const youtube = sender.frameId === 0 && sender.url?.startsWith('https://www.youtube.com/') === true
+  if ((!ui && !youtube) || sender.tab?.incognito) throw new Error('Émetteur non autorisé.')
+  const data = await chrome.storage.local.get(['resumeVideos', 'bookmarks'])
+  const records = data.resumeVideos && typeof data.resumeVideos === 'object' ? data.resumeVideos as Record<string, ResumeVideo> : {}
+  const write = async (next: Record<string, ResumeVideo>) => { await chrome.storage.local.set({ resumeVideos: next }); return { success: true } }
+  if (action === 'resume:list') return { videos: Object.values(records) }
+  if (action === 'resume:progress') {
+    if (!youtube || typeof request.url !== 'string' || typeof request.title !== 'string' || typeof request.position !== 'number' || typeof request.duration !== 'number' || typeof request.completed !== 'boolean') throw new Error('Progression invalide.')
+    const url = canonicalUrl(request.url)
+    if (![request.position, request.duration].every(Number.isFinite) || request.duration <= 0 || request.position < 0 || request.position > request.duration + 2) throw new Error('Progression invalide.')
+    const previous = records[url]
+    if (previous?.dismissed && request.started !== true) return { success: true }
+    const bookmarks = Array.isArray(data.bookmarks) ? normalizeBookmarks(data.bookmarks) : []
+    const hasBookmarks = bookmarks.some(item => item.url === url)
+    const next = { ...records }
+    if (request.completed && !hasBookmarks) delete next[url]
+    else next[url] = { url, title: request.title.slice(0, 500), position: Math.min(request.position, request.duration), duration: request.duration, lastAccess: Date.now(), completed: request.completed }
+    return write(next)
+  }
+  if (!ui || typeof request.url !== 'string') throw new Error('Action réservée au popup.')
+  const url = canonicalUrl(request.url)
+  if (action === 'resume:dismiss') return write({ ...records, [url]: { ...(records[url] ?? { url, title: '', position: 0, duration: 0, lastAccess: Date.now(), completed: false }), dismissed: true } })
+  if (action === 'resume:open') {
+    const record = records[url]
+    const position = record?.completed ? 0 : record?.position ?? 0
+    const next = { ...records }
+    if (record) next[url] = { ...record, lastAccess: Date.now(), dismissed: false }
+    await chrome.storage.local.set({ resumeVideos: next })
+    const tabs = await chrome.tabs.query({ url: `${url}*` })
+    const existing = tabs.find(tab => typeof tab.id === 'number')
+    if (existing?.id !== undefined) {
+      await chrome.tabs.update(existing.id, { active: true })
+      if (typeof existing.windowId === 'number') await chrome.windows.update(existing.windowId, { focused: true })
+      if (position > 0) await chrome.tabs.sendMessage(existing.id, { action: 'resume:seek', position }).catch(() => undefined)
+    } else await chrome.tabs.create({ url: position > 0 ? `${url}&t=${Math.floor(position)}s` : url })
+    return { success: true }
+  }
+  throw new Error('Action non reconnue.')
+}
 async function handle(request: Record<string, unknown>) {
   const result = await chrome.storage.local.get('bookmarks')
   const bookmarks: Bookmark[] = normalizeBookmarks(result.bookmarks ?? [])
@@ -188,6 +232,12 @@ async function saveLocalCapture(capture: Record<string, unknown>) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (sender.id !== chrome.runtime.id) return false
+  if (typeof request?.action === 'string' && request.action.startsWith('resume:')) {
+    const operation = resumePending.then(() => handleResume(request, sender))
+    resumePending = operation.catch(() => undefined)
+    operation.then(sendResponse, error => sendResponse({ error: error instanceof Error ? error.message : 'Échec de la progression.' }))
+    return true
+  }
   if (request?.action === 'rg:captureLocal') {
     if (!sender.url || new URL(sender.url).origin !== 'https://www.youtube.com') return false
     const task = captureSaveQueue.then(() => saveLocalCapture(request.capture as Record<string, unknown>))

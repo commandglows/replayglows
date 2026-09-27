@@ -5,6 +5,7 @@ import 'package:replayglows_app/models/models.dart';
 import 'package:replayglows_app/utils/color_utils.dart';
 import 'package:replayglows_app/utils/duration_utils.dart';
 import 'package:replayglows_app/widgets/media/media_thumbnail.dart';
+import 'package:replayglows_app/widgets/media/watch_progress_bar.dart';
 
 class VideoCard extends StatelessWidget {
   const VideoCard({
@@ -13,12 +14,18 @@ class VideoCard extends StatelessWidget {
     required this.onTap,
     this.isActive = false,
     this.trailing,
+    this.progressSeconds,
+    this.progressDurationSeconds,
+    this.isWatched = false,
   });
 
   final YouTubeVideo video;
   final VoidCallback onTap;
   final bool isActive;
   final Widget? trailing;
+  final double? progressSeconds;
+  final double? progressDurationSeconds;
+  final bool isWatched;
 
   @override
   Widget build(BuildContext context) {
@@ -63,10 +70,26 @@ class VideoCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              MediaThumbnail(
-                imageUrl: video.thumbnailUrl,
-                height: AppSizes.videoPanelHeight,
-                width: double.infinity,
+              Stack(
+                children: [
+                  MediaThumbnail(
+                    imageUrl: video.thumbnailUrl,
+                    height: AppSizes.videoPanelHeight,
+                    width: double.infinity,
+                  ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: WatchProgressBar(
+                      progressSeconds: progressSeconds,
+                      durationSeconds:
+                          progressDurationSeconds ?? duration?.toDouble(),
+                      completed: isWatched,
+                      height: 4,
+                    ),
+                  ),
+                ],
               ),
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.sm),

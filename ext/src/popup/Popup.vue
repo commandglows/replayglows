@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
-import { type Bookmark, normalizeBookmarks } from '../bookmarks'
+import { type Bookmark, formatTime, normalizeBookmarks } from '../bookmarks'
 import PlaybackCard from '../playback/PlaybackCard.vue'
 import DiscoveryGuide from '../discovery/DiscoveryGuide.vue'
 import { recordAchievement, type Milestone } from '../discovery/state'
@@ -37,18 +37,29 @@ const practice = async (topic: Milestone) => {
   } else playback.value?.focusControls(topic === 'loop')
 }
 const bookmarks = ref<Bookmark[]>([])
+type ResumeVideo = { url: string; title: string; position: number; duration: number; lastAccess: number; completed: boolean; dismissed?: boolean }
+type VideoGroup = { url: string; title: string; thumbnail: string; notes: Bookmark[]; progress?: ResumeVideo; lastAccess: number }
+const resumeVideos = ref<ResumeVideo[]>([])
+const showInProgress = ref(true)
 const groups = computed(() => {
-  const videos = new Map<string, { url: string; title: string; thumbnail: string; notes: Bookmark[] }>()
+  const videos = new Map<string, VideoGroup>()
   for (const bookmark of bookmarks.value) {
     let video = videos.get(bookmark.url)
     if (!video) {
-      video = { url: bookmark.url, title: bookmark.title || '', thumbnail: `https://img.youtube.com/vi/${new URL(bookmark.url).searchParams.get('v')}/mqdefault.jpg`, notes: [] }
+      const storedProgress = resumeVideos.value.find(item => item.url === bookmark.url)
+      const visibleProgress = showInProgress.value || storedProgress?.completed
+      const progress = storedProgress?.dismissed || !visibleProgress ? undefined : storedProgress
+      video = { url: bookmark.url, title: progress?.title || bookmark.title || '', thumbnail: `https://img.youtube.com/vi/${new URL(bookmark.url).searchParams.get('v')}/mqdefault.jpg`, notes: [], progress, lastAccess: progress?.lastAccess ?? 0 }
       videos.set(bookmark.url, video)
     }
     if (!video.title && bookmark.title) video.title = bookmark.title
     video.notes.push(bookmark)
   }
-  return [...videos.values()]
+  for (const progress of resumeVideos.value) {
+    if (progress.dismissed || progress.completed || !showInProgress.value || videos.has(progress.url)) continue
+    videos.set(progress.url, { url: progress.url, title: progress.title, thumbnail: `https://img.youtube.com/vi/${new URL(progress.url).searchParams.get('v')}/mqdefault.jpg`, notes: [], progress, lastAccess: progress.lastAccess })
+  }
+  return [...videos.values()].sort((a, b) => b.lastAccess - a.lastAccess || a.title.localeCompare(b.title))
 })
 const failedThumbnails = ref(new Set<string>())
 const startEditing = async (bookmark: Bookmark) => {
@@ -63,15 +74,17 @@ const note = ref('')
 const openApp = () => void chrome.tabs.create({ url: chrome.runtime.getURL('src/app/index.html') })
 const load = async () => {
   try {
-    const result = await chrome.storage.local.get('bookmarks')
+    const result = await chrome.storage.local.get(['bookmarks', 'resumeVideos', 'resumeShowInProgress'])
     bookmarks.value = normalizeBookmarks(result.bookmarks ?? []).sort((a, b) => a.url.localeCompare(b.url) || a.time - b.time)
+    resumeVideos.value = result.resumeVideos && typeof result.resumeVideos === 'object' ? Object.values(result.resumeVideos) as ResumeVideo[] : []
+    showInProgress.value = result.resumeShowInProgress !== false
     if (bookmarks.value.some(item => item.note?.trim())) {
       try { await recordAchievement('note') } catch { error.value = t('notesProgressError') }
     }
   } catch { error.value = t('loadBookmarksError') }
 }
 const onStorage = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
-  if (area === 'local' && changes.bookmarks) void load()
+  if (area === 'local' && (changes.bookmarks || changes.resumeVideos || changes.resumeShowInProgress)) void load()
 }
 onMounted(() => { void load(); chrome.storage.onChanged.addListener(onStorage) })
 onUnmounted(() => chrome.storage.onChanged.removeListener(onStorage))
@@ -89,6 +102,22 @@ const visit = async (bookmark: Bookmark) => {
     await chrome.tabs.create({ url: `${bookmark.url}&t=${bookmark.time}s` })
     try { await recordAchievement('opened') } catch { error.value = t('openedProgressError') }
   } catch { error.value = t('openVideoError') }
+}
+const openVideo = async (group: VideoGroup) => {
+  try {
+    const result = await chrome.runtime.sendMessage({ action: 'resume:open', url: group.url })
+    if (result?.error) throw new Error(result.error)
+  } catch { error.value = t('openVideoError') }
+}
+const dismissVideo = async (group: VideoGroup) => {
+  try {
+    const result = await chrome.runtime.sendMessage({ action: 'resume:dismiss', url: group.url })
+    if (result?.error) throw new Error(result.error)
+  } catch { error.value = t('saveError') }
+}
+const toggleInProgress = () => {
+  showInProgress.value = !showInProgress.value
+  void chrome.storage.local.set({ resumeShowInProgress: showInProgress.value })
 }
 </script>
 
@@ -150,7 +179,7 @@ const visit = async (bookmark: Bookmark) => {
           {{ error }}
         </p>
         <section
-          v-if="!bookmarks.length"
+          v-if="!groups.length"
           class="sg-empty-state"
           aria-labelledby="empty-title"
         >
@@ -168,18 +197,33 @@ const visit = async (bookmark: Bookmark) => {
           v-else
           :aria-label="t('yourBookmarks')"
         >
+          <div class="sg-video-list-tools">
+            <button class="sg-button sg-button--secondary" type="button" :aria-pressed="showInProgress" @click="toggleInProgress">
+              {{ t('showInProgress') }}
+            </button>
+          </div>
           <details v-for="group in groups" :key="group.url" class="sg-video-group">
             <summary class="sg-video-summary">
-              <a class="sg-video-thumbnail" :href="group.url" target="_blank" rel="noopener noreferrer" :aria-label="group.title || t('youtubeVideo')" @click.stop>
+              <button class="sg-video-thumbnail" type="button" :aria-label="t('resumeVideo', { title: group.title || t('youtubeVideo') })" @click.stop="openVideo(group)">
                 <img v-if="!failedThumbnails.has(group.url)" :src="group.thumbnail" alt="" loading="lazy" @error="failedThumbnails.add(group.url)">
                 <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7Z" /></svg>
-              </a>
+              </button>
               <span class="sg-video-heading">
                 <span class="sg-video-title">{{ group.title || t('youtubeVideo') }}</span>
-                <span class="sg-muted">{{ t('yourBookmarks') }} · {{ group.notes.length }}</span>
+                <span class="sg-muted">{{ group.progress?.completed ? t('watched') : group.progress ? t('inProgress') : group.notes.length ? t('notesCount', { count: group.notes.length }) : '' }}<template v-if="group.notes.length && group.progress"> · {{ t('notesCount', { count: group.notes.length }) }}</template></span>
               </span>
+              <span v-if="group.progress?.completed" class="sg-video-watched" :aria-label="t('watched')">✓</span>
               <svg class="sg-video-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
             </summary>
+            <div v-if="group.progress && !group.progress.completed" class="sg-resume-row">
+              <button type="button" class="sg-resume-progress" @click="openVideo(group)">
+                <span class="sg-progress-copy">{{ t('resumeAt', { position: formatTime(group.progress.position), duration: formatTime(group.progress.duration) }) }}</span>
+                <span class="sg-progress-track" aria-hidden="true"><span :style="{ width: `${Math.min(100, group.progress.position / group.progress.duration * 100)}%` }" /></span>
+              </button>
+              <button class="sg-playback-icon-button sg-note-delete" type="button" :aria-label="t('removeFromList')" :title="t('removeFromList')" @click="dismissVideo(group)">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+              </button>
+            </div>
             <ul class="sg-note-list">
               <li v-for="bookmark in group.notes" :key="`${bookmark.url}:${bookmark.time}`" class="sg-note-row">
                 <button type="button" class="sg-note-time" :aria-label="`${group.title || t('youtubeVideo')} · ${bookmark.formattedTime}`" @click="visit(bookmark)">

@@ -23,6 +23,9 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
   let loop: { a: number; b: number | null } | null = null
   let boostKey: string | null = null
   let lastUrl = location.href
+  let resumeUrl = ''
+  let resumeLastWrite = 0
+  let resumeStarted = false
   let discoveryPending = false
   const pendingSubtrees = new Set<Element>()
   const media = new Set<HTMLMediaElement>()
@@ -70,6 +73,9 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
   function resetNavigation(): void {
     if (lastUrl !== location.href) {
       lastUrl = location.href
+      resumeUrl = ''
+      resumeLastWrite = 0
+      resumeStarted = false
       stopBoost()
       loop = null
     }
@@ -106,6 +112,20 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
   async function send(message: Record<string, unknown>): Promise<unknown> {
     try { return await chrome.runtime.sendMessage(message) } catch { return null }
   }
+  function saveResume(element: HTMLMediaElement, force = false, completed = false, started = false): void {
+    if (location.origin !== 'https://www.youtube.com' || location.pathname !== '/watch' || element.tagName !== 'VIDEO' || !resumeStarted) return
+    if (document.querySelector('#movie_player.ad-showing, #movie_player.ad-interrupting')) return
+    const duration = element.duration
+    const position = element.currentTime
+    if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(position) || position < 0) return
+    const url = `${location.origin}${location.pathname}?v=${new URL(location.href).searchParams.get('v') || ''}`
+    if (url === 'https://www.youtube.com/watch?v=') return
+    const now = Date.now()
+    if (!force && url === resumeUrl && now - resumeLastWrite < 30000) return
+    resumeUrl = url
+    resumeLastWrite = now
+    void send({ action: 'resume:progress', url, title: document.title.replace(/\s*-\s*YouTube\s*$/i, ''), position: completed ? duration : position, duration, completed, started })
+  }
   function register(element: HTMLMediaElement): void {
     if (media.has(element)) return
     media.add(element)
@@ -123,7 +143,15 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
       applyRate(element, element === selected && boostKey ? boostRate() : effectiveRate())
     }
     element.addEventListener('loadedmetadata', refreshed)
-    element.addEventListener('play', refreshed)
+    element.addEventListener('play', () => {
+      refreshed()
+      if (location.origin === 'https://www.youtube.com' && location.pathname === '/watch' && element.tagName === 'VIDEO' && !resumeStarted && !document.querySelector('#movie_player.ad-showing, #movie_player.ad-interrupting')) {
+        resumeStarted = true
+        saveResume(element, true, false, true)
+      }
+    })
+    element.addEventListener('pause', () => { if (element === selected) saveResume(element, true) })
+    element.addEventListener('ended', () => { if (element === selected) saveResume(element, true, true) })
     element.addEventListener('emptied', () => {
       if (selected === element) { stopBoost(); loop = null }
     })
@@ -135,6 +163,7 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
     })
     element.addEventListener('timeupdate', () => {
       resetNavigation()
+      if (element === selected) saveResume(element)
       if (element !== selected || !context?.settings.enabled || !loop || loop.b === null) return
       if (!element.isConnected) { loop = null; return }
       if (element.currentTime >= loop.b && !element.seeking) {
@@ -274,6 +303,7 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
   }, true)
   document.addEventListener('keyup', event => { if (event.code === boostKey) stopBoost() }, true)
   window.addEventListener('blur', stopBoost)
+  window.addEventListener('pagehide', () => { if (selected) saveResume(selected, true) })
   document.addEventListener('visibilitychange', () => { if (document.hidden) stopBoost() })
   window.addEventListener('popstate', resetNavigation)
   window.addEventListener('hashchange', resetNavigation)
@@ -282,6 +312,10 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
     if (message.action === 'rg:apply') {
       setContext(message.context as PlaybackContext)
       respond({ success: true })
+    } else if (message.action === 'resume:seek' && typeof message.position === 'number' && Number.isFinite(message.position) && message.position >= 0) {
+      const element = choose()
+      if (element?.tagName === 'VIDEO') { element.currentTime = Math.min(message.position, Number.isFinite(element.duration) ? element.duration : message.position); respond({ success: true }) }
+      else respond({ error: 'Aucune vidéo accessible.' })
     } else if (message.action === 'rg:snapshot') respond(snapshot())
     else if (message.action === 'rg:control') respond(control(message.command, message.a, message.b))
   })
@@ -300,3 +334,4 @@ import type { MediaSnapshot, PlaybackAction, PlaybackContext } from './protocol'
     if (result && typeof result === 'object' && 'settings' in result) setContext(result as PlaybackContext)
   })
 })()
+

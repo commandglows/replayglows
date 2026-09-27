@@ -1257,6 +1257,14 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     final watchedAsync = youtubeConnected
         ? ref.watch(watchedVideosProvider)
         : const AsyncValue<List<WatchedVideo>>.data(<WatchedVideo>[]);
+    final progressAsync = youtubeConnected
+        ? ref.watch(allVideoProgressProvider)
+        : const AsyncValue<List<VideoProgress>>.data(<VideoProgress>[]);
+    final progressByVideoId = <String, VideoProgress>{
+      for (final progress
+          in progressAsync.asData?.value ?? const <VideoProgress>[])
+        progress.youtubeVideoId: progress,
+    };
     final watchedIds = _effectiveWatchedIds(
       watchedAsync.asData?.value.map((item) => item.youtubeVideoId).toSet() ??
           const <String>{},
@@ -1518,12 +1526,14 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                           watchedIds,
                           sourceVideos,
                           activeFeedVideoId,
+                          progressByVideoId,
                         ),
                         _buildListView(
                           shortFilteredVideos,
                           watchedIds,
                           sourceVideos,
                           activeFeedVideoId,
+                          progressByVideoId,
                         ),
                         _buildSummaryView(
                           shortFilteredVideos,
@@ -1840,6 +1850,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     Set<String> watchedIds,
     List<YouTubeVideo> sourceVideos,
     String? activeVideoId,
+    Map<String, VideoProgress> progressByVideoId,
   ) {
     return _buildFeedScrollSurface(
       tabIndex: 0,
@@ -1864,6 +1875,12 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                   child: VideoCard(
                     video: video,
                     isActive: video.youtubeVideoId == activeVideoId,
+                    progressSeconds: progressByVideoId[video.youtubeVideoId]
+                        ?.progressSeconds,
+                    progressDurationSeconds:
+                        progressByVideoId[video.youtubeVideoId]
+                            ?.durationSeconds,
+                    isWatched: watchedIds.contains(video.youtubeVideoId),
                     trailing: _buildVideoActionMenu(
                       video,
                       watchedIds,
@@ -1885,6 +1902,7 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
     Set<String> watchedIds,
     List<YouTubeVideo> sourceVideos,
     String? activeVideoId,
+    Map<String, VideoProgress> progressByVideoId,
   ) {
     return _buildFeedScrollSurface(
       tabIndex: 1,
@@ -1906,6 +1924,12 @@ class _VideosScreenState extends ConsumerState<VideosScreen>
                   child: VideoListTile(
                     video: video,
                     isActive: video.youtubeVideoId == activeVideoId,
+                    progressSeconds: progressByVideoId[video.youtubeVideoId]
+                        ?.progressSeconds,
+                    progressDurationSeconds:
+                        progressByVideoId[video.youtubeVideoId]
+                            ?.durationSeconds,
+                    isWatched: watchedIds.contains(video.youtubeVideoId),
                     trailing: _buildVideoActionMenu(
                       video,
                       watchedIds,

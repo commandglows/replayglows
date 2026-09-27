@@ -4,6 +4,7 @@ import 'package:replayglows_app/app/theme.dart';
 import 'package:replayglows_app/models/models.dart';
 import 'package:replayglows_app/utils/duration_utils.dart';
 import 'package:replayglows_app/widgets/media/media_thumbnail.dart';
+import 'package:replayglows_app/widgets/media/watch_progress_bar.dart';
 
 class VideoListTile extends StatelessWidget {
   const VideoListTile({
@@ -14,6 +15,9 @@ class VideoListTile extends StatelessWidget {
     this.leadingWidth = 120,
     this.leadingHeight = 68,
     this.trailing,
+    this.progressSeconds,
+    this.progressDurationSeconds,
+    this.isWatched = false,
   });
 
   final YouTubeVideo video;
@@ -22,6 +26,9 @@ class VideoListTile extends StatelessWidget {
   final double leadingWidth;
   final double leadingHeight;
   final Widget? trailing;
+  final double? progressSeconds;
+  final double? progressDurationSeconds;
+  final bool isWatched;
 
   @override
   Widget build(BuildContext context) {
@@ -50,11 +57,27 @@ class VideoListTile extends StatelessWidget {
         ),
       ),
       child: ListTile(
-        leading: MediaThumbnail(
-          imageUrl: video.thumbnailUrl,
+        leading: SizedBox(
           width: leadingWidth,
           height: leadingHeight,
-          borderRadius: BorderRadius.circular(AppRadii.sm),
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              MediaThumbnail(
+                imageUrl: video.thumbnailUrl,
+                width: leadingWidth,
+                height: leadingHeight,
+                borderRadius: BorderRadius.circular(AppRadii.sm),
+              ),
+              WatchProgressBar(
+                progressSeconds: progressSeconds,
+                durationSeconds:
+                    progressDurationSeconds ?? durationSec?.toDouble(),
+                completed: isWatched,
+                height: 3,
+              ),
+            ],
+          ),
         ),
         title: Row(
           children: [

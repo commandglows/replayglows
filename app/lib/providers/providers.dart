@@ -1721,6 +1721,28 @@ final videoProgressProvider = FutureProvider.family<VideoProgress?, String>((
   return json != null ? VideoProgress.fromJson(json) : null;
 });
 
+/// Subscribes to the current user's saved progress for all videos.
+final allVideoProgressProvider = StreamProvider<List<VideoProgress>>((
+  ref,
+) async* {
+  final service = ref.watch(convexServiceProvider);
+  if (!await _waitForConvexAuthReady(
+    ref,
+    consumer: 'allVideoProgressProvider',
+  )) {
+    yield const <VideoProgress>[];
+    return;
+  }
+
+  yield* service
+      .subscribe<dynamic>('progress:getAllProgress', const <String, dynamic>{})
+      .map(
+        (raw) => _decodeList(
+          raw,
+        ).map(VideoProgress.fromJson).toList(growable: false),
+      );
+});
+
 // ---------------------------------------------------------------------------
 // 11. quotaUsageProvider
 // ---------------------------------------------------------------------------
