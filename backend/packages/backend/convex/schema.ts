@@ -174,10 +174,10 @@ export default defineSchema({
       v.literal("trialing"),
       v.literal("revoked"),
     ),
-    // Polar integration
-    polarCustomerId: v.optional(v.string()),
-    polarSubscriptionId: v.optional(v.string()),
-    polarProductId: v.optional(v.string()),
+    provider: v.optional(v.union(v.literal("polar"), v.literal("stripe"))),
+    providerCustomerId: v.optional(v.string()),
+    providerSubscriptionId: v.optional(v.string()),
+    providerProductId: v.optional(v.string()),
     currentPeriodStart: v.optional(v.number()),
     currentPeriodEnd: v.optional(v.number()),
     cancelAtPeriodEnd: v.optional(v.boolean()),
@@ -185,8 +185,8 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_user_id", ["userId"])
-    .index("by_polar_customer_id", ["polarCustomerId"])
-    .index("by_polar_subscription_id", ["polarSubscriptionId"]),
+    .index("by_provider_customer_id", ["provider", "providerCustomerId"])
+    .index("by_provider_subscription_id", ["provider", "providerSubscriptionId"]),
 
   productAccessSnapshots: defineTable({
     userId: v.string(),
@@ -243,6 +243,7 @@ export default defineSchema({
     // YouTube video notes support
     youtubeVideoId: v.optional(v.string()),
     timestamp: v.optional(v.number()),
+    imageStorageId: v.optional(v.id("_storage")),
     createdAt: v.optional(v.number()),
   })
     .index("by_user_id", ["userId"])
@@ -734,7 +735,7 @@ export default defineSchema({
 
   processedWebhooks: defineTable({
     webhookId: v.string(),
-    source: v.union(v.literal("clerk"), v.literal("polar")),
+    source: v.union(v.literal("clerk"), v.literal("polar"), v.literal("stripe")),
     processedAt: v.number(),
   }).index("by_webhook_id", ["webhookId"]),
 });

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "shipglows.backend.v1",
+  "provider": "none",
+  "mode": "none",
+  "reason": "This Astro marketing and content site renders local static pages and links to the separate ReplayGlows application. It has no authentication, protected runtime or application backend required at launch.",
+  "command": null,
+  "dependencies": [],
+  "readiness": null
+}

@@ -109,6 +109,9 @@
   }
 
   window.replayGlowsConvexBridge = {
+    configureCapture(convexUrl) {
+      window.__replayGlowsCaptureConvexUrl = convexUrl;
+    },
     query(convexUrl, authToken, path, argsJson) {
       return run('query', convexUrl, authToken, path, argsJson);
     },

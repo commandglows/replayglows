@@ -296,7 +296,7 @@ class _ConfigFallbackScreen extends StatelessWidget {
       'CLERK_SIGN_IN_URL: $clerkSignInUrl',
       'CLERK_SIGN_UP_URL: $clerkSignUpUrl',
       'REPLAYGLOWS_PRODUCT_ID: $replayGlowsProductId',
-      'REPLAYGLOWS_LEGACY_PRODUCT_IDS: $replayGlowsLegacyProductIds',
+
       'REPLAYGLOWS_ACCOUNT_CENTER_URL: $replayGlowsAccountCenterUrl',
       'REPLAYGLOWS_APP_URL: ${replayGlowsAppUrl.isNotEmpty ? replayGlowsAppUrl : '(missing)'}',
       'REPLAYGLOWS_APP_URL host match: ${hostMatchLabel(replayGlowsAppUrl)}',
@@ -405,7 +405,7 @@ class _ConfigFallbackScreen extends StatelessWidget {
                         'CLERK_SIGN_IN_URL: $clerkSignInUrl\n'
                         'CLERK_SIGN_UP_URL: $clerkSignUpUrl\n'
                         'REPLAYGLOWS_PRODUCT_ID: $replayGlowsProductId\n'
-                        'REPLAYGLOWS_LEGACY_PRODUCT_IDS: $replayGlowsLegacyProductIds\n'
+
                         'REPLAYGLOWS_ACCOUNT_CENTER_URL: $replayGlowsAccountCenterUrl\n'
                         'REPLAYGLOWS_APP_URL: ${replayGlowsAppUrl.isNotEmpty ? replayGlowsAppUrl : '(missing)'}\n'
                         'REPLAYGLOWS_APP_URL host match: ${hostMatchLabel(replayGlowsAppUrl)}\n'

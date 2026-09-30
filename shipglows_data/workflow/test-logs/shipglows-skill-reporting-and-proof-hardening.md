@@ -2,7 +2,7 @@
 artifact: manual_test_checklist
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-06-09"
 created_at: "2026-06-09 22:20:00 UTC"
 updated: "2026-06-10"

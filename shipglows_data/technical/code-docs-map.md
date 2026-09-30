@@ -1,7 +1,7 @@
 ---
 artifact: technical_module_context
 metadata_schema_version: "1.0"
-artifact_version: "0.2.0"
+artifact_version: "0.2.1"
 project: "replayglows"
 created: "2026-05-10"
 updated: "2026-09-05"
@@ -45,6 +45,7 @@ Route changed paths to the technical docs and validation commands that must be c
 | `site/src/pages/**`, `site/src/components/**`, `site/src/i18n/**` | Astro public site | `shipglows_data/technical/site/architecture.md` | `(cd site && npm run build)` | Public route, CTA, pricing, claim, i18n, layout, or component changes. |
 | `site/src/content.config.ts`, `site/src/content/**` | Astro runtime content | `shipglows_data/editorial/astro-content-schema-policy.md` | `(cd site && npm run build)` | Content schema or blog frontmatter changes. |
 | `ext/src/**`, `ext/*.js`, `ext/public/manifest.json`, `ext/vite.config.ts`, `ext/package.json` | Chrome extension | `ext/AGENT.md`, `shipglows_data/technical/architecture.md` | `(cd ext && pnpm type-check)` and `(cd ext && pnpm build:ext)` | Extension behavior, YouTube content integration, manifest permissions, extension packaging, or build entrypoints change. |
+| `ext/src/discovery/**`, `ext/scripts/discovery*` | In-extension discovery | `shipglows_data/product/ext/product.md`, `ext/AGENT.md`, `shipglows_data/workflow/specs/monorepo/2026-09-05-extension-onboarding.md` | Discovery state tests, packaged browser and native-popup proof | Milestones, resume/skip, help, shortcut or recovery guidance changes. |
 | `ext/src/playback/**`, `ext/src/popup/**`, `ext/scripts/playback*` | Universal playback and popup | `shipglows_data/product/ext/product.md`, `ext/AGENT.md`, `shipglows_data/workflow/specs/monorepo/2026-09-05-extension-universal-playback.md` | Typecheck/build; `node --test scripts/playback-state.test.mjs scripts/playback-media.test.mjs` from `ext`; packaged `scripts/playback-browser.mjs` for runtime changes (requires `PLAYWRIGHT_MODULE` and `PLAYWRIGHT_CHROMIUM`) | Global/pin context, media targeting, temporary loops, shortcut safety, persistence or popup behavior changes. |
 | `lab/server.py`, `lab/main.py` | Transcript worker | `shipglows_data/technical/lab/architecture.md` | `(cd lab && python -m py_compile main.py server.py)` | API contract, auth, limits, providers, queueing, media handling, or health behavior changes. |
 | `lab/.env.example`, `lab/Dockerfile`, `lab/ecosystem.config.cjs` | Worker deployment | `lab/README.md` | `(cd lab && python -m py_compile main.py server.py)` | Runtime variables, container, PM2, or worker deployment model changes. |

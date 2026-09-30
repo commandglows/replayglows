@@ -70,7 +70,7 @@ ext/
 │   ├── content/
 │   │   └── content.ts       # Content script entry point (TypeScript)
 │   ├── popup/
-│   │   ├── index.html       # Extension popup UI (CSS preferred size 432x600)
+│   │   ├── index.html       # Extension popup UI (CSS preferred size 560x600)
 │   │   └── Popup.vue        # Popup Vue component
 │   ├── options/
 │   │   ├── options.html     # Options page
@@ -116,7 +116,7 @@ ext/
    - Communicates with service worker
 
 3. **Popup** (`src/popup/Popup.vue`)
-   - CSS-sized popup (preferred 432x600px, constrained by Chrome's available viewport)
+   - CSS-sized popup (preferred 560x600px, constrained by Chrome's available viewport)
    - Lists saved bookmarks across videos with timestamp links, editing and deletion
    - Provides bookmark management interface
 
@@ -217,7 +217,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 **Permissions**: storage, tabs, commands, notifications  
 **Host Permissions**: HTTP and HTTPS sites for HTML5 playback (operator-approved 2026-09-05); bookmark injection remains YouTube-only.
-**Action**: Popup at `src/popup/index.html`; CSS owns the preferred 432x600px size and native viewport adaptation.
+**Action**: Popup at `src/popup/index.html`; CSS owns the preferred 560x600px size and native viewport adaptation.
 **Content Scripts**: `media.js` on HTTP/HTTPS pages and permitted frames; `content.js` plus `output-ytb.css` only on YouTube.
 **Options**: Available at `src/options/options.html`
 
@@ -257,7 +257,7 @@ pnpm verify:package
 - **Configuration files**: English
 - **Source code comments**: French (legacy JS), minimal English (new TS/Vue)
 - **Variable/function names**: Mix of French and English
-- **UI text**: French
+- **UI text**: French and English through `src/i18n.ts`; local preference is `auto`, `fr`, or `en`. The classic YouTube script keeps a compatible self-contained dictionary.
 
 ### 5. YouTube SPA Handling
 
@@ -356,7 +356,7 @@ When working on this codebase:
 1. Check if functionality exists in legacy JS files first
 2. Prefer modifying TypeScript/Vue files when possible
 3. Maintain compatibility with existing storage format
-4. Preserve French UI text unless specifically changing it
+4. Preserve French/English translation parity and avoid new user-visible literals outside the localization layer.
 5. Add TypeScript interfaces for new data structures
 
 ---
@@ -456,6 +456,12 @@ Canonical records retain `url`, `time` (including zero), `formattedTime`, `note`
 Content matching now includes the already-permitted `https://www.youtube.com/*` host so navigation from the homepage activates on watch pages. There is no new dependency or permission grant. Every package must retain classic self-contained content.js, with no top-level ESM import.
 
 Focused tests: `node --test scripts/bookmarks.test.mjs` (five behavior tests), `pnpm type-check`, `pnpm exec eslint src`, and `pnpm build:ext`. Local Chrome Canary 155 checks on a public YouTube video demonstrated zero-second note creation, shortcuts, literal-text note editing, timestamp seeking and reload persistence. Further scenario evidence belongs to `shipglows_data/workflow/bugs/BUG-2026-09-05-001.md` and the dated Canary audit. These are scoped local runtime proofs, not exhaustive YouTube coverage or operator acceptance of the rendered UI.
+
+## Progressive Discovery (2026-09-05)
+
+`src/discovery/DiscoveryGuide.vue` is the French in-extension help shared by popup/options; `state.ts` owns strict boolean milestone reads, independent local keys and bounded async operations. Popup connects confirmed playback snapshots, persisted notes and successful bookmark tab creation. Keep skipped topics distinct from success, use effective runtime shortcut settings, restore keyboard focus when a guide action disappears, and keep the header help entry reachable. No telemetry or note-schema changes belong to this guide.
+
+Guide-visible layout gives the scroll pane a dedicated tokenized height and lets the popup scroll to playback; the header stays visible. Check the actual native popup because Chrome can constrain its height below the preferred CSS size. Validation adds `scripts/discovery.test.mjs`, `scripts/discovery-browser.mjs` and `scripts/discovery-native.mjs`; browser scripts use `PLAYWRIGHT_MODULE`/`PLAYWRIGHT_CHROMIUM` with a full Chromium binary and isolated profiles. The onboarding spec owns current proof. Preserve any unrelated edits in legacy `contentscript.js`.
 
 ## Universal Playback Controls (2026-09-05)
 

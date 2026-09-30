@@ -138,7 +138,7 @@ module.exports = async function handler(req, res) {
       ? oauthTicket.sessionToken
       : getBearerTokenFromAuthHeader(req.headers.authorization);
   const requestId = req.headers['x-request-id'];
-  const { productId, legacyProductIds, verifySecret, verifyUrl } =
+  const { productId, verifySecret, verifyUrl } =
     resolveEntitlementInputs();
 
   const googleClientId = getEnv('YOUTUBE_OAUTH_CLIENT_ID');
@@ -221,7 +221,6 @@ module.exports = async function handler(req, res) {
     verifyUrl,
     verifySecret,
     productId,
-    legacyProductIds,
     requestId: Array.isArray(requestId) ? requestId[0] : requestId,
   });
   if (!verification.ok) {

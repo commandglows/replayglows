@@ -6,6 +6,8 @@ const message = ref('ReplayGlows Extension')
 
 <template>
   <div class="p-4">
-    <h1 class="text-xl font-bold">{{ message }}</h1>
+    <h1 class="text-xl font-bold">
+      {{ message }}
+    </h1>
   </div>
 </template> 

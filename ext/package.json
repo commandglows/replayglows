@@ -20,8 +20,10 @@
     "lint": "eslint src --fix"
   },
   "dependencies": {
+    "convex": "^1.45.0",
     "tinykeys": "^4.0.0",
-    "vue": "3.5.42"
+    "vue": "3.5.42",
+    "vue-router": "^5.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

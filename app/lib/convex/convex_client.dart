@@ -60,6 +60,7 @@ class ConvexService {
       );
     }
     _instance = ConvexService._(deploymentUrl);
+    if (kIsWeb) configureYouTubeCaptureBridge(deploymentUrl);
     return _instance!;
   }
 

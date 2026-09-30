@@ -11,11 +11,14 @@ export interface PlaybackSettings {
   rate: number
   favorite: number
   step: number
+  videoHoverSplits: boolean
+  altSeekOnSpeedBar: boolean
+  attachPointerToSpeedBar: boolean
   enabled: boolean
   keys: Record<PlaybackAction, string>
 }
 export const DEFAULT_SETTINGS: PlaybackSettings = {
-  rate: 1, favorite: 1.5, step: 0.1, enabled: true, keys: { ...DEFAULT_KEYS },
+  rate: 1, favorite: 1.5, step: 0.1, enabled: true, attachPointerToSpeedBar: false, altSeekOnSpeedBar: false, videoHoverSplits: false, keys: { ...DEFAULT_KEYS },
 }
 export interface PlaybackContext {
   settings: PlaybackSettings
@@ -41,6 +44,7 @@ export interface PlaybackView extends PlaybackContext {
 // rg:settings {settings: partial}, rg:command {tabId, command, a?, b?}.
 // Content/worker: rg:register (sender frame), rg:context, rg:rate, rg:settings,
 // rg:command routed to the sender frame when sender.tab exists.
+// rg:pin is also allowed from the injected top-level YouTube toolbar, for its sender tab only.
 // Worker/content: rg:apply {context}, rg:snapshot, rg:control {command,a?,b?}.
 // Commands: rewind, forward, markA, markB, clearLoop, loopRange, togglePlay.
 // Responses use {error:string} on failure; rg:register/context return PlaybackContext,

@@ -1,10 +1,10 @@
 ---
 artifact: editorial_content_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.1"
+artifact_version: "0.2.0"
 project: "replayglows"
 created: "2026-05-10"
-updated: "2026-09-04"
+updated: "2026-09-05"
 status: "draft"
 source_skill: sf-docs
 scope: "page-intent"
@@ -42,3 +42,7 @@ next_step: "sg-docs editorial audit"
 | `/terms` | Explain terms of use. | Trust/support path. | Legal/business terms. | Legal copy must not be changed casually. |
 | `/blog` | Route readers to educational articles. | Article links and app CTA. | Content map and blog policy. | Article metadata/schema changes affect RSS and pages. |
 | `/blog/[slug]` | Deliver a specific article. | App CTA or related reading. | Article frontmatter, claim register, schema policy. | Runtime content schema is strict. |
+
+| `/extension`, `/fr/extension` | Explain standalone extension scope and availability. | Read the guide. | Extension product contract. | Avoid implying app sync or Store availability. |
+| `/extension/guide`, `/fr/extension/guide` | Teach controls, persistence and recovery. | Worked review article. | Extension protocol and product contract. | Both locales must track behavior changes. |
+| `/blog/review-a-video-passage`, `/fr/blog/reviser-un-passage-video` | Demonstrate bookmark-to-loop review. | Extension guide. | Extension product contract. | Paired article identity and claims must stay aligned. |

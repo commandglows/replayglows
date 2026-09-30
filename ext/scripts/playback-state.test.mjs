@@ -4,7 +4,10 @@ import { stripTypeScriptTypes } from 'node:module'
 import test from 'node:test'
 
 const protocol = new URL('../src/playback/protocol.ts', import.meta.url).href
-const source = (await readFile(new URL('../src/playback/background.ts', import.meta.url), 'utf8')).replace("'./protocol'", JSON.stringify(protocol))
+const runtimeI18n = new URL('../src/runtime-i18n.ts', import.meta.url).href
+const source = (await readFile(new URL('../src/playback/background.ts', import.meta.url), 'utf8'))
+  .replace("'./protocol'", JSON.stringify(protocol))
+  .replace("'../runtime-i18n'", JSON.stringify(runtimeI18n))
 const { registerPlaybackBackground } = await import(`data:text/javascript;base64,${Buffer.from(stripTypeScriptTypes(source)).toString('base64')}`)
 const ui = { id: 'test-id', url: 'chrome-extension://test-id/popup.html' }
 const page = (tab = 1, frame = 0) => ({ id: 'test-id', url: 'https://example.com/', tab: { id: tab }, frameId: frame })
@@ -69,6 +72,24 @@ test('sender identity, UI authority, invalid inputs and queue recovery', async (
   assert.equal(f.session.playbackSession.pins[1], 1.75)
   assert.equal(f.local.playbackSettings, undefined)
   assert.equal((await f.request('rg:settings', { settings: { enabled: false } }, page())).enabled, false)
+})
+
+test('YouTube toolbar pins only its sender tab and retains session state across worker restart', async () => {
+  const f = fixture()
+  const toolbar = { ...page(1), url: 'https://www.youtube.com/watch?v=test' }
+  await f.request('rg:rate', { tabId: 2, rate: 1.5 })
+  assert.equal((await f.request('rg:pin', { tabId: 2, pinned: true }, toolbar)).pinned, true)
+  assert.equal(f.session.playbackSession.pins[2], undefined)
+  await f.request('rg:rate', { rate: 2 }, toolbar)
+  assert.equal((await f.request('rg:context', { tabId: 2 })).rate, 1.5)
+  f.restart()
+  assert.equal((await f.request('rg:context', {}, toolbar)).rate, 2)
+  assert.ok((await f.request('rg:pin', { pinned: false }, { ...toolbar, frameId: 1 })).error)
+  assert.ok((await f.request('rg:pin', { pinned: false }, { ...toolbar, url: 'https://www.youtube.com.evil.test/' })).error)
+  assert.ok((await f.request('rg:pin', { pinned: 'yes' }, toolbar)).error)
+  const unpinned = await f.request('rg:pin', { pinned: false }, toolbar)
+  assert.equal(unpinned.pinned, false)
+  assert.equal(unpinned.rate, 1.5)
 })
 
 test('concurrent deltas preserve every update and failed receivers do not abort persistence', async () => {
@@ -171,4 +192,37 @@ test('failed-frame cleanup cannot erase a registration queued during polling', a
   assert.equal((await poll).media, null)
   await register
   assert.deepEqual(f.session.playbackSession.frames[1], [4])
+})
+
+
+test('pointer attachment defaults off, validates strictly and survives worker restart', async () => {
+  const f = fixture()
+  assert.equal((await f.request('rg:context')).settings.attachPointerToSpeedBar, false)
+  assert.ok((await f.request('rg:settings', { settings: { attachPointerToSpeedBar: 'yes' } })).error)
+  assert.ok((await f.request('rg:settings', { settings: { attachPointerToSpeedBar: true } }, page())).error)
+  await f.request('rg:settings', { settings: { attachPointerToSpeedBar: true } })
+  f.restart()
+  assert.equal((await f.request('rg:context')).settings.attachPointerToSpeedBar, true)
+})
+
+
+test('Alt scrub setting defaults off, is UI-only, validates and persists', async () => {
+  const f = fixture()
+  assert.equal((await f.request('rg:context')).settings.altSeekOnSpeedBar, false)
+  assert.ok((await f.request('rg:settings', { settings: { altSeekOnSpeedBar: 1 } })).error)
+  assert.ok((await f.request('rg:settings', { settings: { altSeekOnSpeedBar: true } }, page())).error)
+  await f.request('rg:settings', { settings: { altSeekOnSpeedBar: true } })
+  f.restart()
+  assert.equal((await f.request('rg:context')).settings.altSeekOnSpeedBar, true)
+})
+
+
+test('hover splits are opt-in, strictly validated and persisted', async () => {
+  const f = fixture()
+  assert.equal((await f.request('rg:context')).settings.videoHoverSplits, false)
+  assert.ok((await f.request('rg:settings', { settings: { videoHoverSplits: 'true' } })).error)
+  assert.ok((await f.request('rg:settings', { settings: { videoHoverSplits: true } }, page())).error)
+  await f.request('rg:settings', { settings: { videoHoverSplits: true } })
+  f.restart()
+  assert.equal((await f.request('rg:context')).settings.videoHoverSplits, true)
 })

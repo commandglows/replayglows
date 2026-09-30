@@ -40,7 +40,7 @@ module.exports = async function handler(req, res) {
   const googleClientId = getEnv('YOUTUBE_OAUTH_CLIENT_ID');
   const convexUrl = getEnv('CONVEX_URL');
   const ticketSecret = resolveOAuthTicketSecret();
-  const { productId, legacyProductIds, verifySecret, verifyUrl } =
+  const { productId, verifySecret, verifyUrl } =
     resolveEntitlementInputs();
 
   if (!googleClientId) {
@@ -68,7 +68,6 @@ module.exports = async function handler(req, res) {
     verifyUrl,
     verifySecret,
     productId,
-    legacyProductIds,
     requestId: Array.isArray(requestId) ? requestId[0] : requestId,
   });
   if (!verification.ok) {

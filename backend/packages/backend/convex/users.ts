@@ -8,7 +8,6 @@ import {
 import {
   ensureDefaultReplayGlowsAccessSnapshot,
   getProductAccessStatusForUser,
-  REPLAYGLOWS_LEGACY_PRODUCT_IDS,
   REPLAYGLOWS_PRODUCT_ID,
 } from "./access";
 
@@ -31,7 +30,6 @@ export const getCurrentUser = query({
 export const getProductAccessStatus = query({
   args: {
     productId: v.optional(v.string()),
-    legacyProductIds: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -45,17 +43,8 @@ export const getProductAccessStatus = query({
       };
     }
 
-    const legacyProductIds =
-      args.legacyProductIds && args.legacyProductIds.length > 0
-        ? args.legacyProductIds
-        : REPLAYGLOWS_LEGACY_PRODUCT_IDS;
     const productId = args.productId ?? REPLAYGLOWS_PRODUCT_ID;
-    const status = await getProductAccessStatusForUser(
-      ctx,
-      userId,
-      productId,
-      legacyProductIds,
-    );
+    const status = await getProductAccessStatusForUser(ctx, userId, productId);
 
     return {
       loading: false,

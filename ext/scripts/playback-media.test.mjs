@@ -24,10 +24,12 @@ async function harness() {
   }
   class Element extends Events {
     tagName = 'DIV'
+    localName = 'div'
     isConnected = true
     isContentEditable = false
     children = []
     scans = 0
+    shadowRoot = null
     querySelectorAll() {
       this.scans++
       const flatten = elements => elements.flatMap(child => [child, ...flatten(child.children)])
@@ -35,6 +37,13 @@ async function harness() {
     }
     contains(target) { return this.children.some(child => child === target || child.contains(target)) }
     getBoundingClientRect() { return { width: 640, height: 360 } }
+  }
+  class ShadowRoot extends Events {
+    children = []
+    querySelectorAll() {
+      const flatten = elements => elements.flatMap(child => [child, ...flatten(child.children)])
+      return flatten(this.children)
+    }
   }
   class Media extends Element {
     tagName = 'VIDEO'
@@ -60,6 +69,7 @@ async function harness() {
   document.children.push(video)
   const window = new Events()
   const sent = [], timeouts = [], intervals = []
+  let now = 1000
   const context = {
     rate: 1.5, pinned: false,
     settings: { rate: 1.5, favorite: 2.5, step: 0.1, enabled: true, keys: {
@@ -69,12 +79,14 @@ async function harness() {
     } },
   }
   let observer, receiver
+  const observedRoots = new Set()
   const location = { href: 'https://media.test/watch' }
   vm.runInNewContext(compiled, {
     exports: {}, document, window, location,
     Element, HTMLElement: Element, HTMLMediaElement: Media,
     getComputedStyle: () => ({ visibility: 'visible', display: 'block' }),
-    MutationObserver: class { constructor(callback) { observer = callback } observe() {} },
+    MutationObserver: class { constructor(callback) { observer = callback } observe(root) { observedRoots.add(root) } },
+    Date: class extends Date { static now() { return now } },
     setTimeout: fn => timeouts.push(fn), setInterval: (fn, ms) => intervals.push({ fn, ms }),
     chrome: { runtime: { id: 'test-extension',
       sendMessage: async message => { sent.push(message); return context },
@@ -91,11 +103,12 @@ async function harness() {
     key: 'G', code: 'KeyG', altKey: true, shiftKey: true, ...values,
   })
   return {
-    video, document, window, sent, location, context, Media, Element, intervals, key,
+    video, document, window, sent, location, context, Media, Element, ShadowRoot, intervals, observedRoots, key,
     snapshot: () => request({ action: 'rg:snapshot' }),
     command: (command, extra = {}) => request({ action: 'rg:control', command, ...extra }),
     apply: next => request({ action: 'rg:apply', context: next }),
     mutate: (addedNodes = []) => { observer([{ addedNodes }]); while (timeouts.length) timeouts.shift()() },
+    advanceClock: ms => { now += ms },
   }
 }
 
@@ -169,6 +182,31 @@ test('subtree discovery avoids rescanning document and reinsertions do not dupli
   assert.equal(added.playbackRate, 1.5)
   assert.equal(h.document.scans, originalScans)
   assert.equal(h.intervals[0].ms, 10000)
+})
+
+test('periodic discovery finds a shadow root attached after its host was scanned', async () => {
+  const h = await harness()
+  const host = new h.Element()
+  host.localName = 'ytd-late-shadow-host'
+  h.document.children.push(host)
+  h.mutate([host])
+  const documentScans = h.document.scans
+
+  const root = new h.ShadowRoot()
+  const shadowVideo = new h.Media()
+  shadowVideo.currentSrc = 'https://media.test/shadow.mp4'
+  root.children.push(shadowVideo)
+  host.shadowRoot = root
+  h.intervals.find(timer => timer.ms === 10000).fn()
+
+  assert.equal(h.snapshot().kind, 'video')
+  assert.equal(shadowVideo.playbackRate, 1.5)
+  assert.ok(h.observedRoots.has(root), 'future shadow subtree changes remain observable')
+  assert.equal(h.document.scans, documentScans, 'late discovery avoids a full document scan')
+
+  h.advanceClock(60000)
+  h.intervals.find(timer => timer.ms === 10000).fn()
+  assert.equal(h.document.scans, documentScans + 1, 'a slower full scan remains as a fallback')
 })
 
 test('site rate overrides are surfaced without rate fighting', async () => {

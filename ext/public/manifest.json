@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "ReplayGlows",
+  "name": "__MSG_extensionName__",
+  "default_locale": "en",
   "version": "1.0.0",
-  "description": "Vitesse de lecture sur les sites web, boucles A–B et marque-pages YouTube avec notes.",
-  "permissions": ["storage", "tabs", "commands", "notifications"],
+  "description": "__MSG_extensionDescription__",
+  "permissions": ["storage", "tabs", "commands", "notifications", "declarativeNetRequestWithHostAccess", "clipboardWrite", "downloads"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_popup": "src/popup/index.html",

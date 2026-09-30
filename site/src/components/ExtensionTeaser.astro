@@ -1,0 +1,43 @@
+---
+interface Props { lang?: 'en' | 'fr' }
+const { lang = 'en' } = Astro.props
+const fr = lang === 'fr'
+const base = fr ? '/fr/extension' : '/extension'
+const article = fr ? '/fr/blog/reviser-un-passage-video' : '/blog/review-a-video-passage'
+const t = fr ? {
+  label: 'L’extension Chrome ReplayGlows',
+  title: 'Garde aussi la main sur tes vidéos dans le navigateur.',
+  body: 'Choisis une vitesse commune sur les sites compatibles, épingle un onglet à son propre rythme et répète un passage en boucle A–B. Sur YouTube, retrouve tes moments utiles grâce aux marque-pages et aux notes horodatées.',
+  features: ['Vitesse globale et onglets épinglés', 'Boucles A–B temporaires', 'Notes et marque-pages YouTube'],
+  cta: 'Découvrir l’extension', guide: 'Consulter le guide', article: 'Revoir un passage, étape par étape',
+  availability: 'Installation publique en préparation. Les notes de l’extension restent locales, sans synchronisation automatique avec l’application.'
+} : {
+  label: 'The ReplayGlows Chrome extension',
+  title: 'Take control of the videos in your browser, too.',
+  body: 'Choose a shared speed on supported websites, pin a tab to its own pace and repeat a passage with an A–B loop. On YouTube, return to useful moments with timestamped bookmarks and notes.',
+  features: ['Shared speed and pinned tabs', 'Temporary A–B loops', 'YouTube notes and bookmarks'],
+  cta: 'Discover the extension', guide: 'Read the guide', article: 'Review a passage, step by step',
+  availability: 'Public installation is being prepared. Extension notes stay local, with no automatic synchronization with the app.'
+}
+const icons = ['⏱️', '🔁', '📝']
+---
+<section id="browser-extension" aria-labelledby="extension-intro-title" class="px-4 py-12 sm:py-16 bg-background">
+  <div class="max-w-6xl mx-auto marketing-card border border-border bg-card">
+    <div class="grid gap-8 lg:grid-cols-2 items-center">
+      <div>
+        <p class="text-sm text-muted-foreground font-medium mb-3"><span aria-hidden="true">🧩 </span>{t.label}</p>
+        <h2 id="extension-intro-title" class="text-2xl sm:text-3xl font-semibold mb-4">{t.title}</h2>
+        <p class="text-muted-foreground leading-relaxed">{t.body}</p>
+      </div>
+      <div>
+        <ul class="space-y-3 mb-6">{t.features.map((feature, i) => <li class="flex items-center gap-3"><span class="text-2xl" aria-hidden="true">{icons[i]}</span><span>{feature}</span></li>)}</ul>
+        <div class="flex flex-wrap items-center gap-4">
+          <a href={base} class="marketing-cta-solid rounded-full px-5 py-3 text-sm font-medium">{t.cta}</a>
+          <a href={base + '/guide'} class="text-sm underline underline-offset-4">{t.guide}</a>
+        </div>
+        <a href={article} class="inline-block mt-4 text-sm text-muted-foreground underline underline-offset-4">{t.article} →</a>
+      </div>
+    </div>
+    <p class="text-sm text-muted-foreground mt-6 pt-4 border-t border-border">{t.availability}</p>
+  </div>
+</section>

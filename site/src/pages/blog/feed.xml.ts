@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content'
 import { SITE_URL } from '../../config/site'
 
 export const GET: APIRoute = async () => {
-  const posts = (await getCollection('blog')).sort(
+  const posts = (await getCollection('blog', ({ data }) => data.locale === 'en')).sort(
     (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
   )
 

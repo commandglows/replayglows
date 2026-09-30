@@ -1395,7 +1395,7 @@ class _DiagnosticsCard extends ConsumerWidget {
       'CLERK_SIGN_IN_URL: $clerkSignInUrl',
       'CLERK_SIGN_UP_URL: $clerkSignUpUrl',
       'REPLAYGLOWS_PRODUCT_ID: $replayGlowsProductId',
-      'REPLAYGLOWS_LEGACY_PRODUCT_IDS: $replayGlowsLegacyProductIds',
+
       'REPLAYGLOWS_ACCOUNT_CENTER_URL: $replayGlowsAccountCenterUrl',
       'REPLAYGLOWS_APP_URL: ${replayGlowsAppUrl.isNotEmpty ? replayGlowsAppUrl : '(missing)'}',
       'REPLAYGLOWS_APP_URL host match: ${hostMatchLabel(replayGlowsAppUrl)}',
@@ -1444,11 +1444,6 @@ class _DiagnosticsCard extends ConsumerWidget {
         key: 'REPLAYGLOWS_PRODUCT_ID',
         value: replayGlowsProductId,
         ok: replayGlowsProductId.isNotEmpty,
-      ),
-      (
-        key: 'REPLAYGLOWS_LEGACY_PRODUCT_IDS',
-        value: replayGlowsLegacyProductIds,
-        ok: replayGlowsLegacyProductIds.isNotEmpty,
       ),
       (
         key: 'BUILD_COMMIT_SHA',

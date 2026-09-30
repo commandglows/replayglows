@@ -1,4 +1,5 @@
 import { DEFAULT_KEYS, DEFAULT_SETTINGS, RATE_MAX, RATE_MIN, type MediaSnapshot, type PlaybackContext, type PlaybackSettings, type PlaybackView } from './protocol'
+import { localizeRuntimeError } from '../runtime-i18n'
 
 type Request = Record<string, unknown>
 type Session = { pins: Record<string, number>; frames: Record<string, number[]> }
@@ -14,16 +15,28 @@ function canonicalShortcut(shortcut: string): string {
 function object(value: unknown): value is Request { return !!value && typeof value === 'object' && !Array.isArray(value) }
 function rate(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < RATE_MIN || value > RATE_MAX) throw new Error('Vitesse invalide (0,25–4×).')
-  return Math.round(value * 100) / 100
+  return Math.round(value * 1000000) / 1000000
 }
 function validateSettings(value: unknown): Partial<PlaybackSettings> {
-  if (!object(value) || Object.keys(value).some(key => !['rate', 'favorite', 'step', 'enabled', 'keys'].includes(key))) throw new Error('Réglages invalides.')
+  if (!object(value) || Object.keys(value).some(key => !['rate', 'favorite', 'step', 'enabled', 'attachPointerToSpeedBar', 'videoHoverSplits', 'altSeekOnSpeedBar', 'keys'].includes(key))) throw new Error('Réglages invalides.')
   const out: Partial<PlaybackSettings> = {}
   if ('rate' in value) out.rate = rate(value.rate)
   if ('favorite' in value) out.favorite = rate(value.favorite)
   if ('enabled' in value) {
     if (typeof value.enabled !== 'boolean') throw new Error('Activation invalide.')
     out.enabled = value.enabled
+  }
+  if ('attachPointerToSpeedBar' in value) {
+    if (typeof value.attachPointerToSpeedBar !== 'boolean') throw new Error('Réglages invalides.')
+    out.attachPointerToSpeedBar = value.attachPointerToSpeedBar
+  }
+  if ('altSeekOnSpeedBar' in value) {
+    if (typeof value.altSeekOnSpeedBar !== 'boolean') throw new Error('Réglages invalides.')
+    out.altSeekOnSpeedBar = value.altSeekOnSpeedBar
+  }
+  if ('videoHoverSplits' in value) {
+    if (typeof value.videoHoverSplits !== 'boolean') throw new Error('Réglages invalides.')
+    out.videoHoverSplits = value.videoHoverSplits
   }
   if ('step' in value) {
     if (typeof value.step !== 'number' || !Number.isFinite(value.step) || value.step < 0.05 || value.step > 1) throw new Error('Incrément invalide (0,05–1).')
@@ -121,7 +134,9 @@ export function registerPlaybackBackground() {
     if (sender.id !== chrome.runtime.id || (!content && !ui)
       || (content && !/^https?:\/\//.test(contentUrl) && !inheritedOrigin)) throw new Error('Émetteur non autorisé.')
     const action = request.action
-    if ((action === 'rg:pin' || action === 'rg:get') && content) throw new Error('Action réservée à l’interface.')
+    // The injected YouTube toolbar may pin only its own top-level tab.
+    const youtubeToolbar = content && sender.frameId === 0 && contentUrl.startsWith('https://www.youtube.com/')
+    if (content && (action === 'rg:get' || (action === 'rg:pin' && !youtubeToolbar))) throw new Error('Action réservée à l’interface.')
     if (action === 'rg:register' && !content) throw new Error('Enregistrement réservé aux pages.')
     const tabId = content ? sender.tab?.id : request.tabId
     const globalContext = !content && action === 'rg:context' && tabId === undefined
@@ -187,7 +202,7 @@ export function registerPlaybackBackground() {
   }
   chrome.runtime.onMessage.addListener((request: unknown, sender, sendResponse) => {
     if (!object(request) || typeof request.action !== 'string' || !ACTIONS.has(request.action)) return false
-    enqueue(() => handle(request, sender)).then(sendResponse, error => sendResponse({ error: error instanceof Error ? error.message : 'Échec du contrôle de lecture.' }))
+    enqueue(() => handle(request, sender)).then(async result => sendResponse(result?.error ? { ...result, error: await localizeRuntimeError(result.error) } : result), async error => sendResponse({ error: await localizeRuntimeError(error instanceof Error ? error.message : 'Échec du contrôle de lecture.') }))
     return true
   })
   chrome.tabs.onRemoved.addListener(tabId => {

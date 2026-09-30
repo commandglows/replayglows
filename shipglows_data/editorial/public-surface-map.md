@@ -1,10 +1,10 @@
 ---
 artifact: editorial_content_context
 metadata_schema_version: "1.0"
-artifact_version: "0.1.1"
+artifact_version: "0.2.0"
 project: "replayglows"
 created: "2026-05-10"
-updated: "2026-09-04"
+updated: "2026-09-05"
 status: "draft"
 source_skill: sf-docs
 scope: "surface-map"
@@ -48,3 +48,6 @@ next_step: "sg-docs editorial audit"
 | Root README | `README.md` | Monorepo orientation | Repository layout and deployment model | Subproject ownership or deployment changes. |
 | App README | `app/README.md` | App setup/product docs | App implementation and contracts | App setup, env, auth, backend, or deployment changes. |
 | Worker README | `lab/README.md` | Worker setup/operations | Worker implementation and contracts | Worker API, env, provider, deployment, or security changes. |
+
+| Extension overview and guide | `site/src/pages/extension/**`, `site/src/pages/fr/extension/**` | EN/FR discovery and usage | `shipglows_data/product/ext/product.md` | Playback, notes, persistence or installation availability changes. |
+| Extension review article pair | `site/src/content/blog/review-a-video-passage.md`, `site/src/content/blog/reviser-un-passage-video.md` | Worked learning example | Extension product contract | Article peers change atomically. |

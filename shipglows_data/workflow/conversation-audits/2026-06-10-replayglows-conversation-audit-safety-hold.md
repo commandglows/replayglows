@@ -2,7 +2,7 @@
 artifact: conversation_audit
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: replayglowz
+project: replayglows
 created: "2026-06-10"
 updated: "2026-06-10"
 status: draft
@@ -44,7 +44,7 @@ next_step: "/sf-spec conversation-transcript-redaction-and-audit-hygiene"
 
 - Source transcript: none available in `shipglows_data/workflow/conversations/`.
 - Audit mode: `default`
-- Audit scope: latest stored ReplayGlowz/ShipGlows conversation.
+- Audit scope: latest stored ReplayGlows/ShipGlows conversation.
 - Reviewed at: `2026-06-10 07:53:05 UTC`
 - cleaned_input_used: none; no stored transcript was available and active context was safety-sensitive.
 

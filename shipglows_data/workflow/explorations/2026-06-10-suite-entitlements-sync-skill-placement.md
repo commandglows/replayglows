@@ -2,7 +2,7 @@
 artifact: exploration_report
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-06-10"
 updated: "2026-06-10"
 status: draft
@@ -16,8 +16,8 @@ docs_impact: yes
 linked_systems:
   - "ShipGlows skills"
   - "WinFlowz suite entitlements"
-  - "ReplayGlowz product Convex backend"
-  - "ReplayGlowz Flutter app"
+  - "ReplayGlows product Convex backend"
+  - "ReplayGlows Flutter app"
   - "sf-local-cloud-sync"
 evidence:
   - "/home/claude/shipglows/skills/references/product-entitlements-playbook.md"
@@ -26,7 +26,7 @@ evidence:
   - "/home/claude/shipglows/skills/sf-local-cloud-sync/references/ux-security-checklist.md"
   - "/home/claude/shipglows/skills/sf-auth-debug/SKILL.md"
   - "/home/claude/shipglows/skills/sf-skill-build/SKILL.md"
-  - "shipglows_data/workflow/specs/replayglowz-suite-auth-migration.md"
+  - "shipglows_data/workflow/specs/replayglows-suite-auth-migration.md"
   - "app/AGENT.md"
   - "backend/packages/backend/convex/access.ts"
 depends_on:
@@ -53,7 +53,7 @@ Should ShipGlows create one skill or two for suite product entitlements and data
 - `/home/claude/shipglows/skills/sf-local-cloud-sync/references/ux-security-checklist.md` - Confirms sync UX/security states already include "blocked by entitlement" and sensitive-data exclusions.
 - `/home/claude/shipglows/skills/sf-auth-debug/SKILL.md` - Covers auth/OAuth/session diagnosis, not entitlement lifecycle ownership.
 - `/home/claude/shipglows/skills/sf-skill-build/SKILL.md` - Requires overlap scan and spec-first placement before creating a new skill.
-- `shipglows_data/workflow/specs/replayglowz-suite-auth-migration.md` - ReplayGlowz already documents the two-Convex boundary: WinFlowz owns identity/entitlements; ReplayGlowz owns product data.
+- `shipglows_data/workflow/specs/replayglows-suite-auth-migration.md` - ReplayGlows already documents the two-Convex boundary: WinFlowz owns identity/entitlements; ReplayGlows owns product data.
 - `app/AGENT.md` - Confirms product data must not move into suite Convex and client identity is not product access.
 - `backend/packages/backend/convex/access.ts` - Current backend guard demonstrates entitlement checks as an authorization concern, not a sync concern.
 
@@ -144,7 +144,7 @@ Do not create `sf-data-sync` unless a later exploration proves a distinct domain
 - Exact skill name: `sf-entitlements` is shorter; `sf-product-entitlements` is clearer. The spec should decide.
 - Public skill page copy.
 - Whether the new skill owns a skill-local reference or primarily points to `product-entitlements-playbook.md`.
-- Whether ReplayGlowz-specific default-free access remains a temporary compatibility path or becomes a suite policy.
+- Whether ReplayGlows-specific default-free access remains a temporary compatibility path or becomes a suite policy.
 
 ## Rejected Paths
 
@@ -171,7 +171,7 @@ Do not create `sf-data-sync` unless a later exploration proves a distinct domain
 
 - User story seed: As a ShipGlows operator building suite products, I want a dedicated entitlements skill so that identity, provider events, product access, product-local mirrors, support actions, and protected backend gates are designed and verified without duplicating sync or auth-debug workflows.
 - Scope in seed: new `sf-entitlements` skill contract; overlap and handoff rules for `sf-auth-debug` and `sf-local-cloud-sync`; validation commands; public/help docs impact; smoke proof expectations.
-- Scope out seed: implementing product app code, modifying ReplayGlowz access guard, creating provider integrations, replacing `sf-local-cloud-sync`.
+- Scope out seed: implementing product app code, modifying ReplayGlows access guard, creating provider integrations, replacing `sf-local-cloud-sync`.
 - Invariants/constraints seed: identity is not access; provider event is not runtime authorization; suite ledger is canonical when available; fail closed; no raw secrets in logs; product data sync must re-check entitlement before remote writes.
 - Validation seed: skill budget audit, skill sync check, focused `rg` checks for routing terms, and pressure scenarios for duplicate ledger, revoked access, stale snapshot, and entitlement-gated sync.
 
@@ -184,4 +184,4 @@ Do not create `sf-data-sync` unless a later exploration proves a distinct domain
 
 | Date UTC | Prompt/Focus | Action | Result | Next step |
 |----------|--------------|--------|--------|-----------|
-| 2026-06-10 11:06:11 UTC | Decide whether to create `sf-entitlements` and whether `sf-local-cloud-sync` suffices for sync | Read local doctrine, skill contracts, ReplayGlowz suite-auth spec, app guidance, and current backend guard | Recommend one new entitlements skill plus a small `sf-local-cloud-sync` handoff extension; no standalone `sf-data-sync` now | `/sf-spec ShipGlows product entitlements skill and local-cloud-sync entitlement handoff` |
+| 2026-06-10 11:06:11 UTC | Decide whether to create `sf-entitlements` and whether `sf-local-cloud-sync` suffices for sync | Read local doctrine, skill contracts, ReplayGlows suite-auth spec, app guidance, and current backend guard | Recommend one new entitlements skill plus a small `sf-local-cloud-sync` handoff extension; no standalone `sf-data-sync` now | `/sf-spec ShipGlows product entitlements skill and local-cloud-sync entitlement handoff` |

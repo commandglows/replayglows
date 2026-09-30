@@ -7,35 +7,25 @@ import { appSignInRedirectUrl, siteUrl } from '../config/site'
 
 const plans = [
   {
-    name: 'Free', price: '0',
+    name: 'Free', priceLabel: '$0', available: true,
     description: 'Perfect for getting started with video notes',
-    features: ['Up to 10 videos', 'Unlimited notes per video', 'Basic search', 'Mobile access', 'Export to Markdown'],
+    features: ['Up to 10 videos', '50 notes per video', '3 playlists'],
     cta: 'Get Started', href: appSignInRedirectUrl('/videos'), popular: false,
   },
   {
-    name: 'Pro', price: '9',
+    name: 'Pro', priceLabel: 'Pricing to be announced', available: false,
     description: 'For serious learners and professionals',
-    features: ['Unlimited videos', 'Unlimited notes', 'Advanced search & filters', 'Priority support', 'Export to PDF & Markdown', 'Custom playlists', 'AI-powered summaries', 'Team sharing (coming soon)'],
-    cta: 'Start Free Trial', href: appSignInRedirectUrl('/videos'), popular: true,
+    features: ['Up to 100 videos', '500 notes per video', '20 playlists', 'AI summaries', 'Note export'],
+    cta: 'Coming soon', href: '', popular: false,
   },
 ]
 
 const faqs = [
-  { q: 'Can I try Pro features before subscribing?', a: 'Yes! All new accounts get a 14-day free trial of Pro features. No credit card required.' },
-  { q: 'What happens to my notes if I downgrade?', a: 'Your notes are always yours. If you downgrade, you keep all existing notes but can only add new notes to your 10 most recent videos.' },
+  { q: 'When will Pro be available?', a: 'Pro pricing and billing are still being finalized. You can start with Free now.' },
   { q: 'Does background playback work on mobile?', a: 'In the current web app, ReplayGlows uses embedded YouTube playback, so background audio depends on your browser and YouTube behavior. Some browsers, including Firefox in common mobile cases, may pause playback when you switch apps. Native apps are the intended path toward a stronger watch-anywhere experience.' },
-  { q: 'Can I cancel anytime?', a: "Absolutely. Cancel your subscription anytime from your account settings. You'll keep Pro access until the end of your billing period." },
-  { q: 'Do you offer team or education pricing?', a: 'Yes! Contact us for special pricing for teams, educational institutions, and non-profits.' },
 ]
 
 const jsonLd = [
-  {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: "ReplayGlows Pro",
-    description: "Unlimited video notes, advanced search, and AI-powered summaries",
-    offers: { "@type": "Offer", price: "9", priceCurrency: "USD", availability: "https://schema.org/InStock" },
-  },
   {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -57,7 +47,7 @@ const jsonLd = [
 
 <Layout
   title="Pricing - ReplayGlows"
-  description="Simple, transparent pricing for ReplayGlows. Start free, upgrade when you need more."
+  description="Start ReplayGlows with Free. Pro pricing will be announced when it is ready."
   path="/pricing"
   jsonLd={jsonLd}
 >
@@ -67,9 +57,9 @@ const jsonLd = [
     <!-- Hero -->
     <section class="max-w-5xl mx-auto px-4 pt-32 pb-16 text-center">
       <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-foreground" style="font-family: var(--font-cal-sans);">
-        Simple, transparent pricing
+        Free now, Pro coming soon
       </h1>
-      <p class="mt-4 text-lg text-muted-foreground">Start free. Upgrade when you need more power.</p>
+      <p class="mt-4 text-lg text-muted-foreground">Start with Free. We’ll announce Pro pricing when it’s ready.</p>
     </section>
 
     <!-- Pricing Cards -->
@@ -86,8 +76,7 @@ const jsonLd = [
               <h2 class="text-2xl font-bold text-foreground">{plan.name}</h2>
               <p class="mt-2 text-muted-foreground">{plan.description}</p>
               <div class="mt-6">
-                <span class="text-5xl font-bold text-foreground">${plan.price}</span>
-                {plan.price !== '0' && <span class="text-muted-foreground">/month</span>}
+                <span class={plan.available ? 'text-5xl font-bold text-foreground' : 'text-lg font-semibold text-foreground'}>{plan.priceLabel}</span>
               </div>
             </div>
             <ul class="space-y-4 mb-8">
@@ -98,16 +87,11 @@ const jsonLd = [
                 </li>
               ))}
             </ul>
-            <a
-              href={plan.href}
-              class={`block w-full text-center rounded-full py-3 text-sm font-medium transition-colors ${
-                plan.popular
-                  ? 'shimmer-btn marketing-cta-solid'
-                  : 'bg-card text-foreground hover:bg-muted border border-border'
-              }`}
-            >
-              {plan.cta}
-            </a>
+            {plan.available ? (
+              <a href={plan.href} class="block w-full text-center rounded-full py-3 text-sm font-medium transition-colors shimmer-btn marketing-cta-solid">{plan.cta}</a>
+            ) : (
+              <span class="block w-full text-center rounded-full py-3 text-sm font-medium border border-border text-muted-foreground">{plan.cta}</span>
+            )}
           </div>
         ))}
       </div>

@@ -1,0 +1,40 @@
+**Ces deux extensions montrent l’intérêt d’outils qui suppriment un réglage répétitif.** Pour ReplayGlows, Playback Speed Control est un concurrent direct sur la vitesse ; Auto HD + FPS est surtout un complément potentiel.
+
+Analyse des sources consultées le **5 septembre 2026**, sans installation ni test pratique.
+
+| | Youtube Playback Speed Control | YouTube Auto HD + FPS |
+|---|---|---|
+| Promesse | Changer rapidement la vitesse | Appliquer automatiquement une qualité adaptée |
+| Audience affichée | 300 000 utilisateurs | 200 000 utilisateurs |
+| Évaluation | 4,5/5 · environ 4 200 notes | 4,3/5 · environ 1 400 notes |
+| Dernière mise à jour | 25 février 2026 | 27 mai 2026 |
+| Langues | Anglais | 69 langues |
+| Distribution | Badge Featured | Badge Featured |
+
+Sources : [Playback Speed Control](https://chromewebstore.google.com/detail/youtube-playback-speed-co/hdannnflhlmdablckfkjpleikpphncik), [Auto HD + FPS](https://chromewebstore.google.com/detail/youtube-auto-hd-+-fps/fcphghnknhkimeagdglkljinmpbagone). Ces compteurs ne mesurent ni la rétention ni la disposition à payer.
+
+**1. Playback Speed Control : la force du geste immédiat**
+
+L’extension propose des raccourcis personnalisables, un incrément réglable, une surimpression positionnable, un retour à 1× et une commande avec Maj + molette. Elle annonce aussi la prise en charge des vidéos HTML5 au-delà de YouTube.
+
+Son point faible documenté est la découvrabilité : la description doit expliquer qu’elle s’active automatiquement. L’historique mentionne également des corrections concernant le plein écran, l’affichage des boutons et les raccourcis pendant la saisie. Ce sont des problèmes historiques, pas des bugs actuels démontrés. [Source officielle](https://chromewebstore.google.com/detail/youtube-playback-speed-co/hdannnflhlmdablckfkjpleikpphncik)
+
+**Lecture pour ReplayGlows :** la rapidité d’accès et la discrétion comptent davantage qu’une longue liste de réglages. D’après notre contrat produit actuel, les raccourcis, favoris, vitesses persistantes et exceptions par onglet couvrent déjà une grande partie de ce besoin. Notre différenciation se situe dans le lien entre **vitesse, notes horodatées et répétition A–B**.
+
+**2. Auto HD + FPS : une automatisation plus intéressante que « toujours en HD »**
+
+Sa particularité est de distinguer résolution et fréquence d’images : on peut, par exemple, préférer 1080p à 30 FPS mais 720p à 60 FPS. Il annonce aussi le fonctionnement sur les vidéos intégrées et le redimensionnement automatique du lecteur. [Source officielle](https://chromewebstore.google.com/detail/youtube-auto-hd-+-fps/fcphghnknhkimeagdglkljinmpbagone)
+
+Le dépôt public décrit une couverture YouTube, Music et Shorts, ainsi qu’une distribution sur plusieurs navigateurs. Il documente aussi une limite après mise à jour : les pages déjà ouvertes peuvent nécessiter un rechargement pour appliquer de nouveaux réglages. [Dépôt officiel](https://github.com/avi12/youtube-auto-hd)
+
+**Lecture pour ReplayGlows :** c’est une piste utile pour les tutoriels où il faut lire du code ou des détails à l’écran. La bonne proposition serait **« conserver ma préférence de qualité »**, avec des exceptions explicites, plutôt que forcer systématiquement la résolution maximale. Le bénéfice réel reste à tester.
+
+**Ce que je retiendrais pour ReplayGlows**
+
+1. **Priorité forte : rendre les contrôles existants évidents.** Vitesse effective, portée globale ou onglet, retour à la normale et raccourcis faciles à découvrir.
+2. **Différenciation centrale : revoir un passage utile.** Mettre en avant le parcours « noter → revenir → ralentir → répéter », déjà cohérent avec notre contrat produit.
+3. **Piste secondaire : qualité automatique YouTube selon les FPS.** À évaluer sur des tutoriels réels avant d’en faire une nouvelle fonctionnalité.
+
+Les deux éditeurs déclarent ne pas collecter de données ; cela reste une déclaration, sans audit indépendant ici. Les avis individuels et la compatibilité avec ReplayGlows n’ont pas été vérifiés.
+
+**Prochaine vérification utile :** comparer sur une même vidéo la facilité de réglage et la coexistence des extensions, notamment les conflits de raccourcis et de vitesse

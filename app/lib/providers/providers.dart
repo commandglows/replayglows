@@ -737,14 +737,6 @@ void _logUnauthorizedFallback(
   );
 }
 
-List<String> _legacyProductIds() {
-  return replayGlowsLegacyProductIds
-      .split(',')
-      .map((value) => value.trim())
-      .where((value) => value.isNotEmpty)
-      .toList(growable: false);
-}
-
 // ---------------------------------------------------------------------------
 // 1. videosProvider
 // ---------------------------------------------------------------------------
@@ -1170,7 +1162,6 @@ final productAccessStatusProvider = FutureProvider<ProductAccessStatus>((
 
     final raw = await service.query<dynamic>('users:getProductAccessStatus', {
       'productId': replayGlowsProductId,
-      'legacyProductIds': _legacyProductIds(),
     });
     final status = _decodeMap(raw) ?? const <String, dynamic>{};
     final hasAccess =
@@ -1728,6 +1719,28 @@ final videoProgressProvider = FutureProvider.family<VideoProgress?, String>((
   });
   final json = _decodeMap(raw);
   return json != null ? VideoProgress.fromJson(json) : null;
+});
+
+/// Subscribes to the current user's saved progress for all videos.
+final allVideoProgressProvider = StreamProvider<List<VideoProgress>>((
+  ref,
+) async* {
+  final service = ref.watch(convexServiceProvider);
+  if (!await _waitForConvexAuthReady(
+    ref,
+    consumer: 'allVideoProgressProvider',
+  )) {
+    yield const <VideoProgress>[];
+    return;
+  }
+
+  yield* service
+      .subscribe<dynamic>('progress:getAllProgress', const <String, dynamic>{})
+      .map(
+        (raw) => _decodeList(
+          raw,
+        ).map(VideoProgress.fromJson).toList(growable: false),
+      );
 });
 
 // ---------------------------------------------------------------------------

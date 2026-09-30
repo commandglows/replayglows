@@ -75,6 +75,7 @@ export default defineConfig({
     rollupOptions: {
       // Multiple entry points for different extension contexts
       input: {
+        app: resolve(import.meta.dirname, 'src/app/index.html'),
         popup: resolve(import.meta.dirname, 'src/popup/index.html'),
         options: resolve(import.meta.dirname, 'src/options/options.html'),
         background: resolve(import.meta.dirname, 'src/background/entry.ts'),

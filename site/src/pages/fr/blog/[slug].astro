@@ -1,0 +1,10 @@
+---
+import { getCollection } from 'astro:content'
+import ExtensionArticle from '../../../components/ExtensionArticle.astro'
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => data.locale === 'fr')
+  return posts.map(post => ({ params: { slug: post.id }, props: { post } }))
+}
+const { post } = Astro.props
+---
+<ExtensionArticle post={post} />

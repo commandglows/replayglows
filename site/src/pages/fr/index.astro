@@ -1,4 +1,5 @@
 ---
+import ExtensionTeaser from '../../components/ExtensionTeaser.astro'
 import Layout from '../../layouts/Layout.astro'
 import { getTranslations } from '../../i18n'
 import { appSignInRedirectUrl } from '../../config/site'
@@ -38,6 +39,7 @@ const appUrlValue = appSignInRedirectUrl('/videos')
           <span class="font-semibold text-foreground hidden sm:block">ReplayGlows</span>
         </a>
         <div class="hidden md:flex items-center gap-1">
+          <a href="/fr/extension" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground">Extension</a>
           <a href="#benefits" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors">{t.nav.benefits}</a>
           <a href="#features" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors">{t.nav.features}</a>
           <a href="#pricing" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors">{t.nav.pricing}</a>
@@ -55,6 +57,7 @@ const appUrlValue = appSignInRedirectUrl('/videos')
       <div id="fr-mobile-menu" class="hidden absolute top-full left-0 right-0 mt-2 p-4 rounded-2xl bg-background/95 backdrop-blur-md border border-border">
         <div class="flex flex-col gap-2">
           <a href="#benefits" class="fr-mobile-link px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">{t.nav.benefits}</a>
+          <a href="/fr/extension" class="fr-mobile-link px-4 py-3 text-sm text-muted-foreground hover:text-foreground">Extension</a>
           <a href="#features" class="fr-mobile-link px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">{t.nav.features}</a>
           <a href="#pricing" class="fr-mobile-link px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">{t.nav.pricing}</a>
           <hr class="border-border my-2" />
@@ -101,6 +104,7 @@ const appUrlValue = appSignInRedirectUrl('/videos')
     <ProblemSection content={t.problem} />
     <SolutionSection content={t.solution} />
     <ProductProof content={t.productProof} />
+    <ExtensionTeaser lang="fr" />
     <ComparisonSection content={t.comparison} />
 
     <!-- Pricing -->
@@ -110,12 +114,11 @@ const appUrlValue = appSignInRedirectUrl('/videos')
           <h2 class="text-3xl sm:text-4xl font-bold text-foreground mb-4" style="font-family: var(--font-instrument-sans);">{t.pricing.title}</h2>
           <p class="text-muted-foreground max-w-2xl mx-auto mb-8">{t.pricing.subtitle}</p>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           {t.pricing.plans.map(plan => (
-            <div class={`relative marketing-card ${plan.highlighted ? 'bg-card border-foreground/30' : 'bg-card/70 border-border marketing-card--hover-border'}`}>
-              {plan.highlighted && <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-foreground text-background text-xs font-medium rounded-full">{t.pricing.mostPopular}</div>}
+            <div class="relative marketing-card bg-card/70 border-border marketing-card--hover-border">
               <div class="mb-6"><h3 class="text-xl font-semibold text-foreground mb-2">{plan.name}</h3><p class="text-muted-foreground text-sm">{plan.desc}</p></div>
-              <div class="mb-6"><div class="flex items-baseline gap-1"><span class="text-4xl font-bold text-foreground">${plan.monthly}</span>{plan.monthly > 0 && <span class="text-muted-foreground text-sm">{t.pricing.perMonth}</span>}</div></div>
+              <div class="mb-6"><span class={plan.available ? 'text-4xl font-bold text-foreground' : 'text-lg font-semibold text-foreground'}>{plan.priceLabel}</span></div>
               <ul class="space-y-3 mb-8">
                 {plan.features.map(f => (
                   <li class="flex items-center gap-3 text-sm text-foreground/85">
@@ -124,7 +127,7 @@ const appUrlValue = appSignInRedirectUrl('/videos')
                   </li>
                 ))}
               </ul>
-              <a href={appUrlValue} class={`block w-full text-center rounded-full py-3 text-sm font-medium transition-colors ${plan.highlighted ? 'shimmer-btn marketing-cta-solid' : 'bg-card text-foreground hover:bg-muted border border-border'}`}>{plan.cta}</a>
+              {plan.available ? <a href={appUrlValue} class="block w-full text-center rounded-full py-3 text-sm font-medium transition-colors shimmer-btn marketing-cta-solid">{plan.cta}</a> : <span class="block w-full text-center rounded-full py-3 text-sm font-medium border border-border text-muted-foreground">{plan.cta}</span>}
             </div>
           ))}
         </div>
@@ -160,6 +163,8 @@ const appUrlValue = appSignInRedirectUrl('/videos')
           <div>
             <h4 class="text-sm font-semibold text-foreground mb-4">{t.footer.product}</h4>
             <ul class="space-y-3">
+              <li><a href="/fr/extension" class="text-sm text-muted-foreground/70 hover:text-foreground transition-colors">Extension</a></li>
+              <li><a href="/fr/extension/guide" class="text-sm text-muted-foreground/70 hover:text-foreground transition-colors">Guide de l’extension</a></li>
               <li><a href="/fr#features" class="text-sm text-muted-foreground/70 hover:text-foreground transition-colors">{t.nav.features}</a></li>
               <li><a href="/fr#pricing" class="text-sm text-muted-foreground/70 hover:text-foreground transition-colors">{t.nav.pricing}</a></li>
             </ul>
@@ -185,5 +190,5 @@ const appUrlValue = appSignInRedirectUrl('/videos')
       </div>
     </footer>
 
-  </main>
+</main>
 </Layout>

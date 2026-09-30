@@ -24,6 +24,9 @@ class Note {
   /// Video timestamp in seconds where this note was taken.
   final double? timestamp;
 
+  /// Whether a private Convex Storage image is attached to this note.
+  final bool hasImage;
+
   /// Creation timestamp (ms since epoch).
   final int? createdAt;
 
@@ -35,6 +38,7 @@ class Note {
     this.summary,
     this.youtubeVideoId,
     this.timestamp,
+    this.hasImage = false,
     this.createdAt,
   });
 
@@ -66,6 +70,7 @@ class Note {
       summary: json['summary'] as String?,
       youtubeVideoId: json['youtubeVideoId'] as String?,
       timestamp: (json['timestamp'] as num?)?.toDouble(),
+      hasImage: json['hasImage'] == true,
       createdAt: json['createdAt'] as int?,
     );
   }
@@ -79,6 +84,7 @@ class Note {
       if (summary != null) 'summary': summary,
       if (youtubeVideoId != null) 'youtubeVideoId': youtubeVideoId,
       if (timestamp != null) 'timestamp': timestamp,
+      if (hasImage) 'hasImage': hasImage,
       if (createdAt != null) 'createdAt': createdAt,
     };
   }
@@ -91,6 +97,7 @@ class Note {
     String? summary,
     String? youtubeVideoId,
     double? timestamp,
+    bool? hasImage,
     int? createdAt,
   }) {
     return Note(
@@ -101,6 +108,7 @@ class Note {
       summary: summary ?? this.summary,
       youtubeVideoId: youtubeVideoId ?? this.youtubeVideoId,
       timestamp: timestamp ?? this.timestamp,
+      hasImage: hasImage ?? this.hasImage,
       createdAt: createdAt ?? this.createdAt,
     );
   }

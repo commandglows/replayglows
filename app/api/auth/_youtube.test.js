@@ -7,7 +7,6 @@ const {
   parseCookies,
   getRequestOrigin,
   sendRedirect,
-  parseLegacyProductIds,
   createOAuthTicket,
   openOAuthTicket,
 } = require('./_youtube');
@@ -156,11 +155,6 @@ test('parseCookies ignores malformed percent-encoding instead of throwing', () =
   assert.deepEqual(cookies, { ok: 'one', keep: 'two' });
 });
 
-test('parseLegacyProductIds falls back to tubeflow when missing', () => {
-  assert.deepEqual(parseLegacyProductIds(''), ['tubeflow']);
-  assert.deepEqual(parseLegacyProductIds('   '), ['tubeflow']);
-});
-
 test('getRequestOrigin normalizes forwarded host/proto lists', () => {
   const origin = getRequestOrigin({
     headers: {
@@ -207,7 +201,6 @@ test(
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
       REPLAYGLOWS_PRODUCT_ID: 'replayglows',
-      REPLAYGLOWS_LEGACY_PRODUCT_IDS: 'tubeflow',
       REPLAYGLOWS_APP_URL: 'https://app.example.com',
     },
     async () => {
@@ -253,7 +246,6 @@ test(
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
       REPLAYGLOWS_PRODUCT_ID: 'replayglows',
-      REPLAYGLOWS_LEGACY_PRODUCT_IDS: 'tubeflow',
       REPLAYGLOWS_APP_URL: 'https://app.example.com',
     },
     async () => {
@@ -340,7 +332,6 @@ test(
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
       REPLAYGLOWS_PRODUCT_ID: 'replayglows',
-      REPLAYGLOWS_LEGACY_PRODUCT_IDS: 'tubeflow',
       REPLAYGLOWS_APP_URL: 'https://app.example.com',
     },
     async () => {
@@ -464,7 +455,6 @@ test(
       SUITE_ENTITLEMENT_VERIFY_URL: 'https://suite.example.com/verify',
       SUITE_ENTITLEMENT_VERIFY_SECRET: 'secret',
       REPLAYGLOWS_PRODUCT_ID: 'replayglows',
-      REPLAYGLOWS_LEGACY_PRODUCT_IDS: 'tubeflow',
       REPLAYGLOWS_APP_URL: 'https://app.example.com',
     },
     async () => {

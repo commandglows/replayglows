@@ -1,6 +1,14 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
 
+export const hasProcessedWebhook = internalQuery({
+  args: { webhookId: v.string(), source: v.union(v.literal('clerk'), v.literal('polar'), v.literal('stripe')) },
+  handler: async (ctx, args) => Boolean(
+    await ctx.db.query('processedWebhooks')
+      .withIndex('by_webhook_id', (q) => q.eq('webhookId', `${args.source}:${args.webhookId}`)).first()
+  ),
+});
+
 /**
  * Check if a webhook has already been processed (idempotency guard).
  * Returns true if already processed, false if new.
@@ -9,18 +17,17 @@ import { internalMutation, internalQuery } from "./_generated/server";
 export const checkAndMarkWebhook = internalMutation({
   args: {
     webhookId: v.string(),
-    source: v.union(v.literal("clerk"), v.literal("polar")),
+    source: v.union(v.literal("clerk"), v.literal("polar"), v.literal("stripe")),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("processedWebhooks")
-      .withIndex("by_webhook_id", (q) => q.eq("webhookId", args.webhookId))
+      .withIndex("by_webhook_id", (q) => q.eq("webhookId", `${args.source}:${args.webhookId}`))
       .first();
-
     if (existing) return true; // Already processed
 
     await ctx.db.insert("processedWebhooks", {
-      webhookId: args.webhookId,
+      webhookId: `${args.source}:${args.webhookId}`,
       source: args.source,
       processedAt: Date.now(),
     });

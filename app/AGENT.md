@@ -56,7 +56,7 @@ Operational guide for agents working in `replayglows-app`.
 - Do not treat client-only identity as product access.
 - Do not allow product access without server verification; recognized ReplayGlows accounts may receive product-scoped `replayglows/free` access by default.
 - Do not log secrets, bearer tokens, OAuth codes, or refresh tokens.
-- Do not create new grants for `tubeflow`; use `replayglows` as canonical product id.
+- Use `replayglows` as the only product id for access checks and grants.
 
 ## Runtime flow
 
@@ -90,7 +90,6 @@ Flutter build-time values:
 - `CLERK_SIGN_IN_URL`
 - `CLERK_SIGN_UP_URL`
 - `REPLAYGLOWS_PRODUCT_ID` (`replayglows`)
-- `REPLAYGLOWS_LEGACY_PRODUCT_IDS` (`tubeflow`)
 - `REPLAYGLOWS_ACCOUNT_CENTER_URL`
 - `REPLAYGLOWS_APP_URL`
 

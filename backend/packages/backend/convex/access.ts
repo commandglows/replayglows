@@ -3,7 +3,6 @@ import { internalQuery, QueryCtx, MutationCtx, ActionCtx } from "./_generated/se
 import { internal } from "./_generated/api";
 
 export const REPLAYGLOWS_PRODUCT_ID = "replayglows";
-export const REPLAYGLOWS_LEGACY_PRODUCT_IDS = ["replayglowz", "tubeflow"];
 export const DEFAULT_FREE_ACCESS_REASON = "default_free_entitlement";
 const DEFAULT_FREE_SNAPSHOT_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -21,15 +20,10 @@ function isActiveAccessStatus(status: string) {
   return status === "active" || status === "trialing";
 }
 
-function acceptedProductIds(productId = REPLAYGLOWS_PRODUCT_ID, legacyProductIds = REPLAYGLOWS_LEGACY_PRODUCT_IDS) {
-  return [productId, ...legacyProductIds];
-}
-
 async function getReplayGlowsAccessDecisionFromDb(
   ctx: DbCtx,
   userId: string,
   productId = REPLAYGLOWS_PRODUCT_ID,
-  legacyProductIds = REPLAYGLOWS_LEGACY_PRODUCT_IDS,
 ): Promise<ProductAccessDecision> {
   const user = await ctx.db
     .query("users")
@@ -45,29 +39,27 @@ async function getReplayGlowsAccessDecisionFromDb(
     | null = null;
   const now = Date.now();
 
-  for (const acceptedProductId of acceptedProductIds(productId, legacyProductIds)) {
-    const snapshot = await ctx.db
-      .query("productAccessSnapshots")
-      .withIndex("by_user_product", (q) =>
-        q.eq("userId", userId).eq("productId", acceptedProductId),
-      )
-      .first();
+  const snapshot = await ctx.db
+    .query("productAccessSnapshots")
+    .withIndex("by_user_product", (q) =>
+      q.eq("userId", userId).eq("productId", productId),
+    )
+    .first();
 
-    if (!snapshot || snapshot.expiresAt <= now) continue;
-
+  if (snapshot && snapshot.expiresAt > now) {
     if (isActiveAccessStatus(snapshot.status)) {
       return {
         hasAccess: true,
         accountRecognized: true,
         productId,
-        matchedProductId: acceptedProductId,
+        matchedProductId: productId,
         globalUserId: snapshot.globalUserId,
       };
     }
 
     if (snapshot.status === "revoked") {
       revokedSnapshot = {
-        productId: acceptedProductId,
+        productId,
         reasonCode:
           snapshot.reasonCode === DEFAULT_FREE_ACCESS_REASON
             ? undefined
@@ -121,16 +113,6 @@ export async function ensureDefaultReplayGlowsAccessSnapshot(ctx: MutationCtx, u
     return existing._id;
   }
 
-  for (const legacyProductId of REPLAYGLOWS_LEGACY_PRODUCT_IDS) {
-    const legacySnapshot = await ctx.db
-      .query("productAccessSnapshots")
-      .withIndex("by_user_product", (q) =>
-        q.eq("userId", userId).eq("productId", legacyProductId),
-      )
-      .first();
-    if (legacySnapshot?.status === "revoked") return legacySnapshot._id;
-  }
-
   return await ctx.db.insert("productAccessSnapshots", {
     userId,
     productId: REPLAYGLOWS_PRODUCT_ID,
@@ -154,9 +136,8 @@ export async function requireReplayGlowsAccess(
     "db" in ctx
       ? await getReplayGlowsAccessDecisionFromDb(ctx, userId)
       : await ctx.runQuery((internal as any).access.getReplayGlowsAccessDecision, {
-          userId,
+        userId,
           productId: REPLAYGLOWS_PRODUCT_ID,
-          legacyProductIds: REPLAYGLOWS_LEGACY_PRODUCT_IDS,
         });
 
   if (!decision.hasAccess) {
@@ -170,16 +151,12 @@ export const getReplayGlowsAccessDecision = internalQuery({
   args: {
     userId: v.string(),
     productId: v.optional(v.string()),
-    legacyProductIds: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     return await getReplayGlowsAccessDecisionFromDb(
       ctx,
       args.userId,
       args.productId ?? REPLAYGLOWS_PRODUCT_ID,
-      args.legacyProductIds && args.legacyProductIds.length > 0
-        ? args.legacyProductIds
-        : REPLAYGLOWS_LEGACY_PRODUCT_IDS,
     );
   },
 });
@@ -188,7 +165,6 @@ export async function getProductAccessStatusForUser(
   ctx: QueryCtx,
   userId: string,
   productId = REPLAYGLOWS_PRODUCT_ID,
-  legacyProductIds = REPLAYGLOWS_LEGACY_PRODUCT_IDS,
 ) {
-  return await getReplayGlowsAccessDecisionFromDb(ctx, userId, productId, legacyProductIds);
+  return await getReplayGlowsAccessDecisionFromDb(ctx, userId, productId);
 }

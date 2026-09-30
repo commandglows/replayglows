@@ -4,7 +4,27 @@
 
 ---
 
+## Extension App Parity
+
+🟠 [replayglows] task: Bring the Chrome extension to maximal parity with the Flutter app through a full extension page on the shared Convex backend | status: in_progress | area: ext | spec: shipglows_data/workflow/specs/monorepo/2026-09-15-extension-app-parity.md | evidence: plan validated 2026-09-15 (D1-D4); phase 1 + phase 3 done 2026-09-16 — `src/app/` surface, router, shell, i18n FR/EN, 13 screens via 3 subagents, plugged Convex typed API, typecheck/lint/build:ext green; auth provider stub fail-closed + placeholder Convex URL wired | next: Phase 2 wiring — operator confirms customJwt deployment state (D1) and real `CONVEX_URL`; then implement real auth provider, sign-in/out UX and product gate before YouTube-connect (phase 4) and migration (phase 5)
+
 ## Extension Playback
+
+🟠 [replayglows] task: Merge local YouTube watch progress into popup bookmark list | status: implemented_pending_verify | area: ext | evidence: 2026-09-27 implementation stores local progress every 15 seconds, immediately when a new video starts, and on pause/pagehide/end; merges saved positions with note groups in last-access order, resumes/focuses existing tabs or opens at saved time, hides entries while retaining their progress profiles; Markdown exports list in-progress positions, states the clipboard copy creates no file and gives the separate Notes.md capture download path; JSON backup restores all local progress; removes completed videos without notes, and marks completed videos with notes as watched. Doppler export-format unit tests, extension typecheck and package build passed 2026-09-27; remove-from-list marks the profile dismissed without deleting position data. Browser interaction and manual YouTube proof not run.
+
+🟠 [replayglows] task: Restore grouped video cards for popup notes | status: implemented_pending_verify | area: ext | evidence: 2026-09-25 operator requested the legacy visual presentation; popup now groups notes by video with thumbnails, collapsible headers, chronological timestamp rows and compact edit/delete actions. On 2026-09-26 thumbnails became accessible links opening the video in a new tab without expanding the notes. Packaged Chromium checks cover keyboard expansion, note editing, timestamp navigation, deletion with group remaining open, and horizontal overflow; screenshot inspected. | next: Reload the unpacked extension and confirm the grouped presentation in the native toolbar popup.
+
+🟠 [replayglows] task: Widen toolbar popup and compact playback card | status: implemented_pending_verify | area: ext | evidence: 2026-09-25 preferred width 560px (previously 432px), height 600px; speed slider and presets share a wrapping row with compact controls; Doppler package build and playback browser scenarios passed; packaged popup screenshots inspected in Chromium tabs; native toolbar popup capture timed out. Historical notes audit: 1b0f8928 (2026-08-05) contains legacy 600px popup with collapsible video groups, thumbnails and timestamp/note rows; its build manifest already selected an empty Vue shell. 1478c08 (2026-09-05) wired Vue bookmarks as individual note cards. | next: Reload unpacked extension and verify native toolbar dimensions; grouped notes remain an analysis finding, not an implemented change.
+
+🟠 [replayglows] task: Add optional YouTube Ambilight around the player | status: in_progress | area: ext | evidence: persistent menu toggle and measured gap handling implemented locally 2026-09-25; user confirmed the transform-based fit removed the band and video oscillation; after a reported ~400 ms halo lag, the four edge strips follow video-frame callbacks up to about 30 fps from a 96 × 54 preview, with slower header color reads and no paused-frame loop; user requested rollback of later layered, masked and overlapping glow adjustments to the earlier blurred-strip rendering; the header tint now starts at the masthead's left edge to cover YouTube's gutter and fades at the player's right edge; live Chrome comparison with Ambilight temporarily off confirmed that the sharp central rectangle and surrounding gradient on the reported Wendy Williams video remain in the source video, and the setting was restored; Doppler build and seven-resource package check passed | next: Reload unpacked extension in Chrome and inspect the header tint in narrow/wide layouts and light/dark themes, plus fullscreen, ads, pause and Picture-in-Picture
+
+🟠 [replayglows] task: Save YouTube frame captures automatically to ReplayGlows cloud when signed in, or to a channel/video Downloads archive with one generated Markdown index per video | status: in_progress | area: ext-app-notes | spec: shipglows_data/workflow/specs/monorepo/2026-09-23-extension-youtube-frame-capture.md | evidence: cached auth relay and local folder/Markdown generation implemented; Doppler extension typecheck and package build pass | next: verify actual Chrome download permission, dated image paths, Notes.md replacement and authenticated cloud fallback in packaged browser.
+
+🟠 [replayglows] task: Add a user-chosen local archive for extension notes and captures where browser folder access works | status: implemented_pending_verify | area: ext | spec: shipglows_data/workflow/specs/monorepo/2026-09-28-extension-chosen-folder-archive.md | decision: 2026-09-28 operator requested installation folder choice and backup explanation, with an informed Brave fallback rather than a companion app | boundary: browser-local notes remain authoritative; JSON export/import and Markdown export remain explicit; a ReplayGlows account currently supports cloud frame capture but does not synchronize extension bookmark notes | evidence: folder adapter, background mirror/capture routing and installation settings implemented; Doppler typecheck/build and packaged Chromium welcome plus no-download note save passed on 2026-09-28 | next: inspect real folder selection, Markdown/PNG writes, permission recovery and Brave messaging before claiming runtime delivery.
+
+🟠 [replayglows] task: Repair recent extension app-opening, local draft, menu/fullscreen and Alt-scrubbing state regressions | status: in_progress | area: ext | ref: shipglows_data/workflow/bugs/BUG-2026-09-18-001.md, shipglows_data/workflow/bugs/BUG-2026-09-18-002.md, shipglows_data/workflow/bugs/BUG-2026-09-18-003.md | evidence: local-library repair and focused state tests passed; operator manually validated draft retention, rapid updates, independent records, delete/cancel and reload on 2026-09-23; BUG-2026-09-18-002 closed | next: Validate the remaining app-opening and YouTube menu/fullscreen/Alt-scrubbing fixes in the browser
+
+🟢 [replayglows] task: Guide discovery inside the Chrome extension with confirmed milestones, local resume/skip, effective shortcuts and recovery help | status: done | area: ext | ref: shipglows_data/workflow/specs/monorepo/2026-09-05-extension-onboarding.md | evidence: Discovery and playback tests, typecheck/build, packaged failure/recovery scenarios and native popup at 432x510 passed on 2026-09-05 | next: Reload unpacked extension to review; no Web Store publication implied
 
 🟢 [replayglows] task: Reconcile extension product contract, competitor delivery matrix, claims and code-to-doc navigation | status: done | area: docs | ref: shipglows_data/product/ext/product.md | evidence: Scoped metadata, topology and reference checks on 2026-09-05 | next: Update on the next approved playback increment; no public release inferred.
 
@@ -60,6 +80,8 @@
 🟠 [replayglows] task: Fix Feed video snap so slow vertical scroll release visibly aligns to the nearest video in cards, list, and notes views | status: fixed-pending-verify | area: app | bug: BUG-2026-06-01-002 | evidence: `flutter analyze`, `flutter test`, metadata lint | next: sg-bug retest BUG-2026-06-01-002
 🟠 [replayglows] task: Stop the watched visibility toggle from refreshing the whole Feed; filter watched videos locally instead | status: fixed-pending-verify | area: app | bug: BUG-2026-06-01-003 | evidence: `flutter analyze`, `flutter test`, metadata lint, `git diff --check`
 🟠 [replayglows] task: Keep Feed cards, list, and notes scroll positions synchronized continuously, including near the last videos | status: fixed-pending-verify | area: app | bug: BUG-2026-06-01-004 | evidence: `flutter analyze`, `flutter test`, `git diff --check`; active-video scroll is now limited to explicit Play-to-Feed entry and Feed items highlight the current video | next: sg-bug retest BUG-2026-06-01-004
+🟢 [replayglows] task: Close the invisible YouTube control icons report as upstream to ReplayGlows | status: done | area: ext | evidence: operator A/B on 2026-09-16 — icons still invisible after disabling ReplayGlows; current `dist/output-ytb.css` and `dist/content.js` contain no opacity/visibility rule for `.ytp-right-controls` and agent headless Chromium shows those icons computed visible | next: user-side diagnosis of the YouTube 2025-2026 Delhi player variant (opacity source rule, Chrome version, incognito) if upstream tracking is desired
+🟠 [replayglows] task: Stop the YouTube stylesheet from injecting global Tailwind preflight and generic utilities that deform the player's left control icons (play/mute offset, shrunken icons, oval volume bubble) | status: fixed-pending-verify | area: ext | evidence: `pnpm build:ext` green, verify-package 7 manifest resources, `dist/output-ytb.css` now contains only scoped extension rules (no `border-width: 0`, no `button`/`svg` element resets, no `.flex`/`.hidden`/`.opacity-0` utilities); `src/styles/styles-youtube.css` cleaned and guarded | next: reload unpacked extension, operator visual check of play/mute icons on a YouTube video
 
 ---
 
@@ -74,7 +96,8 @@
 ## Backlog
 
 🟡 [replayglows] task: Explore focus-time controls for video feeds so work sessions can stay bounded with reminders, playback caps, or auto-stop after a user-defined watch duration | status: todo | area: product | next: sg-planning ReplayGlows focus-time controls for feed playback
-🟡 [replayglows] task: Show per-video watch progress directly in the feed so cards or rows expose the current playback position with a visible progress bar before reopening the video | status: todo | area: app | next: sg-planning ReplayGlows feed watch progress indicators
+🟠 [replayglows] task: Show per-video watch progress directly in the feed so cards or rows expose the current playback position with a visible progress bar before reopening the video | status: implemented_pending_verify | area: app | evidence: cards and list rows render saved progress with red-orange-yellow-green fill and watched videos as full green; Flutter playback writes an initial record when playback starts, then updates position and duration every 15 seconds and on pause, background, completion, and disposal; Convex progress subscription updates the feed across signed-in sessions; `doppler run -- flutter analyze` passed 2026-09-27 after the 15-second timing change | next: verify live playback persistence and rendered cards in the managed app session
+🟠 [replayglows] task: Show cloud watch progress on YouTube feed and player recommendations | status: in_progress | area: ext | dependency: extension parity phase 2 must establish the real Convex URL and authenticated session provider | evidence: extension Convex URL is empty and auth provider intentionally fails closed; existing parity spec requires confirming CustomJWT deployment and URL before wiring extension data | next: resolve the auth prerequisite in `2026-09-15-extension-app-parity.md`, then expose the shared progress query to the YouTube content script
 🟡 [replayglows] task: Define a Learning Behavior Intelligence spec that models how users turn YouTube sessions into reusable learning across watch sessions, timestamped notes, playlists, transcript usage, revisits, and feedback signals | status: in_progress | area: product-data | alias: transcript intelligence | entities: user, video, watch_session, note, timestamp_anchor, playlist, transcript_job, transcript_version, revisit_event, feedback_event | why: the core product promise is structured learning, not generic video consumption | questions: what marks real learning value, what gets revisited, what compounds over time | ref: shipglows_data/workflow/references/replayglows-transcript-intelligence-context.md | spec: shipglows_data/workflow/specs/monorepo/replayglows-learning-behavior-intelligence.md | next: /101-sg-ready replayglows-learning-behavior-intelligence
 🟡 [replayglows] task: Define an exploratory analytics workspace for ReplayGlows so product and transcript questions can be filtered, transformed, joined, aggregated, and visualized quickly without committing first to a heavy Python/SQL/BI stack | status: todo | area: exploratory-data | goals: rapid prototypes, internal analysis, low-friction iteration | why: the team needs a fast way to explore learning and transcript patterns before hardening infrastructure | deliverables: analysis surface, source connectors, saved views, lightweight charting flow | next: sg-planning ReplayGlows exploratory analytics workspace
 🟡 [replayglows] task: Design activation and retention insights on top of the learning-behavior model so ReplayGlows measures first value through first note, organization, revisit, and sustained learning loops instead of generic app opens | status: todo | area: analytics | depends: learning behavior intelligence spec | outcomes: activation stages, retention cuts, learning-value milestones, leading indicators | why: activation should reflect learning progress, not vanity usage | questions: which early actions predict durable return, where does the learning loop fail | next: sg-planning ReplayGlows learning activation and retention intelligence
@@ -120,3 +143,135 @@
 ## Extension Canary Functionality — 2026-09-05
 
 🟠 [replayglows] task: Restore and verify extension bookmark workflows in Chrome Canary | status: fixed-pending-verify | area: extension | bug: BUG-2026-09-05-001 | proof: real YouTube CRUD, shortcuts, import/export, SPA and browser restart; five behavioral tests | evidence: shipglows_data/workflow/audits/2026-09-05-extension-canary-functionality.md | next: operator visual acceptance in dedicated Canary profile before final closure
+🟢 [replayglows] task: Localize the complete extension UI in French and English with an Automatic/Français/English persisted selector | status: implemented | area: ext | ref: shipglows_data/workflow/specs/monorepo/2026-09-05-extension-bilingual-ui.md | proof: isolated packaged Chromium verified live English popup/options and the native French action popup | next: Reload the unpacked extension in the operator browser and verify both injected locales on a real YouTube video
+
+## Note Editor CSS Regression — 2026-09-16
+
+- [replayglows] Restore the injected note editor after global Tailwind reset removal | status: implemented; operator visual acceptance pending | area: ext | comparison: HEAD 59e3925 | change: scoped border-box, shrinkable input and inline reset buttons in ext/src/styles/styles-youtube.css; preserved existing white rounded rainbow design and host isolation | proof: build:css-ytb and build:ext passed; Chromium fixture invokes actual addBookmark(), reproduces out-of-container buttons before patch, verifies all children inside 220x30 bounds with/without buttons, save via click/Enter, and unchanged host button/SVG computed styles | limitation: fixture is not real YouTube runtime proof; broad design drift scan fails on existing dirty workspace; reload unpacked extension and YouTube for operator acceptance.
+- [replayglows] Align bookmark marker center with timeline timestamp | status: fixed-pending-verify | area: ext | bug: BUG-2026-09-16-001 | proof: Chromium before/after geometry, resize, endpoint drag and failed-save rollback; five bookmark tests; CSS and extension builds | next: operator real-YouTube visual acceptance after reload
+- [replayglows] Raise bookmark note tooltip above marker | status: implemented; operator visual acceptance pending | area: ext | change: container-relative gap of half marker size (10px), hover bridge preserves pointer access | proof: extension build and Chromium gap/hover-crossing checks passed; marker positioning/drag checks still pass
+- [replayglows] Add toggleable YouTube inline speed bar | date: 2026-09-17 | status: implemented; real YouTube visual acceptance pending | area: ext | scope: menu show/hide, container-relative native-controls gap, slider 0.25-4x, presets and favorite using existing playback service, session visibility across SPA navigation | proof: build:ext; scripts/youtube-speedbar-browser.mjs loads packaged extension with real worker/media on routed YouTube fixture and validates popup sync, pin isolation, coalesced slider input, suspension, responsive bounds, hide/show and SPA cleanup | limitation: compact mode hides presets, very narrow gaps hide toolbar; no personal browser reload or live YouTube proof
+- [replayglows] Add rightmost pin toggle to inline YouTube speed bar | date: 2026-09-17 | status: implemented; real YouTube visual acceptance pending | area: ext | scope: shared existing session pin, accessible pressed state and bilingual labels, preserved compact layout; top-level YouTube content may pin sender tab only | proof: 23 state/media/bookmark tests, build:ext, packaged browser test confirms pin/unpin, global isolation, external pin sync and SPA persistence; sender spoofed tab ignored, nested frames and lookalike origins rejected | lifecycle: existing session pin clears on tab close/browser or extension restart
+- [replayglows] Fix speedbar toggle remaining invisible | date: 2026-09-17 | status: implemented; operator visual acceptance pending | cause: live YouTube left-controls uses flex:1, so group bounding box consumed the apparent empty gap and available width was zero | change: measure visible child control edges, observe child size/style changes, remount detached toolbar on show with dedicated listener cleanup | proof: current live YouTube DOM inspected; packaged fixture updated to actual flex layout and detached-bar regression passes; build:ext passed | limitation: full public interaction attempt interrupted by YouTube consent overlay in isolated profile
+- [replayglows] Fix visible but noninteractive YouTube speed bar | date: 2026-09-17 | status: implemented; operator real-YouTube acceptance pending | cause: native modern controls at z-index 59 cover toolbar at 2 | change: toolbar z-index 60; regression fixture includes native stacking and pointer targeting for every visible control, including compact layout and slider click | proof: regression fails before fix for all seven controls; build:ext and packaged browser scenario pass after fix, including speed, favorite, pin and popup sync | limitation: controlled fixture; personal browser extension and YouTube tab still need reload
+
+
+## Extension speed bar pointer attachment (2026-09-17)
+
+- Implemented the opt-in “Attach pointer to the speed bar” setting in playback options (French/English), persisted locally and disabled by default.
+- Hovering the visible YouTube slider acquires pointer tracking without clicking; a 32px retention margin tolerates small excursions. Leaving the margin freezes the last rate; re-entering the slider synchronizes to the new position. Rates remain 0.25–4x in 0.05 steps. Neighboring buttons, blur, hidden bars and suspended controls release attachment.
+- Evidence: TypeScript/Vue checks, ESLint, package build/resource verification, 19 playback state/media tests, and packaged isolated Chromium speed-bar scenarios passed. The browser scenario covers settings persistence, hover entry, tolerance, freeze, re-entry, range limits, blur and disabling, alongside existing speed/pin/SPA behavior.
+- Limit: browser proof uses a routed YouTube fixture, not the personal Chrome profile or a live YouTube player. Reload `ext/dist` and existing YouTube tabs to use the rebuilt extension; no Web Store publication.
+
+
+## Extension Alt scrubbing (2026-09-17)
+
+- Added opt-in “Hold Alt to scrub through the video” playback setting (FR/EN), disabled by default; requires pointer attachment.
+- Holding Alt while attached pauses and mutes the current finite-duration video, centers a virtual thumb and hides the system pointer. Relative horizontal displacement selects backward/forward seeking with a 10% neutral zone and quadratic acceleration up to 30 video seconds per second. Seeking stays between zero and duration; existing A–B repetition is cleared.
+- Release, pointer escape, blur, suspension, option disable, hidden controls and teardown stop the animation and restore mute and prior playing/paused state. Volume and playback-rate settings are not changed by scrubbing. Navigation/source replacement does not resume a different video. Another key or mouse press exits the mode before other controls act.
+- Proof: typecheck, ESLint (only two pre-existing declaration warnings), production extension package verification, 20 playback tests and isolated packaged Chromium fixture tests passed. Browser coverage includes setting persistence, neutral/reverse/forward, release, paused/playing/muted restoration, blur, bounds, pointer escape, suspension and opt-out.
+- Delivery: rebuilt ext/dist locally; reload extension and YouTube tab. Live YouTube/personal Chrome acceptance remains separate from routed fixture proof. No remote publication.
+
+
+## Global speed bar visibility (2026-09-17)
+
+- Show/hide now persists in local extension storage and propagates to all existing YouTube tabs. New tabs, reloads and SPA navigation reuse the saved preference. Initial reads cannot overwrite a newer storage event.
+- Proof: extension build and package verification passed; isolated Chromium with routed YouTube fixtures passed cross-tab show/hide, new-tab visibility, reload and SPA persistence, plus existing pointer and Alt-scrubbing scenarios. Personal Chrome/live YouTube proof remains separate.
+
+
+## Alt scrubbing latency and unexpected detachment repair (2026-09-17)
+
+- User reported spontaneous exit while Alt remained held and near-real-time seeking even at maximum displacement.
+- Reproduced with the packaged extension in isolated Chromium: a simulated two-hour video and 250ms decoder seek latency rewound only 1.8 seconds in 1.5 seconds. Setting the host controls to opacity zero/hidden ended the active gesture.
+- Repair: accumulate an independent target on every animation frame and commit at 10Hz, flushing the target on release. The speed curve preserves a neutral zone and fine center control while reaching max(30, duration/6) video seconds per second at either extreme. Horizontal overshoot clamps instead of detaching; geometry remains stable during a gesture.
+- Keep the active player's controls visible during scrubbing; same-video query updates and delayed loop-clear errors do not silently cancel Alt. Source/video replacement, release, vertical escape, suspension and blur retain cleanup.
+- Initial retest passed all packaged browser scenarios, including 1740 seconds travelled in 1.5 seconds, both bounds of a simulated two-hour video, sustained auto-hide, horizontal overshoot and state restoration. Long-video/decoder proof uses a controlled media model inside the extension isolated world; it is not live YouTube decoding evidence. Personal Chrome acceptance remains pending.
+
+- Final retest after compact rate-label and neutral-flush refinements: typecheck, package build, 20 playback tests and complete packaged browser scenario passed; lint has only the two pre-existing declaration warnings. Sustained gesture additionally survives a loop-clear response timeout and a same-video timestamp query update. Final measured maximum rewind: 1728 video seconds in 1.5 seconds; beginning and end reached within the bounded tests. No commit or remote publication.
+
+
+## Four video hover controls (2026-09-17)
+
+- Added opt-in, persisted French/English playback option for four equal vertical YouTube video zones: volume (5%), video-only brightness (5%, 25–200%), shared/pinned playback speed (configured step, 0.25–4x), and position (5 seconds). Wheel up increases/advances; down decreases/rewinds.
+- All bands have a 6% color tint, current-value labels and active-zone outline. Non-interactive overlays preserve native video clicks. Controls/menus and modified wheel gestures retain native behavior. Leaving resets partial wheel accumulation; blur, navigation and disabling clean up. Brightness preserves the original filter and restores it when disabled or disposed.
+- Proof: packaged Chromium routed YouTube scenario passed options persistence, all four controls, direction, seek bound, exit cancellation, toolbar exclusion and filter restoration; existing pointer, global visibility and Alt scrub scenarios passed. 21 playback state/media tests passed. Extension build/package verification passed. Personal Chrome/live YouTube remains a separate verification surface.
+
+
+## Split level charts and cursor state (2026-09-17)
+
+- Replaced text badges with full-width bottom-anchored level fills (20%), upper tint (6%) and immediate 2px color thresholds. Fill height eases over 80ms; visible levels track actual media values each animation frame, without rounding to control steps. Speed maps 0.25–4x to 0–100%; brightness maps 25–200% to 0–100%; position maps currentTime/duration.
+- First wheel event hides the cursor and other zones. After 500ms without wheel, the cursor returns. After 1500ms without pointer/wheel activity, all levels fade over 200ms. Exiting, disabling, blur and cleanup immediately restore the cursor and clear timers/animation frames.
+- Proof: extension build/package verification and packaged Chromium suite passed, including real-value fractional height, 2px threshold, hidden neighboring zones, first sub-step wheel cursor hiding, idle fade, cursor restoration and exit cleanup. Screenshot inspected on routed YouTube fixture; personal Chrome/live YouTube remains unverified.
+
+## Extension options autosave — 2026-09-17
+
+- Done: playback options save automatically on changes, including shortcut capture/reset; removed the save button, serialized writes, retained validation and disabled editing until settings load.
+- Proof: extension type-check, focused ESLint, build/package verification and packaged Chromium playback scenarios passed, including automatic save and persistence after options reload. Personal browser extension reload remains required.
+
+
+## Attached speed pointer visibility (2026-09-17)
+
+- The player hides the system pointer during ordinary speed-bar attachment, using the red range thumb as the visual pointer. Existing detachment/blur/suspension/teardown cleanup restores the cursor. Attached controls stay visible, including during host auto-hide.
+- The generated extension package passes build/resource verification; the browser scenario checks computed cursor visibility on attachment, escape and blur.
+
+## Extension options organization — 2026-09-17
+
+- Done: integrate playback settings into the existing options card design with three desktop columns (playback/display, playback shortcuts, bookmarks/data), two intermediate columns and one narrow column. Preserve autosave and import/export; move detailed help below settings.
+- Spec: `shipglows_data/workflow/specs/monorepo/2026-09-17-extension-options-layout.md`.
+- Proof: type-check, focused ESLint, build/package verification, packaged playback regressions and options browser tests passed; FR 1600/1000/390 px and EN desktop screenshots inspected. Personal Chrome extension reload remains required.
+
+- Options follow-up: compact responsive shortcut rows and accessible eraser buttons verified in packaged Chromium; build and focused lint passed.
+
+
+## Ctrl wheel split steps (2026-09-17)
+
+- Ctrl + wheel aligns volume/brightness to the next 5% grid boundary and speed to the next 0.05x boundary. Existing unmodified wheel behavior is retained.
+- Position uses chapter starts from current media chapter tracks, YouTube chapter-panel timestamps or same-video description timestamp links. Reads are fresh per gesture; unavailable chapters preserve position and show guidance to open the chapter list. No approximate timeline geometry or arbitrary time jump substitutes for a chapter.
+- Proof: build/package verification and Chromium packaged suite passed, including Ctrl alignment from off-grid values, forward/backward chapter navigation and unchanged position without chapter data. Browser fixtures do not establish live YouTube chapter availability.
+
+
+## Split chart icons (2026-09-17)
+
+- Added inline speaker, sun, speedometer and timeline SVG icons near the bottom of each chart, above the player controls. Icons inherit the split color, retain pointer transparency and follow the existing active-zone hiding/fade state. No dependency or permission changes.
+- User refinement: large full-opacity icons, responsive 40–72px (64px at 1280px viewport). Initial icon package passed the Chromium suite; enlarged CSS package rebuilt successfully.
+
+
+## Animated split icons (2026-09-17)
+
+- Sun rays pulse and volume waves breathe only during active wheel interaction. Volume wave opacity reflects the actual volume; the speed needle maps the actual 0.25–4x rate onto a 240-degree sweep, and the timeline marker follows actual progress. Needle/marker transitions use 80ms. Reduced-motion preference disables decorative animation and transitions while retaining accurate value positions. No new animation timers or dependencies.
+- Proof: build/package verification and packaged Chromium fixture suite passed; assertions verify active sun animation, reduced-motion opt-out and speed-needle angle derived from real playback rate.
+
+
+## Continuous wheel repair and individual icon animation (2026-09-17)
+
+- Removed the shared 40px quantization from unmodified split wheel input. Only Ctrl accumulates discrete steps; normal input changes values proportionally to delta, including fine trackpad movements. Worker rate normalization retains six decimals rather than rounding fine changes to hundredths. Switching Ctrl mode clears partial accumulation.
+- Split the sun into eight independently phased rays and the speaker into two phased outward waves. Existing active-only and reduced-motion animation guards remain.
+- Proof: rebuilt package, 21 playback unit tests and packaged Chromium suite passed. Fine unmodified 2px wheel input changes volume by 0.001 and speed by 0.002; Ctrl/chapter behavior and per-ray animation delays are checked. Live personal Chrome remains separate.
+
+
+## Full-notch wheel smoothing (2026-09-17)
+
+- Follow-up: proportional deltas alone still jumped on discrete mouse wheels. Unmodified volume, brightness and speed now interpolate actual values over 160ms, accumulate same-direction target input, and retarget on reversal. Ctrl stays immediate/discrete and position behavior is unchanged.
+- Speed updates allow one request in flight plus the latest pending rate. Pointer exit, zone/mode changes and teardown cancel interpolation and pending updates; an already-dispatched worker request cannot be recalled.
+- Proof: package build and Chromium fixture suite passed. Full-notch sampling measured actual volume 0.5 immediately, 0.5341796875 mid-transition, then 0.55; Ctrl/chapter and existing interaction tests passed.
+
+
+## Restore direct wheel response (2026-09-17)
+
+- User rejected the 160ms interpolation. Removed its animation frames, target accumulation and rate queue. Normal wheel updates parameters directly from the scroll delta; Ctrl alone retains quantized steps/chapter navigation. Existing requested chart and icon presentation animations are preserved.
+- Proof: rebuilt package and browser fixture checks verify immediate volume response (0.55 at dispatch and unchanged at 70/220ms), fine unmodified wheel input and retained Ctrl/chapter behavior.
+
+
+## Hardware-wheel sensitivity repair (2026-09-17)
+
+- The supplied Chrome recording showed the brightness threshold moving by about 5% of the chart height per physical wheel notch. The normal wheel path used the same effective 5% change as Ctrl, so the two modes were visually indistinguishable.
+- Normal wheel input now changes volume, brightness, and speed by 1% of their respective ranges per full notch, with proportional handling for high-resolution wheel and trackpad deltas. Ctrl retains the 5% grid and chapter navigation. Position keeps its accepted direct five-second behavior.
+- Proof: the extension package builds; the packaged Chromium suite verifies an immediate 50% to 51% volume change with no delayed drift, 1.75% brightness-range movement, 0.0375x speed movement, fine-delta input, Ctrl steps, chapter navigation, and all existing split/bar interactions.
+
+
+## Split chart layer synchronization (2026-09-17)
+
+- Fixed the visible gap between the horizontal threshold and the tinted chart regions during wheel input. The lower fill height, upper tint boundary, and 2px threshold now share the same 80ms linear transition.
+- Reduced-motion mode disables all three transitions together. The packaged Chromium scenario samples the chart mid-transition and requires the fill edge, upper-region edge, and threshold edge to remain aligned within one pixel.
+
+- Playback shortcut erasers: empty display, independent label/button semantics and all 11 direct SVG click cases verified in packaged Chromium, including persistence after reload.

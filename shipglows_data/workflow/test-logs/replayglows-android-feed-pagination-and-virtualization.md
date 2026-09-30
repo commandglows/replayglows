@@ -2,12 +2,12 @@
 artifact: test_checklist
 metadata_schema_version: "1.0"
 artifact_version: "0.1.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-06-12"
 updated: "2026-06-12"
 status: "draft"
 source_skill: "101-sf-ready"
-scope: "replayglowz-android-feed-pagination-and-virtualization"
+scope: "replayglows-android-feed-pagination-and-virtualization"
 owner: "Diane"
 confidence: "high"
 risk_level: "high"
@@ -17,20 +17,20 @@ linked_systems:
   - "app"
   - "backend"
 depends_on:
-  - artifact: "shipglows_data/workflow/specs/replayglowz-android-feed-pagination-and-virtualization.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-android-feed-pagination-and-virtualization.md"
     artifact_version: "1.0.0"
     required_status: "ready"
 supersedes: []
 evidence: []
-next_step: "/102-sf-start replayglowz-android-feed-pagination-and-virtualization"
+next_step: "/102-sf-start replayglows-android-feed-pagination-and-virtualization"
 ---
 
 # Test Checklist: Android Feed Pagination and Virtualization
 
 ## Preconditions
 
-- Android device or emulator available with Android 12+ and ReplayGlowz release-compatible environment.
-- Authenticated QA account with ReplayGlowz active.
+- Android device or emulator available with Android 12+ and ReplayGlows release-compatible environment.
+- Authenticated QA account with ReplayGlows active.
 - A test account/library containing at least one very large feed and at least one additional feed for multi-feed merge.
 - Prior build artifacts accessible: one baseline artifact for comparison and one candidate with paging/shrink changes.
 - Access to app debug logs (for non-blocking page error and pagination diagnostics).

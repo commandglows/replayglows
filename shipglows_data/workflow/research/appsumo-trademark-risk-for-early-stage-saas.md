@@ -2,7 +2,7 @@
 artifact: research
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-08-03"
 updated: "2026-08-03"
 status: reviewed

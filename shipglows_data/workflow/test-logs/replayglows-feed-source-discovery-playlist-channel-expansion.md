@@ -2,7 +2,7 @@
 artifact: test_checklist
 metadata_schema_version: "1.0"
 artifact_version: "0.1.1"
-project: "replayglowz"
+project: "replayglows"
 created: "2026-05-30"
 updated: "2026-05-31"
 status: draft
@@ -17,20 +17,20 @@ linked_systems:
   - "app"
   - "backend"
 depends_on:
-  - artifact: "shipglows_data/workflow/specs/replayglowz-feed-source-discovery-playlist-channel-expansion.md"
+  - artifact: "shipglows_data/workflow/specs/replayglows-feed-source-discovery-playlist-channel-expansion.md"
     artifact_version: "1.0.0"
     required_status: "ready"
 supersedes: []
 evidence: []
-next_step: "/sf-verify replayglowz-feed-source-discovery-playlist-channel-expansion"
+next_step: "/sf-verify replayglows-feed-source-discovery-playlist-channel-expansion"
 ---
 
 # Test Checklist: Feed Source Discovery and Playlist Channel Expansion
 
 ## Preconditions
 
-- Authenticated ReplayGlowz test account.
-- At least one ReplayGlowz Feed exists or can be created.
+- Authenticated ReplayGlows test account.
+- At least one ReplayGlows Feed exists or can be created.
 - At least one cached YouTube playlist contains videos from more than one channel.
 - Cached subscriptions are available when validating subscription-channel selection.
 

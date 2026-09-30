@@ -9,6 +9,8 @@ interface Props {
   image?: string
   noIndex?: boolean
   jsonLd?: Record<string, unknown>[]
+  alternatePath?: string
+  productSchema?: boolean
   lang?: string
 }
 
@@ -20,6 +22,8 @@ const {
   noIndex = false,
   jsonLd = [],
   lang = 'en',
+  alternatePath,
+  productSchema = true,
 } = Astro.props
 
 const canonicalUrl = siteUrl(path)
@@ -57,7 +61,7 @@ const defaultSchemas = [
   },
 ]
 
-const allSchemas = [...defaultSchemas, ...jsonLd]
+const allSchemas = [...defaultSchemas.filter(schema => productSchema || schema['@type'] !== 'WebApplication'), ...jsonLd]
 ---
 
 <html lang={lang}>
@@ -72,8 +76,8 @@ const allSchemas = [...defaultSchemas, ...jsonLd]
     <meta name="generator" content={Astro.generator} />
     <link rel="canonical" href={canonicalUrl} />
     {(() => {
-      const enPath = path.startsWith('/fr') ? path.replace(/^\/fr/, '') || '/' : path || '/'
-      const frPath = path.startsWith('/fr') ? path : `/fr${path || ''}`
+      const enPath = lang === 'fr' && alternatePath ? alternatePath : path.startsWith('/fr') ? path.replace(/^\/fr/, '') || '/' : path || '/'
+      const frPath = lang === 'en' && alternatePath ? alternatePath : path.startsWith('/fr') ? path : `/fr${path || ''}`
       return <>
         <link rel="alternate" hreflang="en" href={siteUrl(enPath)} />
         <link rel="alternate" hreflang="fr" href={siteUrl(frPath)} />

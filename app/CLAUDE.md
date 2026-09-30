@@ -43,7 +43,7 @@ ReplayGlows App is a Flutter web client using suite Clerk identity and a ReplayG
 
 1. Client-only identity is not product access.
 2. Product access is server-verified; recognized ReplayGlows accounts default to product-scoped `replayglows/free` access unless explicitly revoked.
-3. Canonical product id is `replayglows`; `tubeflow` is legacy alias only.
+3. `replayglows` is the only supported product id.
 4. Convex token for product backend comes from the Clerk session token configured by the Clerk Convex integration.
 5. OAuth handlers must fail closed when suite verification is unavailable.
 
@@ -63,7 +63,6 @@ Flutter build-time:
 - `CLERK_SIGN_IN_URL`
 - `CLERK_SIGN_UP_URL`
 - `REPLAYGLOWS_PRODUCT_ID`
-- `REPLAYGLOWS_LEGACY_PRODUCT_IDS`
 - `REPLAYGLOWS_ACCOUNT_CENTER_URL`
 - `REPLAYGLOWS_APP_URL`
 

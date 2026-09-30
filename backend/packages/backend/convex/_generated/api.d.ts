@@ -10,6 +10,9 @@
 
 import type * as access from "../access.js";
 import type * as androidPush from "../androidPush.js";
+import type * as billing_polarAdapter from "../billing/polarAdapter.js";
+import type * as billing_polarWebhook from "../billing/polarWebhook.js";
+import type * as billing_stripeAdapter from "../billing/stripeAdapter.js";
 import type * as channelLinks from "../channelLinks.js";
 import type * as channels from "../channels.js";
 import type * as comments from "../comments.js";
@@ -53,6 +56,9 @@ import type {
 declare const fullApi: ApiFromModules<{
   access: typeof access;
   androidPush: typeof androidPush;
+  "billing/polarAdapter": typeof billing_polarAdapter;
+  "billing/polarWebhook": typeof billing_polarWebhook;
+  "billing/stripeAdapter": typeof billing_stripeAdapter;
   channelLinks: typeof channelLinks;
   channels: typeof channels;
   comments: typeof comments;
